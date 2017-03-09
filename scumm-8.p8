@@ -95,17 +95,11 @@ first_room = {
 	lighting = 0, -- state of lights in current room
 	scripts = {	  -- scripts that are at room-level
 		move_bozo = function()
-			while true do		
-				set_state("bozo", "frame1")
-				break_time(8)
-				set_state("bozo", "frame2")
-				break_time(8)
-				set_state("bozo", "frame1")
-				break_time(8)
-				set_state("bozo", "frame3")
-				break_time(8)
-				set_state("bozo", "frame3")
-				break_time(8)
+			while true do	
+				for f=1,4 do
+					set_state("bozo", "frame"..f)
+					break_time(8)
+				end
 			end
 		end
 	},
@@ -197,9 +191,6 @@ first_room = {
 		hall_door_kitchen = {
 			name = "kitchen",
 			state = state_open,
-			--[[states = {
-				open = 15 -- state_open
-			},]]
 			x = 14 *8, -- (*8 to use map cell pos)
 			y = 2 *8,
 			w = 1,	-- relates to spr or map cel, depending on above
@@ -208,7 +199,6 @@ first_room = {
 			verbs = {
 				walkto = function()
 					-- go to new room!
-					--change_room(second_room)
 					come_out_door(second_room.objects.kitchen_door_hall, second_room) -- ()
 				end
 			}
@@ -257,7 +247,8 @@ first_room = {
 				-- states are spr values
 				frame1 = 64, 
 				frame2 = 65,
-				frame3 = 66
+				frame3 = 64,
+				frame4 = 66
 			},
 			w = 1,	-- relates to spr or map cel, depending on above
 			h = 1,  --
@@ -333,7 +324,7 @@ second_room = {
 			state = state_open,
 			x = 1 *8, -- (*8 to use map cell pos)
 			y = 2 *8,
-			w = 1,	-- relates to spr or map cel, depending on above
+			w = 1,	-- relates to spr
 			h = 4,  --
 			use_pos = pos_right,
 			verbs = {
@@ -444,19 +435,29 @@ actors = {
 						--actorface( commanderzif, var_ego )
 						say_line(me,"what do you want?")
 						wait_for_message()
-						-- dialog loop
-						while (true) do
-							-- build dialog options
-							dialog_add("where am i?")
-							dialog_add("who are you?")
-							dialog_add("how much wood would a wood-chuck chuck, if a wood-chuck could chuck wood?")
-							dialog_add("nevermind")
-							dialog_start(selected_actor.col, 7)
-							-- wait for selection
-							while isnull(sentence_curr) do break_time(1) end
-							break -- exit dialog loop
-						end
 					end)
+					-- dialog loop
+					d("start dialog")
+					while (true) do
+						-- build dialog options
+						dialog_add("where am i?")
+						dialog_add("who are you?")
+						dialog_add("how much wood would a wood-chuck chuck, if a wood-chuck could chuck wood?")
+						dialog_add("nevermind")
+						dialog_start(selected_actor.col, 7)
+						-- wait for selection
+						while isnull(sentence_curr) do break_time(1) end
+						
+						break -- exit dialog loop
+					end
+					-- chosen options
+					dialog_end()
+					cutscene(cut_noverbs, function()
+						say_line(selected_actor, sentence_curr.msg)
+						wait_for_message()
+
+					end)
+
 				end
 			}
 	}
@@ -519,7 +520,6 @@ end
 
 
 -- global vars
---scene=1
 screenwidth = 127
 screenheight = 127
 stage_top = 16
@@ -579,8 +579,6 @@ cutscenes = {} -- table of scripts for the active cutscene(s)
 -- game loop
 
 function _init()
--- this function runs as soon as the game loads
-	
 	-- use mouse input?
 	if (enable_mouse) poke(0x5f2d, 1)
 
@@ -589,12 +587,6 @@ function _init()
 
 	-- load the initial room
 	change_room(selected_room)
-
-
-	--debug
---[[	lines = create_text_lines(
-		"this is an, example of a rather long sentence of many words that will wrap",
-		flr(128 /4))]]
 end
 
 function _update60()  -- _update()
@@ -603,13 +595,6 @@ end
 
 function _draw()
 	gamedraw()
-
-	--debug
---[[	y=90
-	for l in all(lines) do
-		print(l,0,y,10)
-		y+=6
-	end ]]
 end
 
 -- update functions
@@ -620,15 +605,6 @@ function gameupdate()
 		selected_actor.thread = nil
 	end
 
-	--d("#scripts="..#local_scripts)
-	-- update all the active scripts
-	-- (will auto-remove those that have ended)
-	for scr_obj in all(local_scripts) do
-		if scr_obj[2] and not coresume(scr_obj[2], scr_obj[3], scr_obj[4]) then
-			del(local_scripts, scr_obj)
-			scr_obj = nil
-		end
-	end
 
 	-- update active cutscene (if any)
 	if notnull(cutscene_curr) then
@@ -639,6 +615,17 @@ function gameupdate()
 			selected_actor = cutscene_curr.paused_actor
 			cam.mode = cutscene_curr.paused_cam_mode
 			cam.following_actor = cutscene_curr.paused_cam_following
+			
+			-- script the cutscene end
+			--[[start_script(function()
+				d("DLETE!!!")
+				del(cutscenes, cutscene_curr)
+				cutscene_curr = nil
+				-- any more cutscenes?
+				if (#cutscenes > 0) then
+					cutscene_curr = cutscenes[#cutscenes]
+				end
+			end)]]
 			-- now delete cutscene
 			del(cutscenes, cutscene_curr)
 			cutscene_curr = nil
@@ -646,8 +633,22 @@ function gameupdate()
 			if (#cutscenes > 0) then
 				cutscene_curr = cutscenes[#cutscenes]
 			end
+			-- add a pause for sys to catch-up
+			--break_time(1)
+		end
+	else
+		-- NO CUTSCENE...
+		-- update all the active scripts
+		-- (will auto-remove those that have ended)
+		--d("update local scripts")
+		for scr_obj in all(local_scripts) do
+			if scr_obj[2] and not coresume(scr_obj[2], scr_obj[3], scr_obj[4]) then
+				del(local_scripts, scr_obj)
+				scr_obj = nil
+			end
 		end
 	end
+
 
 	-- player/ui control
 	playercontrol()
@@ -658,8 +659,6 @@ end
 
 
 function gamedraw()
-	--local gametxt = "game screen"
-
 	-- clear screen every frame?
 	rectfill(0,0,screenwidth, screenheight, 0)
 
@@ -681,32 +680,54 @@ function gamedraw()
 	-- reset clip
 	clip()
 
+	if (show_perfinfo) print("cpu: "..stat(1), 0, stage_top - 16, 8) print("mem: "..stat(0), 0, stage_top - 8, 8)
+	if (show_debuginfo) print("x: "..cursor.x.." y:"..cursor.y, 80, stage_top - 8, 8)
+
 	-- draw active text
 	talking_draw()
+
+	-- no dialog?
+	if notnull(dialog_curr) and dialog_curr.visible then
+		-- draw dialog sentences?
+		dialog_draw()
+		cursor_draw()
+		-- skip rest
+		return
+	end
+
+
+	-- draw ui and inventory
+	d("cut_curr:"..type(cutscene_curr))
+	if (cutscene_curr_lastval == cutscene_curr) then
+		d("cut_SAME")
+	else
+		d("cut_DIFF")
+		cutscene_curr_lastval = cutscene_curr
+		return
+	end
 
 	-- draw current command (verb/object)
 	if isnull(cutscene_curr) then
 		command_draw()
 	end
 
-	-- draw ui and inventory
-	if isnull(cutscene_curr) or not has_flag(cutscene_curr.flags, cut_noverbs) then
+
+	if (isnull(cutscene_curr) 
+		or not has_flag(cutscene_curr.flags, cut_noverbs))
+		-- and not just left a cutscene
+		and (cutscene_curr_lastval == cutscene_curr) then
 		ui_draw()
+	else
+		d("ui skipped")
 	end
 
-	-- draw dialog sentences?
-	if notnull(dialog_curr) and dialog_curr.visible then
-		dialog_draw()
-	end
+	--fix for display issue
+	cutscene_curr_lastval = cutscene_curr
 
-	if isnull(cutscene_curr) or not has_flag(cutscene_curr.flags, cut_hidecursor) then
+	if isnull(cutscene_curr) 
+		or not has_flag(cutscene_curr.flags, cut_hidecursor) then
 		cursor_draw()
 	end
-	
-
-	if (show_perfinfo) print("cpu: "..stat(1), 0, stage_top - 16, 8) print("mem: "..stat(0), 0, stage_top - 8, 8)
-	if (show_debuginfo) print("x: "..cursor.x.." y:"..cursor.y, 80, stage_top - 8, 8)
-	
 end
 
 
@@ -751,6 +772,14 @@ function input_button_pressed(button_index)
 
 	local verb_in = verb_curr
 
+	if notnull(dialog_curr) and dialog_curr.visible then
+		if notnull(hover_curr.sentence) then
+			sentence_curr = hover_curr.sentence
+		end
+		-- skip remaining
+		return
+	end
+
 	for k,h in pairs(hover_curr) do
 		if type(h) != nil then
 			-- found something being hovered...
@@ -767,14 +796,12 @@ function input_button_pressed(button_index)
 						d("noun2_curr = "..noun2_curr.name)					
 					else
 						noun1_curr = h
-						--me = noun1_curr
 						d("noun1_curr = "..noun1_curr.name)
 					end
 				elseif (notnull(hover_curr.default_verb)) then
 					-- perform default verb action (if present)
 					verb_curr = hover_curr.default_verb
 					noun1_curr = h
-					--me = noun1_curr
 					-- force repaint of command (to reflect default verb)
 					command_draw()	
 					break
@@ -833,7 +860,6 @@ function input_button_pressed(button_index)
 				say_line(selected_actor, "i don't think that will work")
 			end
 			-- clear current command
-			--break_time(5)
 			clear_curr_cmd()
 		end)
 		coresume(selected_actor.thread, selected_actor, noun1_curr, verb_curr, noun2_curr)
@@ -844,7 +870,6 @@ function input_button_pressed(button_index)
 		selected_actor.thread = cocreate(function(x,y)
 			walk_to(selected_actor, x, y)
 			-- clear current command
-			--break_time(5)
 			clear_curr_cmd()
 		end)
 		coresume(selected_actor.thread, cursor.x, cursor.y - stage_top)
@@ -857,6 +882,17 @@ end
 function checkcollisions()
 	-- reset hover collisions
 	hover_curr = {}
+
+	-- are we in dialog mode?
+	if notnull(dialog_curr) and dialog_curr.visible then
+		for s in all(dialog_curr.sentences) do
+			if iscursorcolliding(s) then
+				hover_curr.sentence = s
+			end
+		end
+		-- skip remaining collisions
+		return
+	end
 
 	-- check room/object collisions
 	for k,obj in pairs(room_curr.objects) do
@@ -899,8 +935,7 @@ function roomdraw()
 	-- debug walkable areas
 	if show_collision then
 		celx = flr((cursor.x + cam.x) /8) + room_curr.map.x
-		--celx = flr((cursor.x+cam.x)/8)
-		cely = flr((cursor.y - stage_top)/8)-- + room_curr.map.y
+		cely = flr((cursor.y - stage_top)/8)
 		spr_num = mget(celx, cely)
 		
 		--d("mapa x="..celx..",y="..cely)
@@ -928,7 +963,7 @@ function roomdraw()
 		-- capture bounds (even for "invisible", but not untouchable, objects)
 		if isnull(obj.class)
 		  or (notnull(obj.class) and obj.class != class_untouchable) then
-			recalc_bounds(obj, cam.x, cam.y)
+			recalc_bounds(obj, obj.w*8, obj.h*8, cam.x, cam.y)
 			if (show_collision) rect(obj.bounds.x, obj.bounds.y, obj.bounds.x1, obj.bounds.y1, 8)
 		end
 	end
@@ -938,7 +973,7 @@ function roomdraw()
 		if (actor.in_room == room_curr) then
 			actor_draw(actor)
 
-			recalc_bounds(actor, 0,0) --cam.x, cam.y)
+			recalc_bounds(actor, actor.w*8, actor.h*8, 0, 0)
 			if (show_collision) rect(actor.bounds.x, actor.bounds.y, actor.bounds.x1, actor.bounds.y1, 8)
 	
 		end
@@ -1035,9 +1070,10 @@ end
 
 -- draw ui and inventory
 function ui_draw()
+	d("ui_draw()...")
 	-- draw verbs
 	xpos = 0
-	ypos = stage_top + 75
+	ypos = 75
 	col_len=0
 
 
@@ -1050,25 +1086,20 @@ function ui_draw()
 			txtcol = verb_defcol
 		end		
 		if (v == hover_curr.verb) txtcol=verb_hovcol
-		print(v[2], xpos, ypos+1, verb_shadcol)  -- shadow
-		print(v[2], xpos, ypos, txtcol)  -- main
+		print(v[2], xpos, ypos+stage_top+1, verb_shadcol)  -- shadow
+		print(v[2], xpos, ypos+stage_top, txtcol)  -- main
 		
 		-- capture bounds
-		v.bounds = {
-			x = xpos,
-			y = ypos,
-			x1 = xpos + #v[2]*4-1,
-			y1 = ypos+5,
-			cam_off_x = 0,
-			cam_off_y = 0
-		}
+		v.x = xpos
+		v.y = ypos
+		recalc_bounds(v, #v[2]*4, 5, 0, 0)
 		if (show_collision) rect(v.bounds.x, v.bounds.y, v.bounds.x1, v.bounds.y1, 8)
 		-- auto-size column
 		if (#v[2] > col_len) col_len = #v[2]
 		ypos += 8
 		-- move to next column
-		if ypos >= stage_top + 95 then
-			ypos = stage_top + 75
+		if ypos >= 95 then
+			ypos = 75
 			xpos += (col_len + 1.0) * 4
 			col_len = 0
 		end
@@ -1092,7 +1123,7 @@ function ui_draw()
 			-- draw object/sprite
 			draw_object(obj)
 			-- re-calculate bounds (as pos may have changed)
-			recalc_bounds(obj,0,0)
+			recalc_bounds(obj, obj.w*8, obj.h*8, 0, 0)
 		end
 		xpos += 11
 		if xpos >= 125 then
@@ -1107,27 +1138,25 @@ function dialog_draw()
 	--d("in dialog_draw()...")
 	-- draw verbs
 	xpos = 0
-	ypos = stage_top + 70
+	ypos = 70
+	
 
 	--d("#s="..#dialog_curr.sentences)
 	for s in all(dialog_curr.sentences) do
 		-- capture bounds
-		s.bounds = {
-			x = xpos,
-			y = ypos,
-			x1 = xpos + s.char_width,
-			y1 = ypos + #s.lines*5,
-			cam_off_x = 0,
-			cam_off_y = 0
-		}
+		s.x = xpos
+		s.y = ypos
+		recalc_bounds(s, s.char_width*4, #s.lines*5, 0, 0)
 
+		txtcol=dialog_curr.col
+		if (s == hover_curr.sentence) txtcol=dialog_curr.hlcol
+		
 		for l in all(s.lines) do
-			--d(l)
-			print(smallcaps(l), xpos, ypos, dialog_curr.col)  -- main
+				print(smallcaps(l), xpos, ypos+stage_top, txtcol)
 			ypos += 5
 		end
 
-		if (show_collision) rect(v.bounds.x, v.bounds.y, v.bounds.x1, v.bounds.y1, 8)
+		if (show_collision) rect(s.bounds.x, s.bounds.y, s.bounds.x1, s.bounds.y1, 8)
 		
 		ypos += 2
 	end
@@ -1173,7 +1202,6 @@ function cutscene(flags, func)
 	cut = {
 		flags = flags,
 		thread = cocreate(func),
-		--script = func,
 		paused_room = room_curr,
 		paused_actor = selected_actor,
 		paused_cam_mode = cam.mode,
@@ -1187,15 +1215,21 @@ function cutscene(flags, func)
 	-- reset stuff
 	cam.mode = 1 --fixed
 	cam.x = 0
+
+	-- yield for system catch-up
+	break_time(1)
 end
 
 function dialog_add(msg)
 	if (isnull(dialog_curr)) dialog_curr={ sentences={}, visible=false}
 	-- break msg into lines (if necc.)
 	lines = create_text_lines(msg, 32)
+	-- find longest line
+	longest_line = longest_line_size(lines)
 	sentence={
 		msg = msg,
-		lines = lines
+		lines = lines,
+		char_width = longest_line
 	}
 	add(dialog_curr.sentences, sentence)
 end
@@ -1204,9 +1238,11 @@ function dialog_start(col, hlcol)
 	dialog_curr.col = col
 	dialog_curr.hlcol = hlcol
 	dialog_curr.visible = true
+	sentence_curr = nil
 end
 
 function dialog_end()
+	dialog_curr.visible = false
 end
 
 --selectedsentence
@@ -1252,7 +1288,6 @@ function do_anim(actor, cmd_type, cmd_value)
 			else 
 				actor.face_dir -= 1
 			end
-			--if (actor.face_dir < 1) actor.face_dir = 4
 			break_time(10)
 		end
 	end
@@ -1274,9 +1309,6 @@ function come_out_door(door_obj, new_room)
 
 	-- (in opposite use direction)
 	do_anim(selected_actor, face_dir, door_obj.use_pos)
-	-- d("face 1:"..selected_actor.face_dir)
-	-- selected_actor.face_dir = door_obj.use_pos
-	-- d("face 2:"..selected_actor.face_dir)
 
 	selected_actor.in_room = new_room
 
@@ -1287,14 +1319,11 @@ d("change_room()...")
 	-- switch to new room
 	-- execute the exit() script of old room
 	if notnull(room_curr) and notnull(room_curr.exit) then
-		-- run script directly, so wait till done
+		-- run script directly, so wait to finish
 		room_curr.exit()
-		--start_script(room_curr.exit)
-		-- todo wait_for_script (to finish)
 	end
 	
 	-- stop all active (local) scripts
-	--break_time(1)
 	local_scripts = {}
 
 	-- clear current command
@@ -1310,7 +1339,6 @@ d("change_room()...")
 	if notnull(room_curr.enter) then
 		-- run script directly
 		room_curr.enter()
-		--start_script(room_curr.enter)
 	end
 end
 
@@ -1417,6 +1445,7 @@ function wait_for_message()
 	-- draw object (depending on state!)
 	while talking_curr != nil do
 		yield()
+		d("wait_for_message")
 	end
 end
 
@@ -1474,22 +1503,16 @@ function print_line(msg, x, y, col, align)
 	lines = create_text_lines(msg, max_line_length, true)
 
 	-- find longest line
-	for l in all(lines) do
-		if (#l > longest_line) longest_line = #l
-	end
-
+	longest_line = longest_line_size(lines)
 	-- center-align text block
 	if align == 1 then
 		xpos = x - ((longest_line*4)/2)
 	end
 
 	-- screen bound check
-	-- left
-	xpos = max(2,xpos)	
-	-- top
-	ypos = max(18,y)
-	-- right
-	xpos = min(xpos, screenwidth - (longest_line*4)+4)
+	xpos = max(2,xpos)	-- left
+	ypos = max(18,y)    -- top
+	xpos = min(xpos, screenwidth - (longest_line*4)+4) -- right
 
 	talking_curr = {
 		msg_lines = lines,
@@ -1602,6 +1625,15 @@ function create_text_lines(msg, max_line_length, comma_is_newline)
 	return lines
 end
 
+-- find longest line
+function longest_line_size(lines)
+	longest_line = 0
+	for l in all(lines) do
+		if (#l > longest_line) longest_line = #l
+	end
+	return longest_line
+end
+
 function has_flag(obj, value)
   if (band(obj, value) != 0) return true
   return false
@@ -1618,7 +1650,7 @@ function clear_curr_cmd()
 	d("command wiped")
 end
 
-function recalc_bounds(obj, cam_off_x, cam_off_y)
+function recalc_bounds(obj, w, h, cam_off_x, cam_off_y)
   x = obj.x
 	y = obj.y
 	-- offset for actors?
@@ -1628,13 +1660,12 @@ function recalc_bounds(obj, cam_off_x, cam_off_y)
 	end
 	obj.bounds = {
 		x = x,
-		y = stage_top + y,
-		x1 = x + (obj.w*8) + -1,
-		y1 = stage_top + y + (obj.h*8) -1,
+		y = y + stage_top,
+		x1 = x + w -1,
+		y1 = y + h + stage_top -1,
 		cam_off_x = cam_off_x,
 		cam_off_y = cam_off_y
 	}
-	
 end
 
 -- library functions -----------------------------------------------
@@ -1658,17 +1689,11 @@ function outline_text(str,x,y,c0,c1)
  print(str,x,y,c0)
 end
 
---- center align from: pico-8.wikia.com/wiki/centering_text
 function hcenter(s)
-	-- string length times the 
-	-- pixels in a char's width
-	-- cut in half and rounded down
 	return (screenwidth / 2)-flr((#s*4)/2)
 end
 
 function vcenter(s)
-	-- string char's height
-	-- cut in half and rounded down
 	return (screenheight /2)-flr(5/2)
 end
 
