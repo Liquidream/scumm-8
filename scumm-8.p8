@@ -7,7 +7,7 @@ __lua__
 
 -- debugging
 show_debuginfo = false
-show_collision = true
+show_collision = false
 show_perfinfo = true
 enable_mouse = true
 d = printh
@@ -419,7 +419,7 @@ actors = {
 		h = 3,
 		face_dir = face_front,
 		idle = { 91, 91, 91, 91 },
-		col = 2,				-- speech text colour
+		col = 13, --2,				-- speech text colour
 		trans_col = 15,
 		speed = 0.25,  	-- walking speed
 		moving = 0,
@@ -447,15 +447,30 @@ actors = {
 						dialog_start(selected_actor.col, 7)
 						-- wait for selection
 						while isnull(sentence_curr) do break_time(1) end
-						
-						break -- exit dialog loop
+						break
 					end
 					-- chosen options
 					dialog_end()
+					d("here...")
 					cutscene(cut_noverbs, function()
 						say_line(selected_actor, sentence_curr.msg)
 						wait_for_message()
-
+						
+						d("sentence num: "..sentence_curr.num)
+						if sentence_curr.num == 1 then
+							say_line(me,"you are in paul's game")
+							wait_for_message()
+						elseif sentence_curr.num == 2 then
+							say_line(me,"it's complicated...")
+							wait_for_message()
+						elseif sentence_curr.num == 3 then
+							say_line(me,"a wood-chuck would chuck no amount of wood, coz a wood-chuck can't chuck wood!")
+							wait_for_message()
+						elseif sentence_curr.num == 4 then
+							say_line(me,"ok bye!")
+							wait_for_message()
+							return -- exit dialog loop
+						end
 					end)
 
 				end
@@ -695,13 +710,14 @@ function gamedraw()
 		return
 	end
 
-
-	-- draw ui and inventory
-	d("cut_curr:"..type(cutscene_curr))
+ -- DEBUG:
+ -- skip draw if just exited a cutscene
+ -- (as could be going straight into a dialog)
+	--d("cut_curr:"..type(cutscene_curr))
 	if (cutscene_curr_lastval == cutscene_curr) then
-		d("cut_SAME")
+		--d("cut_SAME")
 	else
-		d("cut_DIFF")
+		--d("cut_DIFF")
 		cutscene_curr_lastval = cutscene_curr
 		return
 	end
@@ -711,17 +727,17 @@ function gamedraw()
 		command_draw()
 	end
 
-
+	-- draw ui and inventory
 	if (isnull(cutscene_curr) 
 		or not has_flag(cutscene_curr.flags, cut_noverbs))
 		-- and not just left a cutscene
 		and (cutscene_curr_lastval == cutscene_curr) then
 		ui_draw()
 	else
-		d("ui skipped")
+		--d("ui skipped")
 	end
 
-	--fix for display issue
+	-- debug: fix for display issue
 	cutscene_curr_lastval = cutscene_curr
 
 	if isnull(cutscene_curr) 
@@ -1070,7 +1086,7 @@ end
 
 -- draw ui and inventory
 function ui_draw()
-	d("ui_draw()...")
+	--d("ui_draw()...")
 	-- draw verbs
 	xpos = 0
 	ypos = 75
@@ -1227,6 +1243,7 @@ function dialog_add(msg)
 	-- find longest line
 	longest_line = longest_line_size(lines)
 	sentence={
+		num = #dialog_curr.sentences+1,
 		msg = msg,
 		lines = lines,
 		char_width = longest_line
@@ -1243,6 +1260,7 @@ end
 
 function dialog_end()
 	dialog_curr.visible = false
+	dialog_curr=nil
 end
 
 --selectedsentence
@@ -1445,7 +1463,7 @@ function wait_for_message()
 	-- draw object (depending on state!)
 	while talking_curr != nil do
 		yield()
-		d("wait_for_message")
+		--d("wait_for_message")
 	end
 end
 
