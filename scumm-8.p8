@@ -41,8 +41,9 @@ state_gone = "gone"
 
 -- object classes (bitflags)
 class_untouchable = 1 -- will not register when the cursor moves over it. the object is invisible to the user.
-class_pickupable = 2   -- can be placed in actor inventory
-class_talkable = 4				-- can talk to actor/object
+class_pickupable = 2  -- can be placed in actor inventory
+class_talkable = 4		-- can talk to actor/object
+class_giveable = 8		-- canbe given to an actor/object
 
 
 -- #######################################################
