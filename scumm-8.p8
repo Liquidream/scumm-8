@@ -495,7 +495,7 @@ function gamedraw()
 
 	cursordraw()
 
-	if (show_perfinfo) print("cpu: "..stat(1), 0, stage_top - 8, 8)
+	if (show_perfinfo) print("cpu: "..stat(1), 0, stage_top - 16, 8) print("mem: "..stat(0), 0, stage_top - 8, 8)
 	if (show_debuginfo) print("x: "..cursor.x.." y:"..cursor.y, 80, stage_top - 8, 8)
 	
 end
@@ -651,43 +651,18 @@ function checkcollisions()
 	-- reset hover collisions
 	hover_curr = {}
 
-
-	-- todo: consolodate this into generic bounds-check routine! ####
-
-
-	-- todo: check room/object collisions
+	-- check room/object collisions
 	for k,obj in pairs(room_curr.objects) do
-		if (type(obj.bounds) != 'nil') then
-
-		--[[	if iscolliding(cursor, obj) then
+	
+			if iscursorcolliding(obj) then
 				hover_curr.object = obj
-			end]]
-
-			xcoll=true; ycoll=true
-			if (cursor.x>obj.bounds.x1 or cursor.x<obj.bounds.x) xcoll=false
-			if (cursor.y>obj.bounds.y1 or cursor.y<obj.bounds.y) ycoll=false
-			
-			if xcoll and ycoll then
-				hover_curr.object = obj
-			else
-				--
 			end
-		end
 	end
 
 	-- todo: check ui/inventory collisions
 	for v in all(verbs) do
-		-- aabb
-		if (type(v.bounds) != 'nil') then
-			xcoll=true; ycoll=true
-			if (cursor.x>v.bounds.x1 or cursor.x<v.bounds.x) xcoll=false
-			if (cursor.y>v.bounds.y1 or cursor.y<v.bounds.y) ycoll=false
-			
-			if xcoll and ycoll then
-				hover_curr.verb = v
-			else
-				--
-			end
+		if iscursorcolliding(v) then
+			hover_curr.verb = v
 		end
 	end
 
@@ -1189,21 +1164,14 @@ function vcenter(s)
 end
 
 --- collision check
-function iscolliding(obj1, obj2)
-	local x1 = obj1.x
-	local y1 = obj1.y
-	local w1 = obj1.w
-	local h1 = obj1.h
-	
-	local x2 = obj2.x
-	local y2 = obj2.y
-	local w2 = obj2.w
-	local h2 = obj2.h
-
-	if(x1 < (x2 + w2)  and (x1 + w1)  > x2 and y1 < (y2 + h2) and (y1 + h1) > y2) then
-		return true
-	else
+function iscursorcolliding(obj)
+	-- check params
+	if (isnull(obj.bounds)) return false
+	if (cursor.x>obj.bounds.x1 or cursor.x<obj.bounds.x) 
+	 or (cursor.y>obj.bounds.y1 or cursor.y<obj.bounds.y) then
 		return false
+	else
+		return true
 	end
 end
 
