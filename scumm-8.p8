@@ -38,7 +38,7 @@ ismouseclicked = false
 -- game verbs (used in room definitons and ui)
 verbs = {
 	--verb, name, bounds{},
-	{"open", "open",},
+	{"open", "open"},
 	{"close", "close"},
 	{"give", "give"},
 	{"pickup", "pick-up"},
@@ -48,9 +48,13 @@ verbs = {
 	{"pull", "pull"},
 	{"use", "use"}
 }
+verb_default = {"walkto", "walk to"} -- verb to use when just clicking aroung (e.g. move actor)
 
-verb_curr = nil
+--TODO: Use the verb_default in absence of any other being hovered/clicked
+
+verb_curr = nil --verb_default
 object_curr = nil
+dialog_curr = nil -- {x,y,col}
 
 active_scripts = {}		-- table of scripts that are actively running
 room_curr = nil			-- contains the current room definition
@@ -67,14 +71,15 @@ status_gone = 1
 
 actor = {} -- initialize the sprite object
 actor.x = screenwidth/2 - 16 -- sprites x position
-actor.y = screenheight/2 -- sprites y position
+actor.y = screenheight/2 + 16-- sprites y position
 actor.sprt = 0 -- sprite starting frame
 actor.tmr = 1 -- internal timer for managing animation
 actor.flp = false -- used for flipping the sprite
 actor.spr = 3
 actor.sprw = 1
 actor.sprh = 4
-actor.speed = 3  -- walking speed
+actor.col = 12	-- speech text colour
+actor.speed = 1  -- walking speed
 actor.inventory = {
 	-- temp fill!
 	{ spr = 255 },
@@ -117,7 +122,17 @@ first_room = {
 			--[class is class-state [class-state]]
 
 			verb_lookat = function()
-				say_line("it's a nice, warm fire")
+				origx=actor.x
+				origy=actor.y
+				walk_to(actor, room_curr.objects.fire.x-5, room_curr.objects.fire.y+15)
+				say_line(actor, "it's a nice, warm fire...")
+				wait_for_message()
+				break_time(10)
+				say_line(actor, "ouch! it's hot!")
+				wait_for_message()
+				walk_to(actor, origx, origy)
+				say_line(actor, "*stupid fire*")
+				printh("done!")
 			end
 		},
 		front_door = {
@@ -138,9 +153,10 @@ first_room = {
 			name = "bat",
 			--[dependent-on object-name being object-state]
 			--[class is class-state [class-state]]
-			verb_lookat = {
-				{ cmd_say_line, "it is a bat" }
-			}
+			verb_lookat = function()
+				printh("3")
+				say_line("it is a bat")
+			end
 		}
 	}
 }
@@ -164,11 +180,11 @@ function _init()
 		-- animate
 		while true do						
 			obj_fire.spr = obj_fire.frames[1]
-			break_time(4)
+			break_time(8)
 			obj_fire.spr = obj_fire.frames[2]
-			break_time(4)
+			break_time(8)
 			obj_fire.spr = obj_fire.frames[3]
-			break_time(4)
+			break_time(8)
 		end
 	end);
 end
@@ -239,6 +255,9 @@ function gamedraw()
 	-- draw player/actor
 	playerdraw()
 
+	-- draw active dialog
+	dialogdraw()
+
 	-- draw current command (verb/object)
 	commanddraw()
 
@@ -247,8 +266,8 @@ function gamedraw()
 
 	cursordraw()
 
-	if (show_perfinfo) print("cpu: "..stat(1), 0, 0, 8)
-	if (show_debuginfo) print("x: "..cursor.x.." y:"..cursor.y, 0, 8, 8)
+	if (show_perfinfo) print("cpu: "..stat(1), 0, 26, 8)
+	if (show_debuginfo) print("x: "..cursor.x.." y:"..cursor.y, 80, 26, 8)
 	
 end
 
@@ -290,10 +309,8 @@ function playercontrol()
 end
 
 function input_button_pressed(button_index)	-- 1 = Z/LMB, 2 = X/RMB, (4=middle)
-	-- capture temp vars
-	local verb = verb_curr
-	-- reset global vars
-	verb_curr = nil
+
+	local verb_in = verb_curr
 
 	for k,h in pairs(hover_curr) do
 		if type(h) != nil then
@@ -301,32 +318,69 @@ function input_button_pressed(button_index)	-- 1 = Z/LMB, 2 = X/RMB, (4=middle)
 			if k == "verb" then
 				verb_curr = h
 				printh("verb = "..h[1])
-				return
+				break
 			elseif k == "object" then
 				-- TODO: if valid obj, complete command
 				-- else, abort command (clear verb, etc.)
 				object_curr = h
 				printh("object = "..h.name)
-				return
+				break
 			elseif k == "ui_arrow" then
-				return
+				break
 			elseif k == "inv_object" then
-				return
+				break
 			else
 				-- what else could there be?
 			end
 		end
 	end
 
-	-- else...
+	--printh(object_curr.name)
 
-	if (cursor.y > 31 and cursor.y < 96) then
+	--if (object_curr != nil) and (verb_curr != nil) then
+		-- does current object support active verb?
+	--	if (type(object_curr["verb_"..verb_curr[1]])!="nil") then
+			-- Execute verb script
+	--		start_script(object_curr["verb_"..verb_curr[1]])
+
+	--	elseif (cursor.y > 31 and cursor.y < 96) then
+			-- in map area
+
+			-- TODO: determine if within walkable area
+
+	--		walk_to(actor, cursor.x, cursor.y)
+	--	end
+
+		-- clear "used" command
+	--	verb_curr = verb_default
+	--	object_curr = nil
+	--end
+
+	-- does current object support active verb?
+	if (object_curr != nil) and (type(object_curr["verb_"..verb_curr[1]])!="nil") then
+		-- Execute verb script
+		start_script(object_curr["verb_"..verb_curr[1]])
+	
+	elseif (cursor.y > 31 and cursor.y < 96) then
 		-- in map area
 
-		-- TODO: determine the target (object, map, UI)
-
-		walk_to(actor, cursor.x, cursor.y)
+		-- TODO: determine if within walkable area
+		actor.thread = cocreate(walk_to)
+		coresume(actor.thread, actor, cursor.x, cursor.y)
+		--walk_to(actor, cursor.x, cursor.y)
 	end
+
+	printh(verb_curr[1])
+
+	-- clear "used" command
+	if (object_curr != nil) or (verb_in != verb_default) then
+		verb_curr = verb_default
+		object_curr = nil
+	end
+
+	printh(verb_curr[1])
+
+	printh("--------------------------------")
 end
 
 -- collision detection
@@ -357,6 +411,13 @@ function checkcollisions()
 	end
 
 	-- TODO: check UI/inventory collisions
+	-- start with default verb (e.g. walkto)
+	--printh("a")
+	--[[if (type(hover_curr.verb) == 'nil') then
+		--printh("b")
+		hover_curr.verb = verb_default
+	end]]
+
 	for v in all(verbs) do
 		-- aabb
 		if (type(v.bounds) != 'nil') then
@@ -372,6 +433,10 @@ function checkcollisions()
 		end
 	end
 
+	-- default to walkto (if nothing set)
+	if (verb_curr == nil) then
+		verb_curr = verb_default
+	end
 end
 
 function roomdraw()
@@ -402,10 +467,16 @@ end
 
 -- draw player
 function playerdraw()
---	spr(1, player.x, player.y)
- palt(0, false)
- palt(11, true)
-	spr(actor.spr, actor.x, actor.y, actor.sprw , actor.sprh)
+	-- switch transparency
+	--palt(0, false)
+	--palt(11, true)
+
+ 	-- offets
+	local offset_x = actor.x - (actor.sprw *8) /2
+	local offset_y = actor.y -(actor.sprh * 8)
+
+	sprdraw(actor.spr, offset_x, offset_y, actor.sprw , actor.sprh, 11)
+ 	--spr(actor.spr, actor.x, actor.y, actor.sprw , actor.sprh)
 end
 
 function commanddraw()
@@ -421,6 +492,19 @@ function commanddraw()
 	end
 	
 	print(smallcaps(command), hcenter(command), 97, 12)
+end
+
+function dialogdraw()
+	if type(dialog_curr) != 'nil' then
+		shadow_text(
+			dialog_curr.message, 
+			dialog_curr.x, dialog_curr.y, 
+			dialog_curr.col)
+
+		-- update message lifespan
+		dialog_curr.time_left -= 1
+		if (dialog_curr.time_left <=0) dialog_curr = nil
+	end
 end
 
 -- draw ui and inventory
@@ -489,10 +573,14 @@ function cursordraw()
 end
 
 function sprdraw(n, x, y, w, h, transcol)
+	-- switch transparency
  	palt(0, false)
  	palt(transcol, true)
+	 -- draw sprite
 	spr(n, x, y, w, h)
-	palt(0, false)
+	-- restore trans
+	palt(transcol, false)
+	palt(0, true)
 end
 
 -- scumm core functions -------------------------------------------
@@ -518,40 +606,81 @@ function break_time(jiffies)
 	end
 end
 
+function wait_for_message()
+	-- draw object (depending on state!)
+	while dialog_curr != nil do
+		yield()
+	end
+end
+
 function draw_object(obj)
 	-- draw object (depending on state!)
 	spr(obj.spr, obj.x, obj.y)
 end
 
--- scumm actions/commands -------------------------------------------
-
 -- walk actor to position
 function walk_to(actor, x, y)
-	-- setup thread for walking movement
-	actor.thread = cocreate(
-		function(actor, x, y)
-			-- offets
-			x -= (actor.sprw *8) /2
-			y -= (actor.sprh * 8)
+	-- offets
+	--x -= (actor.sprw *8) /2
+	--y -= (actor.sprh * 8)
 
-			local distance = sqrt((x - actor.x) ^ 2 + (y - actor.y) ^ 2)
-			local step_x = actor.speed * (x - actor.x) / distance
-			local step_y = actor.speed * (y - actor.y) / distance
+	local distance = sqrt((x - actor.x) ^ 2 + (y - actor.y) ^ 2)
+	local step_x = actor.speed * (x - actor.x) / distance
+	local step_y = actor.speed * (y - actor.y) / distance
 
-			for i = 0, distance/actor.speed do
-				actor.x += step_x
-				actor.y += step_y
-				yield()
-			end
-		end
-	)
-	
-	-- first call to thread with params
-	coresume(actor.thread, actor, x, y)	
-	--costatus(c) -- returns true if c is still executing, false otherwise
+	for i = 0, distance/actor.speed do
+		actor.x += step_x
+		actor.y += step_y
+		yield()
+	end
 end
 
--- library functions
+function say_line(actor, msg)
+	printh(msg)
+
+	xpos = actor.x-(#msg*4/2)
+	ypos = actor.y-((actor.sprh+1)*8)
+	-- screen bound check
+	xpos = max(1,xpos)
+	ypos = max(1,ypos)
+
+	dialog_curr = {
+		message = msg,
+		x = xpos,
+		y = ypos,
+		col = actor.col,
+		time_left = #msg*8
+	}
+end
+
+
+-- internal functions -----------------------------------------------
+
+
+
+-- library functions -----------------------------------------------
+
+function shadow_text(str,x,y,c0,c1) --al
+ --if al==1 then x-=#str*2-1
+ --elseif al==2 then x-=#str*4 end
+
+ local c0=c0 or 7
+ local c1=c1 or 0
+
+ str = smallcaps(str)
+
+ print(str,x,y+1,c1)
+ print(str,x,y-1,c1)
+ print(str,x+1,y,c1)
+ print(str,x+1,y+1,c1)
+ print(str,x+1,y-1,c1)
+ print(str,x-1,y,c1)
+ print(str,x-1,y+1,c1)
+ print(str,x-1,y-1,c1)
+
+ print(str,x,y,c0)
+end
+
 --- center align from: pico-8.wikia.com/wiki/centering_text
 function hcenter(s)
 	-- string length time			s the 
