@@ -11,35 +11,6 @@ show_collision = false
 show_perfinfo = true
 enable_mouse = true
 
--- global vars
-scene=1
-score=0
-screenwidth = 127
-screenheight = 127
-stage_top = 16
-
-camera = {}
-camera.x
-camera.max = 0 -- the maximum X position the camera can move to in the current room
-camera.min = 0 -- the minimum X position the camera can move to in the current room
-
--- -----------------------------------------------------------------
-
-cursor = {}
-cursor.x = screenwidth/2
-cursor.y = screenheight/2
-
--- keeps reference to currently hovered items
--- e.g. objects, ui elements, etc.
-hover_curr = {
-	-- verb, object, ui_arrow, inv_object
-}
-
-last_mouse_x = 0
-last_mouse_y = 0
--- wait for button release before repeating action
-ismouseclicked = false
-
 -- game verbs (used in room definitons and ui)
 verbs = {
 	--verb, name, bounds{},
@@ -55,20 +26,8 @@ verbs = {
 }
 verb_default = {"walkto", "walk to"} -- verb to use when just clicking aroung (e.g. move actor)
 
---todo: use the verb_default in absence of any other being hovered/clicked
 
-verb_curr = nil --verb_default
-object_curr = nil
-dialog_curr = nil -- {x,y,col}
-noun2_curr = nil -- holds whatever is used after the preposition (e.g. "with <noun2>")
-
-global_scripts = {}		-- table of scripts that are at game-level
-
-active_scripts = {}		-- table of scripts that are actively running
-room_curr = nil			-- contains the current room definition
-room_stash = nil		-- contains the "paused" room before cutscene(s)
-
--- object states (0 also = background)
+-- object states
 state_closed = "closed"
 state_off = "off"
 state_here = "here"
@@ -78,33 +37,37 @@ state_gone = "gone"
 
 -- object classes
 class_untouchable = "untouchable" -- will not register when the cursor moves over it. the object is invisible to the user.
-class_pickupable = "pickupable" -- can be placed in actor inventory
---class_locked = "locked"  -- not needed (heap mgmt in scumm)
---class_unlocked = "unlocked"
+class_pickupable = "pickupable"   -- can be placed in actor inventory
 
 
 
-main_actor = { -- initialize the sprite object
-	x = screenwidth/2 - 16, -- sprites x position
-	y = screenheight/2, -- sprites y position
-	spr = 3, -- sprite starting frame
+-- #######################################################
+-- actor definitions
+-- #######################################################
+
+main_actor = { 				-- initialize the sprite object
+	x = 127/2 - 16, -- sprites x position
+	y = 127/2, 	-- sprites y position
+	spr = 3, 				-- sprite starting frame
 	sprw = 1,
 	sprh = 4,
-	flp = false, -- used for flipping the sprite
-	col = 12,	-- speech text colour
-	speed = 1,  -- walking speed
-	moving = 0, -- 0=stopped, 1=walking, 2=arrived
-	tmr = 1, -- internal timer for managing animation
+	flp = false, 			-- used for flipping the sprite
+	col = 12,				-- speech text colour
+	speed = 1,  			-- walking speed
+	moving = 0, 			-- 0=stopped, 1=walking, 2=arrived
+	tmr = 1, 				-- internal timer for managing animation
 	inventory = {
 		-- object1,
 		-- object2
 	}
 }
 
--- default player to main actor
-player = main_actor
+-- set which actor the player controls by default
+selected_actor = main_actor
 
--- room definitions ------------------------------------
+-- #######################################################
+-- room definitions
+-- #######################################################
 first_room = {
 	map = {
 		x = 0,
@@ -112,12 +75,24 @@ first_room = {
 		w = 16,	-- default these?
 		h = 8	-- 
 	},
-	sounds = {},
-	costumes = {},
-	enter = {},
-	exit = {},
+	--sounds = {},
+	--costumes = {},
+	enter = function()
+		-- animate fireplace
+		while true do		
+			set_state("fire", "frame1")
+			break_time(8)
+			set_state("fire", "frame2")
+			break_time(8)
+			set_state("fire", "frame3")
+			break_time(8)
+		end
+	end,
+	exit = function()
+		-- todo: anything here?
+	end,
 	lighting = 0, -- state of lights in current room
-	scripts = {
+	scripts = {	  -- scripts that are at room-level
 		move_bozo = function()
 			while true do		
 				set_state("bozo", "frame1")
@@ -132,7 +107,7 @@ first_room = {
 				break_time(8)
 			end
 		end
-	},		-- table of scripts that are at room-level
+	},		
 	objects = {
 		fire = {
 			name = "fire",
@@ -155,21 +130,23 @@ first_room = {
 			--[class is class-state [class-state]]
 			verbs = {
 				lookat = function()
-					--origx=player.x
-					--origy=player.y
+					--origx=selected_actor.x
+					--origy=selected_actor.y
 					--walk_to(actor, room_curr.objects.fire.x-5, room_curr.objects.fire.y+15)
-					say_line(player, "it's a nice, warm fire...")
+					say_line(selected_actor, "it's a nice, warm fire...")
 					wait_for_message()
 					break_time(10)
-					say_line(player, "ouch! it's hot!")
+					say_line(selected_actor, "ouch! it's hot!")
 					wait_for_message()
 					--walk_to(actor, origx, origy)
-					say_line(player, "*stupid fire*")
+					say_line(selected_actor, "*stupid fire*")
 				end
 			}
 		},
 		front_door = {
 			name = "front door",
+			--dependent_on = "closet-door",
+			--dependent_on_state = state_closed,
 			state = state_closed,
 			x = 1*8, -- (*8 to use map cell pos)
 			y = 2*8,
@@ -178,26 +155,30 @@ first_room = {
 				closed = 4, -- state_closed
 				open = 0 -- state_open
 			},
-			flp = false, -- used for flipping the sprite
+			flip_x = false, -- used for flipping the sprite
+			flip_y = false,
 			w = 1,	-- relates to spr or map cel, depending on above
 			h = 4,  --
 			verbs = {
 				walkto = function()
-					if state_of("front_door") == state_open then
+					printh("me = "..type(me))
+					if state_of(me) == state_open then
 						-- todo: go to new room!
 					else
-						say_line(player, "the door is closed")
+						say_line(selected_actor, "the door is closed")
 					end
 				end,
 				open = function()
-					if state_of("front_door") == state_open then
-						say_line(player, "it's already open!")
+					if (isnull(me)) printh("me is NULL!")
+					printh("me = "..me.name)
+					if state_of(me) == state_open then
+						say_line(selected_actor, "it's already open!")
 					else
-						set_state("front_door", state_open)
+						set_state(me, state_open)
 					end
 				end,
 				close = function()
-					set_state("front_door", state_closed)
+					set_state(me, state_closed)
 				end
 			}
 		},
@@ -220,22 +201,23 @@ first_room = {
 			--class is class-state [class-state]
 			verbs = {
 				lookat = function()
-					if owner_of("bat") == player then
-						say_line(player, "it is a bat in my pocket!")
+					if owner_of("bat") == selected_actor then
+						say_line(selected_actor, "it is a bat in my pocket!")
 					else
-						say_line(player, "it is a bat!")
+						say_line(selected_actor, "it is a bat!")
 					end
 				end,
 				pickup = function()
+					printh("b4 pickup")
 					pickup_obj("bat")
 				end,
 				use = function()
-					printh("in bat use()...")
-					printh("noun2 type: "..type(noun2_curr))
+					--printh("in bat use()...")
+					--printh("noun2 type: "..type(noun2_curr))
 					if (isnull(noun2_curr)) printh("noun2_curr: null")
-					printh("noun2_curr: "..noun2_curr)
-					if (noun2_curr == "window") then
-						printh("111")
+					--printh("noun2_curr: "..noun2_curr.name)
+					if (noun2_curr.name == "window") then
+						--printh("111")
 						set_state("window", state_open)
 					end
 				end
@@ -257,16 +239,18 @@ first_room = {
 			h = 1,  --
 			verbs = {
 				push = function()
+					printh("here1!")
 					if script_running(room_curr.scripts.move_bozo) then
 						stop_script(room_curr.scripts.move_bozo)
-						set_state("bozo", "frame1")
+						set_state(me, "frame1")
 					else
 						start_script(room_curr.scripts.move_bozo)
 					end
 				end,
 				pull = function()
+					printh("here2!")
 					stop_script(room_curr.scripts.move_bozo)
-					set_state("bozo", "frame1")
+					set_state(me, "frame1")
 				end
 			}
 		},
@@ -286,6 +270,174 @@ first_room = {
 	}
 }
 
+second_room = {
+	map = {
+		x = 16,
+		y = 0,
+		w = 16,	-- default these?
+		h = 8	-- 
+	},
+	enter = function()
+		-- todo: anything here?
+	end,
+	exit = function()
+		-- todo: anything here?
+	end,
+	scripts = {	  -- scripts that are at room-level
+	},
+	objects = {
+		back_door = {
+			name = "back door",
+			--dependent_on = "closet-door",
+			--dependent_on_state = state_closed,
+			state = state_closed,
+			x = 14*8, -- (*8 to use map cell pos)
+			y = 2*8,
+			states = {
+				-- states are spr values
+				closed = 4, -- state_closed
+				open = 0 -- state_open
+			},
+			flip_x = true, -- used for flipping the sprite
+			flip_y = false,
+			w = 1,	-- relates to spr or map cel, depending on above
+			h = 4,  --
+			--default_verb = "open",
+			verbs = {
+				walkto = function()
+					printh("me = "..type(me))
+					if state_of(me) == state_open then
+						-- todo: go to new room!
+					else
+						say_line(selected_actor, "the door is closed")
+					end
+				end,
+				open = function()
+					printh("me = "..me.name)
+					if state_of(me) == state_open then
+						say_line(selected_actor, "it's already open!")
+					else
+						set_state(me, state_open)
+						default_verb = "close"
+					end
+				end,
+				close = function()
+					set_state(me, state_closed)
+					default_verb = "open"
+				end
+			}
+		},
+	},
+}
+
+
+-- set which room to start the game in 
+-- (could be a "pseudo" room for title screen!)
+selected_room = first_room
+--selected_room = second_room
+
+-- logic used to determine a "default" verb to use
+-- (e.g. when you right-click an object)
+function find_default_verb(obj)
+  local default_verb = nil
+	-- look for verbs in the following order of priority
+	local verb_ordered_list = {
+		"open", "close", "talkto", "lookat", "push", "pull"
+	}
+
+	for v in all(verb_ordered_list) do
+		-- if object supports current verb
+	  if valid_verb(v, obj) then
+			-- check for reasons NOT to use this verb
+			if (v == "open" and obj.state != state_closed) 
+			or (v == "close" and obj.state != state_open)
+			--or (v == "talkto" and obj.class == class_ACTOR!!!)
+			--or (v == "lookat")
+			then
+				-- not suitable ver, continue
+			else
+				-- found default verb
+				default_verb = v
+				break
+			end
+		end
+	end
+
+	-- now find the full verb definition
+	for v in all(verbs) do
+		if (v[1] == default_verb) default_verb=v break
+	end
+
+	return default_verb
+end
+
+
+
+
+
+
+
+
+
+-- #######################################################
+-- internal scumm-8 workings
+-- #######################################################
+
+
+-- global vars
+--scene=1
+screenwidth = 127
+screenheight = 127
+stage_top = 16
+
+-- offset to display speech above actors (dist in px from their feet)
+text_offset = (selected_actor.sprh+2)*8
+
+camera = {}
+camera.x = 0
+camera.max = 0 -- the maximum x position the camera can move to in the current room
+camera.min = 0 -- the minimum x position the camera can move to in the current room
+
+cursor = {}
+cursor.x = screenwidth/2
+cursor.y = screenheight/2
+cursor.tmr = 0 -- used to animate cursor col
+cursor.cols = {7,12,13,13,12,7}
+cursor.colpos = 1 
+
+-- keeps reference to currently hovered items
+-- e.g. objects, ui elements, etc.
+hover_curr = {
+	-- verb, 
+	-- default_verb,
+	-- object, 
+	-- ui_arrow, 
+	-- inv_object (NOT USED - same as object)
+}
+
+last_mouse_x = 0
+last_mouse_y = 0
+-- wait for button release before repeating action
+ismouseclicked = false
+
+verb_curr = nil --verb_default
+noun1_curr = nil -- main/first object in command
+noun2_curr = nil -- holds whatever is used after the preposition (e.g. "with <noun2>")
+cmd_curr = "" -- contains last displayed or actioned command
+executing_cmd = false
+dialog_curr = nil -- {x,y,col}
+me = nil -- same as noun1_curr (to make scripting easier)
+
+global_scripts = {}		-- table of scripts that are at game-level
+
+active_scripts = {}		-- table of scripts that are actively running
+room_curr = nil			-- contains the current room definition
+room_stash = nil		-- contains the "paused" room before cutscene(s)
+
+
+
+
+
 
 -- game loop
 
@@ -295,49 +447,36 @@ function _init()
 	-- use mouse input?
 	if (enable_mouse) poke(0x5f2d, 1)
 
-	-- load the first room
-	current_room(first_room)
-
-	-- test script!
-	start_script(function()
-		-- animate
-		while true do		
-			set_state("fire", "frame1")
-			break_time(8)
-			set_state("fire", "frame2")
-			break_time(8)
-			set_state("fire", "frame3")
-			break_time(8)
-		end
-	end);
+	-- load the initial room
+	change_room(selected_room)
 end
 
 function _update60()	-- _update()
-	if scene==0 then
-		titleupdate()
-	elseif scene==1 then
+	-- if scene==0 then
+	-- 	titleupdate()
+	-- elseif scene==1 then
 		gameupdate()
-	end
+	--end
 end
 
 function _draw()
-	if scene==0 then
-		titledraw()
-	elseif scene==1 then
+	-- if scene==0 then
+	-- 	titledraw()
+	-- elseif scene==1 then
 		gamedraw()
-	end
+	-- end
 end
 -- update functions
-function titleupdate()
-	if btnp(4) then
-		scene=1
-	end
-end
+-- function titleupdate()
+-- 	if btnp(4) then
+-- 		scene=1
+-- 	end
+-- end
 
 function gameupdate()
-	-- process player threads/actions
-	if player.thread and not coresume(player.thread) then
-		player.thread = nil
+	-- process selected_actor threads/actions
+	if selected_actor.thread and not coresume(selected_actor.thread) then
+		selected_actor.thread = nil
 	end
 
 	-- update all the active scripts
@@ -349,21 +488,21 @@ function gameupdate()
 		end
 	end
 
-	-- player/ui control
-	playercontrol()
+	-- selected_actor/ui control
+	selected_actorcontrol()
 
 	-- check for collisions
 	checkcollisions()
 end
 
 -- draw functions
-function titledraw()
-	local titletxt = "title screen"
-	local starttxt = "press z to start"
-	rectfill(0,0,screenwidth, screenheight, 3)
-	print(titletxt, hcenter(titletxt), screenheight/4, 10)
-	print(starttxt, hcenter(starttxt), (screenheight/4)+(screenheight/2),7)			
-end
+-- function titledraw()
+-- 	local titletxt = "title screen"
+-- 	local starttxt = "press z to start"
+-- 	rectfill(0,0,screenwidth, screenheight, 3)
+-- 	print(titletxt, hcenter(titletxt), screenheight/4, 10)
+-- 	print(starttxt, hcenter(starttxt), (screenheight/4)+(screenheight/2),7)			
+-- end
 
 function gamedraw()
 	--local gametxt = "game screen"
@@ -374,8 +513,8 @@ function gamedraw()
 	-- draw room (bg + objects)
 	roomdraw()
 
-	-- draw player/actor
-	playerdraw()
+	-- draw selected_actor/actor
+	selected_actordraw()
 
 	-- draw active dialog
 	dialogdraw()
@@ -395,7 +534,7 @@ end
 
 
 -- handle button inputs
-function playercontrol()	
+function selected_actorcontrol()	
 	-- 
 	if (btn(0)) cursor.x-=1 
 	if (btn(1)) cursor.x+=1 
@@ -433,7 +572,7 @@ end
 function input_button_pressed(button_index)	-- 1 = z/lmb, 2 = x/rmb, (4=middle)
 
 	local verb_in = verb_curr
-	local obj_in = object_curr
+	--local obj_in = object_curr
 
 	for k,h in pairs(hover_curr) do
 		if type(h) != nil then
@@ -443,14 +582,29 @@ function input_button_pressed(button_index)	-- 1 = z/lmb, 2 = x/rmb, (4=middle)
 				printh("verb = "..h[1])
 				break
 			elseif k == "object" then
-				-- todo: if valid obj, complete command
+				-- if valid obj, complete command
 				-- else, abort command (clear verb, etc.)
-				if verb_curr[1] == "use" and notnull(obj_in) then
-					noun2_curr = h.name
-					printh("noun2_curr = "..h.name)					
-				else
-					object_curr = h
-					printh("object = "..h.name)
+				if button_index == 1 then
+					if verb_curr[1] == "use" and notnull(noun1_curr) then
+						noun2_curr = h
+						printh("noun2_curr = "..noun2_curr.name)					
+					else
+						noun1_curr = h
+						me = noun1_curr
+						printh("noun1_curr = "..noun1_curr.name)
+					end
+				elseif (notnull(hover_curr.default_verb)) then
+					-- TODO: perform default verb action (if present)
+					verb_curr = hover_curr.default_verb
+					noun1_curr = h
+					me = noun1_curr
+					-- force repaint of command (to reflect default verb)
+					commanddraw()	
+					break
+					--[[for v in all(verbs) do
+						if (v[1] == h.default_verb) verb_curr=v break
+					end
+					noun1_curr = h]]
 				end
 				--printh("object = "..h.name)
 				break
@@ -465,23 +619,23 @@ function input_button_pressed(button_index)	-- 1 = z/lmb, 2 = x/rmb, (4=middle)
 	end
 
 	-- attempt to use verb on object
-	if (object_curr != nil) then
-		execute_verb = false
+	if (noun1_curr != nil) then
 		-- are we starting a 'use' command?
 		if verb_curr[1] == "use" then
-			if notnull(obj_in) then
+			if notnull(noun2_curr) then
 				-- 'use' part 2
 			else
 				-- 'use' part 1 (e.g. "use hammer")
-				-- wait for verb2 to be set
+				-- wait for noun2 to be set
 				return
 			end
 		end
 		-- execute verb script
-		player.thread = cocreate(function(actor, obj, verb)
+		executing_cmd = true
+		selected_actor.thread = cocreate(function(actor, obj, verb)
 			if isnull(obj.owner) then
 				-- todo: walk to use pos and face dir
-				walk_to(player, obj.x+((obj.w*8)/2), obj.y+(obj.h*8))
+				walk_to(selected_actor, obj.x+((obj.w*8)/2), obj.y+(obj.h*8))
 			end
 			-- does current object support active verb?
 			if valid_verb(verb,obj) then
@@ -489,35 +643,46 @@ function input_button_pressed(button_index)	-- 1 = z/lmb, 2 = x/rmb, (4=middle)
 			--and (notnull(obj.verbs[verb[1]])) then
 				-- finally, execute verb script
 				printh("verb_obj_script!")
+				printh("verb = "..verb[1])
+				printh("obj = "..obj.name)
 				start_script(obj.verbs[verb[1]])
 			elseif verb[1] != verb_default[1] then
-				say_line(player, "i don't think that will work")
+				say_line(selected_actor, "i don't think that will work")
 			end
 		end)
-		coresume(player.thread, player, object_curr, verb_curr)
+		coresume(selected_actor.thread, selected_actor, noun1_curr, verb_curr)
 		--end
 	elseif (cursor.y > stage_top and cursor.y < stage_top+64) then
 		-- in map area
-
+		executing_cmd = true
 		-- todo: determine if within walkable area
-		player.thread = cocreate(walk_to)
-		coresume(player.thread, player, cursor.x, cursor.y - stage_top)
+		selected_actor.thread = cocreate(walk_to)
+		coresume(selected_actor.thread, selected_actor, cursor.x, cursor.y - stage_top)
 	end
 
-	printh(verb_curr[1])
+	--printh(verb_curr[1])
 
-	-- todo: 1) make this delayed action (script?) 
-	-- 		 2) show highlighted for a few secs (or until completed - e.g. after walkto)
-	-- 		 3) clear "used" command	
-	if (object_curr != nil) or (verb_in != verb_default) then
+	-- show highlighted for a few secs 
+	-- (or until completed - e.g. after walkto)
+	-- clear command	
+	if  (executing_cmd) then
 		start_script(function()
+			while (selected_actor.moving==1) do
+				-- wait for selected_actor
+				--printh("wait for selected_actor (b4 wiping command)...")
+				break_time(1)
+			end
+			-- wait some more to allow scripts to run
+			printh("wait b4 wiping command...")
+			break_time(4)
 			verb_curr = verb_default
-			object_curr = nil
+			noun1_curr = nil
 			noun2_curr = nil
+			me = nil
+			executing_cmd = false
+			cmd_curr = ""
 		end)
-	end
-
-	printh(verb_curr[1])
+  end
 
 	printh("--------------------------------")
 end
@@ -551,8 +716,6 @@ function checkcollisions()
 	end
 
 	-- todo: check ui/inventory collisions
-	-- start with default verb (e.g. walkto)
-
 	for v in all(verbs) do
 		-- aabb
 		if (type(v.bounds) != 'nil') then
@@ -572,6 +735,11 @@ function checkcollisions()
 	if (verb_curr == nil) then
 		verb_curr = verb_default
 	end
+
+	-- update "default" verb for hovered object (if any)
+	if notnull(hover_curr.object) then
+		hover_curr.default_verb = find_default_verb(hover_curr.object)
+	end
 end
 
 function roomdraw()
@@ -580,7 +748,7 @@ function roomdraw()
 	map(room_map.x, room_map.y, 0, stage_top, room_map.w, room_map.h) --,layer
 	
 	-- debug walkable areas
-	if show_debuginfo then
+	if show_collision then
 		celx = flr(cursor.x/8)
 		cely = flr((cursor.y - stage_top)/8)
 		spr_num = mget(celx, cely)
@@ -606,38 +774,47 @@ function roomdraw()
 	end
 end
 
--- draw player
-function playerdraw()
+-- draw selected_actor
+function selected_actordraw()
  	-- offets
-	local offset_x = player.x - (player.sprw *8) /2
-	local offset_y = player.y -(player.sprh * 8)
+	local offset_x = selected_actor.x - (selected_actor.sprw *8) /2
+	local offset_y = selected_actor.y -(selected_actor.sprh * 8)
 
-	sprdraw(player.spr, offset_x, offset_y, player.sprw , player.sprh, 11)
+	sprdraw(selected_actor.spr, offset_x, offset_y, selected_actor.sprw , selected_actor.sprh, 11)
 end
 
 function commanddraw()
 	-- draw current command
 	command = ""
-	if notnull(verb_curr) then
-		command = verb_curr[2]
-	end
-	if notnull(hover_curr.object) then
-		command = command.." "..hover_curr.object.name
-	elseif notnull(object_curr) then
-		command = command.." "..object_curr.name
-	end
-	if verb_curr[2] == "use" and notnull(object_curr) then
-		command = verb_curr[2].." "..object_curr.name.." with"
-		if notnull(hover_curr.object) and isnull(noun2_curr) then
-			command = command.." "..hover_curr.object.name
-		elseif notnull(noun2_curr) then
-			command = command.." "..noun2_curr
+	cmd_col = 12
+
+	if not executing_cmd then
+		if notnull(verb_curr) then
+			command = verb_curr[2]
 		end
+		if notnull(noun1_curr) then
+			command = command.." "..noun1_curr.name
+		end
+		if verb_curr[1] == "use" and notnull(noun1_curr) then
+			command = command.." with"
+		end
+		if notnull(noun2_curr) then
+			command = command.." "..noun2_curr.name
+		elseif notnull(hover_curr.object) 
+			-- don't show use object with itself!
+			and ( isnull(noun1_curr) or (noun1_curr != hover_curr.object) ) then
+			command = command.." "..hover_curr.object.name
+		end
+		cmd_curr = command
+	else
+		-- highlight active command
+		command = cmd_curr
+		cmd_col = 7
 	end
-	
+
 	print(smallcaps(command), 
 		hcenter(command), 
-		stage_top + 66, 12)
+		stage_top + 66, cmd_col)
 end
 
 function dialogdraw()
@@ -675,6 +852,7 @@ function uidraw()
 	ypos = stage_top + 75
 	col_len=0
 
+
 	for v in all(verbs) do
 		--print(v[2], xpos, ypos+1, 1) -- shadow
 		verbcol = 12  -- lightblue
@@ -685,10 +863,14 @@ function uidraw()
 		-- and notnull(hover_curr.object.verbs) then
 		 --and (hover_curr.object.verbs[1] == v) then
 
-		 --TODO: Narrow down ONE default (valid!) verb per object
-		 if valid_verb(v,hover_curr.object) then
-		 	verbcol = 10 -- yellow
-		 end
+		 --todo: narrow down one default (valid!) verb per object
+		 if notnull(hover_curr.default_verb)
+		 	and (v == hover_curr.default_verb) then
+		--[[if notnull(hover_curr.object)
+		 and notnull(hover_curr.object.default_verb) 
+		 and hover_curr.object.default_verb == v[1] then]]
+			verbcol = 10 -- yellow
+		end
 
 		 	--[[for k,v_func in pairs(hover_curr.object.verbs) do
 		 		--printh("> k:"..k.."   v:"..v[1])
@@ -731,7 +913,7 @@ function uidraw()
 	for ipos=1, 8 do
 		-- draw inventory bg
 		rectfill(xpos-1, stage_top+ypos-1, xpos+8, stage_top+ypos+8, 1)
-		obj = player.inventory[ipos]
+		obj = selected_actor.inventory[ipos]
 		if type(obj) != 'nil' then
 			-- something to draw
 			obj.x = xpos
@@ -752,15 +934,28 @@ end
 
 -- draw cursor
 function cursordraw()
+	col = cursor.cols[cursor.colpos]
+	-- switch sprite color accordingly
+	pal(7,col)
 	spr(32, cursor.x-4, cursor.y-3, 1, 1, 0)
+	pal() --reset palette
+
+	cursor.tmr += 1
+	if (cursor.tmr > 7) then
+		--reset timer
+		cursor.tmr = 1
+		-- move to next color?
+		cursor.colpos += 1
+		if (cursor.colpos > #cursor.cols) cursor.colpos = 1
+	end
 end
 
-function sprdraw(n, x, y, w, h, transcol)
+function sprdraw(n, x, y, w, h, transcol, flip_x, flip_y)
 	-- switch transparency
  	palt(0, false)
  	palt(transcol, true)
 	 -- draw sprite
-	spr(n, x, stage_top + y, w, h)
+	spr(n, x, stage_top + y, w, h, flip_x, flip_y) --
 	-- restore trans
 	palt(transcol, false)
 	palt(0, true)
@@ -768,12 +963,16 @@ end
 
 -- scumm core functions -------------------------------------------
 
-function current_room(new_room)
+function change_room(new_room)
 	-- switch to new room
 	-- todo: play the exit() script of old room
 	-- todo: transition to new room (e.g. iris/swipe)
 	-- todo: play the enter() script of new room
 	room_curr = new_room
+	-- execute "enter" code
+	if notnull(room_curr.enter) then
+		start_script(room_curr.enter)
+	end
 end
 
 function valid_verb(verb, object)
@@ -781,7 +980,11 @@ function valid_verb(verb, object)
 	if (isnull(object)) return false
 	if (isnull(object.verbs)) return false
 	-- look for verb
-	if (notnull(object.verbs[verb[1]])) return true
+	if type(verb) == "table" then
+		if (notnull(object.verbs[verb[1]])) return true
+	else
+		if (notnull(object.verbs[verb])) return true
+	end
 	--[[for k,v_func in pairs(object.verbs) do
 		if k == verb[1] then
 			-- valid verb
@@ -794,13 +997,14 @@ end
 
 function pickup_obj(objname)
 	obj = find_object(objname)
-	if notnull(obj) 
+if notnull(obj) 
 	 and notnull(obj.class) 
 	 and obj.class == class_pickupable
 	 and isnull(obj.owner) then
-		-- assume player picked-up at this point
-		add(player.inventory, obj)
-		obj.owner = player
+	 	printh("adding to inv")
+		-- assume selected_actor picked-up at this point
+		add(selected_actor.inventory, obj)
+		obj.owner = selected_actor
 	end
 end
 
@@ -825,9 +1029,14 @@ function set_state(objname, state)
 	end
 end
 
-function find_object(objname)
+-- find object by ref or name
+function find_object(name)
+	-- if object passed, just return object!
+	--printh("type(name): "..type(name))
+	if (type(name) == "table") return name
+	-- else look for object by unique name
 	for k,obj in pairs(room_curr.objects) do
-		if (k == objname) return obj
+		if (k == name) return obj
 	end
 end
 
@@ -882,7 +1091,7 @@ end
 -- uses actor's position and color
 function say_line(actor, msg)
 	-- get pos above actor's head
-	ypos = actor.y-((actor.sprh+2)*8)
+	ypos = actor.y-text_offset --((actor.sprh+2)*8)
 	-- call the base print_line to show actor line
 	print_line(msg, actor.x, ypos, actor.col, 1)
 end
@@ -959,7 +1168,7 @@ end
 
 function draw_object(obj)
 	-- draw object (depending on state!)
-	sprdraw(obj.states[obj.state], obj.x, obj.y, obj.w, obj.h, obj.transcol)
+	sprdraw(obj.states[obj.state], obj.x, obj.y, obj.w, obj.h, obj.transcol, obj.flip_x)
 end
 
 -- walk actor to position
@@ -976,11 +1185,13 @@ function walk_to(actor, x, y)
 	walkable = fget(spr_num, 0) -- flag 0 = walkable
 	-- if it is...
 	if walkable then
+		actor.moving = 1 --walking
 		for i = 0, distance/actor.speed do
 			actor.x += step_x
 			actor.y += step_y
 			yield()
 		end
+		actor.moving = 2 --arrived
 	end
 end
 
@@ -1098,14 +1309,14 @@ __gfx__
 000000000f5ff5f00000000004ffff004f444494111111119f9f9eee004000000000000000000000ffffffff7777777766666666cccccccc3333333300000000
 000000004ffffff4000000000f9ff9f04f44449411111111f9f9feee940000000000000000000000ffffffff7777777766666666cccccccc3333333300000000
 000000000ff44ff0000000000f5ff5f04f444494111111119f9f9fef440000000000000000000000ffffffff7777777766666666cccccccc3333333300000000
-000cc00006ffff60000000004ffffff44f444494cccccccc00000000000000000000000000000000000000000000000000000000000000000000000000000000
-00c11c000065560000000000bff44ffb4f444494cccccccc0000000000000000000a000000000000000000000000000000000000000000000000000000000000
-0c1001c00006600000000000b6ffff6b4f449994cccccccc00000000000000000000000000000000000000000000000000000000000000000000000000000000
-ccc00ccc0000000000000000bb6556bb4f994444cccccccc0000000000a0a000000aa000000a0a00cccccccc55555555dddddddd111111110000000000000000
-00c00c000000000000000000bbb66bbb44444444cccccccc0000000000aaaa0000aaaa0000aaa000cccccccc55555555dddddddd111111110000000000000000
-00c00c000000000000000000bdc55cdb44444444cccccccc0000000000a9aa0000a99a0000aa9a00cccccccc55555555dddddddd111111110000000000000000
-00cccc000000000000000000dcc55ccd49a44444cccccccc0000000000a99a0000a99a0000a99a00cccccccc55555555dddddddd111111110000000000000000
-001111000000000000000000c1c66c1c49944444cccccccc00000000004444000044440000444400cccccccc55555555dddddddd111111110000000000000000
+000cc00006ffff60000000004ffffff44f444494ccccccccddd5ddd5000000000000000000000000000000000000000000000000000000000000000000000000
+00c11c000065560000000000bff44ffb4f444494ccccccccdd5ddd5d00000000000a000000000000000000000000000000000000000000000000000000000000
+0c1001c00006600000000000b6ffff6b4f449994ccccccccd5ddd5dd000000000000000000000000000000000000000000000000000000000000000000000000
+ccc00ccc0000000000000000bb6556bb4f994444cccccccc5ddd5ddd00a0a000000aa000000a0a00cccccccc55555555dddddddd111111110000000000000000
+00c00c000000000000000000bbb66bbb44444444ccccccccddd5ddd500aaaa0000aaaa0000aaa000cccccccc55555555dddddddd111111110000000000000000
+00c00c000000000000000000bdc55cdb44444444ccccccccdd5ddd5d00a9aa0000a99a0000aa9a00cccccccc55555555dddddddd111111110000000000000000
+00cccc000000000000000000dcc55ccd49a44444ccccccccd5ddd5dd00a99a0000a99a0000a99a00cccccccc55555555dddddddd111111110000000000000000
+001111000000000000000000c1c66c1c49944444cccccccc5ddd5ddd004444000044440000444400cccccccc55555555dddddddd111111110000000000000000
 000700000dc55cd000000000c1c55c1c44444444dddddddd99999999777777777777777777777777ffffffcc77777755666666ddcccccc115555553300000000
 00070000dcc55ccd00000000c1c55c1c4444fff4dddddddd55555555555555555555555555555555ffffcccc777755556666ddddcccc11115555333300000000
 00070000c1c66c1c00000000c1c55c1c4fff4494dddddddd444444440dd6dd6dd6dd6dd6d6dd6d50ffcccccc7755555566ddddddcc1111115533333300000000
@@ -1223,13 +1434,13 @@ __gff__
 0000000000010000000000000000010000000000000100000000010101010000000000000001000000000101010101000000000000010000000001010101010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 __map__
-0b0b0b060606060606060606060b0b0b0a0a0a060606060606060606060a0a0a0a0a0a060606060606060606060a0a0a0a0a0a060606060606060606060a0a0a0a0a0a060606060606060606060a0a0a0a0a0a060606060606060606060a0a0a0a0a0a060606060606060606060a0a0a0a0a0a060606060606060606060a0a0a
-0b0b0b060606060606060606060b0b0b0a0a0a060606060606060606060a0a0a0a0a0a060606060606060606060a0a0a0a0a0a060606060606060606060a0a0a0a0a0a060606060606060606060a0a0a0a0a0a060606060606060606060a0a0a0a0a0a060606060606060606060a0a0a0a0a0a060606060606060606060a0a0a
-0b000b060000060606060606060b000b0a040a060606060606060606060a240a0a040a060606060606060606060a240a0a040a060606060606060606060a240a0a040a060606060606060606060a240a0a040a060606060606060606060a240a0a040a060606060606060606060a240a0a040a060606060606060606060a240a
-0b000b260000262728292626260b000b0a140a262626272828292626260a340a0a140a262626272828292626260a340a0a140a262626272828292626260a340a0a140a262626272828292626260a340a0a140a262626272828292626260a340a0a140a262626272828292626260a340a0a140a262626272828292626260a340a
-0b000b363636363700393636360b000b0a140a363636370000393636360a340a0a140a363636370000393636360a340a0a140a363636370000393636360a340a0a140a363636370000393636360a340a0a140a363636370000393636360a340a0a140a363636370000393636360a340a0a140a363636370000393636360a340a
-0b1b2b353535353535353535353b1b0b0a070f151515151515151515151e080a0a070f151515151515151515151e080a0a070f151515151515151515151e080a0a070f151515151515151515151e080a0a070f151515151515151515151e080a0a070f151515151515151515151e080a0a070f151515151515151515151e080a
-2b3535352e0e0e0e0e0e0e3e3535353b0f15151517191919191919181515151e0f15151517191919191919181515151e0f15151517191919191919181515151e0f15151517191919191919181515151e0f15151517191919191919181515151e0f15151517191919191919181515151e0f15151517191919191919181515151e
+0b0b0b060606060606060606060b0b0b0a0a0a161616161616161616160a0a0a0a0a0a060606060606060606060a0a0a0a0a0a060606060606060606060a0a0a0a0a0a060606060606060606060a0a0a0a0a0a060606060606060606060a0a0a0a0a0a060606060606060606060a0a0a0a0a0a060606060606060606060a0a0a
+0b0b0b060606060606060606060b0b0b0a0a0a161616161616161616160a0a0a0a0a0a060606060606060606060a0a0a0a0a0a060606060606060606060a0a0a0a0a0a060606060606060606060a0a0a0a0a0a060606060606060606060a0a0a0a0a0a060606060606060606060a0a0a0a0a0a060606060606060606060a0a0a
+0b000b060000060606060606060b000b0a090a161616161616161616160a090a0a040a060606060606060606060a240a0a040a060606060606060606060a240a0a040a060606060606060606060a240a0a040a060606060606060606060a240a0a040a060606060606060606060a240a0a040a060606060606060606060a240a
+0b000b260000262728292626260b000b0a090a262626262626262626260a090a0a140a262626272828292626260a340a0a140a262626272828292626260a340a0a140a262626272828292626260a340a0a140a262626272828292626260a340a0a140a262626272828292626260a340a0a140a262626272828292626260a340a
+0b000b363636363700393636360b000b0a090a363636363636363636360a090a0a140a363636370000393636360a340a0a140a363636370000393636360a340a0a140a363636370000393636360a340a0a140a363636370000393636360a340a0a140a363636370000393636360a340a0a140a363636370000393636360a340a
+0b1b2b353535353535353535353b1b0b0a1a2a151515151515151515153a1a0a0a070f151515151515151515151e080a0a070f151515151515151515151e080a0a070f151515151515151515151e080a0a070f151515151515151515151e080a0a070f151515151515151515151e080a0a070f151515151515151515151e080a
+2b3535352e0e0e0e0e0e0e3e3535353b2a15151515151515151515151515153a0f15151517191919191919181515151e0f15151517191919191919181515151e0f15151517191919191919181515151e0f15151517191919191919181515151e0f15151517191919191919181515151e0f15151517191919191919181515151e
 3535353535353535353535353535353515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515
 0a0a0a060606060606060606060a0a0a0a0a0a060606060606060606060a0a0a0a0a0a060606060606060606060a0a0a0a0a0a060606060606060606060a0a0a0a0a0a060606060606060606060a0a0a0a0a0a060606060606060606060a0a0a0a0a0a060606060606060606060a0a0a0a0a0a060606060606060606060a0a0a
 0a0a0a060606060606060606060a0a0a0a0a0a060606060606060606060a0a0a0a0a0a060606060606060606060a0a0a0a0a0a060606060606060606060a0a0a0a0a0a060606060606060606060a0a0a0a0a0a060606060606060606060a0a0a0a0a0a060606060606060606060a0a0a0a0a0a060606060606060606060a0a0a
