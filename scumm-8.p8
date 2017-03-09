@@ -43,7 +43,7 @@ class_pickupable = "pickupable"   -- can be placed in actor inventory
 
 -- #######################################################
 -- actor definitions
--- #######################################################
+-- 
 
 main_actor = { 				-- initialize the sprite object
 	x = 127/2 - 16, -- sprites x position
@@ -67,7 +67,7 @@ selected_actor = main_actor
 
 -- #######################################################
 -- room definitions
--- #######################################################
+-- 
 first_room = {
 	map = {
 		x = 0,
@@ -212,12 +212,7 @@ first_room = {
 					pickup_obj("bat")
 				end,
 				use = function()
-					--printh("in bat use()...")
-					--printh("noun2 type: "..type(noun2_curr))
-					if (isnull(noun2_curr)) printh("noun2_curr: null")
-					--printh("noun2_curr: "..noun2_curr.name)
 					if (noun2_curr.name == "window") then
-						--printh("111")
 						set_state("window", state_open)
 					end
 				end
@@ -226,7 +221,6 @@ first_room = {
 		bozo = {
 			name = "bozo",
 			state = "frame1",
-			--state = 0,
 			x = 2*8, -- (*8 to use map cell pos)
 			y = 6*8,
 			states = {
@@ -239,7 +233,6 @@ first_room = {
 			h = 1,  --
 			verbs = {
 				push = function()
-					printh("here1!")
 					if script_running(room_curr.scripts.move_bozo) then
 						stop_script(room_curr.scripts.move_bozo)
 						set_state(me, "frame1")
@@ -248,7 +241,6 @@ first_room = {
 					end
 				end,
 				pull = function()
-					printh("here2!")
 					stop_script(room_curr.scripts.move_bozo)
 					set_state(me, "frame1")
 				end
@@ -302,7 +294,6 @@ second_room = {
 			flip_y = false,
 			w = 1,	-- relates to spr or map cel, depending on above
 			h = 4,  --
-			--default_verb = "open",
 			verbs = {
 				walkto = function()
 					printh("me = "..type(me))
@@ -362,12 +353,10 @@ function find_default_verb(obj)
 			end
 		end
 	end
-
 	-- now find the full verb definition
 	for v in all(verbs) do
 		if (v[1] == default_verb) default_verb=v break
 	end
-
 	return default_verb
 end
 
@@ -379,9 +368,15 @@ end
 
 
 
+
+
+
+
+
+
 -- #######################################################
 -- internal scumm-8 workings
--- #######################################################
+-- 
 
 
 -- global vars
@@ -404,35 +399,31 @@ cursor.y = screenheight/2
 cursor.tmr = 0 -- used to animate cursor col
 cursor.cols = {7,12,13,13,12,7}
 cursor.colpos = 1 
-
 -- keeps reference to currently hovered items
 -- e.g. objects, ui elements, etc.
 hover_curr = {
 	-- verb, 
 	-- default_verb,
 	-- object, 
-	-- ui_arrow, 
-	-- inv_object (NOT USED - same as object)
+	-- ui_arrow
 }
-
 last_mouse_x = 0
 last_mouse_y = 0
 -- wait for button release before repeating action
 ismouseclicked = false
 
-verb_curr = nil --verb_default
-noun1_curr = nil -- main/first object in command
-noun2_curr = nil -- holds whatever is used after the preposition (e.g. "with <noun2>")
-cmd_curr = "" -- contains last displayed or actioned command
-executing_cmd = false
-dialog_curr = nil -- {x,y,col}
-me = nil -- same as noun1_curr (to make scripting easier)
-
-global_scripts = {}		-- table of scripts that are at game-level
-
-active_scripts = {}		-- table of scripts that are actively running
 room_curr = nil			-- contains the current room definition
 room_stash = nil		-- contains the "paused" room before cutscene(s)
+verb_curr = nil 		--verb_default
+noun1_curr = nil 		-- main/first object in command
+noun2_curr = nil 		-- holds whatever is used after the preposition (e.g. "with <noun2>")
+cmd_curr = "" 			-- contains last displayed or actioned command
+executing_cmd = false
+dialog_curr = nil 	-- {x,y,col}
+me = nil 						-- same as noun1_curr (to make scripting easier)
+
+global_scripts = {}	-- table of scripts that are at game-level
+active_scripts = {}	-- table of scripts that are actively running
 
 
 
@@ -451,27 +442,15 @@ function _init()
 	change_room(selected_room)
 end
 
-function _update60()	-- _update()
-	-- if scene==0 then
-	-- 	titleupdate()
-	-- elseif scene==1 then
-		gameupdate()
-	--end
+function _update60()  -- _update()
+	gameupdate()
 end
 
 function _draw()
-	-- if scene==0 then
-	-- 	titledraw()
-	-- elseif scene==1 then
-		gamedraw()
-	-- end
+	gamedraw()
 end
+
 -- update functions
--- function titleupdate()
--- 	if btnp(4) then
--- 		scene=1
--- 	end
--- end
 
 function gameupdate()
 	-- process selected_actor threads/actions
@@ -488,21 +467,13 @@ function gameupdate()
 		end
 	end
 
-	-- selected_actor/ui control
-	selected_actorcontrol()
+	-- player/ui control
+	playercontrol()
 
 	-- check for collisions
 	checkcollisions()
 end
 
--- draw functions
--- function titledraw()
--- 	local titletxt = "title screen"
--- 	local starttxt = "press z to start"
--- 	rectfill(0,0,screenwidth, screenheight, 3)
--- 	print(titletxt, hcenter(titletxt), screenheight/4, 10)
--- 	print(starttxt, hcenter(starttxt), (screenheight/4)+(screenheight/2),7)			
--- end
 
 function gamedraw()
 	--local gametxt = "game screen"
@@ -510,11 +481,8 @@ function gamedraw()
 	-- clear screen every frame?
 	rectfill(0,0,screenwidth, screenheight, 0)
 
-	-- draw room (bg + objects)
+	-- draw room (bg + objects + actors)
 	roomdraw()
-
-	-- draw selected_actor/actor
-	selected_actordraw()
 
 	-- draw active dialog
 	dialogdraw()
@@ -534,7 +502,7 @@ end
 
 
 -- handle button inputs
-function selected_actorcontrol()	
+function playercontrol()	
 	-- 
 	if (btn(0)) cursor.x-=1 
 	if (btn(1)) cursor.x+=1 
@@ -556,7 +524,7 @@ function selected_actorcontrol()
 			end
 		else
 			ismouseclicked = false
-		end		-- mouse button state
+		end
 		-- store for comparison next cycle
 		last_mouse_x = stat(32)-1
 		last_mouse_y = stat(33)-1
@@ -569,10 +537,10 @@ function selected_actorcontrol()
 	cursor.y = min(cursor.y, 127)
 end
 
-function input_button_pressed(button_index)	-- 1 = z/lmb, 2 = x/rmb, (4=middle)
+-- 1 = z/lmb, 2 = x/rmb, (4=middle)
+function input_button_pressed(button_index)	
 
 	local verb_in = verb_curr
-	--local obj_in = object_curr
 
 	for k,h in pairs(hover_curr) do
 		if type(h) != nil then
@@ -594,26 +562,23 @@ function input_button_pressed(button_index)	-- 1 = z/lmb, 2 = x/rmb, (4=middle)
 						printh("noun1_curr = "..noun1_curr.name)
 					end
 				elseif (notnull(hover_curr.default_verb)) then
-					-- TODO: perform default verb action (if present)
+					-- perform default verb action (if present)
 					verb_curr = hover_curr.default_verb
 					noun1_curr = h
 					me = noun1_curr
 					-- force repaint of command (to reflect default verb)
 					commanddraw()	
 					break
-					--[[for v in all(verbs) do
-						if (v[1] == h.default_verb) verb_curr=v break
-					end
-					noun1_curr = h]]
 				end
-				--printh("object = "..h.name)
 				break
 			elseif k == "ui_arrow" then
+				-- TODO: UI arrow clicked...
 				break
-			elseif k == "inv_object" then
-				break
+			--[[elseif k == "inv_object" then
+				-- TODO: inventory object clicked
+				break]]
 			else
-				-- what else could there be?
+				-- what else could there be? ACTORS!?
 			end
 		end
 	end
@@ -639,8 +604,6 @@ function input_button_pressed(button_index)	-- 1 = z/lmb, 2 = x/rmb, (4=middle)
 			end
 			-- does current object support active verb?
 			if valid_verb(verb,obj) then
-			--if (notnull(obj.verbs)) 
-			--and (notnull(obj.verbs[verb[1]])) then
 				-- finally, execute verb script
 				printh("verb_obj_script!")
 				printh("verb = "..verb[1])
@@ -651,16 +614,13 @@ function input_button_pressed(button_index)	-- 1 = z/lmb, 2 = x/rmb, (4=middle)
 			end
 		end)
 		coresume(selected_actor.thread, selected_actor, noun1_curr, verb_curr)
-		--end
 	elseif (cursor.y > stage_top and cursor.y < stage_top+64) then
 		-- in map area
 		executing_cmd = true
-		-- todo: determine if within walkable area
+		-- attempt to walk to target
 		selected_actor.thread = cocreate(walk_to)
 		coresume(selected_actor.thread, selected_actor, cursor.x, cursor.y - stage_top)
 	end
-
-	--printh(verb_curr[1])
 
 	-- show highlighted for a few secs 
 	-- (or until completed - e.g. after walkto)
@@ -669,7 +629,6 @@ function input_button_pressed(button_index)	-- 1 = z/lmb, 2 = x/rmb, (4=middle)
 		start_script(function()
 			while (selected_actor.moving==1) do
 				-- wait for selected_actor
-				--printh("wait for selected_actor (b4 wiping command)...")
 				break_time(1)
 			end
 			-- wait some more to allow scripts to run
@@ -689,19 +648,20 @@ end
 
 -- collision detection
 function checkcollisions()
---printh("in checkcollisions()...")
-	--printh("verbs = "..#verbs)
-
 	-- reset hover collisions
 	hover_curr = {}
 
-	-- ########################################################################
-	-- todo: consolodate this into generic bounds-check routine! ######################
-	-- ########################################################################
+
+	-- todo: consolodate this into generic bounds-check routine! ####
+
 
 	-- todo: check room/object collisions
 	for k,obj in pairs(room_curr.objects) do
 		if (type(obj.bounds) != 'nil') then
+
+		--[[	if iscolliding(cursor, obj) then
+				hover_curr.object = obj
+			end]]
 
 			xcoll=true; ycoll=true
 			if (cursor.x>obj.bounds.x1 or cursor.x<obj.bounds.x) xcoll=false
@@ -762,7 +722,9 @@ function roomdraw()
 
 	-- draw all "visible" room objects (e.g. check dependent-on's)
 	for k,obj in pairs(room_curr.objects) do
+
 		-- todo: check dependent-on's
+
 		if (type(obj.states) != "nil") 
 			and (obj.states[obj.state] > 0)
 			and (isnull(obj.owner)) then
@@ -772,10 +734,13 @@ function roomdraw()
 			recalc_obj_bounds(obj)
 		end
 	end
+
+	-- draw actors
+	actordraw()
 end
 
--- draw selected_actor
-function selected_actordraw()
+-- draw actor(s)
+function actordraw()
  	-- offets
 	local offset_x = selected_actor.x - (selected_actor.sprw *8) /2
 	local offset_y = selected_actor.y -(selected_actor.sprh * 8)
@@ -819,10 +784,8 @@ end
 
 function dialogdraw()
 	-- alignment 
-	--   0 = no auto-alignment
-	--   1 = center horiz block
-	--   2 = left horiz block
-	--   3 = right horiz block
+	--   0 = no align
+	--   1 = center 
 	if type(dialog_curr) != 'nil' then
 		line_offset_y = 0
 		for l in all(dialog_curr.msg_lines) do
@@ -854,33 +817,13 @@ function uidraw()
 
 
 	for v in all(verbs) do
-		--print(v[2], xpos, ypos+1, 1) -- shadow
 		verbcol = 12  -- lightblue
 
-		-- highlight default (first?) verb
-
-		--if notnull(hover_curr.object) 
-		-- and notnull(hover_curr.object.verbs) then
-		 --and (hover_curr.object.verbs[1] == v) then
-
-		 --todo: narrow down one default (valid!) verb per object
-		 if notnull(hover_curr.default_verb)
-		 	and (v == hover_curr.default_verb) then
-		--[[if notnull(hover_curr.object)
-		 and notnull(hover_curr.object.default_verb) 
-		 and hover_curr.object.default_verb == v[1] then]]
+		-- highlight default verb
+		if notnull(hover_curr.default_verb)
+		  and (v == hover_curr.default_verb) then
 			verbcol = 10 -- yellow
-		end
-
-		 	--[[for k,v_func in pairs(hover_curr.object.verbs) do
-		 		--printh("> k:"..k.."   v:"..v[1])
-			 	if k == v[1] then
-				 --	printh("!!!")
-		  		verbcol=10
-					break
-				end
-			end]]
-		--end
+		end		
 		if (v == hover_curr.verb) verbcol=7
 		print(v[2], xpos, ypos, verbcol)  -- main
 		-- capture bounds
@@ -891,7 +834,6 @@ function uidraw()
 			y1 = ypos+5
 		}
 		if (show_collision) rect(v.bounds.x, v.bounds.y, v.bounds.x1, v.bounds.y1, 8)
-		--if (show_collision) rect(xpos, ypos, xpos + #v[2]*4-1, ypos+5, 8)
 		-- auto-size column
 		if (#v[2] > col_len) col_len = #v[2]
 		ypos += 8
@@ -997,7 +939,7 @@ end
 
 function pickup_obj(objname)
 	obj = find_object(objname)
-if notnull(obj) 
+	if notnull(obj) 
 	 and notnull(obj.class) 
 	 and obj.class == class_pickupable
 	 and isnull(obj.owner) then
