@@ -31,7 +31,7 @@ verb_hovcol = 7   -- hover color (white)
 verb_shadcol = 1   -- shadow (dk blue)
 verb_defcol = 10    -- default action (yellow)
 
--- object states
+-- object states -test
 state_closed = "closed"
 state_off = "off"
 state_here = "here"
