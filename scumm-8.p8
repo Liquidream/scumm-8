@@ -16,7 +16,7 @@ scene=1
 score=0
 screenwidth = 127
 screenheight = 127
-
+stage_top = 16
 
 -- -----------------------------------------------------------------
 
@@ -69,29 +69,28 @@ status_on = 1
 status_gone = 1
 
 
-actor = {} -- initialize the sprite object
-actor.x = screenwidth/2 - 16 -- sprites x position
-actor.y = screenheight/2 + 16-- sprites y position
-actor.sprt = 0 -- sprite starting frame
-actor.tmr = 1 -- internal timer for managing animation
-actor.flp = false -- used for flipping the sprite
-actor.spr = 3
-actor.sprw = 1
-actor.sprh = 4
-actor.col = 12	-- speech text colour
-actor.speed = 1  -- walking speed
-actor.inventory = {
-	-- temp fill!
-	{ spr = 255 },
-	{ spr = 255 },
-	{ spr = 255 },
-	{ spr = 255 },
-	{ spr = 255 },
-	{ spr = 255 },
-	{ spr = 255 },
-	{ spr = 255 }
+actor = { -- initialize the sprite object
+	x = screenwidth/2 - 16, -- sprites x position
+	y = screenheight/2, -- sprites y position
+	spr = 3, -- sprite starting frame
+	sprw = 1,
+	sprh = 4,
+	flp = false, -- used for flipping the sprite
+	col = 12,	-- speech text colour
+	speed = 1,  -- walking speed
+	tmr = 1, -- internal timer for managing animation
+	inventory = {
+		-- temp fill!
+		{ spr = 255 },
+		{ spr = 255 },
+		{ spr = 255 },
+		{ spr = 255 },
+		{ spr = 255 },
+		{ spr = 255 },
+		{ spr = 255 },
+		{ spr = 255 }
+	}
 }
-
 
 -- room definitions ------------------------------------
 first_room = {
@@ -108,14 +107,19 @@ first_room = {
 	objects = {
 		fire = {
 			name = "fire",
-			x = 8*8,
-			y = 8*8,
 			state = 0,
-			spr = 0,	-- 0 = bg/invisible
-			frames = { 23, 24, 25},	-- sprites
-			-- or use custom states for animation?
-			sprw = 1,
-			sprh = 1,
+			x = 8*8, -- (*8 to use map cell pos)
+			y = 4*8,
+			-- Either source spr # OR map cel pos must be set (not both!)
+			spr = 0,   -- 0 = bg/invisible
+			spr_frames = { 23, 24, 25},	-- sprites
+			-- OR
+			cel_x = 0,
+			cel_y = 0, 
+			--
+			w = 1,	-- relates to spr OR map cel, depending on above
+			h = 1,  --
+			transcol = 0,
 			--bounds = {} -- generated on draw
 				
 			--[dependent-on object-name being object-state]
@@ -179,11 +183,11 @@ function _init()
 		obj_fire = room_curr.objects.fire
 		-- animate
 		while true do						
-			obj_fire.spr = obj_fire.frames[1]
+			obj_fire.spr = obj_fire.spr_frames[1]
 			break_time(8)
-			obj_fire.spr = obj_fire.frames[2]
+			obj_fire.spr = obj_fire.spr_frames[2]
 			break_time(8)
-			obj_fire.spr = obj_fire.frames[3]
+			obj_fire.spr = obj_fire.spr_frames[3]
 			break_time(8)
 		end
 	end);
@@ -266,8 +270,8 @@ function gamedraw()
 
 	cursordraw()
 
-	if (show_perfinfo) print("cpu: "..stat(1), 0, 26, 8)
-	if (show_debuginfo) print("x: "..cursor.x.." y:"..cursor.y, 80, 26, 8)
+	if (show_perfinfo) print("cpu: "..stat(1), 0, stage_top - 8, 8)
+	if (show_debuginfo) print("x: "..cursor.x.." y:"..cursor.y, 80, stage_top - 8, 8)
 	
 end
 
@@ -303,9 +307,9 @@ function playercontrol()
 
 	-- keep cursor within screen
 	cursor.x = max(cursor.x, 0)
-	cursor.x = min(cursor.x, 128)
+	cursor.x = min(cursor.x, 127)
 	cursor.y = max(cursor.y, 0)
-	cursor.y = min(cursor.y, 128)
+	cursor.y = min(cursor.y, 127)
 end
 
 function input_button_pressed(button_index)	-- 1 = Z/LMB, 2 = X/RMB, (4=middle)
@@ -335,38 +339,17 @@ function input_button_pressed(button_index)	-- 1 = Z/LMB, 2 = X/RMB, (4=middle)
 		end
 	end
 
-	--printh(object_curr.name)
-
-	--if (object_curr != nil) and (verb_curr != nil) then
-		-- does current object support active verb?
-	--	if (type(object_curr["verb_"..verb_curr[1]])!="nil") then
-			-- Execute verb script
-	--		start_script(object_curr["verb_"..verb_curr[1]])
-
-	--	elseif (cursor.y > 31 and cursor.y < 96) then
-			-- in map area
-
-			-- TODO: determine if within walkable area
-
-	--		walk_to(actor, cursor.x, cursor.y)
-	--	end
-
-		-- clear "used" command
-	--	verb_curr = verb_default
-	--	object_curr = nil
-	--end
-
 	-- does current object support active verb?
 	if (object_curr != nil) and (type(object_curr["verb_"..verb_curr[1]])!="nil") then
 		-- Execute verb script
 		start_script(object_curr["verb_"..verb_curr[1]])
 	
-	elseif (cursor.y > 31 and cursor.y < 96) then
+	elseif (cursor.y > stage_top and cursor.y < stage_top+64) then
 		-- in map area
 
 		-- TODO: determine if within walkable area
 		actor.thread = cocreate(walk_to)
-		coresume(actor.thread, actor, cursor.x, cursor.y)
+		coresume(actor.thread, actor, cursor.x, cursor.y - stage_top)
 		--walk_to(actor, cursor.x, cursor.y)
 	end
 
@@ -412,11 +395,6 @@ function checkcollisions()
 
 	-- TODO: check UI/inventory collisions
 	-- start with default verb (e.g. walkto)
-	--printh("a")
-	--[[if (type(hover_curr.verb) == 'nil') then
-		--printh("b")
-		hover_curr.verb = verb_default
-	end]]
 
 	for v in all(verbs) do
 		-- aabb
@@ -442,8 +420,7 @@ end
 function roomdraw()
 	-- draw current room (base layer)
 	room_map = room_curr.map
-	map(room_map.x, room_map.y, 0, 32, room_map.w, room_map.h) --,layer
-	--map(0, 0, 0, 32, 16, 8) --,layer
+	map(room_map.x, room_map.y, 0, stage_top, room_map.w, room_map.h) --,layer
 	
 	-- draw all "visible" room objects (e.g. check dependent-on's)
 	for k,obj in pairs(room_curr.objects) do
@@ -453,11 +430,12 @@ function roomdraw()
 			draw_object(obj)
 
 			-- capture bounds
+			-- TODO: switch for spr vs. cel!
 			obj["bounds"] = {
 				x = obj.x,
-				y = obj.y,
-				x1 = obj.x + (obj.sprw*8),
-				y1 = obj.x + (obj.sprh*8)
+				y = stage_top + obj.y,
+				x1 = obj.x + (obj.w*8),
+				y1 = stage_top + obj.y + (obj.h*8)
 			}
 		end
 	end
@@ -467,16 +445,11 @@ end
 
 -- draw player
 function playerdraw()
-	-- switch transparency
-	--palt(0, false)
-	--palt(11, true)
-
  	-- offets
 	local offset_x = actor.x - (actor.sprw *8) /2
 	local offset_y = actor.y -(actor.sprh * 8)
 
 	sprdraw(actor.spr, offset_x, offset_y, actor.sprw , actor.sprh, 11)
- 	--spr(actor.spr, actor.x, actor.y, actor.sprw , actor.sprh)
 end
 
 function commanddraw()
@@ -491,15 +464,32 @@ function commanddraw()
 		command = command.." "..object_curr.name
 	end
 	
-	print(smallcaps(command), hcenter(command), 97, 12)
+	print(smallcaps(command), 
+		hcenter(command), 
+		stage_top + 66, 12)
 end
 
 function dialogdraw()
+	-- alignment 
+	--   0 = no auto-alignment
+	--   1 = center horiz block
+	--   2 = left horiz block
+	--   3 = right horiz block
 	if type(dialog_curr) != 'nil' then
-		shadow_text(
-			dialog_curr.message, 
-			dialog_curr.x, dialog_curr.y, 
-			dialog_curr.col)
+		line_offset_y = 0
+		for l in all(dialog_curr.msg_lines) do
+			line_offset_x=0
+			-- center-align line
+			if dialog_curr.align == 1 then
+				line_offset_x = ((dialog_curr.char_width*4)-(#l*4))/2
+			end
+			shadow_text(
+				l, 
+				dialog_curr.x + line_offset_x, 
+				dialog_curr.y + line_offset_y, 
+				dialog_curr.col)
+			line_offset_y += 6
+		end
 
 		-- update message lifespan
 		dialog_curr.time_left -= 1
@@ -510,8 +500,8 @@ end
 -- draw ui and inventory
 function uidraw()
 	-- draw verbs
-	xpos=0
-	ypos=105
+	xpos = 0
+	ypos = stage_top + 75
 	col_len=0
 
 	for v in all(verbs) do
@@ -532,28 +522,28 @@ function uidraw()
 		if (#v[2] > col_len) col_len = #v[2]
 		ypos += 8
 		-- move to next column
-		if ypos >= 125 then
-			ypos = 105
+		if ypos >= stage_top + 95 then
+			ypos = stage_top + 75
 			xpos += (col_len + 1.0) * 4
 			col_len = 0
 		end
 	end
 
 	-- draw arrows
-	sprdraw(16, 75, 106, 1, 1, 0)
-	sprdraw(48, 75, 119, 1, 1, 0)
+	sprdraw(16, 75, stage_top + 59, 1, 1, 0)
+	sprdraw(48, 75, stage_top + 72, 1, 1, 0)
 	
 	-- draw inventory bg
 
 
 	-- draw inventory
-	xpos=86
-	ypos=106
+	xpos = 86
+	ypos = 75
 	--ipos=1
 	for ipos=1, 8 do
 	--while (ipos <= #actor.inventory) and (ipos <= 8) do
 		-- draw bg
-		rectfill(xpos-1, ypos-1, xpos+8, ypos+8, 1)
+		rectfill(xpos-1, stage_top+ypos-1, xpos+8, stage_top+ypos+8, 1)
 		obj = actor.inventory[ipos]
 		if type(obj) != 'nil' then
 			sprdraw(obj.spr, xpos, ypos, 1, 1, 0)
@@ -569,7 +559,7 @@ end
 
 -- draw cursor
 function cursordraw()
-	sprdraw(32, cursor.x-3, cursor.y-3, 1, 1, 0)
+	spr(32, cursor.x-4, cursor.y-3, 1, 1, 0)
 end
 
 function sprdraw(n, x, y, w, h, transcol)
@@ -577,7 +567,7 @@ function sprdraw(n, x, y, w, h, transcol)
  	palt(0, false)
  	palt(transcol, true)
 	 -- draw sprite
-	spr(n, x, y, w, h)
+	spr(n, x, stage_top + y, w, h)
 	-- restore trans
 	palt(transcol, false)
 	palt(0, true)
@@ -613,17 +603,93 @@ function wait_for_message()
 	end
 end
 
+-- uses actor's position and color
+function say_line(actor, msg)
+	-- get pos above actor's head
+	ypos = actor.y-((actor.sprh+2)*8)
+	-- call the base print_line to show actor line
+	print_line(msg, actor.x, ypos, actor.col, 1)
+end
+
+
+function print_line(msg, x, y, col, align)
+	-- TODO: An actor's talk animation is not activated as it is with say-line.
+	local col=col or 7 		-- default to white
+	local align=align or 0	-- default to no align
+
+	printh(msg)
+	-- default max width (unless hit a screen edge)
+	local lines={}
+	local currline=""
+	local curword=""
+	local curchar=""
+	
+	longest_line=0
+	-- auto-wrap
+	-- calc max line width based on x-pos/available space
+	screen_space = min(x, screenwidth - x)
+	-- (or no less than min length)
+	max_line_length = max(flr(screen_space/2), 16)
+
+	local upt=function(max_length)
+		if #curword + #currline > max_line_length then
+			add(lines,currline)
+			if (#currline > longest_line) longest_line = #currline
+			currline=""
+		end
+		currline=currline..curword
+		curword=""
+	end
+	for i=1,#msg do
+		curchar=sub(msg,i,i)
+		curword=curword..curchar
+		if curchar==" " then
+			upt(max_line_length)
+		elseif #curword>max_line_length-1 then
+			curword=curword.."-"
+			upt(max_line_length)
+		end
+	end
+	upt(max_line_length)
+	if currline~="" then
+		add(lines,currline)
+		if (#currline > longest_line) longest_line = #currline
+	end
+
+	-- center-align text block
+	if align == 1 then
+		x = x - ((longest_line*4)/2)
+	end
+
+	-- screen bound check
+	-- left
+	xpos = max(2,x)	
+	-- top
+	ypos = max(18,y)
+	-- right
+	xpos = min(xpos, screenwidth - (longest_line*4)+4)
+
+	
+	dialog_curr = {
+		msg_lines = lines,
+		x = xpos,
+		y = ypos,
+		col = col,
+		align = align,
+		time_left = #msg*8,
+		char_width = longest_line
+	}
+end
+
 function draw_object(obj)
 	-- draw object (depending on state!)
-	spr(obj.spr, obj.x, obj.y)
+	-- TODO: switch spr vs. map cel!!
+	sprdraw(obj.spr, obj.x, obj.y, obj.w, obj.h, obj.transcol)
+	--spr(obj.spr, obj.x, obj.y)
 end
 
 -- walk actor to position
 function walk_to(actor, x, y)
-	-- offets
-	--x -= (actor.sprw *8) /2
-	--y -= (actor.sprh * 8)
-
 	local distance = sqrt((x - actor.x) ^ 2 + (y - actor.y) ^ 2)
 	local step_x = actor.speed * (x - actor.x) / distance
 	local step_y = actor.speed * (y - actor.y) / distance
@@ -635,23 +701,6 @@ function walk_to(actor, x, y)
 	end
 end
 
-function say_line(actor, msg)
-	printh(msg)
-
-	xpos = actor.x-(#msg*4/2)
-	ypos = actor.y-((actor.sprh+1)*8)
-	-- screen bound check
-	xpos = max(1,xpos)
-	ypos = max(1,ypos)
-
-	dialog_curr = {
-		message = msg,
-		x = xpos,
-		y = ypos,
-		col = actor.col,
-		time_left = #msg*8
-	}
-end
 
 
 -- internal functions -----------------------------------------------
@@ -683,7 +732,7 @@ end
 
 --- center align from: pico-8.wikia.com/wiki/centering_text
 function hcenter(s)
-	-- string length time			s the 
+	-- string length times the 
 	-- pixels in a char's width
 	-- cut in half and rounded down
 	return (screenwidth / 2)-flr((#s*4)/2)
