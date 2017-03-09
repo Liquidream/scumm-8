@@ -39,10 +39,10 @@ state_open = "open"
 state_on = "on"
 state_gone = "gone"
 
--- object classes
-class_untouchable = "untouchable" -- will not register when the cursor moves over it. the object is invisible to the user.
-class_pickupable = "pickupable"   -- can be placed in actor inventory
-
+-- object classes (bitflags)
+class_untouchable = 1 -- will not register when the cursor moves over it. the object is invisible to the user.
+class_pickupable = 2   -- can be placed in actor inventory
+class_talkable = 4				-- can talk to actor/object
 
 
 -- #######################################################
@@ -136,6 +136,7 @@ first_room = {
 		fire = {
 			name = "fire",
 			state = "frame1",
+		--	class = class_talkable + class_pickupable,
 			x = 8*8, -- (*8 to use map cell pos)
 			y = 4*8,
 			states = {
@@ -169,7 +170,10 @@ first_room = {
 					do_anim(selected_actor, anim_turn, face_front)
 					say_line(selected_actor, "the fire didn't say hello back;burn!!")
 					wait_for_message()
-				end
+				end,
+				pickup = function(me)
+					pickup_obj(me)
+				end,
 			}
 		},
 		front_door = {
@@ -376,12 +380,10 @@ second_room = {
 						say_line(selected_actor, "it's already open!")
 					else
 						set_state(me, state_open)
-						default_verb = "close"
 					end
 				end,
 				close = function()
 					set_state(me, state_closed)
-					default_verb = "open"
 				end
 			}
 		},
@@ -406,11 +408,11 @@ function find_default_verb(obj)
 	for v in all(verb_ordered_list) do
 		-- if object supports current verb
 	  if valid_verb(v, obj) then
-			-- check for reasons not to use this verb
+			-- check for reasons not to use this verb as default
 			if (v == "open" and obj.state != state_closed) 
 			or (v == "close" and obj.state != state_open)
-			--or (v == "talkto" and obj.class == class_actor!!!)
-			--or (v == "lookat")
+			or (v == "talkto" and (not is_class(obj, class_talkable)))
+			or (v == "pickup" and (not is_class(obj, class_pickupable)))
 			then
 				-- not suitable ver, continue
 			else
@@ -1100,21 +1102,14 @@ function valid_verb(verb, object)
 	else
 		if (notnull(object.verbs[verb])) return true
 	end
-	--[[for k,v_func in pairs(object.verbs) do
-		if k == verb[1] then
-			-- valid verb
-			return true
-		end
-	end]]
 	-- must not be valid if reached here
 	return false
 end
 
 function pickup_obj(objname)
 	obj = find_object(objname)
-	if notnull(obj) 
-	 and notnull(obj.class) 
-	 and obj.class == class_pickupable
+	if notnull(obj)
+--	 and is_class(obj, class_pickupable)
 	 and isnull(obj.owner) then
 	 	d("adding to inv")
 		-- assume selected_actor picked-up at this point
@@ -1363,6 +1358,11 @@ end
 
 
 -- internal functions -----------------------------------------------
+
+function is_class(obj, value)
+  if (band(obj.class, value) != 0) return true
+  return false
+end
 
 function clear_curr_cmd()
 	-- reset all command values
