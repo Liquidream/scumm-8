@@ -45,50 +45,9 @@ class_pickupable = 2  -- can be placed in actor inventory
 class_talkable = 4		-- can talk to actor/object
 class_giveable = 8		-- canbe given to an actor/object
 
-
--- #######################################################
--- actor definitions
--- 
-
-face_front = 1	-- states for actor direction
-face_left = 2   -- (not sprite #'s)
-face_back = 3		
-face_right = 4
-
-pos_infront = 1 
-pos_behind = 3
-pos_left = 2
-pos_right = 4
-pos_inside = 5
-
--- actor animations
-anim_face = 1	 -- position the actor immediately to the direction indicated
-anim_turn = 2  -- show the turning stages of animation
-
-
-main_actor = { 		-- initialize the actor object
-	x = 127/2 - 16,
-	y = 127/2 -16,
-	sprw = 1,
-	sprh = 4,
-	face_dir = face_front, 	-- direction facing
-	idle = {1,3,73,3},	-- sprites for idle (front, back, left) - right=flip
-	walk_anim = {2,3,4,3},
-	flip = false, 		-- used for flipping the sprite (left/right dir)
-	col = 12,				-- speech text colour
-	trans_col = 11,
-	speed = 0.75,  	-- walking speed
-	moving = 0, 		-- 0=stopped, 1=walking, 2=arrived
-	tmr = 1, 				-- internal timer for managing animation
-	anim_pos = 1, 	-- used to track anim pos
-	inventory = {
-		-- object1,
-		-- object2
-	}
-}
-
--- set which actor the player controls by default
-selected_actor = main_actor
+cut_noverbs = 1 		-- this removes the interface during the cut-scene.
+cut_hidecursor = 2  -- this turns off the cursor during the cut-scene.
+--cut_no_follow = 4  -- this disables the follow-camera being reinstated
 
 -- #######################################################
 -- room definitions
@@ -132,7 +91,7 @@ first_room = {
 				break_time(8)
 			end
 		end
-	},		
+	},
 	objects = {
 		fire = {
 			name = "fire",
@@ -311,6 +270,22 @@ first_room = {
 				-- states are spr values
 				closed = 80, -- state_closed
 				open = 82 -- state_open
+			},
+			verbs = {
+				lookat = function(me)	
+					cutscene(cut_noverbs + cut_hidecursor, 
+					function()
+						-- todo: cutscene code
+						change_room(second_room)
+						say_line(actors.purp_tentacle, "what was that?!")
+						wait_for_message()
+						say_line(actors.purp_tentacle, "I'd better check")
+						wait_for_message()
+						walk_to(actors.purp_tentacle, 
+							actors.purp_tentacle.x-10, 
+							actors.purp_tentacle.y)
+					end)
+				end
 			}
 		}
 	}
@@ -391,11 +366,72 @@ second_room = {
 	},
 }
 
-
 -- set which room to start the game in 
 -- (could be a "pseudo" room for title screen!)
 selected_room = first_room
 --selected_room = second_room
+
+
+-- #######################################################
+-- actor definitions
+-- 
+
+face_front = 1	-- states for actor direction
+face_left = 2   -- (not sprite #'s)
+face_back = 3		
+face_right = 4
+
+pos_infront = 1 
+pos_behind = 3
+pos_left = 2
+pos_right = 4
+pos_inside = 5
+
+-- actor animations
+anim_face = 1	 -- position the actor immediately to the direction indicated
+anim_turn = 2  -- show the turning stages of animation
+
+actors = {
+	main_actor = { 		-- initialize the actor object
+		x = 127/2 - 16,
+		y = 127/2 -16,
+		sprw = 1,
+		sprh = 4,
+		face_dir = face_front, 	-- direction facing
+		idle = {1,3,73,3},	-- sprites for idle (front, back, left) - right=flip
+		walk_anim = {2,3,4,3},
+		flip = false, 		-- used for flipping the sprite (left/right dir)
+		col = 12,				-- speech text colour
+		trans_col = 11,
+		speed = 0.75,  	-- walking speed
+		moving = 0, 		-- 0=stopped, 1=walking, 2=arrived
+		tmr = 1, 				-- internal timer for managing animation
+		anim_pos = 1, 	-- used to track anim pos
+		inventory = {
+			-- object1,
+			-- object2
+		}
+	},
+	purp_tentacle = {
+		x = 127/2 - 16,
+		y = 127/2 -16,
+		sprw = 1,
+		sprh = 3,
+		face_dir = face_front,
+		idle = { 91, 91, 91, 91 },
+		col = 2,				-- speech text colour
+		trans_col = 15,
+		speed = 0.25,  	-- walking speed
+		moving = 0,
+		tmr = 1,
+		anim_pos = 1,
+		in_room = second_room
+	}
+}
+
+-- set which actor the player controls by default
+selected_actor = actors.main_actor
+
 
 -- logic used to determine a "default" verb to use
 -- (e.g. when you right-click an object)
@@ -412,8 +448,8 @@ function find_default_verb(obj)
 			-- check for reasons not to use this verb as default
 			if (v == "open" and obj.state != state_closed) 
 			or (v == "close" and obj.state != state_open)
-			or (v == "talkto" and (not is_class(obj, class_talkable)))
-			or (v == "pickup" and (not is_class(obj, class_pickupable)))
+			or (v == "talkto" and (not has_flag(obj.class, class_talkable)))
+			or (v == "pickup" and (not has_flag(obj.class, class_pickupable)))
 			then
 				-- not suitable ver, continue
 			else
@@ -471,7 +507,7 @@ cam = {
 cursor = {
   x = screenwidth/2,
   y = screenheight/2,
-	i = 1, -- for cutscenes (<=0 - disable cursor)
+	lvl = 1, -- for cutscenes (<=0 - disable cursor)
   tmr = 0, -- used to animate cursor col
   cols = {7,12,13,13,12,7},
   colpos = 1 
@@ -490,20 +526,18 @@ last_mouse_y = 0
 ismouseclicked = false
 
 room_curr = nil			-- contains the current room definition
-room_stash = nil		-- contains the "paused" room before cutscene(s)
 verb_curr = nil 		--verb_default
 noun1_curr = nil 		-- main/first object in command
 noun2_curr = nil 		-- holds whatever is used after the preposition (e.g. "with <noun2>")
 cmd_curr = "" 			-- contains last displayed or actioned command
 executing_cmd = false
-dialog_curr = nil 	-- {x,y,col}
---me = nil 						-- same as noun1_curr (to make scripting easier)
+talking_curr = nil 	-- currently displayed speech {x,y,col,lines...}
+dialog_curr = nil   -- currently displayed dialog options to pick
+cutscene_curr = nil -- currently active cutscene
 
-global_scripts = {}	-- table of scripts that are at game-level
+global_scripts = {}	-- table of scripts that are at game-level (background)
 local_scripts = {}	-- table of scripts that are actively running
-
-
-
+cutscenes = {} -- table of scripts for the active cutscene(s)
 
 
 -- game loop
@@ -514,8 +548,17 @@ function _init()
 	-- use mouse input?
 	if (enable_mouse) poke(0x5f2d, 1)
 
+	-- init actor
+	selected_actor.in_room = selected_room
+
 	-- load the initial room
 	change_room(selected_room)
+
+
+	--debug
+--[[	lines = create_text_lines(
+		"this is an, example of a rather long sentence of many words that will wrap",
+		flr(128 /4))]]
 end
 
 function _update60()  -- _update()
@@ -524,6 +567,13 @@ end
 
 function _draw()
 	gamedraw()
+
+	--debug
+--[[	y=90
+	for l in all(lines) do
+		print(l,0,y,10)
+		y+=6
+	end ]]
 end
 
 -- update functions
@@ -544,6 +594,25 @@ function gameupdate()
 		end
 	end
 
+	-- update active cutscene (if any)
+	if notnull(cutscene_curr) then
+		--d("playing cutscene...")
+		if cutscene_curr.thread and not coresume(cutscene_curr.thread) then
+			-- cutscene ended, restore prev state
+			if (room_curr != cutscene_curr.paused_room) change_room(cutscene_curr.paused_room)
+			selected_actor = cutscene_curr.paused_actor
+			cam.mode = cutscene_curr.paused_cam_mode
+			cam.following_actor = cutscene_curr.paused_cam_following
+			-- now delete cutscene
+			del(cutscenes, cutscene_curr)
+			cutscene_curr = nil
+			-- any more cutscenes?
+			if (#cutscenes > 0) then
+				cutscene_curr = cutscenes[#cutscenes]
+			end
+		end
+	end
+
 	-- player/ui control
 	playercontrol()
 
@@ -558,9 +627,11 @@ function gamedraw()
 	-- clear screen every frame?
 	rectfill(0,0,screenwidth, screenheight, 0)
 
-	-- move camera
-	--d("cam.x:"..cam.x)
-	cam.x = mid(0, selected_actor.x - 64, (room_curr.map.w*8)-screenwidth-1)
+	-- auto-follow camera?
+	if cam.mode == 0 then
+		--d("cam.x:"..cam.x)
+		cam.x = mid(0, selected_actor.x - 64, (room_curr.map.w*8)-screenwidth-1)
+	end
 	camera(cam.x, 0)
 
 	-- clip room bounds
@@ -574,16 +645,22 @@ function gamedraw()
 	-- reset clip
 	clip()
 
-	-- draw active dialog
-	dialogdraw()
+	-- draw active text
+	talking_draw()
 
 	-- draw current command (verb/object)
-	commanddraw()
-
+	if isnull(cutscene_curr) then
+		commanddraw()
+	end
 	-- draw ui and inventory
-	uidraw()
+	if isnull(cutscene_curr) or not has_flag(cutscene_curr.flags, cut_noverbs) then
+		uidraw()
+	end
 
-	cursordraw()
+	if isnull(cutscene_curr) or not has_flag(cutscene_curr.flags, cut_hidecursor) then
+		cursordraw()
+	end
+	
 
 	if (show_perfinfo) print("cpu: "..stat(1), 0, stage_top - 16, 8) print("mem: "..stat(0), 0, stage_top - 8, 8)
 	if (show_debuginfo) print("x: "..cursor.x.." y:"..cursor.y, 80, stage_top - 8, 8)
@@ -808,24 +885,32 @@ function roomdraw()
 		end
 	end
 
-	-- draw actors
-	actordraw(selected_actor)
+	-- draw actors in current room
+	for k,actor in pairs(actors) do
+		--d("draw actor?:"..k)
+		if (actor.in_room == room_curr) then
+			--d("yes!")
+			actor_draw(actor)
+		end
+	end
 end
 
 -- draw actor(s)
-function actordraw(actor)
+function actor_draw(actor)
 	--sprnum = actor.idle
  	-- offets
 	local offset_x = actor.x - (actor.sprw *8) /2
 	local offset_y = actor.y -(actor.sprh * 8) +2
 	
-	if (actor.moving == 1) then
+	if (actor.moving == 1) 
+	 and notnull(actor.walk_anim) then
 		actor.tmr += 1
 		if (actor.tmr > 5) then
 			actor.tmr = 1
 			actor.anim_pos += 1
 			if (actor.anim_pos > #actor.walk_anim) actor.anim_pos=1
 		end
+		-- choose walk anim frame
 		sprnum = actor.walk_anim[actor.anim_pos]
 	else
 		-- idle
@@ -871,29 +956,29 @@ function commanddraw()
 		stage_top + 66, cmd_col)
 end
 
-function dialogdraw()
+function talking_draw()
 	-- alignment 
 	--   0 = no align
 	--   1 = center 
-	if type(dialog_curr) != 'nil' then
+	if type(talking_curr) != 'nil' then
 		line_offset_y = 0
-		for l in all(dialog_curr.msg_lines) do
+		for l in all(talking_curr.msg_lines) do
 			line_offset_x=0
 			-- center-align line
-			if dialog_curr.align == 1 then
-				line_offset_x = ((dialog_curr.char_width*4)-(#l*4))/2
+			if talking_curr.align == 1 then
+				line_offset_x = ((talking_curr.char_width*4)-(#l*4))/2
 			end
 			outline_text(
 				l, 
-				dialog_curr.x + line_offset_x, 
-				dialog_curr.y + line_offset_y, 
-				dialog_curr.col)
+				talking_curr.x + line_offset_x, 
+				talking_curr.y + line_offset_y, 
+				talking_curr.col)
 			line_offset_y += 6
 		end
 
 		-- update message lifespan
-		dialog_curr.time_left -= 1
-		if (dialog_curr.time_left <=0) dialog_curr = nil
+		talking_curr.time_left -= 1
+		if (talking_curr.time_left <=0) talking_curr = nil
 	end
 end
 
@@ -996,7 +1081,45 @@ function sprdraw(n, x, y, w, h, transcol, flip_x, flip_y)
 	palt(0, true)
 end
 
+
+
 -- scumm core functions -------------------------------------------
+
+function cutscene(flags, func)
+	-- decrement the cursor level
+	cursor.lvl -= 1
+
+	cut = {
+		flags = flags,
+		thread = cocreate(func),
+		--script = func,
+		paused_room = room_curr,
+		paused_actor = selected_actor,
+		paused_cam_mode = cam.mode,
+		paused_cam_following = cam.following_actor
+	}
+	add(cutscenes, cut)
+
+	-- set as active cutscene
+	cutscene_curr = cut
+
+	-- reset stuff
+	cam.mode = 1 --fixed
+	cam.x = 0
+end
+
+function dialog_add()
+end
+--dialogstart
+--dialogend
+
+
+--selectedsentence
+--dialoglist[selectedsentence]
+
+
+
+
 
 function get_use_pos(obj)
 	pos = {}
@@ -1059,6 +1182,9 @@ function come_out_door(door_obj, new_room)
 	-- d("face 1:"..selected_actor.face_dir)
 	-- selected_actor.face_dir = door_obj.use_pos
 	-- d("face 2:"..selected_actor.face_dir)
+
+	selected_actor.in_room = new_room
+
 end
 
 function change_room(new_room)
@@ -1110,7 +1236,7 @@ end
 function pickup_obj(objname)
 	obj = find_object(objname)
 	if notnull(obj)
---	 and is_class(obj, class_pickupable)
+--	 and has_flag(obj.class, class_pickupable)
 	 and isnull(obj.owner) then
 	 	d("adding to inv")
 		-- assume selected_actor picked-up at this point
@@ -1194,7 +1320,7 @@ end
 
 function wait_for_message()
 	-- draw object (depending on state!)
-	while dialog_curr != nil do
+	while talking_curr != nil do
 		yield()
 	end
 end
@@ -1209,8 +1335,7 @@ end
 
 
 function print_line(msg, x, y, col, align)
-	--d("print_line()...")
-  -- todo: punctuation...
+  -- punctuation...
 	--  > ":" new line, shown after text prior expires
 	--  > "," new line, shown immediately
 
@@ -1223,8 +1348,6 @@ function print_line(msg, x, y, col, align)
 	--d("x:"..x.." y:"..y)
 	-- default max width (unless hit a screen edge)
 	local lines={}
-	local currline=""
-	local curword=""
 	local curchar=""
 	local msg_left="" --used for splitting messages with ";"
 	
@@ -1235,48 +1358,29 @@ function print_line(msg, x, y, col, align)
 	-- (or no less than min length)
 	max_line_length = max(flr(screen_space/2), 16)
 
-	local upt=function(max_length)
-		if #curword + #currline > max_length then
-			add(lines,currline)
-			if (#currline > longest_line) longest_line = #currline
-			currline=""
-		end
-		currline=currline..curword
-		curword=""
-	end
-
+	-- search for ";"'s
+	msg_left = ""
 	for i = 1, #msg do
 		curchar=sub(msg,i,i)
-		curword=curword..curchar
-		if (curchar == " ")
-		 or (#curword > max_line_length-1) then
-			upt(max_line_length)
-		elseif #curword>max_line_length-1 then
-			curword=curword.."-"
-			upt(max_line_length)
-		elseif curchar == "," then -- line break
-			d("line break!")
-			currline=currline..sub(curword,1,#curword-1)
-			curword=""
-			upt(0)
-		elseif curchar == ";" then -- msg break
+		if curchar == ";" then -- msg break
 			d("msg break!")
 			-- show msg up to this point
 			-- and process the rest as new message
-			currline=currline..sub(curword,1,#curword-1)
-			curword=""
-			upt(0)
+			
 			-- next message?
 			msg_left = sub(msg,i+1)
 			d("msg_left:"..msg_left)
+			-- redefine curr msg
+			msg = sub(msg,1,i-1)
 			break
 		end
 	end
 
-	upt(max_line_length)
-	if currline~="" then
-		add(lines,currline)
-		if (#currline > longest_line) longest_line = #currline
+	lines = create_text_lines(msg, max_line_length, true)
+
+	-- find longest line
+	for l in all(lines) do
+		if (#l > longest_line) longest_line = #l
 	end
 
 	-- center-align text block
@@ -1292,13 +1396,13 @@ function print_line(msg, x, y, col, align)
 	-- right
 	xpos = min(xpos, screenwidth - (longest_line*4)+4)
 
-	dialog_curr = {
+	talking_curr = {
 		msg_lines = lines,
 		x = xpos,
 		y = ypos,
 		col = col,
 		align = align,
-		time_left = (#msg-#msg_left)*8,
+		time_left = (#msg)*8,
 		char_width = longest_line
 	}
 
@@ -1308,6 +1412,7 @@ function print_line(msg, x, y, col, align)
 		print_line(msg_left, x, y, col, align)
 	end
 end
+
 
 function draw_object(obj)
 	-- draw object (depending on state!)
@@ -1340,6 +1445,7 @@ function walk_to(actor, x, y)
 		d("walkable!")
 		actor.moving = 1 --walking
 		actor.flip = (step_x<0)
+
 		-- face dir (at end of walk)
 		actor.face_dir = face_right
 		if (actor.flip) actor.face_dir = face_left
@@ -1360,8 +1466,49 @@ end
 
 -- internal functions -----------------------------------------------
 
-function is_class(obj, value)
-  if (band(obj.class, value) != 0) return true
+-- auto-break message into lines
+function create_text_lines(msg, max_line_length, comma_is_newline)
+	local lines={}
+	local currline=""
+	local curword=""
+	local curchar=""
+	
+	local upt=function(max_length)
+		if #curword + #currline > max_length then
+			add(lines,currline)
+			currline=""
+		end
+		currline=currline..curword
+		curword=""
+	end
+
+	for i = 1, #msg do
+		curchar=sub(msg,i,i)
+		curword=curword..curchar
+		if (curchar == " ")
+		 or (#curword > max_line_length-1) then
+			upt(max_line_length)
+		elseif #curword>max_line_length-1 then
+			curword=curword.."-"
+			upt(max_line_length)
+		elseif curchar == "," and comma_is_newline then -- line break
+			d("line break!")
+			currline=currline..sub(curword,1,#curword-1)
+			curword=""
+			upt(0)
+		end
+	end
+
+	upt(max_line_length)
+	if currline~="" then
+		add(lines,currline)
+	end
+
+	return lines
+end
+
+function has_flag(obj, value)
+  if (band(obj, value) != 0) return true
   return false
 end
 
@@ -1503,38 +1650,38 @@ ccc00cccbb1121bbbb1112bbbb2111bbbb22111b55555555444949440d6dd6d5000000005d6dd650
 01c00c10bb1121bbc111222bbb2111bbb22211cc5555555544494944066666650000000056666650cccccccc55555555dddddddd111111113333335544440000
 001cc100bbccccbb7ccc222bbbccccbbb222cc7755555555999949990dd6dd650000000056dd6d50cccccccc55555555dddddddd111111113333555544000000
 00011000b776677bb7776666bb6777bbb66677bb55555555444444440dd6dd650000000056dd6d50cccccccc55555555dddddddd111111115555555500000000
-000770000000007007000000000700000444449000070000777600007777777777777777bbbbbbbb000700000007000000070000000700000007000000070000
-000880000000008778000000000700004440444900070000777600005555555555555555bbbbbbbb000700000007000000070000000700000007000000070000
-000880000000088008800000000700004040000400070000777600004444444444444444bbbbbbbb000700000007000000070000000700000007000000070000
-0008800000000880088000007770777004ffff007770777066665555444ffffffffff444b999449b777077707770777077707770777077707770777077707770
-000880000000880000880000000700000f9ff9f00007000000007776444944444444944494444449000700000007000000070000000700000007000000070000
-000880000000880000880000000700000f5ff5f000070000000077764449444aa444944494444444000700000007000000070000000700000007000000070000
-000880000008800000088000000700004ffffff40007000000007776444944444444944444444444000700000007000000070000000700000007000000070000
+000770000000007007000000000700000444449000070000777600007777777777777777bbbbbbbb000700000000000000070000000700000007000000070000
+000880000000008778000000000700004440444900070000777600005555555555555555bbbbbbbb000700000000000000070000000700000007000000070000
+000880000000088008800000000700004040000400070000777600004444444444444444bbbbbbbb000700000000000000070000000700000007000000070000
+0008800000000880088000007770777004ffff007770777066665555444ffffffffff444b999449b777077700000000077707770777077707770777077707770
+000880000000880000880000000700000f9ff9f00007000000007776444944444444944494444449000700000000000000070000000700000007000000070000
+000880000000880000880000000700000f5ff5f000070000000077764449444aa444944494444444000700000000000000070000000700000007000000070000
+000880000008800000088000000700004ffffff40007000000007776444944444444944444444444000700000000000000070000000700000007000000070000
 000880000008800000088000000000000ff44ff00000000055556666444999999999944444444444000000000000000000000000000000000000000000000000
-7777777777777777775555555555557706ffff60777777770007000044494444444494444444444000070000000700000007bbbb000700000007000000070000
-7000000770000007707000000000070700655600700000070007000044494444444494440444444400070000000700000007bbbb000700000007000000070000
-700000077000000770070000000070070006600070000007000700004449444444449444b044444b00070000000700000007bbbb000700000007000000070000
-700000077000000770006000000600070000000070000007777077704449444444449444b044444b77707770777077707770777b777077707770777077707770
-700000077000000770006000000600070000000070000007000700004449444444449444bb0000bb0007000000070000bbb7bbbb000700000007000000070000
-700000077000000770006000000600070000000070000007000700004449444444449444bbbffbbb0007000000070000bbb7bbbb000700000007000000070000
-700000077000000770006000000600070000000070000007000700004449999999999444bddddddb0007000000070000bbb7bbbb000700000007000000070000
-777777777777777777776000000677770000000077777777000000004444444444444444dccccccd0000000000000000bbbbbbbb000000000000000000000000
-700000677600000770066000000660070dc55cd0700000070007cccc0007000000070000c1cccc1c000700000007000000070000000700000007000000074444
-70000607706000077060600000060607dcc55ccd700000070007cccc0007000000070000c1cccc1c000700000007000000070000000700000007000000074444
-70000507705000077050600000060507c1c66c1c700000070007cccc0007000000070000c1cccc1c000700000007000000070000000700000007000000074444
-70000007700000077000600000060007c1c55c1c700000077770777c7770777077707770c1cccc1c777077707770777077707770777077707770777077707774
-70000007700000077005000000005007c1c55c1c70000007ccc7cccc0007000000070000d1cccc1d000700000007000000070000000700000007000044474444
-70000007700000077050000000000507c1c55c1c70000007ccc7cccc0007000000070000fe1111ef000700000007000000070000000700000007000044474444
-77777777777777777500000000000077d1cddc1d77777777ccc7cccc0007000000070000bf1111fb000700000007000000070000000700000007000044474444
-55555555555555555555555555555555f0d66d0f55555555cccccccc0000000000000000bb1211bb000000000000000000000000000000000000000044444444
-000700000007000000070000000700000011110000070000000700000007000000070000bb1211bb000700000007000000070000000700000007000000070000
-000700000007000000070000000700000011210000070000000700000007000000070000bb1211bb000700000007000000070000000700000007000000070000
-000700000007000000070000000700000011210000070000000700000007000000070000bb1211bb000700000007000000070000000700000007000000070000
-777077707770777077707770777077700011210077707770777077707770777077707770bb1211bb777077707770777077707770777077707770777077707770
-000700000007000000070000000700000011210000070000000700000007000000070000bb1211bb000700000007000000070000000700000007000000070000
-000700000007000000070000000700000011210000070000000700000007000000070000bb1211bb000700000007000000070000000700000007000000070000
-0007000000070000000700000007000000cccc0000070000000700000007000000070000bbccccbb000700000007000000070000000700000007000000070000
-000000000000000000000000000000000776677000000000000000000000000000000000b776677b000000000000000000000000000000000000000000000000
+7777777777777777775555555555557706ffff60777777770007000044494444444494444444444000070000ffffffff0007bbbb000700000007000000070000
+7000000770000007707000000000070700655600700000070007000044494444444494440444444400070000ffffffff0007bbbb000700000007000000070000
+700000077000000770070000000070070006600070000007000700004449444444449444b044444b00070000ffffffff0007bbbb000700000007000000070000
+700000077000000770006000000600070000000070000007777077704449444444449444b044444b77707770ffffffff7770777b777077707770777077707770
+700000077000000770006000000600070000000070000007000700004449444444449444bb0000bb00070000ffffffffbbb7bbbb000700000007000000070000
+700000077000000770006000000600070000000070000007000700004449444444449444bbbffbbb00070000ffffffffbbb7bbbb000700000007000000070000
+700000077000000770006000000600070000000070000007000700004449999999999444bddddddb00070000fff22fffbbb7bbbb000700000007000000070000
+777777777777777777776000000677770000000077777777000000004444444444444444dccccccd00000000fff22fffbbbbbbbb000000000000000000000000
+700000677600000770066000000660070dc55cd0700000070007cccc0007000000070000c1cccc1c00070000ff2bb2ff00070000000700000007000000074444
+70000607706000077060600000060607dcc55ccd700000070007cccc0007000000070000c1cccc1c00070000ffb33bff00070000000700000007000000074444
+70000507705000077050600000060507c1c66c1c700000070007cccc0007000000070000c1cccc1c00070000ff2bb2ff00070000000700000007000000074444
+70000007700000077000600000060007c1c55c1c700000077770777c7770777077707770c1cccc1c77707770ff2222ff77707770777077707770777077707774
+70000007700000077005000000005007c1c55c1c70000007ccc7cccc0007000000070000d1cccc1d000700002f2bb2f200070000000700000007000044474444
+70000007700000077050000000000507c1c55c1c70000007ccc7cccc0007000000070000fe1111ef0007000022b33b2200070000000700000007000044474444
+77777777777777777500000000000077d1cddc1d77777777ccc7cccc0007000000070000bf1111fb0007000022b33b2200070000000700000007000044474444
+55555555555555555555555555555555f0d66d0f55555555cccccccc0000000000000000bb1211bb00000000f22bb22f00000000000000000000000044444444
+000700000007000000070000000700000011110000070000000700000007000000070000bb1211bb00070000f222222f00070000000700000007000000070000
+000700000007000000070000000700000011210000070000000700000007000000070000bb1211bb00070000f22bb22f00070000000700000007000000070000
+000700000007000000070000000700000011210000070000000700000007000000070000bb1211bb00070000f2b33b2f00070000000700000007000000070000
+777077707770777077707770777077700011210077707770777077707770777077707770bb1211bb7770777022b33b2277707770777077707770777077707770
+000700000007000000070000000700000011210000070000000700000007000000070000bb1211bb00070000222bb22200070000000700000007000000070000
+000700000007000000070000000700000011210000070000000700000007000000070000bb1211bb000700002222222200070000000700000007000000070000
+0007000000070000000700000007000000cccc0000070000000700000007000000070000bbccccbb000700002222222200070000000700000007000000070000
+000000000000000000000000000000000776677000000000000000000000000000000000b776677b00000000bbbbbbbb00000000000000000000000000000000
 000700000007000077777777777777777777777777777777cccccccccccccccccccccccccccccccc777777777777777777777777777777770007000000070000
 000700000007000077777777777777777777777777777777cccccccccccccccccccccccccccccccc777777777777777777777777777777770007000000070000
 000700000007000077777777777777777777777777777777cccccccccccccccccccccccccccccccc777777777777777777777777777777770007000000070000
