@@ -6,12 +6,12 @@ __lua__
 -- paul nicholas
 
 -- debugging
-show_debuginfo = true
+show_debuginfo = false
 show_collision = false
 show_perfinfo = true
 enable_mouse = true
 
--- game verbs (used in room definitons and ui)
+-- game verbs (used in room definitions and ui)
 verbs = {
 	--verb, name, bounds{},
 	{"open", "open"},
@@ -25,7 +25,10 @@ verbs = {
 	{"use", "use"}
 }
 verb_default = {"walkto", "walk to"} -- verb to use when just clicking aroung (e.g. move actor)
-
+verb_maincol = 12  -- main color (lt blue)
+verb_hovcol = 7   -- hover color (white)
+verb_shadcol = 1   -- shadow (dk blue)
+verb_defcol = 10    -- default action (yellow)
 
 -- object states
 state_closed = "closed"
@@ -48,14 +51,18 @@ class_pickupable = "pickupable"   -- can be placed in actor inventory
 main_actor = { 				-- initialize the sprite object
 	x = 127/2 - 16, -- sprites x position
 	y = 127/2, 	-- sprites y position
-	spr = 3, 				-- sprite starting frame
+	--spr = 1, 				-- sprite starting frame
 	sprw = 1,
 	sprh = 4,
+	idle = 1, 				-- sprite for idle
+	walk_anim = {2,3,4,3},
 	flp = false, 			-- used for flipping the sprite
 	col = 12,				-- speech text colour
-	speed = 1,  			-- walking speed
+	trans_col = 11,
+	speed = 0.75,  			-- walking speed
 	moving = 0, 			-- 0=stopped, 1=walking, 2=arrived
 	tmr = 1, 				-- internal timer for managing animation
+	anim_pos = 1, -- used to track anim pos
 	inventory = {
 		-- object1,
 		-- object2
@@ -130,16 +137,21 @@ first_room = {
 			--[class is class-state [class-state]]
 			verbs = {
 				lookat = function()
-					--origx=selected_actor.x
-					--origy=selected_actor.y
-					--walk_to(actor, room_curr.objects.fire.x-5, room_curr.objects.fire.y+15)
 					say_line(selected_actor, "it's a nice, warm fire...")
 					wait_for_message()
 					break_time(10)
 					say_line(selected_actor, "ouch! it's hot!")
 					wait_for_message()
-					--walk_to(actor, origx, origy)
 					say_line(selected_actor, "*stupid fire*")
+				end,
+				talkto = function()
+					say_line(selected_actor, "'hi fire...'")
+					wait_for_message()
+					break_time(10)
+					say_line(selected_actor, "the fire didn't say hello back")
+					wait_for_message()
+					break_time(10)
+					say_line(selected_actor, "burn!!")
 				end
 			}
 		},
@@ -152,7 +164,7 @@ first_room = {
 			y = 2*8,
 			states = {
 				-- states are spr values
-				closed = 4, -- state_closed
+				closed = 15, -- state_closed
 				open = 0 -- state_open
 			},
 			flip_x = false, -- used for flipping the sprite
@@ -163,13 +175,14 @@ first_room = {
 				walkto = function()
 					printh("me = "..type(me))
 					if state_of(me) == state_open then
-						-- todo: go to new room!
+						-- go to new room!
+						come_out_door(second_room.objects.back_door, second_room)
 					else
 						say_line(selected_actor, "the door is closed")
 					end
 				end,
 				open = function()
-					if (isnull(me)) printh("me is NULL!")
+					if (isnull(me)) printh("me is null!")
 					printh("me = "..me.name)
 					if state_of(me) == state_open then
 						say_line(selected_actor, "it's already open!")
@@ -179,6 +192,24 @@ first_room = {
 				end,
 				close = function()
 					set_state(me, state_closed)
+				end
+			}
+		},
+		hall_door_kitchen = {
+			name = "kitchen",
+			state = state_open,
+			--[[states = {
+				open = 15 -- state_open
+			},]]
+			x = 14 *8, -- (*8 to use map cell pos)
+			y = 2 *8,
+			w = 1,	-- relates to spr or map cel, depending on above
+			h = 4,  --
+			verbs = {
+				walkto = function()
+					-- go to new room!
+					--change_room(second_room)
+					come_out_door(second_room.objects.kitchen_door_hall, second_room) -- ()
 				end
 			}
 		},
@@ -192,13 +223,12 @@ first_room = {
 			h = 1,  --
 			states = {
 				-- states are spr values
-				closed = 7 -- state_closed
+				closed = 239 -- state_closed
 				--open = 0 -- state_open
 			},
 			--owner (set on pickup)
-			--hidden (invisible + non-collidable)
 			--[dependent-on object-name being object-state]
-			--class is class-state [class-state]
+			--class is class-state [class-state]  (e.g. untouchable = invisible + non-collidable)
 			verbs = {
 				lookat = function()
 					if owner_of("bat") == selected_actor then
@@ -250,7 +280,7 @@ first_room = {
 			name = "window",
 			state = state_closed,
 			x = 4*8, -- (*8 to use map cell pos)
-			y = 2*8,
+			y = 1*8,
 			w = 2,	-- relates to spr or map cel, depending on above
 			h = 2,  --
 			states = {
@@ -266,7 +296,7 @@ second_room = {
 	map = {
 		x = 16,
 		y = 0,
-		w = 16,	-- default these?
+		w = 24,	-- default these?
 		h = 8	-- 
 	},
 	enter = function()
@@ -278,16 +308,31 @@ second_room = {
 	scripts = {	  -- scripts that are at room-level
 	},
 	objects = {
+		kitchen_door_hall = {
+			name = "hall",
+			state = state_open,
+			x = 1 *8, -- (*8 to use map cell pos)
+			y = 2 *8,
+			w = 1,	-- relates to spr or map cel, depending on above
+			h = 4,  --
+			verbs = {
+				walkto = function()
+					-- go to new room!
+					--change_room(second_room)
+					come_out_door(first_room.objects.hall_door_kitchen, first_room)
+				end
+			}
+		},
 		back_door = {
 			name = "back door",
 			--dependent_on = "closet-door",
 			--dependent_on_state = state_closed,
 			state = state_closed,
-			x = 14*8, -- (*8 to use map cell pos)
+			x = 22*8, -- (*8 to use map cell pos)
 			y = 2*8,
 			states = {
 				-- states are spr values
-				closed = 4, -- state_closed
+				closed = 15, -- state_closed
 				open = 0 -- state_open
 			},
 			flip_x = true, -- used for flipping the sprite
@@ -299,6 +344,9 @@ second_room = {
 					printh("me = "..type(me))
 					if state_of(me) == state_open then
 						-- todo: go to new room!
+						-- go to new room!
+						--change_room(first_room)
+						come_out_door(first_room.objects.front_door, first_room)
 					else
 						say_line(selected_actor, "the door is closed")
 					end
@@ -339,10 +387,10 @@ function find_default_verb(obj)
 	for v in all(verb_ordered_list) do
 		-- if object supports current verb
 	  if valid_verb(v, obj) then
-			-- check for reasons NOT to use this verb
+			-- check for reasons not to use this verb
 			if (v == "open" and obj.state != state_closed) 
 			or (v == "close" and obj.state != state_open)
-			--or (v == "talkto" and obj.class == class_ACTOR!!!)
+			--or (v == "talkto" and obj.class == class_actor!!!)
 			--or (v == "lookat")
 			then
 				-- not suitable ver, continue
@@ -386,19 +434,21 @@ screenheight = 127
 stage_top = 16
 
 -- offset to display speech above actors (dist in px from their feet)
-text_offset = (selected_actor.sprh+2)*8
+text_offset = (selected_actor.sprh-1)*8
 
-camera = {}
-camera.x = 0
-camera.max = 0 -- the maximum x position the camera can move to in the current room
-camera.min = 0 -- the minimum x position the camera can move to in the current room
+cam = {
+	x = 0,
+	max = 0, -- the maximum x position the camera can move to in the current room
+	min = 0  -- the minimum x position the camera can move to in the current room
+}
 
-cursor = {}
-cursor.x = screenwidth/2
-cursor.y = screenheight/2
-cursor.tmr = 0 -- used to animate cursor col
-cursor.cols = {7,12,13,13,12,7}
-cursor.colpos = 1 
+cursor = {
+  x = screenwidth/2,
+  y = screenheight/2,
+  tmr = 0, -- used to animate cursor col
+  cols = {7,12,13,13,12,7},
+  colpos = 1 
+}
 -- keeps reference to currently hovered items
 -- e.g. objects, ui elements, etc.
 hover_curr = {
@@ -423,7 +473,7 @@ dialog_curr = nil 	-- {x,y,col}
 me = nil 						-- same as noun1_curr (to make scripting easier)
 
 global_scripts = {}	-- table of scripts that are at game-level
-active_scripts = {}	-- table of scripts that are actively running
+local_scripts = {}	-- table of scripts that are actively running
 
 
 
@@ -458,11 +508,12 @@ function gameupdate()
 		selected_actor.thread = nil
 	end
 
+	--printh("#scripts="..#local_scripts)
 	-- update all the active scripts
 	-- (will auto-remove those that have ended)
-	for scr_obj in all(active_scripts) do
+	for scr_obj in all(local_scripts) do
 		if scr_obj[2] and not coresume(scr_obj[2]) then
-			del(active_scripts, scr_obj)
+			del(local_scripts, scr_obj)
 			scr_obj = nil
 		end
 	end
@@ -481,8 +532,16 @@ function gamedraw()
 	-- clear screen every frame?
 	rectfill(0,0,screenwidth, screenheight, 0)
 
+	-- move camera
+	--printh("cam.x:"..cam.x)
+	cam.x = mid(0, selected_actor.x - 64, (room_curr.map.w*8)-screenwidth-1)
+	camera(cam.x, 0)
+
 	-- draw room (bg + objects + actors)
 	roomdraw()
+
+	-- reset camera for "static" content
+	camera(0,0)
 
 	-- draw active dialog
 	dialogdraw()
@@ -572,13 +631,13 @@ function input_button_pressed(button_index)
 				end
 				break
 			elseif k == "ui_arrow" then
-				-- TODO: UI arrow clicked...
+				-- todo: ui arrow clicked...
 				break
 			--[[elseif k == "inv_object" then
-				-- TODO: inventory object clicked
+				-- todo: inventory object clicked
 				break]]
 			else
-				-- what else could there be? ACTORS!?
+				-- what else could there be? actors!?
 			end
 		end
 	end
@@ -600,7 +659,11 @@ function input_button_pressed(button_index)
 		selected_actor.thread = cocreate(function(actor, obj, verb)
 			if isnull(obj.owner) then
 				-- todo: walk to use pos and face dir
-				walk_to(selected_actor, obj.x+((obj.w*8)/2), obj.y+(obj.h*8))
+				printh("obj x="..obj.x..",y="..obj.y)
+				printh("obj w="..obj.w..",h="..obj.h)
+				walk_to(selected_actor, 
+					obj.x+((obj.w*8)/2)-cam.x, 
+					obj.y+(obj.h*8) +2)
 			end
 			-- does current object support active verb?
 			if valid_verb(verb,obj) then
@@ -619,7 +682,7 @@ function input_button_pressed(button_index)
 		executing_cmd = true
 		-- attempt to walk to target
 		selected_actor.thread = cocreate(walk_to)
-		coresume(selected_actor.thread, selected_actor, cursor.x, cursor.y - stage_top)
+		coresume(selected_actor.thread, selected_actor, cursor.x, cursor.y - stage_top +2)
 	end
 
 	-- show highlighted for a few secs 
@@ -633,13 +696,14 @@ function input_button_pressed(button_index)
 			end
 			-- wait some more to allow scripts to run
 			printh("wait b4 wiping command...")
-			break_time(4)
+			break_time(1) --4
 			verb_curr = verb_default
 			noun1_curr = nil
 			noun2_curr = nil
 			me = nil
 			executing_cmd = false
 			cmd_curr = ""
+			printh("wiped")
 		end)
   end
 
@@ -684,14 +748,18 @@ function roomdraw()
 	
 	-- debug walkable areas
 	if show_collision then
-		celx = flr(cursor.x/8)
-		cely = flr((cursor.y - stage_top)/8)
+		celx = flr((cursor.x + cam.x) /8) + room_curr.map.x
+		--celx = flr((cursor.x+cam.x)/8)
+		cely = flr((cursor.y - stage_top)/8)-- + room_curr.map.y
 		spr_num = mget(celx, cely)
+		
+		--printh("mapA x="..celx..",y="..cely)
 		--printh("spr:"..spr_num)
+
 		walkable = fget(spr_num,0)
 		--printh("flg:"..flags)
 		if walkable then
-			rect(celx*8, stage_top+(cely*8), celx*8+8, stage_top+(cely*8)+8, 11)
+			rect((celx-room_curr.map.x)*8, stage_top+(cely*8), (celx-room_curr.map.x)*8+7, stage_top+(cely*8)+7, 11)
 		end
 	end
 
@@ -700,27 +768,46 @@ function roomdraw()
 
 		-- todo: check dependent-on's
 
-		if (type(obj.states) != "nil") 
-			and (obj.states[obj.state] > 0)
-			and (isnull(obj.owner)) then
+		if (notnull(obj.states)) 
+		  and (obj.states[obj.state] > 0)
+		  and (isnull(obj.owner)) then
 			-- something to draw
 			draw_object(obj)
-			-- capture bounds
-			recalc_obj_bounds(obj)
+		end
+
+		-- capture bounds (even for "invisible" objects)
+		-- todo: exclude class_untouchable
+		if isnull(obj.class)
+		  or (notnull(obj.class) and obj.class != class_untouchable) then
+			recalc_obj_bounds(obj, cam.x, cam.y)
+			if (show_collision) rect(obj.bounds.x, obj.bounds.y, obj.bounds.x1, obj.bounds.y1, 8)
 		end
 	end
 
 	-- draw actors
-	actordraw()
+	actordraw(selected_actor)
 end
 
 -- draw actor(s)
-function actordraw()
+function actordraw(actor)
+	sprnum = actor.idle
  	-- offets
-	local offset_x = selected_actor.x - (selected_actor.sprw *8) /2
-	local offset_y = selected_actor.y -(selected_actor.sprh * 8)
+	local offset_x = actor.x - (actor.sprw *8) /2
+	local offset_y = actor.y -(actor.sprh * 8)
+	
+	if (actor.moving == 1) then
+		actor.tmr += 1
+		if (actor.tmr > 5) then
+			actor.tmr = 1
+			actor.anim_pos += 1
+			if (actor.anim_pos > #actor.walk_anim) actor.anim_pos=1
+		end
+		sprnum = actor.walk_anim[actor.anim_pos]
+	end
 
-	sprdraw(selected_actor.spr, offset_x, offset_y, selected_actor.sprw , selected_actor.sprh, 11)
+	sprdraw(sprnum, offset_x, offset_y, 
+		actor.sprw , actor.sprh, actor.trans_col, 
+		actor.flp, false)
 end
 
 function commanddraw()
@@ -769,7 +856,7 @@ function dialogdraw()
 			if dialog_curr.align == 1 then
 				line_offset_x = ((dialog_curr.char_width*4)-(#l*4))/2
 			end
-			shadow_text(
+			outline_text(
 				l, 
 				dialog_curr.x + line_offset_x, 
 				dialog_curr.y + line_offset_y, 
@@ -792,21 +879,25 @@ function uidraw()
 
 
 	for v in all(verbs) do
-		verbcol = 12  -- lightblue
+		txtcol=verb_maincol
 
 		-- highlight default verb
 		if notnull(hover_curr.default_verb)
 		  and (v == hover_curr.default_verb) then
-			verbcol = 10 -- yellow
+			txtcol = verb_defcol
 		end		
-		if (v == hover_curr.verb) verbcol=7
-		print(v[2], xpos, ypos, verbcol)  -- main
+		if (v == hover_curr.verb) txtcol=verb_hovcol
+		print(v[2], xpos, ypos+1, verb_shadcol)  -- shadow
+		print(v[2], xpos, ypos, txtcol)  -- main
+		
 		-- capture bounds
 		v["bounds"] = {
-			x=xpos,
-			y=ypos,
-			x1= xpos + #v[2]*4-1,
-			y1 = ypos+5
+			x = xpos,
+			y = ypos,
+			x1 = xpos + #v[2]*4-1,
+			y1 = ypos+5,
+			cam_off_x = 0,
+			cam_off_y = 0
 		}
 		if (show_collision) rect(v.bounds.x, v.bounds.y, v.bounds.x1, v.bounds.y1, 8)
 		-- auto-size column
@@ -838,7 +929,7 @@ function uidraw()
 			-- draw object/sprite
 			draw_object(obj)
 			-- re-calculate bounds (as pos may have changed)
-			recalc_obj_bounds(obj)
+			recalc_obj_bounds(obj,0,0)
 		end
 		xpos += 11
 		if xpos >= 125 then
@@ -880,13 +971,30 @@ end
 
 -- scumm core functions -------------------------------------------
 
+function come_out_door(door_obj, new_room)
+	-- todo: switch to new room and...	
+	change_room(new_room)
+	-- ...auto-position actor at door_obj (in opposite USE direction)
+	selected_actor.x = door_obj.x + ((door_obj.w*8)/2)
+	selected_actor.y = door_obj.y + (door_obj.h*8)
+end
+
 function change_room(new_room)
 	-- switch to new room
-	-- todo: play the exit() script of old room
-	-- todo: transition to new room (e.g. iris/swipe)
-	-- todo: play the enter() script of new room
+	-- execute the exit() script of old room
+	if notnull(room_curr) and notnull(room_curr.exit) then
+		start_script(room_curr.exit)
+		-- todo wait_for_script (to finish)
+	end
+	
+	-- stop all active (local) scripts
+	break_time(1)
+	local_scripts = {}
+
+	-- todo: transition to new room (e.g. iris/swipe)	
 	room_curr = new_room
-	-- execute "enter" code
+
+	-- execute the enter() script of new room
 	if notnull(room_curr.enter) then
 		start_script(room_curr.enter)
 	end
@@ -958,15 +1066,15 @@ function find_object(name)
 end
 
 function start_script(func)
-	-- create new thread for script and add to list of active_scripts
+	-- create new thread for script and add to list of local_scripts
 	local thread = cocreate(func)
-	add(active_scripts, {func, thread} )
+	add(local_scripts, {func, thread} )
 end
 
 function script_running(func)
 	printh("script_running()")
 	-- find script and stop it running
-	for k,scr_obj in pairs(active_scripts) do
+	for k,scr_obj in pairs(local_scripts) do
 		printh("...")
 		if (scr_obj[1] == func) then 
 			printh("found!")
@@ -980,11 +1088,11 @@ end
 function stop_script(func)
 	printh("stop_script()")
 	-- find script and stop it running
-	for k,scr_obj in pairs(active_scripts) do
+	for k,scr_obj in pairs(local_scripts) do
 		printh("...")
 		if (scr_obj[1] == func) then 
 			printh("found!")
-			del(active_scripts, scr_obj)
+			del(local_scripts, scr_obj)
 			printh("deleted!")
 			scr_obj = nil
 		end
@@ -1008,13 +1116,17 @@ end
 -- uses actor's position and color
 function say_line(actor, msg)
 	-- get pos above actor's head
-	ypos = actor.y-text_offset --((actor.sprh+2)*8)
+	ypos = actor.y-text_offset
 	-- call the base print_line to show actor line
 	print_line(msg, actor.x, ypos, actor.col, 1)
 end
 
 
 function print_line(msg, x, y, col, align)
+  -- todo: punctuation...
+	--  > ":" new line, shown after text prior expires
+	--  > "," new line, shown immediately
+
 	-- todo: an actor's talk animation is not activated as it is with say-line.
 	local col=col or 7 		-- default to white
 	local align=align or 0	-- default to no align
@@ -1034,7 +1146,7 @@ function print_line(msg, x, y, col, align)
 	max_line_length = max(flr(screen_space/2), 16)
 
 	local upt=function(max_length)
-		if #curword + #currline > max_line_length then
+		if #curword + #currline > max_length then
 			add(lines,currline)
 			if (#currline > longest_line) longest_line = #currline
 			currline=""
@@ -1045,12 +1157,24 @@ function print_line(msg, x, y, col, align)
 	for i=1,#msg do
 		curchar=sub(msg,i,i)
 		curword=curword..curchar
-		if curchar==" " then
+		if (curchar == " ")
+		 or (#curword > max_line_length-1) then
 			upt(max_line_length)
 		elseif #curword>max_line_length-1 then
 			curword=curword.."-"
 			upt(max_line_length)
+		elseif curchar == "," then -- line break
+			printh("LINE BREAK!")
+			currline=currline..sub(curword,1,#curword-1)
+			curword=""
+			upt(0)
 		end
+		--[[if curchar==" " then
+			upt(max_line_length)
+		elseif #curword>max_line_length-1 then
+			curword=curword.."-"
+			upt(max_line_length)
+		end]]
 	end
 	upt(max_line_length)
 	if currline~="" then
@@ -1090,20 +1214,36 @@ end
 
 -- walk actor to position
 function walk_to(actor, x, y)
+	--printh("x1:"..x)
+	--offset for camera
+	x += cam.x
+	--printh("x2:"..x)
+
 	local distance = sqrt((x - actor.x) ^ 2 + (y - actor.y) ^ 2)
 	local step_x = actor.speed * (x - actor.x) / distance
 	local step_y = actor.speed * (y - actor.y) / distance
 
+	--printh("walk_to: x="..x..",y="..y)
+	--printh("actor: x="..actor.x..",y="..actor.y)
+	--printh("distance:"..distance)
+	-- abort if not worth walking to!
+	if (distance < 1) return
+
 	-- check target position is in walkable block
-	celx = flr(x/8)
+	celx = flr(x/8) + room_curr.map.x
 	cely = flr(y/8)
-	spr_num = mget(celx, cely)
+	printh("mapB x="..celx..",y="..cely)
+	spr_num = mget(celx, cely)	
 	printh("spr:"..spr_num)
+	
 	walkable = fget(spr_num, 0) -- flag 0 = walkable
 	-- if it is...
 	if walkable then
+		printh("walkable!")
 		actor.moving = 1 --walking
+		actor.flp = (step_x<0)
 		for i = 0, distance/actor.speed do
+			--printh("walking...")
 			actor.x += step_x
 			actor.y += step_y
 			yield()
@@ -1116,21 +1256,20 @@ end
 
 -- internal functions -----------------------------------------------
 
-function recalc_obj_bounds(obj)
+function recalc_obj_bounds(obj, cam_off_x, cam_off_y)
 	obj["bounds"] = {
 			x = obj.x,
 			y = stage_top + obj.y,
-			x1 = obj.x + (obj.w*8),
-			y1 = stage_top + obj.y + (obj.h*8)
+			x1 = obj.x + (obj.w*8) + -1,
+			y1 = stage_top + obj.y + (obj.h*8) -1,
+			cam_off_x = cam_off_x,
+			cam_off_y = cam_off_y
 		}
 end
 
-
 -- library functions -----------------------------------------------
 
-function shadow_text(str,x,y,c0,c1) --al
- --if al==1 then x-=#str*2-1
- --elseif al==2 then x-=#str*4 end
+function outline_text(str,x,y,c0,c1)
 
  local c0=c0 or 7
  local c1=c1 or 0
@@ -1167,8 +1306,9 @@ end
 function iscursorcolliding(obj)
 	-- check params
 	if (isnull(obj.bounds)) return false
-	if (cursor.x>obj.bounds.x1 or cursor.x<obj.bounds.x) 
-	 or (cursor.y>obj.bounds.y1 or cursor.y<obj.bounds.y) then
+	bounds=obj.bounds
+	if (cursor.x + bounds.cam_off_x > bounds.x1 or cursor.x + bounds.cam_off_x < bounds.x) 
+	 or (cursor.y>bounds.y1 or cursor.y<bounds.y) then
 		return false
 	else
 		return true
@@ -1211,70 +1351,70 @@ function notnull(var)
 end
 
 __gfx__
-000000000444449000000000bbbbbbbb4444444411111111f9e9f9f9000000940000000000000000ffffffff7777777766666666cccccccc3333333300000000
-000000004440444900000000bbbbbbbb4ffffff4111111119eee9f9f000009440000000000000000ffffffff7777777766666666cccccccc3333333300000000
-000000004040000400000000b444449b4f44449411111111feeef9f9000094400000000000000000ffffffff7777777766666666cccccccc3333333300000000
-0000000004ffff0000000000444044494f444494111111119fef9fef000944000000000000000000ffffffff7777777766666666cccccccc3333333300000000
-000000000f9ff9f000000000404000044f44449411111111f9f9feee000440000000000000000000ffffffff7777777766666666cccccccc3333333300000000
-000000000f5ff5f00000000004ffff004f444494111111119f9f9eee004000000000000000000000ffffffff7777777766666666cccccccc3333333300000000
-000000004ffffff4000000000f9ff9f04f44449411111111f9f9feee940000000000000000000000ffffffff7777777766666666cccccccc3333333300000000
-000000000ff44ff0000000000f5ff5f04f444494111111119f9f9fef440000000000000000000000ffffffff7777777766666666cccccccc3333333300000000
-000cc00006ffff60000000004ffffff44f444494ccccccccddd5ddd5000000000000000000000000000000000000000000000000000000000000000000000000
-00c11c000065560000000000bff44ffb4f444494ccccccccdd5ddd5d00000000000a000000000000000000000000000000000000000000000000000000000000
-0c1001c00006600000000000b6ffff6b4f449994ccccccccd5ddd5dd000000000000000000000000000000000000000000000000000000000000000000000000
-ccc00ccc0000000000000000bb6556bb4f994444cccccccc5ddd5ddd00a0a000000aa000000a0a00cccccccc55555555dddddddd111111110000000000000000
-00c00c000000000000000000bbb66bbb44444444ccccccccddd5ddd500aaaa0000aaaa0000aaa000cccccccc55555555dddddddd111111110000000000000000
-00c00c000000000000000000bdc55cdb44444444ccccccccdd5ddd5d00a9aa0000a99a0000aa9a00cccccccc55555555dddddddd111111110000000000000000
-00cccc000000000000000000dcc55ccd49a44444ccccccccd5ddd5dd00a99a0000a99a0000a99a00cccccccc55555555dddddddd111111110000000000000000
-001111000000000000000000c1c66c1c49944444cccccccc5ddd5ddd004444000044440000444400cccccccc55555555dddddddd111111110000000000000000
-000700000dc55cd000000000c1c55c1c44444444dddddddd99999999777777777777777777777777ffffffcc77777755666666ddcccccc115555553300000000
-00070000dcc55ccd00000000c1c55c1c4444fff4dddddddd55555555555555555555555555555555ffffcccc777755556666ddddcccc11115555333300000000
-00070000c1c66c1c00000000c1c55c1c4fff4494dddddddd444444440dd6dd6dd6dd6dd6d6dd6d50ffcccccc7755555566ddddddcc1111115533333300000000
-77707770c1c55c1c00000000d1cddc1d4f444494ddddddddffff4fff0dd6dd6dd6dd6dd6d6dd6d50cccccccc55555555dddddddd111111115333333300000000
-00070000c1c55c1c00000000fe1111ef4f444494dddddddd44494944066666666666666666666650cccccccc55555555dddddddd111111115333333300000000
-00070000c1c55c1c00000000bf1111fb4f444494dddddddd444949440d6dd6dd6dd6dd6ddd6dd650cccccccc55555555dddddddd111111115533333300000000
-00070000d1cddc1d00000000bb1121bb4f444494dddddddd444949440d6dd6dd6dd6dd6ddd6dd650cccccccc55555555dddddddd111111115555333300000000
-00000000f0d66d0f00000000bb1121bb4f444494dddddddd44494944066666666666666666666650cccccccc55555555dddddddd111111115555553300000000
-00cccc000011110000000000bb1121bb4f44449455555555444949440dd6dd600000000056dd6d50ccffffff55777777dd66666611cccccc5555555500000000
-00c11c000011210000000000bb1121bb4f44499455555555444949440dd6dd650000000056dd6d50ccccffff55557777dddd66661111cccc3333555500000000
-00c00c000011210000000000bb1121bb4f4994445555555544494944066666650000000056666650ccccccff55555577dddddd66111111cc3333335500000000
-ccc00ccc0011210000000000bb1121bb4f94444455555555444949440d6dd6d5000000005d6dd650cccccccc55555555dddddddd111111113333333500000000
-1c1001c10011210000000000bb1121bb4444440055555555444949440d6dd6d5000000005d6dd650cccccccc55555555dddddddd111111113333333500000000
-01c00c100011210000000000bbccccbb444400005555555544494944066666650000000056666650cccccccc55555555dddddddd111111113333335500000000
-001cc10000cccc0000000000b776677b4400000055555555999949990dd6dd650000000056dd6d50cccccccc55555555dddddddd111111113333555500000000
-000110000776677000000000bbbbbbbb0000000055555555444444440dd6dd650000000056dd6d50cccccccc55555555dddddddd111111115555555500000000
-00077000000000700700000000070000000700000007000000070000000700000007000000070000000700000007000000070000000700000007000000070000
-00088000000000877800000000070000000700000007000000070000000700000007000000070000000700000007000000070000000700000007000000070000
-00088000000008800880000000070000000700000007000000070000000700000007000000070000000700000007000000070000000700000007000000070000
-00088000000008800880000077707770777077707770777077707770777077707770777077707770777077707770777077707770777077707770777077707770
-00088000000088000088000000070000000700000007000000070000000700000007000000070000000700000007000000070000000700000007000000070000
-00088000000088000088000000070000000700000007000000070000000700000007000000070000000700000007000000070000000700000007000000070000
-00088000000880000008800000070000000700000007000000070000000700000007000000070000000700000007000000070000000700000007000000070000
-00088000000880000008800000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-7777777777777777775555555555557700070000000700000007000000070000000700000007000000070000000700000007bbbb000700000007000000070000
-7000000770000007707000000000070700070000000700000007000000070000000700000007000000070000000700000007bbbb000700000007000000070000
-7000000770000007700700000000700700070000000700000007000000070000000700000007000000070000000700000007bbbb000700000007000000070000
-7000000770000007700060000006000777707770777077707770777077707770777077707770777077707770777077707770777b777077707770777077707770
-700000077000000770006000000600070007000000070000000700000007000000070000000700000007000000070000bbb7bbbb000700000007000000070000
-700000077000000770006000000600070007000000070000000700000007000000070000000700000007000000070000bbb7bbbb000700000007000000070000
-700000077000000770006000000600070007000000070000000700000007000000070000000700000007000000070000bbb7bbbb000700000007000000070000
-777777777777777777776000000677770000000000000000000000000000000000000000000000000000000000000000bbbbbbbb000000000000000000000000
-7000006776000007700660000006600700070000000700000007cccc000700000007000000079999000700000007000000070000000700000007000000074444
-7000060770600007706060000006060700070000000700000007cccc000700000007000000079999000700000007000000070000000700000007000000074444
-7000050770500007705060000006050700070000000700000007cccc000700000007000000079999000700000007000000070000000700000007000000074444
-7000000770000007700060000006000777707770777077707770777c777077707770777077707779777077707770777077707770777077707770777077707774
-700000077000000770050000000050070007000000070000ccc7cccc000700000007000099979999000700000007000000070000000700000007000044474444
-700000077000000770500000000005070007000000070000ccc7cccc000700000007000099979999000700000007000000070000000700000007000044474444
-777777777777777775000000000000770007000000070000ccc7cccc000700000007000099979999000700000007000000070000000700000007000044474444
-555555555555555555555555555555550000000000000000cccccccc000000000000000099999999000000000000000000000000000000000000000044444444
-00070000000700000007000000070000000700000007000000070000000700000007000000070000000700000007000000070000000700000007000000070000
-00070000000700000007000000070000000700000007000000070000000700000007000000070000000700000007000000070000000700000007000000070000
-00070000000700000007000000070000000700000007000000070000000700000007000000070000000700000007000000070000000700000007000000070000
-77707770777077707770777077707770777077707770777077707770777077707770777077707770777077707770777077707770777077707770777077707770
-00070000000700000007000000070000000700000007000000070000000700000007000000070000000700000007000000070000000700000007000000070000
-00070000000700000007000000070000000700000007000000070000000700000007000000070000000700000007000000070000000700000007000000070000
-00070000000700000007000000070000000700000007000000070000000700000007000000070000000700000007000000070000000700000007000000070000
-00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb1111111100000000f9e9f9f9ddd5ddd500000000ffffffff7777777766666666cccccccc3333333344444444
+00000000bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb11111111000000009eee9f9fdd5ddd5d00000000ffffffff7777777766666666cccccccc333333334ffffff4
+00000000bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb1111111100000000feeef9f9d5ddd5dd00000000ffffffff7777777766666666cccccccc333333334f444494
+00000000b444449bb494449bb494449bb494449b11111111000000009fef9fef5ddd5ddd00000000ffffffff7777777766666666cccccccc333333334f444494
+00000000444044494944444949444449494444491111111100000000f9f9feeeddd5ddd500000000ffffffff7777777766666666cccccccc333333334f444494
+000000004040000449440004494400044944000411111111000000009f9f9eeedd5ddd5d00000000ffffffff7777777766666666cccccccc333333334f444494
+0000000004ffff000440fffb0440fffb0440fffb1111111100000000f9f9feeed5ddd5dd00000000ffffffff7777777766666666cccccccc333333334f444494
+000000000f9ff9f004f0f9fb04f0f9fb04f0f9fb11111111000000009f9f9fef5ddd5ddd00000000ffffffff7777777766666666cccccccc333333334f444494
+000cc0000f5ff5f000fff5fb00fff5fb00fff5fbcccccccc0000000000000000000000000000000000000000000000000000000000000000000000004f444494
+00c11c004ffffff440ffffff40ffffff40ffffffcccccccc0000000000000000000a00000000000000000000000000000000000000000000000000004f444494
+0c1001c0bff44ffbb0fffff4b0fffff4b0fffff4cccccccc0000000000000000000000000000000000000000000000000000000000000000000000004f449994
+ccc00cccb6ffff6bb6fffffbb6fffffbb6fffffbcccccccc0000000000a0a000000aa000000a0a00cccccccc55555555dddddddd11111111000000004f994444
+00c00c00bb6556bbbb6ff55bbb6ff55bbb6ff55bcccccccc0000000000aaaa0000aaaa0000aaa000cccccccc55555555dddddddd111111110000000044444444
+00c00c00bbb66bbbbbb66bbbbbb66bbbbbb66bbbcccccccc0000000000a9aa0000a99a0000aa9a00cccccccc55555555dddddddd111111110000000044444444
+00cccc00bdc55cdbbbddcbbbbbbddbbbbbddcbbbcccccccc0000000000a99a0000a99a0000a99a00cccccccc55555555dddddddd111111110000000049a44444
+00111100dcc55ccdb1ccdcbbbb1ccdbbb1ccdcbbcccccccc00000000004444000044440000444400cccccccc55555555dddddddd111111110000000049944444
+00070000c1c66c1cb1ccdcbbbb1ccdbbb1ccdcbbdddddddd99999999777777777777777777777777ffffffcc77777755666666ddcccccc115555553344444444
+00070000c1c55c1cb1ccdcbbbb1ccdbbb1ccdcbbdddddddd55555555555555555555555555555555ffffcccc777755556666ddddcccc1111555533334444fff4
+00070000c1c55c1cb1ccdcbbbb1ccdbbb1ccdcbbdddddddd444444440dd6dd6dd6dd6dd6d6dd6d50ffcccccc7755555566ddddddcc111111553333334fff4494
+77707770c1c55c1cb1ccdcbbbb1ccdbbb1ccdcbbddddddddffff4fff0dd6dd6dd6dd6dd6d6dd6d50cccccccc55555555dddddddd11111111533333334f444494
+00070000d1cddc1db1dddcbbbb1dddbbb1dddcbbdddddddd44494944066666666666666666666650cccccccc55555555dddddddd11111111533333334f444494
+00070000fe1111efbbff11bbbb2ff1bbbbff11bbdddddddd444949440d6dd6dd6dd6dd6ddd6dd650cccccccc55555555dddddddd11111111553333334f444494
+00070000bf1111fbbbfe11bbbb2fe1bbbbfe11bbdddddddd444949440d6dd6dd6dd6dd6ddd6dd650cccccccc55555555dddddddd11111111555533334f444494
+00000000bb1121bbbb2111bbbb2111bbbb2111bbdddddddd44494944066666666666666666666650cccccccc55555555dddddddd11111111555555334f444494
+00cccc00bb1121bbbb1111bbbb2111bbbb2111bb55555555444949440dd6dd600000000056dd6d50ccffffff55777777dd66666611cccccc555555554f444494
+00c11c00bb1121bbbb1111bbbb2111bbbb2111bb55555555444949440dd6dd650000000056dd6d50ccccffff55557777dddd66661111cccc333355554f444994
+00c00c00bb1121bbbb1112bbbb2111bbbb21111b5555555544494944066666650000000056666650ccccccff55555577dddddd66111111cc333333554f499444
+ccc00cccbb1121bbbb1112bbbb2111bbbb22111b55555555444949440d6dd6d5000000005d6dd650cccccccc55555555dddddddd11111111333333354f944444
+1c1001c1bb1121bbb111122bbb2111bbb222111b55555555444949440d6dd6d5000000005d6dd650cccccccc55555555dddddddd111111113333333544444400
+01c00c10bb1121bbc111222bbb2111bbb22211cc5555555544494944066666650000000056666650cccccccc55555555dddddddd111111113333335544440000
+001cc100bbccccbb7ccc222bbbccccbbb222cc7755555555999949990dd6dd650000000056dd6d50cccccccc55555555dddddddd111111113333555544000000
+00011000b776677bb7776666bb6777bbb66677bb55555555444444440dd6dd650000000056dd6d50cccccccc55555555dddddddd111111115555555500000000
+00077000000000700700000000070000044444900007000077760000777777777777777700070000000700000007000000070000000700000007000000070000
+00088000000000877800000000070000444044490007000077760000555555555555555500070000000700000007000000070000000700000007000000070000
+00088000000008800880000000070000404000040007000077760000444444444444444400070000000700000007000000070000000700000007000000070000
+0008800000000880088000007770777004ffff007770777066665555444ffffffffff44477707770777077707770777077707770777077707770777077707770
+000880000000880000880000000700000f9ff9f00007000000007776444944444444944400070000000700000007000000070000000700000007000000070000
+000880000000880000880000000700000f5ff5f000070000000077764449444aa444944400070000000700000007000000070000000700000007000000070000
+000880000008800000088000000700004ffffff40007000000007776444944444444944400070000000700000007000000070000000700000007000000070000
+000880000008800000088000000000000ff44ff00000000055556666444999999999944400000000000000000000000000000000000000000000000000000000
+7777777777777777775555555555557706ffff60777777770007000044494444444494440007000000070000000700000007bbbb000700000007000000070000
+7000000770000007707000000000070700655600700000070007000044494444444494440007000000070000000700000007bbbb000700000007000000070000
+7000000770000007700700000000700700066000700000070007000044494444444494440007000000070000000700000007bbbb000700000007000000070000
+7000000770000007700060000006000700000000700000077770777044494444444494447770777077707770777077707770777b777077707770777077707770
+700000077000000770006000000600070000000070000007000700004449444444449444000700000007000000070000bbb7bbbb000700000007000000070000
+700000077000000770006000000600070000000070000007000700004449444444449444000700000007000000070000bbb7bbbb000700000007000000070000
+700000077000000770006000000600070000000070000007000700004449999999999444000700000007000000070000bbb7bbbb000700000007000000070000
+777777777777777777776000000677770000000077777777000000004444444444444444000000000000000000000000bbbbbbbb000000000000000000000000
+700000677600000770066000000660070dc55cd0700000070007cccc000700000007000000079999000700000007000000070000000700000007000000074444
+70000607706000077060600000060607dcc55ccd700000070007cccc000700000007000000079999000700000007000000070000000700000007000000074444
+70000507705000077050600000060507c1c66c1c700000070007cccc000700000007000000079999000700000007000000070000000700000007000000074444
+70000007700000077000600000060007c1c55c1c700000077770777c777077707770777077707779777077707770777077707770777077707770777077707774
+70000007700000077005000000005007c1c55c1c70000007ccc7cccc000700000007000099979999000700000007000000070000000700000007000044474444
+70000007700000077050000000000507c1c55c1c70000007ccc7cccc000700000007000099979999000700000007000000070000000700000007000044474444
+77777777777777777500000000000077d1cddc1d77777777ccc7cccc000700000007000099979999000700000007000000070000000700000007000044474444
+55555555555555555555555555555555f0d66d0f55555555cccccccc000000000000000099999999000000000000000000000000000000000000000044444444
+00070000000700000007000000070000001111000007000000070000000700000007000000070000000700000007000000070000000700000007000000070000
+00070000000700000007000000070000001121000007000000070000000700000007000000070000000700000007000000070000000700000007000000070000
+00070000000700000007000000070000001121000007000000070000000700000007000000070000000700000007000000070000000700000007000000070000
+77707770777077707770777077707770001121007770777077707770777077707770777077707770777077707770777077707770777077707770777077707770
+00070000000700000007000000070000001121000007000000070000000700000007000000070000000700000007000000070000000700000007000000070000
+00070000000700000007000000070000001121000007000000070000000700000007000000070000000700000007000000070000000700000007000000070000
+0007000000070000000700000007000000cccc000007000000070000000700000007000000070000000700000007000000070000000700000007000000070000
+00000000000000000000000000000000077667700000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 000700000007000077777777777777777777777777777777cccccccccccccccccccccccccccccccc777777777777777777777777777777770007000000070000
 000700000007000077777777777777777777777777777777cccccccccccccccccccccccccccccccc777777777777777777777777777777770007000000070000
 000700000007000077777777777777777777777777777777cccccccccccccccccccccccccccccccc777777777777777777777777777777770007000000070000
@@ -1323,14 +1463,14 @@ ccc00ccc0011210000000000bb1121bb4f94444455555555444949440d6dd6d5000000005d6dd650
 00070000000700000007000000070000000700000007000000070000000700000007000000070000cccccccc8888888855555555000700000007000000070000
 00070000000700000007000000070000000700000007000000070000000700000007000000070000cccccccc8888888855555555000700000007000000070000
 00000000000000000000000000000000000000000000000000000000000000000000000000000000cccccccc8888888855555555000000000000000000000000
-00070000000700000007000000070000000700000007000000070000000700000007000000070000000700000007000000070000000700000007000000070000
-00070000000700000007000000070000000700000007000000070000000700000007000000070000000700000007000000070000000700000007000000070000
-00070000000700000007000000070000000700000007000000070000000700000007000000070000000700000007000000070000000700000007000000070000
-77707770777077707770777077707770777077707770777077707770777077707770777077707770777077707770777077707770777077707770777077707770
-00070000000700000007000000070000000700000007000000070000000700000007000000070000000700000007000000070000000700000007000000070000
-00070000000700000007000000070000000700000007000000070000000700000007000000070000000700000007000000070000000700000007000000070000
-00070000000700000007000000070000000700000007000000070000000700000007000000070000000700000007000000070000000700000007000000070000
-00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00070000000700000007000000070000000700000007000000070000000700000007000000070000000700000007000000070000000700000007000000000094
+00070000000700000007000000070000000700000007000000070000000700000007000000070000000700000007000000070000000700000007000000000944
+00070000000700000007000000070000000700000007000000070000000700000007000000070000000700000007000000070000000700000007000000009440
+77707770777077707770777077707770777077707770777077707770777077707770777077707770777077707770777077707770777077707770777000094400
+00070000000700000007000000070000000700000007000000070000000700000007000000070000000700000007000000070000000700000007000000044000
+00070000000700000007000000070000000700000007000000070000000700000007000000070000000700000007000000070000000700000007000000400000
+00070000000700000007000000070000000700000007000000070000000700000007000000070000000700000007000000070000000700000007000094000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000044000000
 00070000000700000007000000070000000700000007000000070000000700000007000000070000000700000007000000070000000700000007000088888888
 00070000000700000007000000070000000700000007000000070000000700000007000000070000000700000007000000070000000700000007000080000008
 00070000000700000007000000070000000700000007000000070000000700000007000000070000000700000007000000070000000700000007000080800808
@@ -1344,15 +1484,15 @@ __gff__
 0000000000010000000000000000010000000000000100000000010101010000000000000001000000000101010101000000000000010000000001010101010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 __map__
-0b0b0b060606060606060606060b0b0b0a0a0a161616161616161616160a0a0a0a0a0a060606060606060606060a0a0a0a0a0a060606060606060606060a0a0a0a0a0a060606060606060606060a0a0a0a0a0a060606060606060606060a0a0a0a0a0a060606060606060606060a0a0a0a0a0a060606060606060606060a0a0a
-0b0b0b060606060606060606060b0b0b0a0a0a161616161616161616160a0a0a0a0a0a060606060606060606060a0a0a0a0a0a060606060606060606060a0a0a0a0a0a060606060606060606060a0a0a0a0a0a060606060606060606060a0a0a0a0a0a060606060606060606060a0a0a0a0a0a060606060606060606060a0a0a
-0b000b060000060606060606060b000b0a090a161616161616161616160a090a0a040a060606060606060606060a240a0a040a060606060606060606060a240a0a040a060606060606060606060a240a0a040a060606060606060606060a240a0a040a060606060606060606060a240a0a040a060606060606060606060a240a
-0b000b260000262728292626260b000b0a090a262626262626262626260a090a0a140a262626272828292626260a340a0a140a262626272828292626260a340a0a140a262626272828292626260a340a0a140a262626272828292626260a340a0a140a262626272828292626260a340a0a140a262626272828292626260a340a
-0b000b363636363700393636360b000b0a090a363636363636363636360a090a0a140a363636370000393636360a340a0a140a363636370000393636360a340a0a140a363636370000393636360a340a0a140a363636370000393636360a340a0a140a363636370000393636360a340a0a140a363636370000393636360a340a
-0b1b2b353535353535353535353b1b0b0a1a2a151515151515151515153a1a0a0a070f151515151515151515151e080a0a070f151515151515151515151e080a0a070f151515151515151515151e080a0a070f151515151515151515151e080a0a070f151515151515151515151e080a0a070f151515151515151515151e080a
-2b3535352e0e0e0e0e0e0e3e3535353b2a15151515151515151515151515153a0f15151517191919191919181515151e0f15151517191919191919181515151e0f15151517191919191919181515151e0f15151517191919191919181515151e0f15151517191919191919181515151e0f15151517191919191919181515151e
-3535353535353535353535353535353515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515
-0a0a0a060606060606060606060a0a0a0a0a0a060606060606060606060a0a0a0a0a0a060606060606060606060a0a0a0a0a0a060606060606060606060a0a0a0a0a0a060606060606060606060a0a0a0a0a0a060606060606060606060a0a0a0a0a0a060606060606060606060a0a0a0a0a0a060606060606060606060a0a0a
+0b0b0b070707070707070707070b0b0b0c0c0c0808080808080808080808080808080808080c0c0c060606060606060a0a0a0a060606060606060606060a0a0a0a0a0a060606060606060606060a0a0a0a0a0a060606060606060606060a0a0a0a0a0a060606060606060606060a0a0a0a0a0a060606060606060606060a0a0a
+0b0b0b070000070707070707070b0b0b0c0c0c0808080808080850505051080808080808080c0c0c060606060606060a0a0a0a060606060606060606060a0a0a0a0a0a060606060606060606060a0a0a0a0a0a060606060606060606060a0a0a0a0a0a060606060606060606060a0a0a0a0a0a060606060606060606060a0a0a
+0b000b070000070707070707070b000b0c090c4646464646464660656561464646464646460c090c060606060606060a0a040a060606060606060606060a240a0a040a060606060606060606060a240a0a040a060606060606060606060a240a0a040a060606060606060606060a240a0a040a060606060606060606060a240a
+0b000b262626262728292626260b000b0c090c4748474847484748474847484748474847480c090c060606060606060a0a140a262626272828292626260a340a0a140a262626272828292626260a340a0a140a262626272828292626260a340a0a140a262626272828292626260a340a0a140a262626272828292626260a340a
+0b000b363636363700393636360b000b0c090c5758575857585758575857585758575857580c090c060606060606060a0a140a363636370000393636360a340a0a140a363636370000393636360a340a0a140a363636370000393636360a340a0a140a363636370000393636360a340a0a140a363636370000393636360a340a
+0b1b2b353535353535353535353b1b0b0c1c2c2525252525252525252525252525252525253c1c0c060606060606060a0a070f151515151515151515151e080a0a070f151515151515151515151e080a0a070f151515151515151515151e080a0a070f151515151515151515151e080a0a070f151515151515151515151e080a
+2b3535352e0e0e0e0e0e0e3e3535353b2c252525252525252525252525252525252525252525253c060606060606061e0f15151517191919191919181515151e0f15151517191919191919181515151e0f15151517191919191919181515151e0f15151517191919191919181515151e0f15151517191919191919181515151e
+3535353535353535353535353535353525252525252525252525252525252525252525252525252506060606060606151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515
+0a0a0a060606060606060606060a0a0a0a0a0a060606060606060606060a0a0a0a0a0a0606060606060606060606060a0a0a0a060606060606060606060a0a0a0a0a0a060606060606060606060a0a0a0a0a0a060606060606060606060a0a0a0a0a0a060606060606060606060a0a0a0a0a0a060606060606060606060a0a0a
 0a0a0a060606060606060606060a0a0a0a0a0a060606060606060606060a0a0a0a0a0a060606060606060606060a0a0a0a0a0a060606060606060606060a0a0a0a0a0a060606060606060606060a0a0a0a0a0a060606060606060606060a0a0a0a0a0a060606060606060606060a0a0a0a0a0a060606060606060606060a0a0a
 0a000a060606060606060606060a000a0a040a060606060606060606060a240a0a040a060606060606060606060a240a0a040a060606060606060606060a240a0a040a060606060606060606060a240a0a040a060606060606060606060a240a0a040a060606060606060606060a240a0a040a060606060606060606060a240a
 0a000a262626272828292626260a000a0a140a262626272828292626260a340a0a140a262626272828292626260a340a0a140a262626272828292626260a340a0a140a262626272828292626260a340a0a140a262626272828292626260a340a0a140a262626272828292626260a340a0a140a262626272828292626260a340a
