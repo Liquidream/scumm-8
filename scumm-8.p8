@@ -7,7 +7,7 @@ __lua__
 
 -- debugging
 show_debuginfo = false
-show_collision = false
+show_collision = true
 show_perfinfo = true
 enable_mouse = true
 d = printh
@@ -48,6 +48,23 @@ class_giveable = 8		-- canbe given to an actor/object
 cut_noverbs = 1 		-- this removes the interface during the cut-scene.
 cut_hidecursor = 2  -- this turns off the cursor during the cut-scene.
 --cut_no_follow = 4  -- this disables the follow-camera being reinstated
+
+-- actor constants
+face_front = 1	-- states for actor direction
+face_left = 2   -- (not sprite #'s)
+face_back = 3		
+face_right = 4
+--
+pos_infront = 1 
+pos_behind = 3
+pos_left = 2
+pos_right = 4
+pos_inside = 5
+
+-- actor animations
+anim_face = 1	 -- position the actor immediately to the direction indicated
+anim_turn = 2  -- show the turning stages of animation
+
 
 -- #######################################################
 -- room definitions
@@ -272,18 +289,22 @@ first_room = {
 				open = 82 -- state_open
 			},
 			verbs = {
-				lookat = function(me)	
+				open = function(me)	
 					cutscene(cut_noverbs + cut_hidecursor, 
 					function()
 						-- todo: cutscene code
 						change_room(second_room)
-						say_line(actors.purp_tentacle, "what was that?!")
+						selected_actor = actors.purp_tentacle
+						walk_to(selected_actor, 
+							selected_actor.x+10, 
+							selected_actor.y)
+						say_line(selected_actor, "what was that?!")
 						wait_for_message()
-						say_line(actors.purp_tentacle, "I'd better check")
+						say_line(selected_actor, "i'd better check")
 						wait_for_message()
-						walk_to(actors.purp_tentacle, 
-							actors.purp_tentacle.x-10, 
-							actors.purp_tentacle.y)
+						walk_to(selected_actor, 
+							selected_actor.x-10, 
+							selected_actor.y)
 					end)
 				end
 			}
@@ -376,27 +397,13 @@ selected_room = first_room
 -- actor definitions
 -- 
 
-face_front = 1	-- states for actor direction
-face_left = 2   -- (not sprite #'s)
-face_back = 3		
-face_right = 4
-
-pos_infront = 1 
-pos_behind = 3
-pos_left = 2
-pos_right = 4
-pos_inside = 5
-
--- actor animations
-anim_face = 1	 -- position the actor immediately to the direction indicated
-anim_turn = 2  -- show the turning stages of animation
-
 actors = {
 	main_actor = { 		-- initialize the actor object
+		name = "",
 		x = 127/2 - 16,
 		y = 127/2 -16,
-		sprw = 1,
-		sprh = 4,
+		w = 1,
+		h = 4,
 		face_dir = face_front, 	-- direction facing
 		idle = {1,3,73,3},	-- sprites for idle (front, back, left) - right=flip
 		walk_anim = {2,3,4,3},
@@ -413,10 +420,12 @@ actors = {
 		}
 	},
 	purp_tentacle = {
-		x = 127/2 - 16,
+		name = "purple tentacle",
+		class = class_talkable,
+		x = 127/2 + 24,
 		y = 127/2 -16,
-		sprw = 1,
-		sprh = 3,
+		w = 1,
+		h = 3,
 		face_dir = face_front,
 		idle = { 91, 91, 91, 91 },
 		col = 2,				-- speech text colour
@@ -425,7 +434,31 @@ actors = {
 		moving = 0,
 		tmr = 1,
 		anim_pos = 1,
-		in_room = second_room
+		in_room = first_room, --second_room
+		verbs = {
+				lookat = function()
+					say_line(selected_actor, "it's a weird looking tentacle, thing!")
+				end,
+				talkto = function(me)
+					cutscene(cut_noverbs, function()
+						--actorface( commanderzif, var_ego )
+						say_line(me,"what do you want?")
+						wait_for_message()
+						-- dialog loop
+						while (true) do
+							-- build dialog options
+							dialog_add("where am i?")
+							dialog_add("who are you?")
+							dialog_add("how much wood would a wood-chuck chuck, if a wood-chuck could chuck wood?")
+							dialog_add("nevermind")
+							dialog_start(selected_actor.col, 7)
+							-- wait for selection
+							while isnull(sentence_curr) do break_time(1) end
+							break -- exit dialog loop
+						end
+					end)
+				end
+			}
 	}
 }
 
@@ -492,7 +525,7 @@ screenheight = 127
 stage_top = 16
 
 -- offset to display speech above actors (dist in px from their feet)
-text_offset = (selected_actor.sprh-1)*8
+text_offset = (selected_actor.h-1)*8
 
 cam = {
 	x = 0,
@@ -518,6 +551,7 @@ hover_curr = {
 	-- verb, 
 	-- default_verb,
 	-- object, 
+	-- dialog sentence
 	-- ui_arrow
 }
 last_mouse_x = 0
@@ -533,7 +567,9 @@ cmd_curr = "" 			-- contains last displayed or actioned command
 executing_cmd = false
 talking_curr = nil 	-- currently displayed speech {x,y,col,lines...}
 dialog_curr = nil   -- currently displayed dialog options to pick
+sentence_curr = nil -- selected dialog sentence
 cutscene_curr = nil -- currently active cutscene
+
 
 global_scripts = {}	-- table of scripts that are at game-level (background)
 local_scripts = {}	-- table of scripts that are actively running
@@ -650,15 +686,21 @@ function gamedraw()
 
 	-- draw current command (verb/object)
 	if isnull(cutscene_curr) then
-		commanddraw()
+		command_draw()
 	end
+
 	-- draw ui and inventory
 	if isnull(cutscene_curr) or not has_flag(cutscene_curr.flags, cut_noverbs) then
-		uidraw()
+		ui_draw()
+	end
+
+	-- draw dialog sentences?
+	if notnull(dialog_curr) and dialog_curr.visible then
+		dialog_draw()
 	end
 
 	if isnull(cutscene_curr) or not has_flag(cutscene_curr.flags, cut_hidecursor) then
-		cursordraw()
+		cursor_draw()
 	end
 	
 
@@ -734,7 +776,7 @@ function input_button_pressed(button_index)
 					noun1_curr = h
 					--me = noun1_curr
 					-- force repaint of command (to reflect default verb)
-					commanddraw()	
+					command_draw()	
 					break
 				end
 				break
@@ -818,9 +860,16 @@ function checkcollisions()
 
 	-- check room/object collisions
 	for k,obj in pairs(room_curr.objects) do
-	
 			if iscursorcolliding(obj) then
 				hover_curr.object = obj
+			end
+	end
+
+	-- check actor collisions
+	for k,actor in pairs(actors) do
+			if (actor.in_room == room_curr) 
+			 and iscursorcolliding(actor) then
+				hover_curr.object = actor
 			end
 	end
 
@@ -876,21 +925,22 @@ function roomdraw()
 			draw_object(obj)
 		end
 
-		-- capture bounds (even for "invisible" objects)
-		-- todo: exclude class_untouchable
+		-- capture bounds (even for "invisible", but not untouchable, objects)
 		if isnull(obj.class)
 		  or (notnull(obj.class) and obj.class != class_untouchable) then
-			recalc_obj_bounds(obj, cam.x, cam.y)
+			recalc_bounds(obj, cam.x, cam.y)
 			if (show_collision) rect(obj.bounds.x, obj.bounds.y, obj.bounds.x1, obj.bounds.y1, 8)
 		end
 	end
 
 	-- draw actors in current room
 	for k,actor in pairs(actors) do
-		--d("draw actor?:"..k)
 		if (actor.in_room == room_curr) then
-			--d("yes!")
 			actor_draw(actor)
+
+			recalc_bounds(actor, 0,0) --cam.x, cam.y)
+			if (show_collision) rect(actor.bounds.x, actor.bounds.y, actor.bounds.x1, actor.bounds.y1, 8)
+	
 		end
 	end
 end
@@ -899,8 +949,8 @@ end
 function actor_draw(actor)
 	--sprnum = actor.idle
  	-- offets
-	local offset_x = actor.x - (actor.sprw *8) /2
-	local offset_y = actor.y -(actor.sprh * 8) +2
+	actor.offset_x = actor.x - (actor.w *8) /2
+	actor.offset_y = actor.y - (actor.h *8) +2
 	
 	if (actor.moving == 1) 
 	 and notnull(actor.walk_anim) then
@@ -917,12 +967,12 @@ function actor_draw(actor)
 		sprnum = actor.idle[actor.face_dir]
 	end
 
-	sprdraw(sprnum, offset_x, offset_y, 
-		actor.sprw , actor.sprh, actor.trans_col, 
+	sprdraw(sprnum, actor.offset_x, actor.offset_y, 
+		actor.w , actor.h, actor.trans_col, 
 		actor.flip, false)
 end
 
-function commanddraw()
+function command_draw()
 	-- draw current command
 	command = ""
 	cmd_col = 12
@@ -940,6 +990,7 @@ function commanddraw()
 		if notnull(noun2_curr) then
 			command = command.." "..noun2_curr.name
 		elseif notnull(hover_curr.object) 
+		  and hover_curr.object.name != ""
 			-- don't show use object with itself!
 			and ( isnull(noun1_curr) or (noun1_curr != hover_curr.object) ) then
 			command = command.." "..hover_curr.object.name
@@ -983,7 +1034,7 @@ function talking_draw()
 end
 
 -- draw ui and inventory
-function uidraw()
+function ui_draw()
 	-- draw verbs
 	xpos = 0
 	ypos = stage_top + 75
@@ -1003,7 +1054,7 @@ function uidraw()
 		print(v[2], xpos, ypos, txtcol)  -- main
 		
 		-- capture bounds
-		v["bounds"] = {
+		v.bounds = {
 			x = xpos,
 			y = ypos,
 			x1 = xpos + #v[2]*4-1,
@@ -1041,7 +1092,7 @@ function uidraw()
 			-- draw object/sprite
 			draw_object(obj)
 			-- re-calculate bounds (as pos may have changed)
-			recalc_obj_bounds(obj,0,0)
+			recalc_bounds(obj,0,0)
 		end
 		xpos += 11
 		if xpos >= 125 then
@@ -1052,8 +1103,38 @@ function uidraw()
 	end
 end
 
+function dialog_draw()
+	--d("in dialog_draw()...")
+	-- draw verbs
+	xpos = 0
+	ypos = stage_top + 70
+
+	--d("#s="..#dialog_curr.sentences)
+	for s in all(dialog_curr.sentences) do
+		-- capture bounds
+		s.bounds = {
+			x = xpos,
+			y = ypos,
+			x1 = xpos + s.char_width,
+			y1 = ypos + #s.lines*5,
+			cam_off_x = 0,
+			cam_off_y = 0
+		}
+
+		for l in all(s.lines) do
+			--d(l)
+			print(smallcaps(l), xpos, ypos, dialog_curr.col)  -- main
+			ypos += 5
+		end
+
+		if (show_collision) rect(v.bounds.x, v.bounds.y, v.bounds.x1, v.bounds.y1, 8)
+		
+		ypos += 2
+	end
+end
+
 -- draw cursor
-function cursordraw()
+function cursor_draw()
 	col = cursor.cols[cursor.colpos]
 	-- switch sprite color accordingly
 	pal(7,col)
@@ -1108,11 +1189,25 @@ function cutscene(flags, func)
 	cam.x = 0
 end
 
-function dialog_add()
+function dialog_add(msg)
+	if (isnull(dialog_curr)) dialog_curr={ sentences={}, visible=false}
+	-- break msg into lines (if necc.)
+	lines = create_text_lines(msg, 32)
+	sentence={
+		msg = msg,
+		lines = lines
+	}
+	add(dialog_curr.sentences, sentence)
 end
---dialogstart
---dialogend
 
+function dialog_start(col, hlcol)
+	dialog_curr.col = col
+	dialog_curr.hlcol = hlcol
+	dialog_curr.visible = true
+end
+
+function dialog_end()
+end
 
 --selectedsentence
 --dialoglist[selectedsentence]
@@ -1523,15 +1618,23 @@ function clear_curr_cmd()
 	d("command wiped")
 end
 
-function recalc_obj_bounds(obj, cam_off_x, cam_off_y)
-	obj["bounds"] = {
-			x = obj.x,
-			y = stage_top + obj.y,
-			x1 = obj.x + (obj.w*8) + -1,
-			y1 = stage_top + obj.y + (obj.h*8) -1,
-			cam_off_x = cam_off_x,
-			cam_off_y = cam_off_y
-		}
+function recalc_bounds(obj, cam_off_x, cam_off_y)
+  x = obj.x
+	y = obj.y
+	-- offset for actors?
+	if notnull(obj.offset_x) then
+		x = obj.offset_x
+		y = obj.offset_y
+	end
+	obj.bounds = {
+		x = x,
+		y = stage_top + y,
+		x1 = x + (obj.w*8) + -1,
+		y1 = stage_top + y + (obj.h*8) -1,
+		cam_off_x = cam_off_x,
+		cam_off_y = cam_off_y
+	}
+	
 end
 
 -- library functions -----------------------------------------------
@@ -1665,8 +1768,8 @@ ccc00cccbb1121bbbb1112bbbb2111bbbb22111b55555555444949440d6dd6d5000000005d6dd650
 700000077000000770006000000600070000000070000007000700004449444444449444bb0000bb00070000ffffffffbbb7bbbb000700000007000000070000
 700000077000000770006000000600070000000070000007000700004449444444449444bbbffbbb00070000ffffffffbbb7bbbb000700000007000000070000
 700000077000000770006000000600070000000070000007000700004449999999999444bddddddb00070000fff22fffbbb7bbbb000700000007000000070000
-777777777777777777776000000677770000000077777777000000004444444444444444dccccccd00000000fff22fffbbbbbbbb000000000000000000000000
-700000677600000770066000000660070dc55cd0700000070007cccc0007000000070000c1cccc1c00070000ff2bb2ff00070000000700000007000000074444
+777777777777777777776000000677770000000077777777000000004444444444444444dccccccd00000000ff0020ffbbbbbbbb000000000000000000000000
+700000677600000770066000000660070dc55cd0700000070007cccc0007000000070000c1cccc1c00070000ff2302ff00070000000700000007000000074444
 70000607706000077060600000060607dcc55ccd700000070007cccc0007000000070000c1cccc1c00070000ffb33bff00070000000700000007000000074444
 70000507705000077050600000060507c1c66c1c700000070007cccc0007000000070000c1cccc1c00070000ff2bb2ff00070000000700000007000000074444
 70000007700000077000600000060007c1c55c1c700000077770777c7770777077707770c1cccc1c77707770ff2222ff77707770777077707770777077707774
