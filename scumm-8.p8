@@ -53,6 +53,12 @@ face_left = 2   -- (not sprite #'s)
 face_back = 3		
 face_right = 4
 
+pos_infront = 1 
+pos_behind = 3
+pos_left = 2
+pos_right = 4
+pos_inside = 5
+
 -- actor animations
 anim_face = 1	 -- position the actor immediately to the direction indicated
 anim_turn = 2  -- show the turning stages of animation
@@ -66,7 +72,7 @@ main_actor = { 		-- initialize the actor object
 	face_dir = face_front, 	-- direction facing
 	idle = {1,3,73,3},	-- sprites for idle (front, back, left) - right=flip
 	walk_anim = {2,3,4,3},
-	flp = false, 		-- used for flipping the sprite
+	flip = false, 		-- used for flipping the sprite (left/right dir)
 	col = 12,				-- speech text colour
 	trans_col = 11,
 	speed = 0.75,  	-- walking speed
@@ -142,6 +148,7 @@ first_room = {
 			transcol = 0,
 			--use_pos (defaults to spr bottom)
 			use_dir = face_back,
+			use_pos = pos_infront,
 			--[dependent-on object-name being object-state]
 
 			verbs = {
@@ -149,7 +156,7 @@ first_room = {
 					say_line(selected_actor, "it's a nice, warm fire...")
 					wait_for_message()
 					break_time(10)
-					do_anim(selected_actor, anim_face, face_front)
+					do_anim(selected_actor, anim_turn, face_front)
 					--selected_actor.face_dir = actor_face_front
 					say_line(selected_actor, "ouch! it's hot!;*stupid fire*")
 					wait_for_message()
@@ -180,8 +187,9 @@ first_room = {
 			flip_y = false,
 			w = 1,	-- relates to spr or map cel, depending on above
 			h = 4,  --
+			use_pos = pos_right,
 			verbs = {
-				walkto = function()
+				walkto = function(me)
 					printh("me = "..type(me))
 					if state_of(me) == state_open then
 						-- go to new room!
@@ -190,7 +198,7 @@ first_room = {
 						say_line(selected_actor, "the door is closed")
 					end
 				end,
-				open = function()
+				open = function(me)
 					if (isnull(me)) printh("me is null!")
 					printh("me = "..me.name)
 					if state_of(me) == state_open then
@@ -214,6 +222,7 @@ first_room = {
 			y = 2 *8,
 			w = 1,	-- relates to spr or map cel, depending on above
 			h = 4,  --
+			use_pos = pos_left,
 			verbs = {
 				walkto = function()
 					-- go to new room!
@@ -324,6 +333,7 @@ second_room = {
 			y = 2 *8,
 			w = 1,	-- relates to spr or map cel, depending on above
 			h = 4,  --
+			use_pos = pos_right,
 			verbs = {
 				walkto = function()
 					-- go to new room!
@@ -348,19 +358,18 @@ second_room = {
 			flip_y = false,
 			w = 1,	-- relates to spr or map cel, depending on above
 			h = 4,  --
+			use_pos = pos_left,
 			verbs = {
-				walkto = function()
+				walkto = function(me)
 					printh("me = "..type(me))
 					if state_of(me) == state_open then
-						-- todo: go to new room!
 						-- go to new room!
-						--change_room(first_room)
 						come_out_door(first_room.objects.front_door, first_room)
 					else
 						say_line(selected_actor, "the door is closed")
 					end
 				end,
-				open = function()
+				open = function(me)
 					printh("me = "..me.name)
 					if state_of(me) == state_open then
 						say_line(selected_actor, "it's already open!")
@@ -484,7 +493,7 @@ noun2_curr = nil 		-- holds whatever is used after the preposition (e.g. "with <
 cmd_curr = "" 			-- contains last displayed or actioned command
 executing_cmd = false
 dialog_curr = nil 	-- {x,y,col}
-me = nil 						-- same as noun1_curr (to make scripting easier)
+--me = nil 						-- same as noun1_curr (to make scripting easier)
 
 global_scripts = {}	-- table of scripts that are at game-level
 local_scripts = {}	-- table of scripts that are actively running
@@ -525,7 +534,7 @@ function gameupdate()
 	-- update all the active scripts
 	-- (will auto-remove those that have ended)
 	for scr_obj in all(local_scripts) do
-		if scr_obj[2] and not coresume(scr_obj[2]) then
+		if scr_obj[2] and not coresume(scr_obj[2], scr_obj[3]) then
 			del(local_scripts, scr_obj)
 			scr_obj = nil
 		end
@@ -635,14 +644,14 @@ function input_button_pressed(button_index)
 						printh("noun2_curr = "..noun2_curr.name)					
 					else
 						noun1_curr = h
-						me = noun1_curr
+						--me = noun1_curr
 						printh("noun1_curr = "..noun1_curr.name)
 					end
 				elseif (notnull(hover_curr.default_verb)) then
 					-- perform default verb action (if present)
 					verb_curr = hover_curr.default_verb
 					noun1_curr = h
-					me = noun1_curr
+					--me = noun1_curr
 					-- force repaint of command (to reflect default verb)
 					commanddraw()	
 					break
@@ -672,23 +681,26 @@ function input_button_pressed(button_index)
 				return
 			end
 		end
+
 		-- execute verb script
 		executing_cmd = true
 		selected_actor.thread = cocreate(function(actor, obj, verb)
 			if isnull(obj.owner) then
 				-- todo: walk to use pos and face dir
+				if (notnull(obj.use_pos)) printh("obj use_pos="..obj.use_pos)
 				printh("obj x="..obj.x..",y="..obj.y)
 				printh("obj w="..obj.w..",h="..obj.h)
-				walk_to(selected_actor, 
-					obj.x+((obj.w*8)/2)-cam.x, 
-					obj.y+(obj.h*8) +2)
-				if (notnull(obj.use_dir)) then
-					printh("use_dir:"..obj.use_dir)
-					do_anim(selected_actor, anim_turn, obj.use_dir)
-					--selected_actor.face_dir = obj.use_dir
-				else
-					printh("use_dir: NULL!")
-				end
+				dest_pos = get_use_pos(obj)
+
+				walk_to(selected_actor, dest_pos.x, dest_pos.y)
+				-- default use direction
+				use_dir=selected_actor.face_dir
+				--use_dir=face_back
+				if (notnull(obj.use_dir)) use_dir = obj.use_dir
+				--if (verb == verb_default) use_dir=selected_actor.face_dir	-- face obj (unless walking)
+				
+				-- anim to use dir
+				do_anim(selected_actor, anim_turn, use_dir)
 			end
 			-- does current object support active verb?
 			if valid_verb(verb,obj) then
@@ -696,41 +708,27 @@ function input_button_pressed(button_index)
 				printh("verb_obj_script!")
 				printh("verb = "..verb[1])
 				printh("obj = "..obj.name)
-				start_script(obj.verbs[verb[1]])
+				start_script(obj.verbs[verb[1]], obj)
 			elseif verb[1] != verb_default[1] then
 				say_line(selected_actor, "i don't think that will work")
 			end
+			-- clear current command
+			--break_time(5)
+			clear_curr_cmd()
 		end)
 		coresume(selected_actor.thread, selected_actor, noun1_curr, verb_curr)
 	elseif (cursor.y > stage_top and cursor.y < stage_top+64) then
 		-- in map area
 		executing_cmd = true
 		-- attempt to walk to target
-		selected_actor.thread = cocreate(walk_to)
-		coresume(selected_actor.thread, selected_actor, cursor.x, cursor.y - stage_top) -- +2)
-	end
-
-	-- show highlighted for a few secs 
-	-- (or until completed - e.g. after walkto)
-	-- clear command	
-	if  (executing_cmd) then
-		start_script(function()
-			while (selected_actor.moving==1) do
-				-- wait for selected_actor
-				break_time(1)
-			end
-			-- wait some more to allow scripts to run
-			printh("wait b4 wiping command...")
-			break_time(1) --4
-			verb_curr = verb_default
-			noun1_curr = nil
-			noun2_curr = nil
-			me = nil
-			executing_cmd = false
-			cmd_curr = ""
-			printh("wiped")
+		selected_actor.thread = cocreate(function(x,y)
+			walk_to(selected_actor, x, y)
+			-- clear current command
+			--break_time(5)
+			clear_curr_cmd()
 		end)
-  end
+		coresume(selected_actor.thread, cursor.x, cursor.y - stage_top)
+	end
 
 	printh("--------------------------------")
 end
@@ -835,7 +833,7 @@ function actordraw(actor)
 
 	sprdraw(sprnum, offset_x, offset_y, 
 		actor.sprw , actor.sprh, actor.trans_col, 
-		actor.flp, false)
+		actor.flip, false)
 end
 
 function commanddraw()
@@ -999,30 +997,71 @@ end
 
 -- scumm core functions -------------------------------------------
 
+function get_use_pos(obj)
+	pos = {}
+	-- determine use pos
+	if isnull(obj.use_pos) or
+		(obj.use_pos == pos_infront) then
+		pos.x = obj.x+((obj.w*8)/2)-cam.x
+		pos.y = obj.y+(obj.h*8) +2
+
+	elseif (obj.use_pos == pos_left) then
+		pos.x = obj.x-cam.x
+		pos.y = obj.y+((obj.h*8) -2)
+
+	elseif (obj.use_pos == pos_right) then
+		pos.x = obj.x+(obj.w*8)-cam.x
+		pos.y = obj.y+((obj.h*8) -2)
+	end
+	
+	return pos
+end
+
 function do_anim(actor, cmd_type, cmd_value)
-	printh("do_anim()...")
+	-- is target dir left?
+	actor.flip = (cmd_value == face_left)
+
 	if cmd_type == anim_face then
 		printh(" > anim_face")
 		actor.face_dir = cmd_value
+
 	elseif cmd_type == anim_turn then
 		printh(" > anim_turn")
 		while (actor.face_dir != cmd_value) do
-			actor.face_dir -= 1
-			if (actor.face_dir < 1) actor.face_dir = 4
-			break_time(20)
+			if (actor.face_dir < cmd_value) then
+				actor.face_dir += 1
+			else 
+				actor.face_dir -= 1
+			end
+			--if (actor.face_dir < 1) actor.face_dir = 4
+			break_time(10)
 		end
 	end
+
+	-- flip?
+	
 end
 
 function come_out_door(door_obj, new_room)
 	-- todo: switch to new room and...	
+	printh("door1a x:"..door_obj.x..", y:"..door_obj.y)
 	change_room(new_room)
-	-- ...auto-position actor at door_obj (in opposite use direction)
-	selected_actor.x = door_obj.x + ((door_obj.w*8)/2)
-	selected_actor.y = door_obj.y + (door_obj.h*8)
+	printh("door1b x:"..door_obj.x..", y:"..door_obj.y)
+	-- ...auto-position actor at door_obj
+	pos = get_use_pos(door_obj)
+	printh("pos x:"..pos.x..", y:"..pos.y)
+	selected_actor.x = pos.x
+	selected_actor.y = pos.y
+
+	-- (in opposite use direction)
+	do_anim(selected_actor, face_dir, door_obj.use_pos)
+	-- printh("face 1:"..selected_actor.face_dir)
+	-- selected_actor.face_dir = door_obj.use_pos
+	-- printh("face 2:"..selected_actor.face_dir)
 end
 
 function change_room(new_room)
+printh("change_room()...")
 	-- switch to new room
 	-- execute the exit() script of old room
 	if notnull(room_curr) and notnull(room_curr.exit) then
@@ -1033,9 +1072,14 @@ function change_room(new_room)
 	-- stop all active (local) scripts
 	break_time(1)
 	local_scripts = {}
+	-- clear current command
+	clear_curr_cmd()
 
 	-- todo: transition to new room (e.g. iris/swipe)	
 	room_curr = new_room
+
+	-- reset camera
+	cam.x = 0
 
 	-- execute the enter() script of new room
 	if notnull(room_curr.enter) then
@@ -1108,10 +1152,10 @@ function find_object(name)
 	end
 end
 
-function start_script(func)
+function start_script(func, me)	-- me == this
 	-- create new thread for script and add to list of local_scripts
 	local thread = cocreate(func)
-	add(local_scripts, {func, thread} )
+	add(local_scripts, {func, thread, me} )
 end
 
 function script_running(func)
@@ -1296,7 +1340,11 @@ function walk_to(actor, x, y)
 	if walkable then
 		printh("walkable!")
 		actor.moving = 1 --walking
-		actor.flp = (step_x<0)
+		actor.flip = (step_x<0)
+		-- face dir (at end of walk)
+		actor.face_dir = face_right
+		if (actor.flip) actor.face_dir = face_left
+
 		for i = 0, distance/actor.speed do
 			--printh("walking...")
 			actor.x += step_x
@@ -1304,12 +1352,25 @@ function walk_to(actor, x, y)
 			yield()
 		end
 		actor.moving = 2 --arrived
+	else
+		actor.moving = 0 --stopped
 	end
 end
 
 
 
 -- internal functions -----------------------------------------------
+
+function clear_curr_cmd()
+	-- reset all command values
+	verb_curr = verb_default
+	noun1_curr = nil
+	noun2_curr = nil
+	me = nil
+	executing_cmd = false
+	cmd_curr = ""
+	printh("command wiped")
+end
 
 function recalc_obj_bounds(obj, cam_off_x, cam_off_y)
 	obj["bounds"] = {
