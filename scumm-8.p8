@@ -16,9 +16,9 @@ d("=============================|")
 
 function get_keys(obj)
 	keys = {}
-	--d("/"..type(obj))
+	d("/"..type(obj))
 	for k,v in pairs(obj) do
-		--d("k:"..k)
+		d("k:"..k)
 		add(keys,k)
 	end
 	return keys
@@ -151,7 +151,7 @@ first_room = {
 		spin_top = function()
 			while true do	
 				for f=1,3 do
-					set_state("spinning_top", "frame"..f)
+					set_state("spinning_top", f)
 					break_time(8)
 				end
 			end
@@ -249,7 +249,7 @@ first_room = {
 		},
 		hall_door_kitchen = {
 			name = "kitchen",
-			state = state_open,
+			state = states.open,
 			x = 14 *8, -- (*8 to use map cell pos)
 			y = 2 *8,
 			w = 1,	-- relates to spr or map cel, depending on above
@@ -265,15 +265,14 @@ first_room = {
 		bat = {
 			name = "bucket",
 			class = class_pickupable,
-			state = state_open,
+			state = states.open,
 			x = 13 *8, -- (*8 to use map cell pos)
 			y = 6 *8,
 			w = 1,	-- relates to spr or map cel, depending on above
 			h = 1,  --
-			states = {
-				-- states are spr values
-				open = 223, -- state_open
-				closed = 207 -- state_closed
+			states = { -- states are spr values
+				207,  -- closed
+				223 -- open
 			},
 			trans_col=15,
 			--owner (set on pickup)
@@ -300,15 +299,10 @@ first_room = {
 		},
 		spinning_top = {
 			name = "spinning top",
-			state = "frame1",
+			state = 1,
 			x = 2*8, -- (*8 to use map cell pos)
 			y = 6*8,
-			states = {
-				-- states are spr values
-				frame1 = 112, 
-				frame2 = 113,
-				frame3 = 114
-			},
+			states = { 112, 113, 114 },
 			trans_col=15,
 			w = 1,	-- relates to spr or map cel, depending on above
 			h = 1,  --
@@ -329,15 +323,14 @@ first_room = {
 		},
 		window = {
 			name = "window",
-			state = state_closed,
+			state = states.closed,
 			x = 4*8, -- (*8 to use map cell pos)
 			y = 1*8,
 			w = 2,	-- relates to spr or map cel, depending on above
 			h = 2,  --
-			states = {
-				-- states are spr values
-				closed = 80, -- state_closed
-				open = 82 -- state_open
+			states = {  -- states are spr values
+				80, -- closed
+				82  -- open
 			},
 			verbs = {
 				open = function(me)	
@@ -358,8 +351,8 @@ first_room = {
 							walk_to(selected_actor, 
 								selected_actor.x-10, 
 								selected_actor.y)
-							
 							change_room(first_room)
+							-- wait for a bit, then appear in room1
 							break_time(50)
 							selected_actor.x = 115
 							selected_actor.y = 44
@@ -372,17 +365,6 @@ first_room = {
 							wait_for_message()
 						end
 					)
-					-- wait for a bit, then appear in room1
-					--d("test2")
-					--[[break_time(30)
-					tent = actors.purp_tentacle
-					tent.x = 115
-					tent.y = 60
-					tent.in_room = first_room
-					say_line(tent, "intruder!!!")
-					walk_to(tent, 
-							tent.x-10, 
-							tent.y)]]
 				end
 			}
 		}
@@ -425,13 +407,13 @@ second_room = {
 			name = "back door",
 			--dependent_on = "closet-door",
 			--dependent_on_state = state_closed,
-			state = state_closed,
+			state = states.closed,
 			x = 22*8, -- (*8 to use map cell pos)
 			y = 2*8,
 			states = {
 				-- states are spr values
-				closed = 15, -- state_closed
-				open = 0 -- state_open
+				15, -- closed
+				0   -- open
 			},
 			flip_x = true, -- used for flipping the sprite
 			flip_y = false,
@@ -588,8 +570,8 @@ function find_default_verb(obj)
 		-- if object supports current verb
 	  if valid_verb(v, obj) then
 			-- check for reasons not to use this verb as default
-			if (v == "open" and obj.state != state_closed) 
-			or (v == "close" and obj.state != state_open)
+			if (v == "open" and obj.state != states.closed) 
+			or (v == "close" and obj.state != states.open)
 			or (v == "talkto" and (not has_flag(obj.class, class_talkable)))
 			or (v == "pickup" and (not has_flag(obj.class, class_pickupable)))
 			then
@@ -603,7 +585,8 @@ function find_default_verb(obj)
 	end
 	-- now find the full verb definition
 	for v in all(verbs) do
-		if (v[1] == default_verb) default_verb=v break
+		vi = get_verb(v)
+		if (vi[1] == default_verb) default_verb=v break --return vi --break
 	end
 	return default_verb
 end
@@ -905,13 +888,18 @@ function input_button_pressed(button_index)
 						noun2_curr = h
 						d("noun2_curr = "..noun2_curr.name)					
 					else
-						noun1_curr = h
+						noun1_curr = h						
 						d("noun1_curr = "..noun1_curr.name)
 					end
 				elseif (notnull(hover_curr.default_verb)) then
 					-- perform default verb action (if present)
-					verb_curr = hover_curr.default_verb
+					verb_curr = get_verb(hover_curr.default_verb)
+					d("lll:"..#h)
+					d("kkk:"..k)
 					noun1_curr = h
+					d("n1 tpe:"..type(noun1_curr))
+					get_keys(noun1_curr)
+					d("name:"..noun1_curr.name)
 					-- force repaint of command (to reflect default verb)
 					command_draw()	
 					break
@@ -1029,7 +1017,7 @@ function checkcollisions()
 
 	-- default to walkto (if nothing set)
 	if (verb_curr == nil) then
-		command = get_verb(verb_default)
+		verb_curr = get_verb(verb_default)
 		--verb_curr = verb_default
 	end
 
@@ -1146,14 +1134,15 @@ function command_draw()
 
 	if not executing_cmd then
 		if notnull(verb_curr) then
-			--printh("test1a")
-			--v = get_verb(verb_curr)
-			
-			--command = get_verb(verb_curr)[2]
-			--vi = get_verb(verb_curr)
+			d("1")
+			d("1ta:"..type(verb_curr))
+			d("1tb:"..type(verb_curr[1]))
+			d("1tc:"..type(verb_curr[2]))
 			command = verb_curr[2]
 		end
 		if notnull(noun1_curr) then
+			d("2")
+			d("2t:"..type(command))
 			command = command.." "..noun1_curr.name
 		end
 		if verb_curr[1] == "use" 
@@ -1175,8 +1164,8 @@ function command_draw()
 		cmd_col = 7
 	end
 
-	d("test")
-	d(command)
+	--d("test")
+	--d(command)
 	--printh(type(verb_default[1][0]))
 
 	print(smallcaps(command), 
