@@ -9,7 +9,7 @@ __lua__
 
 -- luamin fixes
 -- #### states and verbs are being renamed, but referred by "string" literals, so mismatch!
---  c.=type
+--  i=type 
 --	"\65\66\67\68\69\70\71\72\73\74\75\76\77\78\79\80\81\82\83\84\85\86\87\88\89\90\91\92"
 
 
@@ -24,9 +24,9 @@ d("=============================|")
 
 function get_keys(obj)
 	keys = {}
-	d("/"..type(obj))
+	--d("/"..type(obj))
 	for k,v in pairs(obj) do
-		d("k:"..k)
+		--d("k:"..k)
 		add(keys,k)
 	end
 	return keys
@@ -1142,15 +1142,15 @@ function command_draw()
 
 	if not executing_cmd then
 		if notnull(verb_curr) then
-			d("1")
-			d("1ta:"..type(verb_curr))
-			d("1tb:"..type(verb_curr[1]))
-			d("1tc:"..type(verb_curr[2]))
+			-- d("1")
+			-- d("1ta:"..type(verb_curr))
+			-- d("1tb:"..type(verb_curr[1]))
+			-- d("1tc:"..type(verb_curr[2]))
 			command = verb_curr[2]
 		end
 		if notnull(noun1_curr) then
-			d("2")
-			d("2t:"..type(command))
+			-- d("2")
+			-- d("2t:"..type(command))
 			command = command.." "..noun1_curr.name
 		end
 		if verb_curr[1] == "use" 
