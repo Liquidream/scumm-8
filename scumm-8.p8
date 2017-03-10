@@ -594,7 +594,7 @@ function find_default_verb(obj)
 	-- now find the full verb definition
 	for v in all(verbs) do
 		vi = get_verb(v)
-		if (vi[1] == default_verb) default_verb=v break --return vi --break
+		if (vi[1] == default_verb) then default_verb=v break end--return vi --break
 	end
 	return default_verb
 end
@@ -1236,10 +1236,10 @@ function ui_draw()
 		-- capture bounds
 		v.x = xpos
 		v.y = ypos
-		recalc_bounds(v, #v[2]*4, 5, 0, 0)
+		recalc_bounds(v, #vi[2]*4, 5, 0, 0)
 		if (show_collision) then rect(v.bounds.x, v.bounds.y, v.bounds.x1, v.bounds.y1, 8) end
 		-- auto-size column
-		if (#v[2] > col_len) then col_len = #v[2] end
+		if (#vi[2] > col_len) then col_len = #vi[2] end
 		ypos = ypos + 8
 
 		-- move to next column
