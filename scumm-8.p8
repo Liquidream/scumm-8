@@ -8,12 +8,55 @@ __lua__
 -- debugging
 show_debuginfo = false
 show_collision = false
-show_perfinfo = false
+show_perfinfo = true
 enable_mouse = true
 d = printh
 
+d("=============================")
+
+function get_keys(obj)
+	keys = {}
+	--d("/"..type(obj))
+	for k,v in pairs(obj) do
+		--d("k:"..k)
+		add(keys,k)
+	end
+	return keys
+end
+
+function get_verb(obj)
+	verb = {}
+	--d(">>"..type(obj[1]))
+	keys = get_keys(obj[1])
+	--
+	add(verb, keys[1])
+	add(verb, obj[1][ keys[1] ])
+	--
+--[[	d("> l:"..#verb)
+	d("> 1:"..verb[1])
+	d("> 2:"..verb[2])]]
+	return verb
+end
+
 -- game verbs (used in room definitions and ui)
 verbs = {
+	--verb, name, bounds{},x,y...
+	{ { open = "open" } },
+	{ { close = "close" } },
+	{ { give = "give" } },
+	{ { pickup =  "pick-up" } },
+	{ { lookat =  "look-at" } },
+	{ { talkto =  "talk-to" } },
+	{ { push =  "push" } },
+	{ { pull =  "pull" } },
+	{ { use =  "use" } }
+}
+-- verb to use when just clicking aroung (e.g. move actor)
+verb_default = {
+	{ walkto = "walk to" }
+} 
+
+--[[verbs = {
 	--verb, name, bounds{},
 	{"open", "open"},
 	{"close", "close"},
@@ -26,18 +69,28 @@ verbs = {
 	{"use", "use"}
 }
 verb_default = {"walkto", "walk to"} -- verb to use when just clicking aroung (e.g. move actor)
+]]
+
 verb_maincol = 12  -- main color (lt blue)
 verb_hovcol = 7   -- hover color (white)
 verb_shadcol = 1   -- shadow (dk blue)
 verb_defcol = 10    -- default action (yellow)
 
--- object states -test
-state_closed = "closed"
+-- object states
+states = {
+	closed = 1,
+	off = 1,
+	gone = 1,
+	open = 2,
+	on = 2,
+	here = 2
+}
+--[[state_closed = "closed"
 state_off = "off"
 state_here = "here"
 state_open = "open"
 state_on = "on"
-state_gone = "gone"
+state_gone = "gone"]]
 
 -- object classes (bitflags)
 class_untouchable = 1 -- will not register when the cursor moves over it. the object is invisible to the user.
@@ -83,7 +136,8 @@ first_room = {
 		start_script(function()
 			while true do
 				for f=1,3 do
-					set_state("fire", "frame"..f)
+					set_state("fire", f)
+					-- set_state("fire", "frame"..f)
 					break_time(8)
 				end
 			end
@@ -106,16 +160,17 @@ first_room = {
 	objects = {
 		fire = {
 			name = "fire",
-			state = "frame1",
+			state = 1, --"frame1",
 		--	class = class_talkable + class_pickupable,
 			x = 8*8, -- (*8 to use map cell pos)
 			y = 4*8,
-			states = {
+			states = {23, 24, 25},
+			--[[states = {
 				-- states are spr values
 				frame1 = 23, 
 				frame2 = 24,
 				frame3 = 25
-			},
+			},]]
 			w = 1,	-- relates to spr or map cel, depending on above
 			h = 1,  --
 			trans_col = 0,
@@ -151,14 +206,18 @@ first_room = {
 			name = "front door",
 			--dependent_on = "closet-door",
 			--dependent_on_state = state_closed,
-			state = state_closed,
+			state = states.closed, --state_closed,
 			x = 1*8, -- (*8 to use map cell pos)
 			y = 2*8,
-			states = {
+			states = { -- states are spr values
+				15, -- state_closed
+				0 -- state_open
+			},
+			--[[states = {
 				-- states are spr values
 				closed = 15, -- state_closed
 				open = 0 -- state_open
-			},
+			},]]
 			flip_x = false, -- used for flipping the sprite
 			flip_y = false,
 			w = 1,	-- relates to spr or map cel, depending on above
@@ -834,8 +893,9 @@ function input_button_pressed(button_index)
 		if type(h) != nil then
 			-- found something being hovered...
 			if k == "verb" then
-				verb_curr = h
-				d("verb = "..h[1])
+				verb_curr = get_verb(h)
+				--d("verb = "..get_verb(h)[1])
+				d("verb = "..verb_curr[1])
 				break
 			elseif k == "object" then
 				-- if valid obj, complete command
@@ -969,7 +1029,8 @@ function checkcollisions()
 
 	-- default to walkto (if nothing set)
 	if (verb_curr == nil) then
-		verb_curr = verb_default
+		command = get_verb(verb_default)
+		--verb_curr = verb_default
 	end
 
 	-- update "default" verb for hovered object (if any)
@@ -1005,6 +1066,7 @@ function roomdraw()
 		-- todo: check dependent-on's
 
 		if (notnull(obj.states)) 
+			and notnull(obj.states[obj.state])
 		  and (obj.states[obj.state] > 0)
 		  and (isnull(obj.owner)) then
 			-- something to draw
@@ -1081,14 +1143,21 @@ function command_draw()
 	command = ""
 	cmd_col = 12
 
+
 	if not executing_cmd then
 		if notnull(verb_curr) then
+			--printh("test1a")
+			--v = get_verb(verb_curr)
+			
+			--command = get_verb(verb_curr)[2]
+			--vi = get_verb(verb_curr)
 			command = verb_curr[2]
 		end
 		if notnull(noun1_curr) then
 			command = command.." "..noun1_curr.name
 		end
-		if verb_curr[1] == "use" and notnull(noun1_curr) then
+		if verb_curr[1] == "use" 
+		 and notnull(noun1_curr) then
 			command = command.." with"
 		end
 		if notnull(noun2_curr) then
@@ -1105,6 +1174,10 @@ function command_draw()
 		command = cmd_curr
 		cmd_col = 7
 	end
+
+	d("test")
+	d(command)
+	--printh(type(verb_default[1][0]))
 
 	print(smallcaps(command), 
 		hcenter(command), 
@@ -1157,16 +1230,19 @@ function ui_draw()
 			txtcol = verb_defcol
 		end		
 		if (v == hover_curr.verb) txtcol=verb_hovcol
-		print(v[2], xpos, ypos+stage_top+1, verb_shadcol)  -- shadow
-		print(v[2], xpos, ypos+stage_top, txtcol)  -- main
+
+		-- get verb info
+		vi = get_verb(v)
+		print(vi[2], xpos, ypos+stage_top+1, verb_shadcol)  -- shadow
+		print(vi[2], xpos, ypos+stage_top, txtcol)  -- main
 		
 		-- capture bounds
 		v.x = xpos
 		v.y = ypos
-		recalc_bounds(v, #v[2]*4, 5, 0, 0)
+		recalc_bounds(v, #vi[2]*4, 5, 0, 0)
 		if (show_collision) rect(v.bounds.x, v.bounds.y, v.bounds.x1, v.bounds.y1, 8)
 		-- auto-size column
-		if (#v[2] > col_len) col_len = #v[2]
+		if (#vi[2] > col_len) col_len = #vi[2]
 		ypos += 8
 		-- move to next column
 		if ypos >= 95 then
@@ -1733,7 +1809,8 @@ end
 
 function clear_curr_cmd()
 	-- reset all command values
-	verb_curr = verb_default
+	verb_curr = get_verb(verb_default)
+	--verb_curr = verb_default
 	noun1_curr = nil
 	noun2_curr = nil
 	me = nil
