@@ -5,6 +5,14 @@ __lua__
 -- scumm-8
 -- paul nicholas
 
+-- python C:\Users\pauln\ownCloud\Dev\PICO-8\picotool\p8tool luamin C:\Users\pauln\ownCloud\Games\pico-8\carts\scumm-8.p8
+
+-- luamin fixes
+-- #### states and verbs are being renamed, but referred by "string" literals, so mismatch!
+--  c.=type
+--	"\65\66\67\68\69\70\71\72\73\74\75\76\77\78\79\80\81\82\83\84\85\86\87\88\89\90\91\92"
+
+
 -- debugging
 show_debuginfo = false
 show_collision = false
@@ -671,7 +679,7 @@ cutscenes = {} -- table of scripts for the active cutscene(s)
 
 function _init()
 	-- use mouse input?
-	if (enable_mouse) poke(0x5f2d, 1)
+	if (enable_mouse) then poke(0x5f2d, 1) end
 
 	-- init actor
 	selected_actor.in_room = selected_room
@@ -771,8 +779,8 @@ function gamedraw()
 	-- reset clip
 	clip()
 
-	if (show_perfinfo) print("cpu: "..stat(1), 0, stage_top - 16, 8) print("mem: "..stat(0), 0, stage_top - 8, 8)
-	if (show_debuginfo) print("x: "..cursor.x.." y:"..cursor.y, 80, stage_top - 8, 8)
+	if (show_perfinfo) then print("cpu: "..stat(1), 0, stage_top - 16, 8) print("mem: "..stat(0), 0, stage_top - 8, 8) end
+	if (show_debuginfo) then print("x: "..cursor.x.." y:"..cursor.y, 80, stage_top - 8, 8) end
 
 	-- draw active text
 	talking_draw()
@@ -826,18 +834,18 @@ end
 -- handle button inputs
 function playercontrol()	
 	-- 
-	if (btn(0)) cursor.x-=1 
-	if (btn(1)) cursor.x+=1 
-	if (btn(2)) cursor.y-=1
-	if (btn(3)) cursor.y+=1
+	if (btn(0)) then cursor.x = cursor.x - 1 end
+	if (btn(1)) then cursor.x = cursor.x + 1 end
+	if (btn(2)) then cursor.y = cursor.x - 1 end
+	if (btn(3)) then cursor.y = cursor.x + 1 end
 
-	if (btnp(4)) input_button_pressed(1) 
-	if (btnp(5)) input_button_pressed(2)
+	if (btnp(4)) then input_button_pressed(1) end
+	if (btnp(5)) then input_button_pressed(2) end
 
 	-- only update position if mouse moved
 	if (enable_mouse) then	
-		if (stat(32)-1 != last_mouse_x) cursor.x = stat(32)-1	-- mouse xpos
-		if (stat(33)-1 != last_mouse_y) cursor.y = stat(33)-1	-- mouse ypos
+		if (stat(32)-1 != last_mouse_x) then cursor.x = stat(32)-1 end	-- mouse xpos
+		if (stat(33)-1 != last_mouse_y) then cursor.y = stat(33)-1	end -- mouse ypos
 		-- don't repeat action if same press/click
 		if (stat(34) > 0) then
 			if (not ismouseclicked) then
@@ -935,16 +943,16 @@ function input_button_pressed(button_index)
 		selected_actor.thread = cocreate(function(actor, obj, verb, noun2)
 			if isnull(obj.owner) then
 				-- todo: walk to use pos and face dir
-				if (notnull(obj.use_pos)) d("obj use_pos="..obj.use_pos)
+				if (notnull(obj.use_pos)) then d("obj use_pos="..obj.use_pos) end
 				d("obj x="..obj.x..",y="..obj.y)
 				d("obj w="..obj.w..",h="..obj.h)
 				dest_pos = get_use_pos(obj)
 				d("dest_pos x="..dest_pos.x..",y="..dest_pos.y)
-				if (notnull(obj.offset_x)) d("offset x="..obj.offset_x..",y="..obj.offset_y)
+				if (notnull(obj.offset_x)) then d("offset x="..obj.offset_x..",y="..obj.offset_y) end
 				walk_to(selected_actor, dest_pos.x, dest_pos.y)
 				-- default use direction
 				use_dir=selected_actor.face_dir
-				if (notnull(obj.use_dir) and (verb != verb_default)) use_dir = obj.use_dir
+				if (notnull(obj.use_dir) and (verb != verb_default)) then use_dir = obj.use_dir end
 					-- anim to use dir
 				do_anim(selected_actor, anim_turn, use_dir)
 			end
@@ -1065,7 +1073,7 @@ function roomdraw()
 		if isnull(obj.class)
 		  or (notnull(obj.class) and obj.class != class_untouchable) then
 			recalc_bounds(obj, obj.w*8, obj.h*8, cam.x, cam.y)
-			if (show_collision) rect(obj.bounds.x, obj.bounds.y, obj.bounds.x1, obj.bounds.y1, 8)
+			if (show_collision) then rect(obj.bounds.x, obj.bounds.y, obj.bounds.x1, obj.bounds.y1, 8) end
 		end
 	end
 
@@ -1075,7 +1083,7 @@ function roomdraw()
 			actor_draw(actor)
 
 			recalc_bounds(actor, actor.w*8, actor.h*8, cam.x, cam.y)
-			if (show_collision) rect(actor.bounds.x, actor.bounds.y, actor.bounds.x1, actor.bounds.y1, 8)
+			if (show_collision) then rect(actor.bounds.x, actor.bounds.y, actor.bounds.x1, actor.bounds.y1, 8) end
 	
 		end
 	end
@@ -1090,11 +1098,11 @@ function actor_draw(actor)
 	
 	if (actor.moving == 1) 
 	 and notnull(actor.walk_anim) then
-		actor.tmr += 1
+		actor.tmr = actor.tmr + 1
 		if (actor.tmr > 5) then
 			actor.tmr = 1
-			actor.anim_pos += 1
-			if (actor.anim_pos > #actor.walk_anim) actor.anim_pos=1
+			actor.anim_pos = actor.anim_pos + 1
+			if (actor.anim_pos > #actor.walk_anim) then actor.anim_pos=1 end
 		end
 		-- choose walk anim frame
 		sprnum = actor.walk_anim[actor.anim_pos]	
@@ -1119,8 +1127,8 @@ function actor_draw(actor)
 				sprdraw(sprnum, actor.offset_x, actor.offset_y +8, 1, 1, 
 					actor.trans_col, actor.flip, false)
 			end
-			actor.talk_tmr += 1	
-			if (actor.talk_tmr > 14) actor.talk_tmr = 1
+			actor.talk_tmr = actor.talk_tmr + 1	
+			if (actor.talk_tmr > 14) then actor.talk_tmr = 1 end
 
 		--end
 	end
@@ -1194,9 +1202,9 @@ function talking_draw()
 		end
 
 		-- update message lifespan
-		talking_curr.time_left -= 1
+		talking_curr.time_left = talking_curr.time_left - 1
 		-- remove text & reset actor's talk anim
-		if (talking_curr.time_left <=0) talking_curr = nil talking_actor = nil d("talking actor cleared")
+		if (talking_curr.time_left <=0) then talking_curr = nil talking_actor = nil d("talking actor cleared") end
 
 	end
 end
@@ -1218,7 +1226,7 @@ function ui_draw()
 		  and (v == hover_curr.default_verb) then
 			txtcol = verb_defcol
 		end		
-		if (v == hover_curr.verb) txtcol=verb_hovcol
+		if (v == hover_curr.verb) then txtcol=verb_hovcol end
 
 		-- get verb info
 		vi = get_verb(v)
@@ -1228,15 +1236,16 @@ function ui_draw()
 		-- capture bounds
 		v.x = xpos
 		v.y = ypos
-		recalc_bounds(v, #vi[2]*4, 5, 0, 0)
-		if (show_collision) rect(v.bounds.x, v.bounds.y, v.bounds.x1, v.bounds.y1, 8)
+		recalc_bounds(v, #v[2]*4, 5, 0, 0)
+		if (show_collision) then rect(v.bounds.x, v.bounds.y, v.bounds.x1, v.bounds.y1, 8) end
 		-- auto-size column
-		if (#vi[2] > col_len) col_len = #vi[2]
-		ypos += 8
+		if (#v[2] > col_len) then col_len = #v[2] end
+		ypos = ypos + 8
+
 		-- move to next column
 		if ypos >= 95 then
 			ypos = 75
-			xpos += (col_len + 1.0) * 4
+			xpos = xpos + (col_len + 1.0) * 4
 			col_len = 0
 		end
 	end
@@ -1261,12 +1270,14 @@ function ui_draw()
 			-- re-calculate bounds (as pos may have changed)
 			recalc_bounds(obj, obj.w*8, obj.h*8, 0, 0)
 		end
-		xpos += 11
+		xpos = xpos + 11
+
 		if xpos >= 125 then
-			ypos += 12
+			ypos = ypos + 12
+
 			xpos=86
 		end
-		ipos += 1
+		ipos = ipos + 1
 	end
 end
 
@@ -1285,16 +1296,18 @@ function dialog_draw()
 		recalc_bounds(s, s.char_width*4, #s.lines*5, 0, 0)
 
 		txtcol=dialog_curr.col
-		if (s == hover_curr.sentence) txtcol=dialog_curr.hlcol
+		if (s == hover_curr.sentence) then txtcol=dialog_curr.hlcol end
 		
 		for l in all(s.lines) do
 				print(smallcaps(l), xpos, ypos+stage_top, txtcol)
-			ypos += 5
+			ypos = ypos + 5
+
 		end
 
-		if (show_collision) rect(s.bounds.x, s.bounds.y, s.bounds.x1, s.bounds.y1, 8)
+		if (show_collision) then rect(s.bounds.x, s.bounds.y, s.bounds.x1, s.bounds.y1, 8) end
 		
-		ypos += 2
+		ypos = ypos + 2
+
 	end
 end
 
@@ -1306,13 +1319,13 @@ function cursor_draw()
 	spr(32, cursor.x-4, cursor.y-3, 1, 1, 0)
 	pal() --reset palette
 
-	cursor.tmr += 1
+	cursor.tmr = cursor.tmr + 1
 	if (cursor.tmr > 7) then
 		--reset timer
 		cursor.tmr = 1
 		-- move to next color?
-		cursor.colpos += 1
-		if (cursor.colpos > #cursor.cols) cursor.colpos = 1
+		cursor.colpos = cursor.colpos + 1
+		if (cursor.colpos > #cursor.cols) then cursor.colpos = 1 end
 	end
 end
 
@@ -1333,7 +1346,7 @@ end
 
 function cutscene(flags, func)
 	-- decrement the cursor level
-	cursor.lvl -= 1
+	cursor.lvl = cursor.lvl - 1
 
 	cut = {
 		flags = flags,
@@ -1357,7 +1370,7 @@ function cutscene(flags, func)
 end
 
 function dialog_add(msg)
-	if (isnull(dialog_curr)) dialog_curr={ sentences={}, visible=false}
+	if (isnull(dialog_curr)) then dialog_curr={ sentences={}, visible=false} end
 	-- break msg into lines (if necc.)
 	lines = create_text_lines(msg, 32)
 	-- find longest line
@@ -1428,9 +1441,9 @@ function do_anim(actor, cmd_type, cmd_value)
 		d(" > anim_turn")
 		while (actor.face_dir != cmd_value) do
 			if (actor.face_dir < cmd_value) then
-				actor.face_dir += 1
+				actor.face_dir = actor.face_dir + 1
 			else 
-				actor.face_dir -= 1
+				actor.face_dir = actor.face_dir - 1
 			end
 			break_time(10)
 		end
@@ -1488,13 +1501,13 @@ end
 
 function valid_verb(verb, object)
 	-- check params
-	if (isnull(object)) return false
-	if (isnull(object.verbs)) return false
+	if (isnull(object)) then return false end
+	if (isnull(object.verbs)) then return false end
 	-- look for verb
 	if type(verb) == "table" then
-		if (notnull(object.verbs[verb[1]])) return true
+		if (notnull(object.verbs[verb[1]])) then return true end
 	else
-		if (notnull(object.verbs[verb])) return true
+		if (notnull(object.verbs[verb])) then return true end
 	end
 	-- must not be valid if reached here
 	return false
@@ -1537,10 +1550,10 @@ end
 function find_object(name)
 	-- if object passed, just return object!
 	--d("type(name): "..type(name))
-	if (type(name) == "table") return name
+	if (type(name) == "table") then return name end
 	-- else look for object by unique name
 	for k,obj in pairs(room_curr.objects) do
-		if (k == name) return obj
+		if (k == name) then return obj end
 	end
 end
 
@@ -1697,14 +1710,14 @@ end
 function walk_to(actor, x, y)
 
 	--offset for camera
-	x += cam.x
+		x = x + cam.x
 
 	local distance = sqrt((x - actor.x) ^ 2 + (y - actor.y) ^ 2)
 	local step_x = actor.speed * (x - actor.x) / distance
 	local step_y = actor.speed * (y - actor.y) / distance
 
 	-- abort if we're already there!
-	if (distance < 1) return
+	if (distance < 1) then return end
 
 	-- check target position is in walkable block
 	celx = flr(x/8) + room_curr.map.x
@@ -1722,12 +1735,12 @@ function walk_to(actor, x, y)
 
 		-- face dir (at end of walk)
 		actor.face_dir = face_right
-		if (actor.flip) actor.face_dir = face_left
+		if (actor.flip) then actor.face_dir = face_left end
 
 		for i = 0, distance/actor.speed do
 			--d("walking...")
-			actor.x += step_x
-			actor.y += step_y
+			actor.x = actor.x + step_x
+			actor.y = actor.y + step_y
 			yield()
 		end
 		actor.moving = 2 --arrived
@@ -1774,7 +1787,7 @@ function create_text_lines(msg, max_line_length, comma_is_newline)
 	end
 
 	upt(max_line_length)
-	if currline~="" then
+	if currline!="" then
 		add(lines,currline)
 	end
 
@@ -1786,13 +1799,13 @@ function longest_line_size(lines)
 	if (notnull(lines)) d(#lines[1])
 	longest_line = 0
 	for l in all(lines) do
-		if (#l > longest_line) longest_line = #l
+		if (#l > longest_line) then longest_line = #l end
 	end
 	return longest_line
 end
 
 function has_flag(obj, value)
-  if (band(obj, value) != 0) return true
+  if (band(obj, value) != 0) then return true end
   return false
 end
 
@@ -1858,7 +1871,7 @@ end
 --- collision check
 function iscursorcolliding(obj)
 	-- check params
-	if (isnull(obj.bounds)) return false
+	if (isnull(obj.bounds)) then return false end
 	bounds=obj.bounds
 	if (cursor.x + bounds.cam_off_x > bounds.x1 or cursor.x + bounds.cam_off_x < bounds.x) 
 	 or (cursor.y>bounds.y1 or cursor.y<bounds.y) then
@@ -1874,10 +1887,10 @@ function smallcaps(s)
 	for i=1,#s do
 		local a=sub(s,i,i)
 		if a=="^" then
-			if(c) d=d..a
+			if(c) then d=d..a end
 				c=not c
 			elseif a=="~" then
-				if(t) d=d..a
+				if(t) then d=d..a end
 				t,l=not t,not l
 			else 
 				if c==l and a>="a" and a<="z" then
