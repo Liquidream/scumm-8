@@ -12,7 +12,7 @@ show_perfinfo = true
 enable_mouse = true
 d = printh
 
-d("=============================")
+d("=============================|")
 
 function get_keys(obj)
 	keys = {}
