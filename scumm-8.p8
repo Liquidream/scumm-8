@@ -59,37 +59,12 @@ verbs = {
 	{ { pull =  "pull" },6 },
 	{ { use =  "use" } }
 }
---[[verbs = {
-	--verb, name, bounds{},x,y...
-	{ { open = "open", def_ord=1 } },
-	{ { close = "close", def_ord=2 } },
-	{ { give = "give" } },
-	{ { pickup =  "pick-up" } },
-	{ { lookat =  "look-at", def_ord=4 } },
-	{ { talkto =  "talk-to", def_ord=3 } },
-	{ { push =  "push", def_ord=5 } },
-	{ { pull =  "pull", def_ord=6 } },
-	{ { use =  "use" } }
-}]]
+
 -- verb to use when just clicking aroung (e.g. move actor)
 verb_default = {
 	{ walkto = "walk to" }
 } 
 
---[[verbs = {
-	--verb, name, bounds{},
-	{"open", "open"},
-	{"close", "close"},
-	{"give", "give"},
-	{"pickup", "pick-up"},
-	{"lookat", "look-at"},
-	{"talkto", "talk-to"},
-	{"push", "push"},
-	{"pull", "pull"},
-	{"use", "use"}
-}
-verb_default = {"walkto", "walk to"} -- verb to use when just clicking aroung (e.g. move actor)
-]]
 
 verb_maincol = 12  -- main color (lt blue)
 verb_hovcol = 7   -- hover color (white)
@@ -105,12 +80,15 @@ states = {
 	on = 2,
 	here = 2
 }
---[[state_closed = "closed"
-state_off = "off"
-state_here = "here"
-state_open = "open"
-state_on = "on"
-state_gone = "gone"]]
+
+-- prepositions { " ", " in", " with", " on", " to" },   // English
+--[[void ResetSentence()
+{
+		Variables[VariableSentenceVerb.Value] = Variables[VariableBackupVerb.Value];
+		Variables[VariableSentenceObject1.Value] = 0;
+		Variables[VariableSentenceObject2.Value] = 0;
+		Variables[VariableSentencePreposition.Value] = 0;
+}]]
 
 -- object classes (bitflags)
 class_untouchable = 1 -- will not register when the cursor moves over it. the object is invisible to the user.
@@ -186,19 +164,15 @@ first_room = {
 			x = 8*8, -- (*8 to use map cell pos)
 			y = 4*8,
 			states = {23, 24, 25},
-			--[[states = {
-				-- states are spr values
-				frame1 = 23, 
-				frame2 = 24,
-				frame3 = 25
-			},]]
 			w = 1,	-- relates to spr or map cel, depending on above
 			h = 1,  --
 			trans_col = 0,
 			--use_pos (defaults to spr bottom)
 			use_dir = face_back,
 			use_pos = pos_infront,
+
 			--[dependent-on object-name being object-state]
+		
 
 			verbs = {
 				lookat = function()
@@ -582,36 +556,24 @@ selected_actor = actors.main_actor
 -- (e.g. when you right-click an object)
 function find_default_verb(obj)
   local default_verb = nil
-	-- look for verbs in the following order of priority
-	--[[local verb_ordered_list = {
-		"open", "close", "talkto", "lookat", "push", "pull"
-	}]]
 
-	--for v in all(verb_ordered_list) do
-	for v in all(verbs) do
-		-- if object supports current verb
-	  if valid_verb(v, obj) then
-			-- check for reasons not to use this verb as default
-			if (v == "open" and obj.state != states.closed) 
-			or (v == "close" and obj.state != states.open)
-			or (v == "talkto" and (not has_flag(obj.class, class_talkable)))
-			or (v == "pickup" and (not has_flag(obj.class, class_pickupable)))
-			then
-				-- not suitable ver, continue
-			else
-				-- found default verb
-				--default_verb = get_verb(v)
-				default_verb = v
-				break
-			end
+	if has_flag(obj.class, class_talkable) then
+		default_verb = "talkto"
+	elseif has_flag(obj.class, class_openable) then
+		if obj.state == states.closed then
+			default_verb = "open"
+		else
+			default_verb = "close"
 		end
+	else
+		default_verb = "lookat"
 	end
 
 	-- now find the full verb definition
-	--[[for v in all(verbs) do
+	for v in all(verbs) do
 		vi = get_verb(v)
-		if (vi[1] == default_verb) then default_verb=v break end--return vi --break
-	end]]
+		if (vi[1] == default_verb) then default_verb=v break end
+	end
 	return default_verb
 end
 
