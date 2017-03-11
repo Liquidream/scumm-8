@@ -49,14 +49,14 @@ end
 -- game verbs (used in room definitions and ui)
 verbs = {
 	--{verb = display_name}, default_action_order,  ....bounds{},x,y...
-	{ { open = "open" },1 },
-	{ { close = "close" },2 },
+	{ { open = "open" } },
+	{ { close = "close" } },
 	{ { give = "give" } },
 	{ { pickup =  "pick-up" } },
-	{ { lookat =  "look-at" },4 },
-	{ { talkto =  "talk-to" },3 },
-	{ { push =  "push" },5 },
-	{ { pull =  "pull" },6 },
+	{ { lookat =  "look-at" } },
+	{ { talkto =  "talk-to" } },
+	{ { push =  "push" } },
+	{ { pull =  "pull" } },
 	{ { use =  "use" } }
 }
 
@@ -94,7 +94,8 @@ states = {
 class_untouchable = 1 -- will not register when the cursor moves over it. the object is invisible to the user.
 class_pickupable = 2  -- can be placed in actor inventory
 class_talkable = 4		-- can talk to actor/object
-class_giveable = 8		-- canbe given to an actor/object
+class_giveable = 8		-- can be given to an actor/object
+class_openable = 16   -- can be opened/closed
 
 cut_noverbs = 1 		-- this removes the interface during the cut-scene.
 cut_hidecursor = 2  -- this turns off the cursor during the cut-scene.
@@ -172,7 +173,8 @@ first_room = {
 			use_pos = pos_infront,
 
 			--[dependent-on object-name being object-state]
-		
+
+			
 
 			verbs = {
 				lookat = function()
@@ -199,6 +201,7 @@ first_room = {
 		},
 		front_door = {
 			name = "front door",
+			class = class_openable,
 			--dependent_on = "closet-door",
 			--dependent_on_state = state_closed,
 			state = states.closed, --state_closed,
@@ -569,16 +572,41 @@ function find_default_verb(obj)
 		default_verb = "lookat"
 	end
 
+	d(default_verb)
+
 	-- now find the full verb definition
 	for v in all(verbs) do
 		vi = get_verb(v)
+		d("lookin..."..vi[1])
 		if (vi[1] == default_verb) then default_verb=v break end
 	end
 	return default_verb
 end
 
+-- actions to perform when object doesn't have an entry for verb
+function unsupported_action(verb, obj1, obj2)
+	d("verb:"..verb.." , obj:"..obj1.name)
+	if verb == "walkto" then
+		return
+	elseif verb == "pickup" then
+		if has_flag(obj1.class, class_actor) then
+			say_line(selected_actor, "I don't need them")
+		else
+			say_line(selected_actor, "I don't need that")
+		end
+	elseif verb == "lookat" then
+		if has_flag(obj1.class, class_actor) then
+			say_line(selected_actor, "I think it's alive")
+		else
+			say_line(selected_actor, "Looks pretty ordinary")
+		end
+	elseif verb == "use" then
+		-- todo: the rest...
 
-
+	else
+		say_line(selected_actor, "Hmm. No.")
+	end
+end 
 
 
 
@@ -951,10 +979,10 @@ function input_button_pressed(button_index)
 				d("obj = "..obj.name)
 				start_script(obj.verbs[verb[1]], obj, noun2)
 			elseif verb[1] != verb_default[1] then
-				d("wont work")
-				say_line(selected_actor, "i don't think that will work")
+				unsupported_action(verb[1], obj, noun2)
+				--say_line(selected_actor, "i don't think that will work")
 			else
-				d("ELSE!!!")
+				-- anything else?
 			end
 			-- clear current command
 			clear_curr_cmd()
