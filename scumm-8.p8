@@ -144,7 +144,8 @@ first_room = {
 		start_script(function()
 			while true do
 				for f=1,3 do
-					set_state("fire", f)
+					set_state(first_room.objects.fire, f)
+					--set_state("fire", f)
 					-- set_state("fire", "frame"..f)
 					break_time(8)
 				end
@@ -1540,19 +1541,25 @@ function state_of(objname, state)
 end
 
 function set_state(objname, state)
+	d("set_state()...")
 	obj = find_object(objname)
 	if notnull(obj) then
+		d("found obj!")
 		obj.state = state
+	else
+		d("found NOT obj!")
 	end
 end
 
 -- find object by ref or name
 function find_object(name)
+	d("find_object()...")
 	-- if object passed, just return object!
-	--d("type(name): "..type(name))
+	d("type(name): "..type(name))
 	if (type(name) == "table") then return name end
 	-- else look for object by unique name
 	for k,obj in pairs(room_curr.objects) do
+		d("k:"..k)
 		if (k == name) then return obj end
 	end
 end
