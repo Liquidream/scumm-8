@@ -48,17 +48,29 @@ end
 
 -- game verbs (used in room definitions and ui)
 verbs = {
-	--verb, name, bounds{},x,y...
-	{ { open = "open" } },
-	{ { close = "close" } },
+	--{verb = display_name}, default_action_order,  ....bounds{},x,y...
+	{ { open = "open" },1 },
+	{ { close = "close" },2 },
 	{ { give = "give" } },
 	{ { pickup =  "pick-up" } },
-	{ { lookat =  "look-at" } },
-	{ { talkto =  "talk-to" } },
-	{ { push =  "push" } },
-	{ { pull =  "pull" } },
+	{ { lookat =  "look-at" },4 },
+	{ { talkto =  "talk-to" },3 },
+	{ { push =  "push" },5 },
+	{ { pull =  "pull" },6 },
 	{ { use =  "use" } }
 }
+--[[verbs = {
+	--verb, name, bounds{},x,y...
+	{ { open = "open", def_ord=1 } },
+	{ { close = "close", def_ord=2 } },
+	{ { give = "give" } },
+	{ { pickup =  "pick-up" } },
+	{ { lookat =  "look-at", def_ord=4 } },
+	{ { talkto =  "talk-to", def_ord=3 } },
+	{ { push =  "push", def_ord=5 } },
+	{ { pull =  "pull", def_ord=6 } },
+	{ { use =  "use" } }
+}]]
 -- verb to use when just clicking aroung (e.g. move actor)
 verb_default = {
 	{ walkto = "walk to" }
@@ -144,8 +156,8 @@ first_room = {
 		start_script(function()
 			while true do
 				for f=1,3 do
-					set_state(first_room.objects.fire, f)
-					--set_state("fire", f)
+					--set_state(first_room.objects.fire, f)
+					set_state("fire", f)
 					-- set_state("fire", "frame"..f)
 					break_time(8)
 				end
@@ -160,7 +172,7 @@ first_room = {
 		spin_top = function()
 			while true do	
 				for f=1,3 do
-					set_state("spinning_top", f)
+					set_state("spinning top", f)
 					break_time(8)
 				end
 			end
@@ -319,14 +331,14 @@ first_room = {
 				push = function(me)
 					if script_running(room_curr.scripts.spin_top) then
 						stop_script(room_curr.scripts.spin_top)
-						set_state(me, "frame1")
+						set_state(me, 1)
 					else
 						start_script(room_curr.scripts.spin_top)
 					end
 				end,
 				pull = function(me)
 					stop_script(room_curr.scripts.spin_top)
-					set_state(me, "frame1")
+					set_state(me, 1)
 				end
 			}
 		},
@@ -571,11 +583,12 @@ selected_actor = actors.main_actor
 function find_default_verb(obj)
   local default_verb = nil
 	-- look for verbs in the following order of priority
-	local verb_ordered_list = {
+	--[[local verb_ordered_list = {
 		"open", "close", "talkto", "lookat", "push", "pull"
-	}
+	}]]
 
-	for v in all(verb_ordered_list) do
+	--for v in all(verb_ordered_list) do
+	for v in all(verbs) do
 		-- if object supports current verb
 	  if valid_verb(v, obj) then
 			-- check for reasons not to use this verb as default
@@ -587,16 +600,18 @@ function find_default_verb(obj)
 				-- not suitable ver, continue
 			else
 				-- found default verb
+				--default_verb = get_verb(v)
 				default_verb = v
 				break
 			end
 		end
 	end
+
 	-- now find the full verb definition
-	for v in all(verbs) do
+	--[[for v in all(verbs) do
 		vi = get_verb(v)
 		if (vi[1] == default_verb) then default_verb=v break end--return vi --break
-	end
+	end]]
 	return default_verb
 end
 
@@ -881,50 +896,57 @@ function input_button_pressed(button_index)
 		return
 	end
 
-	for k,h in pairs(hover_curr) do
-		if type(h) != nil then
+	--for k,h in pairs(hover_curr) do
+	--	if type(h) != nil then
 			-- found something being hovered...
-			if k == "verb" then
-				verb_curr = get_verb(h)
+
+			if hover_curr.verb then
+			--if k == "verb" then
+				verb_curr = get_verb(hover_curr.verb)
 				--d("verb = "..get_verb(h)[1])
 				d("verb = "..verb_curr[1])
-				break
-			elseif k == "object" then
+
+				--break
+
+			elseif hover_curr.object then
+			--elseif k == "object" then
 				-- if valid obj, complete command
 				-- else, abort command (clear verb, etc.)
 				if button_index == 1 then
 					if verb_curr[1] == "use" and notnull(noun1_curr) then
-						noun2_curr = h
+						noun2_curr = hover_curr.object
 						d("noun2_curr = "..noun2_curr.name)					
 					else
-						noun1_curr = h						
+						noun1_curr = hover_curr.object						
 						d("noun1_curr = "..noun1_curr.name)
 					end
 				elseif (notnull(hover_curr.default_verb)) then
 					-- perform default verb action (if present)
 					verb_curr = get_verb(hover_curr.default_verb)
-					d("lll:"..#h)
-					d("kkk:"..k)
-					noun1_curr = h
+					--d("lll:"..#h)
+					--d("kkk:"..k)
+					noun1_curr = hover_curr.object
 					d("n1 tpe:"..type(noun1_curr))
 					get_keys(noun1_curr)
 					d("name:"..noun1_curr.name)
 					-- force repaint of command (to reflect default verb)
 					command_draw()	
-					break
+					--break
 				end
-				break
+				--break
+			
 			elseif k == "ui_arrow" then
 				-- todo: ui arrow clicked...
-				break
+				--break
+
 			--[[elseif k == "inv_object" then
 				-- todo: inventory object clicked
 				break]]
 			else
 				-- what else could there be? actors!?
 			end
-		end
-	end
+	--	end
+	--end
 
 	-- attempt to use verb on object
 	if (noun1_curr != nil) then
@@ -956,16 +978,21 @@ function input_button_pressed(button_index)
 				if (notnull(obj.use_dir) and (verb != verb_default)) then use_dir = obj.use_dir end
 					-- anim to use dir
 				do_anim(selected_actor, anim_turn, use_dir)
+				d("next")
 			end
+			d("next2")
 			-- does current object support active verb?
-			if valid_verb(verb,obj) then
+			if valid_verb(verb[1],obj) then
 				-- finally, execute verb script
 				d("verb_obj_script!")
 				d("verb = "..verb[1])
 				d("obj = "..obj.name)
 				start_script(obj.verbs[verb[1]], obj, noun2)
 			elseif verb[1] != verb_default[1] then
+				d("wont work")
 				say_line(selected_actor, "i don't think that will work")
+			else
+				d("ELSE!!!")
 			end
 			-- clear current command
 			clear_curr_cmd()
@@ -1501,12 +1528,14 @@ d("change_room()...")
 end
 
 function valid_verb(verb, object)
+	--d("in valid_verb()...")
 	-- check params
 	if (isnull(object)) then return false end
 	if (isnull(object.verbs)) then return false end
 	-- look for verb
 	if type(verb) == "table" then
-		if (notnull(object.verbs[verb[1]])) then return true end
+		if (notnull(object.verbs[get_verb(verb)[1]])) then return true end
+		--if (notnull(object.verbs[verb[1]])) then return true end
 	else
 		if (notnull(object.verbs[verb])) then return true end
 	end
@@ -1541,26 +1570,27 @@ function state_of(objname, state)
 end
 
 function set_state(objname, state)
-	d("set_state()...")
+	--d("set_state()...")
 	obj = find_object(objname)
 	if notnull(obj) then
-		d("found obj!")
+		--d("found obj!")
 		obj.state = state
 	else
-		d("found NOT obj!")
+		--d("found NOT obj!")
 	end
 end
 
 -- find object by ref or name
 function find_object(name)
-	d("find_object()...")
+	--d("find_object()...")
 	-- if object passed, just return object!
-	d("type(name): "..type(name))
+	--d("type(name): "..type(name))
 	if (type(name) == "table") then return name end
 	-- else look for object by unique name
 	for k,obj in pairs(room_curr.objects) do
-		d("k:"..k)
-		if (k == name) then return obj end
+		--d("k:"..k)
+		if (obj.name == name) then return obj end
+		--if (k == name) then return obj end
 	end
 end
 
