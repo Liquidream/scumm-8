@@ -9,11 +9,6 @@ Wow, really? You still here?! OK, once again. Think of SCUMM-8 as an even more r
 #### *"Got it. . . . so what about 'Day of the Tentacle' then?"*
 \*sigh\* . . .  "Look behind you! It's a three-headed monkey!" . . . \*runs away\*
 
-
-
-**WIP - Not quite yet ready! Please come back later  :)**
-
-
 ## Current Features
 - [x] Multiple Rooms (up to 32, technically)
 - [x] Dialogs between Actors
