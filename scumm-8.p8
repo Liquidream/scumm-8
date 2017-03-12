@@ -7,9 +7,8 @@ __lua__
 
 -- python C:\Users\pauln\ownCloud\Dev\PICO-8\picotool\p8tool luamin C:\Users\pauln\ownCloud\Games\pico-8\carts\scumm-8.p8
 
--- luamin fixes
--- #### states and verbs are being renamed, but referred by "string" literals, so mismatch!
---  i=type 
+-- ### luamin fixes ###
+--  cz=type 
 --	"\65\66\67\68\69\70\71\72\73\74\75\76\77\78\79\80\81\82\83\84\85\86\87\88\89\90\91\92"
 
 
@@ -108,9 +107,7 @@ first_room = {
 		start_script(function()
 			while true do
 				for f=1,3 do
-					--set_state(first_room.objects.fire, f)
 					set_state("fire", f)
-					-- set_state("fire", "frame"..f)
 					break_time(8)
 				end
 			end
@@ -155,7 +152,6 @@ first_room = {
 					wait_for_message()
 					break_time(10)
 					do_anim(selected_actor, anim_turn, face_front)
-					--selected_actor.face_dir = actor_face_front
 					say_line(selected_actor, "ouch! it's hot!;*stupid fire*")
 					wait_for_message()
 				end,
@@ -184,11 +180,6 @@ first_room = {
 				15, -- state_closed
 				0 -- state_open
 			},
-			--[[states = {
-				-- states are spr values
-				closed = 15, -- state_closed
-				open = 0 -- state_open
-			},]]
 			flip_x = false, -- used for flipping the sprite
 			flip_y = false,
 			w = 1,	-- relates to spr or map cel, depending on above
@@ -248,7 +239,6 @@ first_room = {
 			trans_col=15,
 			--owner (set on pickup)
 			--[dependent-on object-name being object-state]
-			--class is class-state [class-state]  (e.g. untouchable = invisible + non-collidable)
 			verbs = {
 				lookat = function(me)
 					if owner_of(me) == selected_actor then
@@ -328,7 +318,6 @@ first_room = {
 							selected_actor.x = 115
 							selected_actor.y = 44
 							selected_actor.in_room = first_room
-							--break_time(50)
 							walk_to(selected_actor, 
 								selected_actor.x-10, 
 								selected_actor.y)
@@ -369,7 +358,6 @@ second_room = {
 			verbs = {
 				walkto = function()
 					-- go to new room!
-					--change_room(second_room)
 					come_out_door(first_room.objects.hall_door_kitchen, first_room)
 				end
 			}
@@ -477,7 +465,7 @@ actors = {
 				end,
 				talkto = function(me)
 					cutscene(cut_noverbs, function()
-						--actorface( commanderzif, var_ego )
+						--actorface( actor1, actor2 )
 						say_line(me,"what do you want?")
 						wait_for_message()
 					end)
@@ -688,22 +676,11 @@ function gameupdate()
 	if notnull(cutscene_curr) then
 		--d("playing cutscene...")
 		if cutscene_curr.thread and not coresume(cutscene_curr.thread) then
-			-- cutscene ended, restore prev state
-			if (room_curr != cutscene_curr.paused_room) change_room(cutscene_curr.paused_room)
+			-- cutscene ended, restore prev state	
+			if (room_curr != cutscene_curr.paused_room) then change_room(cutscene_curr.paused_room) end
 			selected_actor = cutscene_curr.paused_actor
 			cam.mode = cutscene_curr.paused_cam_mode
 			cam.following_actor = cutscene_curr.paused_cam_following
-			
-			-- script the cutscene end
-			--[[start_script(function()
-				d("dlete!!!")
-				del(cutscenes, cutscene_curr)
-				cutscene_curr = nil
-				-- any more cutscenes?
-				if (#cutscenes > 0) then
-					cutscene_curr = cutscenes[#cutscenes]
-				end
-			end)]]
 			-- now delete cutscene
 			del(cutscenes, cutscene_curr)
 			cutscene_curr = nil
@@ -711,7 +688,7 @@ function gameupdate()
 			if (#cutscenes > 0) then
 				cutscene_curr = cutscenes[#cutscenes]
 			end
-			-- add a pause for sys to catch-up
+			-- add a pause for sys to catch-up??
 			--break_time(1)
 		end
 	else
@@ -726,7 +703,6 @@ function gameupdate()
 			end
 		end
 	end
-
 
 	-- player/ui control
 	playercontrol()
@@ -773,10 +749,12 @@ function gamedraw()
 		return
 	end
 
- -- debug:
+ -- --------------------------------------------------------------
+ -- HACK:
  -- skip draw if just exited a cutscene
- -- (as could be going straight into a dialog)
-	--d("cut_curr:"..type(cutscene_curr))
+ -- as could be going straight into a dialog
+ -- (would prefer a better way than this, but couldn't find one!)
+ -- --------------------------------------------------------------
 	if (cutscene_curr_lastval == cutscene_curr) then
 		--d("cut_same")
 	else
@@ -784,6 +762,7 @@ function gamedraw()
 		cutscene_curr_lastval = cutscene_curr
 		return
 	end
+	
 
 	-- draw current command (verb/object)
 	if isnull(cutscene_curr) then
@@ -800,7 +779,7 @@ function gamedraw()
 		--d("ui skipped")
 	end
 
-	-- debug: fix for display issue
+	-- HACK: fix for display issue (see above hack info)
 	cutscene_curr_lastval = cutscene_curr
 
 	if isnull(cutscene_curr) 
@@ -859,57 +838,44 @@ function input_button_pressed(button_index)
 		return
 	end
 
-	--for k,h in pairs(hover_curr) do
-	--	if type(h) != nil then
-			-- found something being hovered...
 
-			if hover_curr.verb then
-			--if k == "verb" then
-				verb_curr = get_verb(hover_curr.verb)
-				--d("verb = "..get_verb(h)[1])
-				d("verb = "..verb_curr[2])
+		if hover_curr.verb then
+			verb_curr = get_verb(hover_curr.verb)
+			d("verb = "..verb_curr[2])
 
-				--break
-
-			elseif hover_curr.object then
-			--elseif k == "object" then
-				-- if valid obj, complete command
-				-- else, abort command (clear verb, etc.)
-				if button_index == 1 then
-					if verb_curr[1] == "use" and notnull(noun1_curr) then
-						noun2_curr = hover_curr.object
-						d("noun2_curr = "..noun2_curr.name)					
-					else
-						noun1_curr = hover_curr.object						
-						d("noun1_curr = "..noun1_curr.name)
-					end
-				elseif (notnull(hover_curr.default_verb)) then
-					-- perform default verb action (if present)
-					verb_curr = get_verb(hover_curr.default_verb)
-					--d("lll:"..#h)
-					--d("kkk:"..k)
-					noun1_curr = hover_curr.object
-					d("n1 tpe:"..type(noun1_curr))
-					get_keys(noun1_curr)
-					d("name:"..noun1_curr.name)
-					-- force repaint of command (to reflect default verb)
-					command_draw()	
-					--break
+		elseif hover_curr.object then
+			-- if valid obj, complete command
+			-- else, abort command (clear verb, etc.)
+			if button_index == 1 then
+				if verb_curr[1] == "use" and notnull(noun1_curr) then
+					noun2_curr = hover_curr.object
+					d("noun2_curr = "..noun2_curr.name)					
+				else
+					noun1_curr = hover_curr.object						
+					d("noun1_curr = "..noun1_curr.name)
 				end
-				--break
-			
-			elseif k == "ui_arrow" then
-				-- todo: ui arrow clicked...
-				--break
 
-			--[[elseif k == "inv_object" then
-				-- todo: inventory object clicked
-				break]]
-			else
-				-- what else could there be? actors!?
+			elseif (notnull(hover_curr.default_verb)) then
+				-- perform default verb action (if present)
+				verb_curr = get_verb(hover_curr.default_verb)
+				noun1_curr = hover_curr.object
+				d("n1 tpe:"..type(noun1_curr))
+				get_keys(noun1_curr)
+				d("name:"..noun1_curr.name)
+				-- force repaint of command (to reflect default verb)
+				command_draw()
 			end
-	--	end
-	--end
+		
+		elseif k == "ui_arrow" then
+			-- todo: ui arrow clicked...
+			--break
+
+		--[[elseif k == "inv_object" then
+			-- todo: inventory object clicked
+			break]]
+		else
+			-- what else could there be? actors!?
+		end
 
 	-- attempt to use verb on object
 	if (noun1_curr != nil) then
@@ -928,7 +894,7 @@ function input_button_pressed(button_index)
 		executing_cmd = true
 		selected_actor.thread = cocreate(function(actor, obj, verb, noun2)
 			if isnull(obj.owner) then
-				-- todo: walk to use pos and face dir
+				-- walk to use pos and face dir
 				if (notnull(obj.use_pos)) then d("obj use_pos="..obj.use_pos) end
 				d("obj x="..obj.x..",y="..obj.y)
 				d("obj w="..obj.w..",h="..obj.h)
@@ -939,11 +905,9 @@ function input_button_pressed(button_index)
 				-- default use direction
 				use_dir=selected_actor.face_dir
 				if (notnull(obj.use_dir) and (verb != verb_default)) then use_dir = obj.use_dir end
-					-- anim to use dir
+				-- anim to use dir
 				do_anim(selected_actor, anim_turn, use_dir)
-				d("next")
 			end
-			d("next2")
 			-- does current object support active verb?
 			if valid_verb(verb,obj) then
 				-- finally, execute verb script
@@ -952,8 +916,8 @@ function input_button_pressed(button_index)
 				d("obj = "..obj.name)
 				start_script(obj.verbs[verb[1]], obj, noun2)
 			elseif verb[2] != verb_default[2] then
+			 	-- e.g. "i don't think that will work"
 				unsupported_action(verb[2], obj, noun2)
-				--say_line(selected_actor, "i don't think that will work")
 			else
 				-- anything else?
 			end
@@ -1017,7 +981,6 @@ function checkcollisions()
 	-- default to walkto (if nothing set)
 	if (verb_curr == nil) then
 		verb_curr = get_verb(verb_default)
-		--verb_curr = verb_default
 	end
 
 	-- update "default" verb for hovered object (if any)
@@ -1029,7 +992,7 @@ end
 function roomdraw()
 	-- draw current room (base layer)
 	room_map = room_curr.map
-	map(room_map.x, room_map.y, 0, stage_top, room_map.w, room_map.h) --,layer
+	map(room_map.x, room_map.y, 0, stage_top, room_map.w, room_map.h)
 	
 	-- debug walkable areas
 	if show_collision then
@@ -1082,7 +1045,6 @@ end
 
 -- draw actor(s)
 function actor_draw(actor)
-	--sprnum = actor.idle
  	-- offets
 	actor.offset_x = actor.x - (actor.w *8) /2
 	actor.offset_y = actor.y - (actor.h *8) +2
@@ -1109,7 +1071,6 @@ function actor_draw(actor)
 	-- talking overlay
 	if (notnull(talking_actor) 
 	 and talking_actor == actor) then
-	 	--if (actor.face_dir != face_back) then
 			--d("talking actor!")
 			if (actor.talk_tmr < 7 ) then
 				sprnum = actor.talk[actor.face_dir]
@@ -1133,15 +1094,9 @@ function command_draw()
 
 	if not executing_cmd then
 		if notnull(verb_curr) then
-			-- d("1")
-			-- d("1ta:"..type(verb_curr))
-			-- d("1tb:"..type(verb_curr[1]))
-			-- d("1tc:"..type(verb_curr[2]))
 			command = verb_curr[3]
 		end
 		if notnull(noun1_curr) then
-			-- d("2")
-			-- d("2t:"..type(command))
 			command = command.." "..noun1_curr.name
 		end
 		if verb_curr[2] == "use" 
@@ -1163,9 +1118,7 @@ function command_draw()
 		cmd_col = 7
 	end
 
-	--d("test")
 	--d(command)
-	--printh(type(verb_default[1][0]))
 
 	print(smallcaps(command), 
 		hcenter(command), 
@@ -1202,12 +1155,10 @@ end
 
 -- draw ui and inventory
 function ui_draw()
-	--d("ui_draw()...")
 	-- draw verbs
 	xpos = 0
 	ypos = 75
 	col_len=0
-
 
 	for v in all(verbs) do
 		txtcol=verb_maincol
@@ -1273,13 +1224,10 @@ function ui_draw()
 end
 
 function dialog_draw()
-	--d("in dialog_draw()...")
 	-- draw verbs
 	xpos = 0
 	ypos = 70
 	
-
-	--d("#s="..#dialog_curr.sentences)
 	for s in all(dialog_curr.sentences) do
 		-- capture bounds
 		s.x = xpos
@@ -1292,7 +1240,6 @@ function dialog_draw()
 		for l in all(s.lines) do
 				print(smallcaps(l), xpos, ypos+stage_top, txtcol)
 			ypos = ypos + 5
-
 		end
 
 		if (show_collision) then rect(s.bounds.x, s.bounds.y, s.bounds.x1, s.bounds.y1, 8) end
@@ -1387,12 +1334,6 @@ function dialog_end()
 	dialog_curr=nil
 end
 
---selectedsentence
---dialoglist[selectedsentence]
-
-
-
-
 
 function get_use_pos(obj)
 	pos = {}
@@ -1478,6 +1419,7 @@ d("change_room()...")
 	clear_curr_cmd()
 
 	-- todo: transition to new room (e.g. iris/swipe)	
+
 	room_curr = new_room
 
 	-- reset camera
@@ -1491,15 +1433,12 @@ d("change_room()...")
 end
 
 function valid_verb(verb, object)
-	--d("in valid_verb()...")
 	-- check params
 	if (isnull(object)) then return false end
 	if (isnull(object.verbs)) then return false end
 	-- look for verb
 	if type(verb) == "table" then
 		if notnull(object.verbs[verb[1]]) then return true end
-		--if (notnull(object.verbs[get_verb(verb)[1]])) then return true end
-		--if (notnull(object.verbs[verb[1]])) then return true end
 	else
 		if (notnull(object.verbs[verb])) then return true end
 	end
@@ -1510,7 +1449,6 @@ end
 function pickup_obj(objname)
 	obj = find_object(objname)
 	if notnull(obj)
---	 and has_flag(obj.class, class_pickupable)
 	 and isnull(obj.owner) then
 	 	d("adding to inv")
 		-- assume selected_actor picked-up at this point
@@ -1534,27 +1472,19 @@ function state_of(objname, state)
 end
 
 function set_state(objname, state)
-	--d("set_state()...")
 	obj = find_object(objname)
 	if notnull(obj) then
-		--d("found obj!")
 		obj.state = state
-	else
-		--d("found NOT obj!")
 	end
 end
 
 -- find object by ref or name
 function find_object(name)
-	--d("find_object()...")
 	-- if object passed, just return object!
-	--d("type(name): "..type(name))
 	if (type(name) == "table") then return name end
 	-- else look for object by unique name
 	for k,obj in pairs(room_curr.objects) do
-		--d("k:"..k)
 		if (obj.name == name) then return obj end
-		--if (k == name) then return obj end
 	end
 end
 
@@ -1757,7 +1687,6 @@ end
 
 function get_keys(obj)
 	keys = {}
-	--d("/"..type(obj))
 	for k,v in pairs(obj) do
 		--d("k:"..k)
 		add(keys,k)
@@ -1767,15 +1696,16 @@ end
 
 function get_verb(obj)
 	verb = {}
-	--d(">>"..type(obj[1]))
 	keys = get_keys(obj[1])
-	--[[d("1:"..keys[1])
+	--[[
+	d("1:"..keys[1])
 	d("2:"..obj[1][ keys[1] ])
-	d("3:"..obj.text )]]
+	d("3:"..obj.text )
+	]]
 
-	add(verb, keys[1])							-- verb func
-	add(verb, obj[1][ keys[1] ])  	-- verb ref name
-	add(verb, obj.text)							-- verb disp name
+	add(verb, keys[1])						-- verb func
+	add(verb, obj[1][ keys[1] ])  -- verb ref name
+	add(verb, obj.text)						-- verb disp name
 
 	return verb
 end
@@ -1840,7 +1770,6 @@ end
 function clear_curr_cmd()
 	-- reset all command values
 	verb_curr = get_verb(verb_default)
-	--verb_curr = verb_default
 	noun1_curr = nil
 	noun2_curr = nil
 	me = nil

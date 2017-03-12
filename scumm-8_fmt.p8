@@ -19,7 +19,7 @@ cp(cq,"I think it's alive") else cp(cq,"Looks pretty ordinary") end elseif ez=="
 cq.dx=dy dt(dy) end function _update60() gd() end function _draw() ge() end function gd() if cq.gf and not coresume(cq.gf) then
 cq.gf=nil end if gg(fy) then
 if fy.gf and not coresume(fy.gf) then
-if(dn!=fy.gh) dt(fy.gh)
+if(dn!=fy.gh) then dt(fy.gh) end
 cq=fy.gi fh.fi=fy.gj fh.fj=fy.gk del(gc,fy) fy=nil if(#gc>0) then
 fy=gc[#gc] end end else for gl in all(gb) do if gl[2] and not coresume(gl[2],gl[3],gl[4]) then
 del(gb,gl) gl=nil end end end gm() gn() end function ge() rectfill(0,0,fd,fe,0) if fh.fi==0 then
@@ -53,7 +53,7 @@ else return end end fv=true cq.gf=cocreate(function(he,es,ez,hf) if df(es.hg) th
 if(gg(es.co)) then e("obj use_pos="..es.co) end
 e("obj x="..es.bv..",y="..es.bw) e("obj w="..es.bx..",h="..es.by) hh=hi(es) e("dest_pos x="..hh.bv..",y="..hh.bw) if(gg(es.hj)) then e("offset x="..es.hj..",y="..es.hk) end
 dw(cq,hh.bv,hh.bw) cn=cq.ea if(gg(es.cn) and(ez!=q)) then cn=es.cn end
-cs(cq,bt,cn) e("next") end e("next2") if hl(ez,es) then
+cs(cq,bt,cn) end if hl(ez,es) then
 e("verb_obj_script!") e("verb = "..ez[2]) e("obj = "..es.ck) ca(es.f[ez[1]],es,hf) elseif ez[2]!=q[2] then ey(ez[2],es,hf) else end hm() end) coresume(cq.gf,cq,fs,fr,ft) elseif(cursor.bw>ff and cursor.bw<ff+64) then fv=true cq.gf=cocreate(function(bv,bw) dw(cq,bv,bw) hm() end) coresume(cq.gf,cursor.bv,cursor.bw-ff) end e("--------------------------------") end function gn() fn={} if gg(fx) and fx.gq then
 for hn in all(fx.ho) do if hp(hn) then
 fn.ha=hn end end return end for hd,es in pairs(dn.ci) do if hp(es) then
@@ -109,7 +109,7 @@ end return false end function cu(jk) es=jl(jk) if gg(es)
 and df(es.hg) then e("adding to inv") add(cq.ek,es) es.hg=cq end end function dk(jk) es=jl(jk) if gg(es) then
 return es.hg end end function da(jk,cl) es=jl(jk) if gg(es) then
 return es.cl end end function cc(jk,cl) es=jl(jk) if gg(es) then
-es.cl=cl else end end function jl(ck) if(cz(ck)=="table") then return ck end
+es.cl=cl end end function jl(ck) if(cz(ck)=="table") then return ck end
 for hd,es in pairs(dn.ci) do if(es.ck==ck) then return es end
 end end function ca(ja,jm,hf,jn) local gf=cocreate(ja) if jn then
 add(ga,{ja,gf,jm,hf}) else add(gb,{ja,gf,jm,hf}) end end function dm(ja) e("script_running()") for hd,gl in pairs(gb) do e("...") if(gl[1]==ja) then
