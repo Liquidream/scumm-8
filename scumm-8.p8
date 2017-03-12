@@ -5,45 +5,69 @@ __lua__
 -- scumm-8
 -- paul nicholas
 
+-- python C:\Users\pauln\ownCloud\Dev\PICO-8\picotool\p8tool luamin C:\Users\pauln\ownCloud\Games\pico-8\carts\scumm-8.p8
+
+-- ### luamin fixes ###
+--  cz=type 
+--	"\65\66\67\68\69\70\71\72\73\74\75\76\77\78\79\80\81\82\83\84\85\86\87\88\89\90\91\92"
+
+
 -- debugging
 show_debuginfo = false
 show_collision = false
-show_perfinfo = false
+show_perfinfo = true
 enable_mouse = true
 d = printh
 
 -- game verbs (used in room definitions and ui)
 verbs = {
-	--verb, name, bounds{},
-	{"open", "open"},
-	{"close", "close"},
-	{"give", "give"},
-	{"pickup", "pick-up"},
-	{"lookat", "look-at"},
-	{"talkto", "talk-to"},
-	{"push", "push"},
-	{"pull", "pull"},
-	{"use", "use"}
+	--{verb = verb_ref_name}, text = display_name ....bounds{},x,y...
+	{ { open = "open" }, text = "open" },
+	{ { close = "close" }, text = "close" },
+	{ { give = "give" }, text = "give" },
+	{ { pickup = "pickup" }, text = "pick-up" },
+	{ { lookat = "lookat" }, text = "look-at" },
+	{ { talkto = "talkto" }, text = "talk-to" },
+	{ { push = "push" }, text = "push" },
+	{ { pull = "pull" }, text = "pull"},
+	{ { use = "use" }, text = "use"}
 }
-verb_default = {"walkto", "walk to"} -- verb to use when just clicking aroung (e.g. move actor)
+-- verb to use when just clicking aroung (e.g. move actor)
+verb_default = {
+	{ walkto = "walkto" }, text = "walk to"
+} 
+
+
 verb_maincol = 12  -- main color (lt blue)
 verb_hovcol = 7   -- hover color (white)
 verb_shadcol = 1   -- shadow (dk blue)
 verb_defcol = 10    -- default action (yellow)
 
 -- object states
-state_closed = "closed"
-state_off = "off"
-state_here = "here"
-state_open = "open"
-state_on = "on"
-state_gone = "gone"
+states = {
+	closed = 1,
+	off = 1,
+	gone = 1,
+	open = 2,
+	on = 2,
+	here = 2
+}
+
+-- prepositions { " ", " in", " with", " on", " to" },   // English
+--[[void ResetSentence()
+{
+		Variables[VariableSentenceVerb.Value] = Variables[VariableBackupVerb.Value];
+		Variables[VariableSentenceObject1.Value] = 0;
+		Variables[VariableSentenceObject2.Value] = 0;
+		Variables[VariableSentencePreposition.Value] = 0;
+}]]
 
 -- object classes (bitflags)
 class_untouchable = 1 -- will not register when the cursor moves over it. the object is invisible to the user.
 class_pickupable = 2  -- can be placed in actor inventory
 class_talkable = 4		-- can talk to actor/object
-class_giveable = 8		-- canbe given to an actor/object
+class_giveable = 8		-- can be given to an actor/object
+class_openable = 16   -- can be opened/closed
 
 cut_noverbs = 1 		-- this removes the interface during the cut-scene.
 cut_hidecursor = 2  -- this turns off the cursor during the cut-scene.
@@ -83,7 +107,7 @@ first_room = {
 		start_script(function()
 			while true do
 				for f=1,3 do
-					set_state("fire", "frame"..f)
+					set_state("fire", f)
 					break_time(8)
 				end
 			end
@@ -97,7 +121,7 @@ first_room = {
 		spin_top = function()
 			while true do	
 				for f=1,3 do
-					set_state("spinning_top", "frame"..f)
+					set_state("spinning top", f)
 					break_time(8)
 				end
 			end
@@ -106,23 +130,21 @@ first_room = {
 	objects = {
 		fire = {
 			name = "fire",
-			state = "frame1",
+			state = 1, --"frame1",
 		--	class = class_talkable + class_pickupable,
 			x = 8*8, -- (*8 to use map cell pos)
 			y = 4*8,
-			states = {
-				-- states are spr values
-				frame1 = 23, 
-				frame2 = 24,
-				frame3 = 25
-			},
+			states = {23, 24, 25},
 			w = 1,	-- relates to spr or map cel, depending on above
 			h = 1,  --
 			trans_col = 0,
 			--use_pos (defaults to spr bottom)
 			use_dir = face_back,
 			use_pos = pos_infront,
+
 			--[dependent-on object-name being object-state]
+
+			
 
 			verbs = {
 				lookat = function()
@@ -130,7 +152,6 @@ first_room = {
 					wait_for_message()
 					break_time(10)
 					do_anim(selected_actor, anim_turn, face_front)
-					--selected_actor.face_dir = actor_face_front
 					say_line(selected_actor, "ouch! it's hot!;*stupid fire*")
 					wait_for_message()
 				end,
@@ -149,15 +170,15 @@ first_room = {
 		},
 		front_door = {
 			name = "front door",
+			class = class_openable,
 			--dependent_on = "closet-door",
 			--dependent_on_state = state_closed,
-			state = state_closed,
+			state = states.closed, --state_closed,
 			x = 1*8, -- (*8 to use map cell pos)
 			y = 2*8,
-			states = {
-				-- states are spr values
-				closed = 15, -- state_closed
-				open = 0 -- state_open
+			states = { -- states are spr values
+				15, -- state_closed
+				0 -- state_open
 			},
 			flip_x = false, -- used for flipping the sprite
 			flip_y = false,
@@ -190,7 +211,7 @@ first_room = {
 		},
 		hall_door_kitchen = {
 			name = "kitchen",
-			state = state_open,
+			state = states.open,
 			x = 14 *8, -- (*8 to use map cell pos)
 			y = 2 *8,
 			w = 1,	-- relates to spr or map cel, depending on above
@@ -206,20 +227,18 @@ first_room = {
 		bat = {
 			name = "bucket",
 			class = class_pickupable,
-			state = state_open,
+			state = states.open,
 			x = 13 *8, -- (*8 to use map cell pos)
 			y = 6 *8,
 			w = 1,	-- relates to spr or map cel, depending on above
 			h = 1,  --
-			states = {
-				-- states are spr values
-				open = 223, -- state_open
-				closed = 207 -- state_closed
+			states = { -- states are spr values
+				207,  -- closed
+				223 -- open
 			},
 			trans_col=15,
 			--owner (set on pickup)
 			--[dependent-on object-name being object-state]
-			--class is class-state [class-state]  (e.g. untouchable = invisible + non-collidable)
 			verbs = {
 				lookat = function(me)
 					if owner_of(me) == selected_actor then
@@ -241,15 +260,10 @@ first_room = {
 		},
 		spinning_top = {
 			name = "spinning top",
-			state = "frame1",
+			state = 1,
 			x = 2*8, -- (*8 to use map cell pos)
 			y = 6*8,
-			states = {
-				-- states are spr values
-				frame1 = 112, 
-				frame2 = 113,
-				frame3 = 114
-			},
+			states = { 112, 113, 114 },
 			trans_col=15,
 			w = 1,	-- relates to spr or map cel, depending on above
 			h = 1,  --
@@ -257,28 +271,27 @@ first_room = {
 				push = function(me)
 					if script_running(room_curr.scripts.spin_top) then
 						stop_script(room_curr.scripts.spin_top)
-						set_state(me, "frame1")
+						set_state(me, 1)
 					else
 						start_script(room_curr.scripts.spin_top)
 					end
 				end,
 				pull = function(me)
 					stop_script(room_curr.scripts.spin_top)
-					set_state(me, "frame1")
+					set_state(me, 1)
 				end
 			}
 		},
 		window = {
 			name = "window",
-			state = state_closed,
+			state = states.closed,
 			x = 4*8, -- (*8 to use map cell pos)
 			y = 1*8,
 			w = 2,	-- relates to spr or map cel, depending on above
 			h = 2,  --
-			states = {
-				-- states are spr values
-				closed = 80, -- state_closed
-				open = 82 -- state_open
+			states = {  -- states are spr values
+				80, -- closed
+				82  -- open
 			},
 			verbs = {
 				open = function(me)	
@@ -299,13 +312,12 @@ first_room = {
 							walk_to(selected_actor, 
 								selected_actor.x-10, 
 								selected_actor.y)
-							
 							change_room(first_room)
+							-- wait for a bit, then appear in room1
 							break_time(50)
 							selected_actor.x = 115
 							selected_actor.y = 44
 							selected_actor.in_room = first_room
-							--break_time(50)
 							walk_to(selected_actor, 
 								selected_actor.x-10, 
 								selected_actor.y)
@@ -313,17 +325,6 @@ first_room = {
 							wait_for_message()
 						end
 					)
-					-- wait for a bit, then appear in room1
-					--d("test2")
-					--[[break_time(30)
-					tent = actors.purp_tentacle
-					tent.x = 115
-					tent.y = 60
-					tent.in_room = first_room
-					say_line(tent, "intruder!!!")
-					walk_to(tent, 
-							tent.x-10, 
-							tent.y)]]
 				end
 			}
 		}
@@ -357,7 +358,6 @@ second_room = {
 			verbs = {
 				walkto = function()
 					-- go to new room!
-					--change_room(second_room)
 					come_out_door(first_room.objects.hall_door_kitchen, first_room)
 				end
 			}
@@ -366,13 +366,13 @@ second_room = {
 			name = "back door",
 			--dependent_on = "closet-door",
 			--dependent_on_state = state_closed,
-			state = state_closed,
+			state = states.closed,
 			x = 22*8, -- (*8 to use map cell pos)
 			y = 2*8,
 			states = {
 				-- states are spr values
-				closed = 15, -- state_closed
-				open = 0 -- state_open
+				15, -- closed
+				0   -- open
 			},
 			flip_x = true, -- used for flipping the sprite
 			flip_y = false,
@@ -465,7 +465,7 @@ actors = {
 				end,
 				talkto = function(me)
 					cutscene(cut_noverbs, function()
-						--actorface( commanderzif, var_ego )
+						--actorface( actor1, actor2 )
 						say_line(me,"what do you want?")
 						wait_for_message()
 					end)
@@ -520,37 +520,54 @@ selected_actor = actors.main_actor
 -- (e.g. when you right-click an object)
 function find_default_verb(obj)
   local default_verb = nil
-	-- look for verbs in the following order of priority
-	local verb_ordered_list = {
-		"open", "close", "talkto", "lookat", "push", "pull"
-	}
 
-	for v in all(verb_ordered_list) do
-		-- if object supports current verb
-	  if valid_verb(v, obj) then
-			-- check for reasons not to use this verb as default
-			if (v == "open" and obj.state != state_closed) 
-			or (v == "close" and obj.state != state_open)
-			or (v == "talkto" and (not has_flag(obj.class, class_talkable)))
-			or (v == "pickup" and (not has_flag(obj.class, class_pickupable)))
-			then
-				-- not suitable ver, continue
-			else
-				-- found default verb
-				default_verb = v
-				break
-			end
+	if has_flag(obj.class, class_talkable) then
+		default_verb = "talkto"
+	elseif has_flag(obj.class, class_openable) then
+		if obj.state == states.closed then
+			default_verb = "open"
+		else
+			default_verb = "close"
 		end
+	else
+		default_verb = "lookat"
 	end
+
+	--d(default_verb)
+
 	-- now find the full verb definition
 	for v in all(verbs) do
-		if (v[1] == default_verb) default_verb=v break
+		vi = get_verb(v)
+		--d("lookin..."..vi[1])
+		if (vi[2] == default_verb) then default_verb=v break end
 	end
 	return default_verb
 end
 
+-- actions to perform when object doesn't have an entry for verb
+function unsupported_action(verb, obj1, obj2)
+	d("verb:"..verb.." , obj:"..obj1.name)
+	if verb == "walkto" then
+		return
+	elseif verb == "pickup" then
+		if has_flag(obj1.class, class_actor) then
+			say_line(selected_actor, "I don't need them")
+		else
+			say_line(selected_actor, "I don't need that")
+		end
+	elseif verb == "lookat" then
+		if has_flag(obj1.class, class_actor) then
+			say_line(selected_actor, "I think it's alive")
+		else
+			say_line(selected_actor, "Looks pretty ordinary")
+		end
+	elseif verb == "use" then
+		-- todo: the rest...
 
-
+	else
+		say_line(selected_actor, "Hmm. No.")
+	end
+end 
 
 
 
@@ -629,7 +646,7 @@ cutscenes = {} -- table of scripts for the active cutscene(s)
 
 function _init()
 	-- use mouse input?
-	if (enable_mouse) poke(0x5f2d, 1)
+	if (enable_mouse) then poke(0x5f2d, 1) end
 
 	-- init actor
 	selected_actor.in_room = selected_room
@@ -659,22 +676,11 @@ function gameupdate()
 	if notnull(cutscene_curr) then
 		--d("playing cutscene...")
 		if cutscene_curr.thread and not coresume(cutscene_curr.thread) then
-			-- cutscene ended, restore prev state
-			if (room_curr != cutscene_curr.paused_room) change_room(cutscene_curr.paused_room)
+			-- cutscene ended, restore prev state	
+			if (room_curr != cutscene_curr.paused_room) then change_room(cutscene_curr.paused_room) end
 			selected_actor = cutscene_curr.paused_actor
 			cam.mode = cutscene_curr.paused_cam_mode
 			cam.following_actor = cutscene_curr.paused_cam_following
-			
-			-- script the cutscene end
-			--[[start_script(function()
-				d("dlete!!!")
-				del(cutscenes, cutscene_curr)
-				cutscene_curr = nil
-				-- any more cutscenes?
-				if (#cutscenes > 0) then
-					cutscene_curr = cutscenes[#cutscenes]
-				end
-			end)]]
 			-- now delete cutscene
 			del(cutscenes, cutscene_curr)
 			cutscene_curr = nil
@@ -682,7 +688,7 @@ function gameupdate()
 			if (#cutscenes > 0) then
 				cutscene_curr = cutscenes[#cutscenes]
 			end
-			-- add a pause for sys to catch-up
+			-- add a pause for sys to catch-up??
 			--break_time(1)
 		end
 	else
@@ -697,7 +703,6 @@ function gameupdate()
 			end
 		end
 	end
-
 
 	-- player/ui control
 	playercontrol()
@@ -729,8 +734,8 @@ function gamedraw()
 	-- reset clip
 	clip()
 
-	if (show_perfinfo) print("cpu: "..stat(1), 0, stage_top - 16, 8) print("mem: "..stat(0), 0, stage_top - 8, 8)
-	if (show_debuginfo) print("x: "..cursor.x.." y:"..cursor.y, 80, stage_top - 8, 8)
+	if (show_perfinfo) then print("cpu: "..stat(1), 0, stage_top - 16, 8) print("mem: "..stat(0), 0, stage_top - 8, 8) end
+	if (show_debuginfo) then print("x: "..cursor.x.." y:"..cursor.y, 80, stage_top - 8, 8) end
 
 	-- draw active text
 	talking_draw()
@@ -744,10 +749,12 @@ function gamedraw()
 		return
 	end
 
- -- debug:
+ -- --------------------------------------------------------------
+ -- HACK:
  -- skip draw if just exited a cutscene
- -- (as could be going straight into a dialog)
-	--d("cut_curr:"..type(cutscene_curr))
+ -- as could be going straight into a dialog
+ -- (would prefer a better way than this, but couldn't find one!)
+ -- --------------------------------------------------------------
 	if (cutscene_curr_lastval == cutscene_curr) then
 		--d("cut_same")
 	else
@@ -755,6 +762,7 @@ function gamedraw()
 		cutscene_curr_lastval = cutscene_curr
 		return
 	end
+	
 
 	-- draw current command (verb/object)
 	if isnull(cutscene_curr) then
@@ -771,7 +779,7 @@ function gamedraw()
 		--d("ui skipped")
 	end
 
-	-- debug: fix for display issue
+	-- HACK: fix for display issue (see above hack info)
 	cutscene_curr_lastval = cutscene_curr
 
 	if isnull(cutscene_curr) 
@@ -784,18 +792,18 @@ end
 -- handle button inputs
 function playercontrol()	
 	-- 
-	if (btn(0)) cursor.x-=1 
-	if (btn(1)) cursor.x+=1 
-	if (btn(2)) cursor.y-=1
-	if (btn(3)) cursor.y+=1
+	if (btn(0)) then cursor.x = cursor.x - 1 end
+	if (btn(1)) then cursor.x = cursor.x + 1 end
+	if (btn(2)) then cursor.y = cursor.x - 1 end
+	if (btn(3)) then cursor.y = cursor.x + 1 end
 
-	if (btnp(4)) input_button_pressed(1) 
-	if (btnp(5)) input_button_pressed(2)
+	if (btnp(4)) then input_button_pressed(1) end
+	if (btnp(5)) then input_button_pressed(2) end
 
 	-- only update position if mouse moved
 	if (enable_mouse) then	
-		if (stat(32)-1 != last_mouse_x) cursor.x = stat(32)-1	-- mouse xpos
-		if (stat(33)-1 != last_mouse_y) cursor.y = stat(33)-1	-- mouse ypos
+		if (stat(32)-1 != last_mouse_x) then cursor.x = stat(32)-1 end	-- mouse xpos
+		if (stat(33)-1 != last_mouse_y) then cursor.y = stat(33)-1	end -- mouse ypos
 		-- don't repeat action if same press/click
 		if (stat(34) > 0) then
 			if (not ismouseclicked) then
@@ -830,49 +838,49 @@ function input_button_pressed(button_index)
 		return
 	end
 
-	for k,h in pairs(hover_curr) do
-		if type(h) != nil then
-			-- found something being hovered...
-			if k == "verb" then
-				verb_curr = h
-				d("verb = "..h[1])
-				break
-			elseif k == "object" then
-				-- if valid obj, complete command
-				-- else, abort command (clear verb, etc.)
-				if button_index == 1 then
-					if verb_curr[1] == "use" and notnull(noun1_curr) then
-						noun2_curr = h
-						d("noun2_curr = "..noun2_curr.name)					
-					else
-						noun1_curr = h
-						d("noun1_curr = "..noun1_curr.name)
-					end
-				elseif (notnull(hover_curr.default_verb)) then
-					-- perform default verb action (if present)
-					verb_curr = hover_curr.default_verb
-					noun1_curr = h
-					-- force repaint of command (to reflect default verb)
-					command_draw()	
-					break
+
+		if hover_curr.verb then
+			verb_curr = get_verb(hover_curr.verb)
+			d("verb = "..verb_curr[2])
+
+		elseif hover_curr.object then
+			-- if valid obj, complete command
+			-- else, abort command (clear verb, etc.)
+			if button_index == 1 then
+				if verb_curr[1] == "use" and notnull(noun1_curr) then
+					noun2_curr = hover_curr.object
+					d("noun2_curr = "..noun2_curr.name)					
+				else
+					noun1_curr = hover_curr.object						
+					d("noun1_curr = "..noun1_curr.name)
 				end
-				break
-			elseif k == "ui_arrow" then
-				-- todo: ui arrow clicked...
-				break
-			--[[elseif k == "inv_object" then
-				-- todo: inventory object clicked
-				break]]
-			else
-				-- what else could there be? actors!?
+
+			elseif (notnull(hover_curr.default_verb)) then
+				-- perform default verb action (if present)
+				verb_curr = get_verb(hover_curr.default_verb)
+				noun1_curr = hover_curr.object
+				d("n1 tpe:"..type(noun1_curr))
+				get_keys(noun1_curr)
+				d("name:"..noun1_curr.name)
+				-- force repaint of command (to reflect default verb)
+				command_draw()
 			end
+		
+		elseif k == "ui_arrow" then
+			-- todo: ui arrow clicked...
+			--break
+
+		--[[elseif k == "inv_object" then
+			-- todo: inventory object clicked
+			break]]
+		else
+			-- what else could there be? actors!?
 		end
-	end
 
 	-- attempt to use verb on object
 	if (noun1_curr != nil) then
 		-- are we starting a 'use' command?
-		if verb_curr[1] == "use" then
+		if verb_curr[2] == "use" then
 			if notnull(noun2_curr) then
 				-- 'use' part 2
 			else
@@ -886,29 +894,32 @@ function input_button_pressed(button_index)
 		executing_cmd = true
 		selected_actor.thread = cocreate(function(actor, obj, verb, noun2)
 			if isnull(obj.owner) then
-				-- todo: walk to use pos and face dir
-				if (notnull(obj.use_pos)) d("obj use_pos="..obj.use_pos)
+				-- walk to use pos and face dir
+				if (notnull(obj.use_pos)) then d("obj use_pos="..obj.use_pos) end
 				d("obj x="..obj.x..",y="..obj.y)
 				d("obj w="..obj.w..",h="..obj.h)
 				dest_pos = get_use_pos(obj)
 				d("dest_pos x="..dest_pos.x..",y="..dest_pos.y)
-				if (notnull(obj.offset_x)) d("offset x="..obj.offset_x..",y="..obj.offset_y)
+				if (notnull(obj.offset_x)) then d("offset x="..obj.offset_x..",y="..obj.offset_y) end
 				walk_to(selected_actor, dest_pos.x, dest_pos.y)
 				-- default use direction
 				use_dir=selected_actor.face_dir
-				if (notnull(obj.use_dir) and (verb != verb_default)) use_dir = obj.use_dir
-					-- anim to use dir
+				if (notnull(obj.use_dir) and (verb != verb_default)) then use_dir = obj.use_dir end
+				-- anim to use dir
 				do_anim(selected_actor, anim_turn, use_dir)
 			end
 			-- does current object support active verb?
 			if valid_verb(verb,obj) then
 				-- finally, execute verb script
 				d("verb_obj_script!")
-				d("verb = "..verb[1])
+				d("verb = "..verb[2])
 				d("obj = "..obj.name)
 				start_script(obj.verbs[verb[1]], obj, noun2)
-			elseif verb[1] != verb_default[1] then
-				say_line(selected_actor, "i don't think that will work")
+			elseif verb[2] != verb_default[2] then
+			 	-- e.g. "i don't think that will work"
+				unsupported_action(verb[2], obj, noun2)
+			else
+				-- anything else?
 			end
 			-- clear current command
 			clear_curr_cmd()
@@ -969,7 +980,7 @@ function checkcollisions()
 
 	-- default to walkto (if nothing set)
 	if (verb_curr == nil) then
-		verb_curr = verb_default
+		verb_curr = get_verb(verb_default)
 	end
 
 	-- update "default" verb for hovered object (if any)
@@ -981,7 +992,7 @@ end
 function roomdraw()
 	-- draw current room (base layer)
 	room_map = room_curr.map
-	map(room_map.x, room_map.y, 0, stage_top, room_map.w, room_map.h) --,layer
+	map(room_map.x, room_map.y, 0, stage_top, room_map.w, room_map.h)
 	
 	-- debug walkable areas
 	if show_collision then
@@ -1005,6 +1016,7 @@ function roomdraw()
 		-- todo: check dependent-on's
 
 		if (notnull(obj.states)) 
+			and notnull(obj.states[obj.state])
 		  and (obj.states[obj.state] > 0)
 		  and (isnull(obj.owner)) then
 			-- something to draw
@@ -1015,7 +1027,7 @@ function roomdraw()
 		if isnull(obj.class)
 		  or (notnull(obj.class) and obj.class != class_untouchable) then
 			recalc_bounds(obj, obj.w*8, obj.h*8, cam.x, cam.y)
-			if (show_collision) rect(obj.bounds.x, obj.bounds.y, obj.bounds.x1, obj.bounds.y1, 8)
+			if (show_collision) then rect(obj.bounds.x, obj.bounds.y, obj.bounds.x1, obj.bounds.y1, 8) end
 		end
 	end
 
@@ -1025,7 +1037,7 @@ function roomdraw()
 			actor_draw(actor)
 
 			recalc_bounds(actor, actor.w*8, actor.h*8, cam.x, cam.y)
-			if (show_collision) rect(actor.bounds.x, actor.bounds.y, actor.bounds.x1, actor.bounds.y1, 8)
+			if (show_collision) then rect(actor.bounds.x, actor.bounds.y, actor.bounds.x1, actor.bounds.y1, 8) end
 	
 		end
 	end
@@ -1033,18 +1045,17 @@ end
 
 -- draw actor(s)
 function actor_draw(actor)
-	--sprnum = actor.idle
  	-- offets
 	actor.offset_x = actor.x - (actor.w *8) /2
 	actor.offset_y = actor.y - (actor.h *8) +2
 	
 	if (actor.moving == 1) 
 	 and notnull(actor.walk_anim) then
-		actor.tmr += 1
+		actor.tmr = actor.tmr + 1
 		if (actor.tmr > 5) then
 			actor.tmr = 1
-			actor.anim_pos += 1
-			if (actor.anim_pos > #actor.walk_anim) actor.anim_pos=1
+			actor.anim_pos = actor.anim_pos + 1
+			if (actor.anim_pos > #actor.walk_anim) then actor.anim_pos=1 end
 		end
 		-- choose walk anim frame
 		sprnum = actor.walk_anim[actor.anim_pos]	
@@ -1060,7 +1071,6 @@ function actor_draw(actor)
 	-- talking overlay
 	if (notnull(talking_actor) 
 	 and talking_actor == actor) then
-	 	--if (actor.face_dir != face_back) then
 			--d("talking actor!")
 			if (actor.talk_tmr < 7 ) then
 				sprnum = actor.talk[actor.face_dir]
@@ -1069,8 +1079,8 @@ function actor_draw(actor)
 				sprdraw(sprnum, actor.offset_x, actor.offset_y +8, 1, 1, 
 					actor.trans_col, actor.flip, false)
 			end
-			actor.talk_tmr += 1	
-			if (actor.talk_tmr > 14) actor.talk_tmr = 1
+			actor.talk_tmr = actor.talk_tmr + 1	
+			if (actor.talk_tmr > 14) then actor.talk_tmr = 1 end
 
 		--end
 	end
@@ -1081,14 +1091,16 @@ function command_draw()
 	command = ""
 	cmd_col = 12
 
+
 	if not executing_cmd then
 		if notnull(verb_curr) then
-			command = verb_curr[2]
+			command = verb_curr[3]
 		end
 		if notnull(noun1_curr) then
 			command = command.." "..noun1_curr.name
 		end
-		if verb_curr[1] == "use" and notnull(noun1_curr) then
+		if verb_curr[2] == "use" 
+		 and notnull(noun1_curr) then
 			command = command.." with"
 		end
 		if notnull(noun2_curr) then
@@ -1105,6 +1117,8 @@ function command_draw()
 		command = cmd_curr
 		cmd_col = 7
 	end
+
+	--d(command)
 
 	print(smallcaps(command), 
 		hcenter(command), 
@@ -1132,21 +1146,19 @@ function talking_draw()
 		end
 
 		-- update message lifespan
-		talking_curr.time_left -= 1
+		talking_curr.time_left = talking_curr.time_left - 1
 		-- remove text & reset actor's talk anim
-		if (talking_curr.time_left <=0) talking_curr = nil talking_actor = nil d("talking actor cleared")
+		if (talking_curr.time_left <=0) then talking_curr = nil talking_actor = nil d("talking actor cleared") end
 
 	end
 end
 
 -- draw ui and inventory
 function ui_draw()
-	--d("ui_draw()...")
 	-- draw verbs
 	xpos = 0
 	ypos = 75
 	col_len=0
-
 
 	for v in all(verbs) do
 		txtcol=verb_maincol
@@ -1156,22 +1168,26 @@ function ui_draw()
 		  and (v == hover_curr.default_verb) then
 			txtcol = verb_defcol
 		end		
-		if (v == hover_curr.verb) txtcol=verb_hovcol
-		print(v[2], xpos, ypos+stage_top+1, verb_shadcol)  -- shadow
-		print(v[2], xpos, ypos+stage_top, txtcol)  -- main
+		if (v == hover_curr.verb) then txtcol=verb_hovcol end
+
+		-- get verb info
+		vi = get_verb(v)
+		print(vi[3], xpos, ypos+stage_top+1, verb_shadcol)  -- shadow
+		print(vi[3], xpos, ypos+stage_top, txtcol)  -- main
 		
 		-- capture bounds
 		v.x = xpos
 		v.y = ypos
-		recalc_bounds(v, #v[2]*4, 5, 0, 0)
-		if (show_collision) rect(v.bounds.x, v.bounds.y, v.bounds.x1, v.bounds.y1, 8)
+		recalc_bounds(v, #vi[3]*4, 5, 0, 0)
+		if (show_collision) then rect(v.bounds.x, v.bounds.y, v.bounds.x1, v.bounds.y1, 8) end
 		-- auto-size column
-		if (#v[2] > col_len) col_len = #v[2]
-		ypos += 8
+		if (#vi[3] > col_len) then col_len = #vi[3] end
+		ypos = ypos + 8
+
 		-- move to next column
 		if ypos >= 95 then
 			ypos = 75
-			xpos += (col_len + 1.0) * 4
+			xpos = xpos + (col_len + 1.0) * 4
 			col_len = 0
 		end
 	end
@@ -1196,23 +1212,22 @@ function ui_draw()
 			-- re-calculate bounds (as pos may have changed)
 			recalc_bounds(obj, obj.w*8, obj.h*8, 0, 0)
 		end
-		xpos += 11
+		xpos = xpos + 11
+
 		if xpos >= 125 then
-			ypos += 12
+			ypos = ypos + 12
+
 			xpos=86
 		end
-		ipos += 1
+		ipos = ipos + 1
 	end
 end
 
 function dialog_draw()
-	--d("in dialog_draw()...")
 	-- draw verbs
 	xpos = 0
 	ypos = 70
 	
-
-	--d("#s="..#dialog_curr.sentences)
 	for s in all(dialog_curr.sentences) do
 		-- capture bounds
 		s.x = xpos
@@ -1220,16 +1235,17 @@ function dialog_draw()
 		recalc_bounds(s, s.char_width*4, #s.lines*5, 0, 0)
 
 		txtcol=dialog_curr.col
-		if (s == hover_curr.sentence) txtcol=dialog_curr.hlcol
+		if (s == hover_curr.sentence) then txtcol=dialog_curr.hlcol end
 		
 		for l in all(s.lines) do
 				print(smallcaps(l), xpos, ypos+stage_top, txtcol)
-			ypos += 5
+			ypos = ypos + 5
 		end
 
-		if (show_collision) rect(s.bounds.x, s.bounds.y, s.bounds.x1, s.bounds.y1, 8)
+		if (show_collision) then rect(s.bounds.x, s.bounds.y, s.bounds.x1, s.bounds.y1, 8) end
 		
-		ypos += 2
+		ypos = ypos + 2
+
 	end
 end
 
@@ -1241,13 +1257,13 @@ function cursor_draw()
 	spr(32, cursor.x-4, cursor.y-3, 1, 1, 0)
 	pal() --reset palette
 
-	cursor.tmr += 1
+	cursor.tmr = cursor.tmr + 1
 	if (cursor.tmr > 7) then
 		--reset timer
 		cursor.tmr = 1
 		-- move to next color?
-		cursor.colpos += 1
-		if (cursor.colpos > #cursor.cols) cursor.colpos = 1
+		cursor.colpos = cursor.colpos + 1
+		if (cursor.colpos > #cursor.cols) then cursor.colpos = 1 end
 	end
 end
 
@@ -1268,7 +1284,7 @@ end
 
 function cutscene(flags, func)
 	-- decrement the cursor level
-	cursor.lvl -= 1
+	cursor.lvl = cursor.lvl - 1
 
 	cut = {
 		flags = flags,
@@ -1292,7 +1308,7 @@ function cutscene(flags, func)
 end
 
 function dialog_add(msg)
-	if (isnull(dialog_curr)) dialog_curr={ sentences={}, visible=false}
+	if (isnull(dialog_curr)) then dialog_curr={ sentences={}, visible=false} end
 	-- break msg into lines (if necc.)
 	lines = create_text_lines(msg, 32)
 	-- find longest line
@@ -1317,12 +1333,6 @@ function dialog_end()
 	dialog_curr.visible = false
 	dialog_curr=nil
 end
-
---selectedsentence
---dialoglist[selectedsentence]
-
-
-
 
 
 function get_use_pos(obj)
@@ -1363,9 +1373,9 @@ function do_anim(actor, cmd_type, cmd_value)
 		d(" > anim_turn")
 		while (actor.face_dir != cmd_value) do
 			if (actor.face_dir < cmd_value) then
-				actor.face_dir += 1
+				actor.face_dir = actor.face_dir + 1
 			else 
-				actor.face_dir -= 1
+				actor.face_dir = actor.face_dir - 1
 			end
 			break_time(10)
 		end
@@ -1409,6 +1419,7 @@ d("change_room()...")
 	clear_curr_cmd()
 
 	-- todo: transition to new room (e.g. iris/swipe)	
+
 	room_curr = new_room
 
 	-- reset camera
@@ -1423,13 +1434,13 @@ end
 
 function valid_verb(verb, object)
 	-- check params
-	if (isnull(object)) return false
-	if (isnull(object.verbs)) return false
+	if (isnull(object)) then return false end
+	if (isnull(object.verbs)) then return false end
 	-- look for verb
 	if type(verb) == "table" then
-		if (notnull(object.verbs[verb[1]])) return true
+		if notnull(object.verbs[verb[1]]) then return true end
 	else
-		if (notnull(object.verbs[verb])) return true
+		if (notnull(object.verbs[verb])) then return true end
 	end
 	-- must not be valid if reached here
 	return false
@@ -1438,7 +1449,6 @@ end
 function pickup_obj(objname)
 	obj = find_object(objname)
 	if notnull(obj)
---	 and has_flag(obj.class, class_pickupable)
 	 and isnull(obj.owner) then
 	 	d("adding to inv")
 		-- assume selected_actor picked-up at this point
@@ -1471,11 +1481,10 @@ end
 -- find object by ref or name
 function find_object(name)
 	-- if object passed, just return object!
-	--d("type(name): "..type(name))
-	if (type(name) == "table") return name
+	if (type(name) == "table") then return name end
 	-- else look for object by unique name
 	for k,obj in pairs(room_curr.objects) do
-		if (k == name) return obj
+		if (obj.name == name) then return obj end
 	end
 end
 
@@ -1632,14 +1641,14 @@ end
 function walk_to(actor, x, y)
 
 	--offset for camera
-	x += cam.x
+		x = x + cam.x
 
 	local distance = sqrt((x - actor.x) ^ 2 + (y - actor.y) ^ 2)
 	local step_x = actor.speed * (x - actor.x) / distance
 	local step_y = actor.speed * (y - actor.y) / distance
 
 	-- abort if we're already there!
-	if (distance < 1) return
+	if (distance < 1) then return end
 
 	-- check target position is in walkable block
 	celx = flr(x/8) + room_curr.map.x
@@ -1657,12 +1666,12 @@ function walk_to(actor, x, y)
 
 		-- face dir (at end of walk)
 		actor.face_dir = face_right
-		if (actor.flip) actor.face_dir = face_left
+		if (actor.flip) then actor.face_dir = face_left end
 
 		for i = 0, distance/actor.speed do
 			--d("walking...")
-			actor.x += step_x
-			actor.y += step_y
+			actor.x = actor.x + step_x
+			actor.y = actor.y + step_y
 			yield()
 		end
 		actor.moving = 2 --arrived
@@ -1674,6 +1683,33 @@ end
 
 
 -- internal functions -----------------------------------------------
+
+
+function get_keys(obj)
+	keys = {}
+	for k,v in pairs(obj) do
+		--d("k:"..k)
+		add(keys,k)
+	end
+	return keys
+end
+
+function get_verb(obj)
+	verb = {}
+	keys = get_keys(obj[1])
+	--[[
+	d("1:"..keys[1])
+	d("2:"..obj[1][ keys[1] ])
+	d("3:"..obj.text )
+	]]
+
+	add(verb, keys[1])						-- verb func
+	add(verb, obj[1][ keys[1] ])  -- verb ref name
+	add(verb, obj.text)						-- verb disp name
+
+	return verb
+end
+
 
 -- auto-break message into lines
 function create_text_lines(msg, max_line_length, comma_is_newline)
@@ -1709,7 +1745,7 @@ function create_text_lines(msg, max_line_length, comma_is_newline)
 	end
 
 	upt(max_line_length)
-	if currline~="" then
+	if currline!="" then
 		add(lines,currline)
 	end
 
@@ -1721,19 +1757,19 @@ function longest_line_size(lines)
 	if (notnull(lines)) d(#lines[1])
 	longest_line = 0
 	for l in all(lines) do
-		if (#l > longest_line) longest_line = #l
+		if (#l > longest_line) then longest_line = #l end
 	end
 	return longest_line
 end
 
 function has_flag(obj, value)
-  if (band(obj, value) != 0) return true
+  if (band(obj, value) != 0) then return true end
   return false
 end
 
 function clear_curr_cmd()
 	-- reset all command values
-	verb_curr = verb_default
+	verb_curr = get_verb(verb_default)
 	noun1_curr = nil
 	noun2_curr = nil
 	me = nil
@@ -1792,7 +1828,7 @@ end
 --- collision check
 function iscursorcolliding(obj)
 	-- check params
-	if (isnull(obj.bounds)) return false
+	if (isnull(obj.bounds)) then return false end
 	bounds=obj.bounds
 	if (cursor.x + bounds.cam_off_x > bounds.x1 or cursor.x + bounds.cam_off_x < bounds.x) 
 	 or (cursor.y>bounds.y1 or cursor.y<bounds.y) then
@@ -1808,10 +1844,10 @@ function smallcaps(s)
 	for i=1,#s do
 		local a=sub(s,i,i)
 		if a=="^" then
-			if(c) d=d..a
+			if(c) then d=d..a end
 				c=not c
 			elseif a=="~" then
-				if(t) d=d..a
+				if(t) then d=d..a end
 				t,l=not t,not l
 			else 
 				if c==l and a>="a" and a<="z" then
