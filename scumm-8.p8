@@ -20,49 +20,22 @@ show_perfinfo = true
 enable_mouse = true
 d = printh
 
-d("=============================|")
-
-function get_keys(obj)
-	keys = {}
-	--d("/"..type(obj))
-	for k,v in pairs(obj) do
-		--d("k:"..k)
-		add(keys,k)
-	end
-	return keys
-end
-
-function get_verb(obj)
-	verb = {}
-	--d(">>"..type(obj[1]))
-	keys = get_keys(obj[1])
-	--
-	add(verb, keys[1])
-	add(verb, obj[1][ keys[1] ])
-	--
---[[	d("> l:"..#verb)
-	d("> 1:"..verb[1])
-	d("> 2:"..verb[2])]]
-	return verb
-end
-
 -- game verbs (used in room definitions and ui)
 verbs = {
-	--{verb = display_name}, default_action_order,  ....bounds{},x,y...
-	{ { open = "open" } },
-	{ { close = "close" } },
-	{ { give = "give" } },
-	{ { pickup =  "pick-up" } },
-	{ { lookat =  "look-at" } },
-	{ { talkto =  "talk-to" } },
-	{ { push =  "push" } },
-	{ { pull =  "pull" } },
-	{ { use =  "use" } }
+	--{verb = verb_ref_name}, text = display_name ....bounds{},x,y...
+	{ { open = "open" }, text = "open" },
+	{ { close = "close" }, text = "close" },
+	{ { give = "give" }, text = "give" },
+	{ { pickup = "pickup" }, text = "pick-up" },
+	{ { lookat = "lookat" }, text = "look-at" },
+	{ { talkto = "talkto" }, text = "talk-to" },
+	{ { push = "push" }, text = "push" },
+	{ { pull = "pull" }, text = "pull"},
+	{ { use = "use" }, text = "use"}
 }
-
 -- verb to use when just clicking aroung (e.g. move actor)
 verb_default = {
-	{ walkto = "walk to" }
+	{ walkto = "walkto" }, text = "walk to"
 } 
 
 
@@ -572,13 +545,13 @@ function find_default_verb(obj)
 		default_verb = "lookat"
 	end
 
-	d(default_verb)
+	--d(default_verb)
 
 	-- now find the full verb definition
 	for v in all(verbs) do
 		vi = get_verb(v)
-		d("lookin..."..vi[1])
-		if (vi[1] == default_verb) then default_verb=v break end
+		--d("lookin..."..vi[1])
+		if (vi[2] == default_verb) then default_verb=v break end
 	end
 	return default_verb
 end
@@ -894,7 +867,7 @@ function input_button_pressed(button_index)
 			--if k == "verb" then
 				verb_curr = get_verb(hover_curr.verb)
 				--d("verb = "..get_verb(h)[1])
-				d("verb = "..verb_curr[1])
+				d("verb = "..verb_curr[2])
 
 				--break
 
@@ -941,7 +914,7 @@ function input_button_pressed(button_index)
 	-- attempt to use verb on object
 	if (noun1_curr != nil) then
 		-- are we starting a 'use' command?
-		if verb_curr[1] == "use" then
+		if verb_curr[2] == "use" then
 			if notnull(noun2_curr) then
 				-- 'use' part 2
 			else
@@ -972,14 +945,14 @@ function input_button_pressed(button_index)
 			end
 			d("next2")
 			-- does current object support active verb?
-			if valid_verb(verb[1],obj) then
+			if valid_verb(verb,obj) then
 				-- finally, execute verb script
 				d("verb_obj_script!")
-				d("verb = "..verb[1])
+				d("verb = "..verb[2])
 				d("obj = "..obj.name)
 				start_script(obj.verbs[verb[1]], obj, noun2)
-			elseif verb[1] != verb_default[1] then
-				unsupported_action(verb[1], obj, noun2)
+			elseif verb[2] != verb_default[2] then
+				unsupported_action(verb[2], obj, noun2)
 				--say_line(selected_actor, "i don't think that will work")
 			else
 				-- anything else?
@@ -1164,14 +1137,14 @@ function command_draw()
 			-- d("1ta:"..type(verb_curr))
 			-- d("1tb:"..type(verb_curr[1]))
 			-- d("1tc:"..type(verb_curr[2]))
-			command = verb_curr[2]
+			command = verb_curr[3]
 		end
 		if notnull(noun1_curr) then
 			-- d("2")
 			-- d("2t:"..type(command))
 			command = command.." "..noun1_curr.name
 		end
-		if verb_curr[1] == "use" 
+		if verb_curr[2] == "use" 
 		 and notnull(noun1_curr) then
 			command = command.." with"
 		end
@@ -1248,16 +1221,16 @@ function ui_draw()
 
 		-- get verb info
 		vi = get_verb(v)
-		print(vi[2], xpos, ypos+stage_top+1, verb_shadcol)  -- shadow
-		print(vi[2], xpos, ypos+stage_top, txtcol)  -- main
+		print(vi[3], xpos, ypos+stage_top+1, verb_shadcol)  -- shadow
+		print(vi[3], xpos, ypos+stage_top, txtcol)  -- main
 		
 		-- capture bounds
 		v.x = xpos
 		v.y = ypos
-		recalc_bounds(v, #vi[2]*4, 5, 0, 0)
+		recalc_bounds(v, #vi[3]*4, 5, 0, 0)
 		if (show_collision) then rect(v.bounds.x, v.bounds.y, v.bounds.x1, v.bounds.y1, 8) end
 		-- auto-size column
-		if (#vi[2] > col_len) then col_len = #vi[2] end
+		if (#vi[3] > col_len) then col_len = #vi[3] end
 		ypos = ypos + 8
 
 		-- move to next column
@@ -1524,7 +1497,8 @@ function valid_verb(verb, object)
 	if (isnull(object.verbs)) then return false end
 	-- look for verb
 	if type(verb) == "table" then
-		if (notnull(object.verbs[get_verb(verb)[1]])) then return true end
+		if notnull(object.verbs[verb[1]]) then return true end
+		--if (notnull(object.verbs[get_verb(verb)[1]])) then return true end
 		--if (notnull(object.verbs[verb[1]])) then return true end
 	else
 		if (notnull(object.verbs[verb])) then return true end
@@ -1779,6 +1753,33 @@ end
 
 
 -- internal functions -----------------------------------------------
+
+
+function get_keys(obj)
+	keys = {}
+	--d("/"..type(obj))
+	for k,v in pairs(obj) do
+		--d("k:"..k)
+		add(keys,k)
+	end
+	return keys
+end
+
+function get_verb(obj)
+	verb = {}
+	--d(">>"..type(obj[1]))
+	keys = get_keys(obj[1])
+	--[[d("1:"..keys[1])
+	d("2:"..obj[1][ keys[1] ])
+	d("3:"..obj.text )]]
+
+	add(verb, keys[1])							-- verb func
+	add(verb, obj[1][ keys[1] ])  	-- verb ref name
+	add(verb, obj.text)							-- verb disp name
+
+	return verb
+end
+
 
 -- auto-break message into lines
 function create_text_lines(msg, max_line_length, comma_is_newline)
