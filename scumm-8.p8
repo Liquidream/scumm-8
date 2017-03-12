@@ -68,6 +68,7 @@ class_pickupable = 2  -- can be placed in actor inventory
 class_talkable = 4		-- can talk to actor/object
 class_giveable = 8		-- can be given to an actor/object
 class_openable = 16   -- can be opened/closed
+class_actor = 32      -- is an actor/person
 
 cut_noverbs = 1 		-- this removes the interface during the cut-scene.
 cut_hidecursor = 2  -- this turns off the cursor during the cut-scene.
@@ -441,7 +442,7 @@ actors = {
 	},
 	purp_tentacle = {
 		name = "purple tentacle",
-		class = class_talkable,
+		class = class_talkable + class_actor,
 		x = 127/2 - 24,
 		y = 127/2 -18,
 		w = 1,
@@ -547,22 +548,70 @@ end
 -- actions to perform when object doesn't have an entry for verb
 function unsupported_action(verb, obj1, obj2)
 	d("verb:"..verb.." , obj:"..obj1.name)
+
 	if verb == "walkto" then
 		return
+
 	elseif verb == "pickup" then
 		if has_flag(obj1.class, class_actor) then
 			say_line(selected_actor, "I don't need them")
 		else
 			say_line(selected_actor, "I don't need that")
 		end
+
+	elseif verb == "use" then
+		if has_flag(obj1.class, class_actor) then
+			say_line(selected_actor, "I can't just *use* someone")
+		end
+		if obj2 then
+			if has_flag(obj2.class, class_actor) then
+				say_line(selected_actor, "I can't use that on someone!")
+			else
+				say_line(selected_actor, "That doesn't work")
+			end
+		end
+
+	elseif verb == "give" then
+		if has_flag(obj1.class, class_actor) then
+			say_line(selected_actor, "I don't think i should be giving this away")
+		else
+			say_line(selected_actor, "I can't do that")
+		end
+
 	elseif verb == "lookat" then
 		if has_flag(obj1.class, class_actor) then
 			say_line(selected_actor, "I think it's alive")
 		else
 			say_line(selected_actor, "Looks pretty ordinary")
 		end
-	elseif verb == "use" then
-		-- todo: the rest...
+
+	elseif verb == "open" then
+		if has_flag(obj1.class, class_actor) then
+			say_line(selected_actor, "They don't seem to open")
+		else
+			say_line(selected_actor, "It doesn't seem to open")
+		end
+
+	elseif verb == "close" then
+		if has_flag(obj1.class, class_actor) then
+			say_line(selected_actor, "They don't seem to close")
+		else
+			say_line(selected_actor, "It doesn't seem to close")
+		end
+
+	elseif verb == "push" or verb == "pull" then
+		if has_flag(obj1.class, class_actor) then
+			say_line(selected_actor, "Moving them would accomplish nothing")
+		else
+			say_line(selected_actor, "It won't budge!")
+		end
+
+	elseif verb == "talkto" then
+		if has_flag(obj1.class, class_actor) then
+			say_line(selected_actor, "Erm... I don't think they want to talk")
+		else
+			say_line(selected_actor, "I am not talking to that!")
+		end
 
 	else
 		say_line(selected_actor, "Hmm. No.")
@@ -915,11 +964,12 @@ function input_button_pressed(button_index)
 				d("verb = "..verb[2])
 				d("obj = "..obj.name)
 				start_script(obj.verbs[verb[1]], obj, noun2)
-			elseif verb[2] != verb_default[2] then
-			 	-- e.g. "i don't think that will work"
-				unsupported_action(verb[2], obj, noun2)
+			--elseif verb[2] != verb_default[2] then
+			 --	-- e.g. "i don't think that will work"
+			--	unsupported_action(verb[2], obj, noun2)
 			else
-				-- anything else?
+				-- e.g. "i don't think that will work"
+				unsupported_action(verb[2], obj, noun2)
 			end
 			-- clear current command
 			clear_curr_cmd()
