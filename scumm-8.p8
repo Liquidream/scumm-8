@@ -135,7 +135,7 @@ first_room = {
 		--	class = class_talkable + class_pickupable,
 			x = 8*8, -- (*8 to use map cell pos)
 			y = 4*8,
-			states = {23, 24, 25},
+			states = {145, 146, 147},
 			w = 1,	-- relates to spr or map cel, depending on above
 			h = 1,  --
 			trans_col = 0,
@@ -178,8 +178,8 @@ first_room = {
 			x = 1*8, -- (*8 to use map cell pos)
 			y = 2*8,
 			states = { -- states are spr values
-				15, -- state_closed
-				0 -- state_open
+			  79, -- state_closed
+				0   -- state_open
 			},
 			flip_x = false, -- used for flipping the sprite
 			flip_y = false,
@@ -264,7 +264,7 @@ first_room = {
 			state = 1,
 			x = 2*8, -- (*8 to use map cell pos)
 			y = 6*8,
-			states = { 112, 113, 114 },
+			states = { 192, 193, 194 },
 			trans_col=15,
 			w = 1,	-- relates to spr or map cel, depending on above
 			h = 1,  --
@@ -291,8 +291,8 @@ first_room = {
 			w = 2,	-- relates to spr or map cel, depending on above
 			h = 2,  --
 			states = {  -- states are spr values
-				80, -- closed
-				82  -- open
+				132, -- closed
+				134  -- open
 			},
 			verbs = {
 				open = function(me)	
@@ -372,7 +372,7 @@ second_room = {
 			y = 2*8,
 			states = {
 				-- states are spr values
-				15, -- closed
+				79, -- closed
 				0   -- open
 			},
 			flip_x = true, -- used for flipping the sprite
@@ -448,8 +448,8 @@ actors = {
 		w = 1,
 		h = 3,
 		face_dir = face_front,
-		idle = { 91, 91, 91, 91 },
-		talk = { 108, 108, 108, 108 },
+		idle = { 30, 30, 30, 30 },
+		talk = { 47, 47, 47, 47 },
 		col = 13, --2,				-- speech text colour
 		trans_col = 15,
 		speed = 0.25,  	-- walking speed
@@ -688,8 +688,8 @@ talking_actor = nil -- currently talking actor
 
 global_scripts = {}	-- table of scripts that are at game-level (background)
 local_scripts = {}	-- table of scripts that are actively running
-cutscenes = {} -- table of scripts for the active cutscene(s)
-
+cutscenes = {} 			-- table of scripts for the active cutscene(s)
+draw_zplanes = {}		-- table of tables for each of the (8) zplanes for drawing depth
 
 -- game loop
 
@@ -994,6 +994,8 @@ end
 function checkcollisions()
 	-- reset hover collisions
 	hover_curr = {}
+	-- reset zplane info
+	reset_zplanes()
 
 	-- are we in dialog mode?
 	if notnull(dialog_curr) and dialog_curr.visible then
@@ -1008,20 +1010,25 @@ function checkcollisions()
 
 	-- check room/object collisions
 	for k,obj in pairs(room_curr.objects) do
-			if iscursorcolliding(obj) then
-				hover_curr.object = obj
-			end
+		if iscursorcolliding(obj) then
+			hover_curr.object = obj
+		end
+		-- recalc z-plane
+		recalc_zplane(obj)
 	end
 
 	-- check actor collisions
 	for k,actor in pairs(actors) do
-			if (actor.in_room == room_curr) 
-			 and iscursorcolliding(actor) then
+		if (actor.in_room == room_curr) then
+			-- recalc z-plane
+			recalc_zplane(actor)
+			if iscursorcolliding(actor) then
 				hover_curr.object = actor
 			end
+		end
 	end
 
-	-- todo: check ui/inventory collisions
+	-- check ui/inventory collisions
 	for v in all(verbs) do
 		if iscursorcolliding(v) then
 			hover_curr.verb = v
@@ -1036,6 +1043,40 @@ function checkcollisions()
 	-- update "default" verb for hovered object (if any)
 	if notnull(hover_curr.object) then
 		hover_curr.default_verb = find_default_verb(hover_curr.object)
+	end
+end
+
+
+function reset_zplanes()
+	draw_zplanes = {}
+end
+
+function recalc_zplane(obj)
+	-- todo: determine if object is/should be "drawn"
+	-- 			 if it should, add it at appropriate z-plane (1-8 = far-near)
+	--       else, remove from all zplanes
+
+	d("recalc_zplane() for obj:"..obj.name)
+
+	zplane = -1 -- default is not drawn
+	
+	if (true) then  -- obj is drawable
+		-- todo: calculate the correct z-plane
+		-- based on x,y pos + elevation
+		ypos = -1
+		if notnull(obj.offset_y) then
+			ypos = obj.y
+		else
+			ypos = obj.y + (obj.h*8)-4
+		end
+		zplane = flr(ypos/8)
+
+		d(" > zplane="..zplane)
+
+		if zplane > 0 then
+			-- add to "to draw" list at appropriate zplane index
+			add(draw_zplanes[zplane],obj)
+		end
 	end
 end
 
@@ -1944,9 +1985,9 @@ ccc00cccb6ffff6bb6fffffbb6fffffbb6fffffbb044444bb6fffffb000000000000000000000000
 00070000c1c55c1cb1ccdcbbbb1ccdbbb1ccdcbbc1cccc1c0000000000000000000000000000000000000000000000000000000000000000ffb33bffffb33bff
 00070000c1c55c1cb1ccdcbbbb1ccdbbb1ccdcbbc1cccc1c0000000000000000000000000000000000000000000000000000000000000000ff2bb2ffff2bb2ff
 77707770c1c55c1cb1ccdcbbbb1ccdbbb1ccdcbbc1cccc1c0000000000000000000000000000000000000000000000000000000000000000ff2222ffff2222ff
-00070000d1cddc1db1dddcbbbb1dddbbb1dddcbbd1cccc1d00000000000000000000000000000000000000000000000000000000000000002f2bb2f22f2bb2f2
-00070000fe1111efbbff11bbbb2ff1bbbbff11bbfe1111ef000000000000000000000000000000000000000000000000000000000000000022b33b2222b33b22
-00070000bf1111fbbbfe11bbbb2fe1bbbbfe11bbbf1111fb0000000000000000000000000000000000000000000000000000000000000000222bb22222b33b22
+00070000d1cddc1db1dddcbbbb1dddbbb1dddcbbd1cccc1d0000000000000000000000000000000000000000000000000000000000000000ff2bb2ffff2bb2ff
+00070000fe1111efbbff11bbbb2ff1bbbbff11bbfe1111ef0000000000000000000000000000000000000000000000000000000000000000f2b33b2ff2b33b2f
+00070000bf1111fbbbfe11bbbb2fe1bbbbfe11bbbf1111fb0000000000000000000000000000000000000000000000000000000000000000f22bb22ff2b33b2f
 00000000bb1121bbbb2111bbbb2111bbbb2111bbbb1211bb0000000000000000000000000000000000000000000000000000000000000000f222222ff22bb22f
 00cccc00bb1121bbbb1111bbbb2111bbbb2111bbbb1211bb0000000000000000000000000000000000000000000000000000000000000000f222222f00000000
 00c11c00bb1121bbbb1111bbbb2111bbbb2111bbbb1211bb0000000000000000000000000000000000000000000000000000000000000000f22bb22f00000000
