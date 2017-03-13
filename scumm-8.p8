@@ -799,7 +799,10 @@ function gamedraw()
 	-- reset clip
 	clip()
 
-	if (show_perfinfo) then print("cpu: "..stat(1), 0, stage_top - 16, 8) print("mem: "..stat(0), 0, stage_top - 8, 8) end
+	if (show_perfinfo) then 
+		print("cpu: "..flr(100*stat(1)).."%", 0, stage_top - 16, 8) 
+		print("mem: "..flr(stat(0)/1024*100).."%", 0, stage_top - 8, 8)
+	end
 	if (show_debuginfo) then print("x: "..cursor.x.." y:"..cursor.y, 80, stage_top - 8, 8) end
 
 	-- draw active text
