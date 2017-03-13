@@ -14,7 +14,7 @@ __lua__
 
 -- debugging
 show_debuginfo = false
-show_collision = true
+show_collision = false
 show_perfinfo = true
 enable_mouse = true
 d = printh
@@ -327,21 +327,7 @@ first_room = {
 					)
 				end
 			}
-		},
-		test_door = {
-			name = "test door",
-			state = states.closed, --state_closed,
-			x = 7*8, -- (*8 to use map cell pos)
-			y = 3*8,
-			states = { -- states are spr values
-			  79, -- state_closed
-				0   -- state_open
-			},
-			flip_x = false, -- used for flipping the sprite
-			flip_y = false,
-			w = 1,	-- relates to spr or map cel, depending on above
-			h = 4  --
-		},
+		}
 	}
 }
 
@@ -438,8 +424,8 @@ actors = {
 		w = 1,
 		h = 4,
 		face_dir = face_front, 	-- direction facing
-		idle = {1,3,73,3},	-- sprites for idle (front, left, back, right) - right=flip
-		talk = {6,22,89,22},
+		idle = {1,3,5,3},	-- sprites for idle (front, left, back, right) - right=flip
+		talk = {6,22,21,22},
 		walk_anim = {2,3,4,3},
 		flip = false, 		-- used for flipping the sprite (left/right dir)
 		col = 12,				-- speech text colour
@@ -1008,8 +994,6 @@ end
 function checkcollisions()
 	-- reset hover collisions
 	hover_curr = {}
-	-- reset zplane info
-	reset_zplanes()
 
 	-- are we in dialog mode?
 	if notnull(dialog_curr) and dialog_curr.visible then
@@ -1021,6 +1005,9 @@ function checkcollisions()
 		-- skip remaining collisions
 		return
 	end
+
+	-- reset zplane info
+	reset_zplanes()
 
 	-- check room/object collisions
 	for k,obj in pairs(room_curr.objects) do
@@ -1042,8 +1029,6 @@ function checkcollisions()
 
 			recalc_bounds(actor, actor.w*8, actor.h*8, cam.x, cam.y)			
 
-			d(" > actor.y="..actor.y)
-			d(" > actor.offset_y="..actor.offset_y)
 			-- recalc z-plane
 			recalc_zplane(actor)
 			if iscursorcolliding(actor) then
@@ -1073,22 +1058,20 @@ end
 
 function reset_zplanes()
 	draw_zplanes = {}
-	for x=1,8 do
+	for x=1,64 do
 		draw_zplanes[x] = {}
 	end
 end
 
 function recalc_zplane(obj)
-	-- todo: determine if object is/should be "drawn"
-	-- 			 if it should, add it at appropriate z-plane (1-8 = far-near)
-	--       else, remove from all zplanes
-
-	d("recalc_zplane() for obj:"..obj.name)
+	-- determine if object is/should be "drawn"
+	-- if it should, add it at appropriate z-plane (1-64 = far-near)
+  -- else, remove from all zplanes
 
 	zplane = -1 -- default is not drawn
 	
 	if (true) then  -- obj is drawable
-		-- todo: calculate the correct z-plane
+		-- calculate the correct z-plane
 		-- based on x,y pos + elevation
 		ypos = -1
 		if notnull(obj.offset_y) then
@@ -1096,11 +1079,7 @@ function recalc_zplane(obj)
 		else
 			ypos = obj.y + (obj.h*8)-4
 		end
-		d(" > ypos="..ypos)
-		zplane = flr(ypos/8)
-
-		d(" > zplane="..zplane)
-
+		zplane = flr(ypos - stage_top)
 		if zplane > 0 then
 			-- add to "to draw" list at appropriate zplane index
 			add(draw_zplanes[zplane],obj)
@@ -1130,14 +1109,12 @@ function roomdraw()
 	end
 
 	-- draw each zplane, from back to front
-	for z = 1,8 do
+	for z = 1,64 do
 		zplane = draw_zplanes[z]
-		d("drawing zplane "..z)
 		-- draw all objs/actors in current zplane
 		for obj in all(zplane) do
 			-- object or actor?
 			if not has_flag(obj.class, class_actor) then
-				d(" > drawing obj:"..obj.name)
 				-- object
 				if (notnull(obj.states)) 
 				 and notnull(obj.states[obj.state])
@@ -1147,52 +1124,14 @@ function roomdraw()
 					draw_object(obj)
 				end
 			else
-				d(" > drawing actor:"..obj.name)
 				-- actor
 				if (obj.in_room == room_curr) then
 					actor_draw(obj)
 				end
 			end
-			--[[-- capture bounds (even for "invisible", but not untouchable, objects)
-			if isnull(obj.class)
-				or (notnull(obj.class) and obj.class != class_untouchable) then
-				recalc_bounds(obj, obj.w*8, obj.h*8, cam.x, cam.y)
-			end]]
 			if (show_collision) then rect(obj.bounds.x, obj.bounds.y, obj.bounds.x1, obj.bounds.y1, 8) end
 		end
 	end
-
---[[	-- draw all "visible" room objects (e.g. check dependent-on's)
-	for k,obj in pairs(room_curr.objects) do
-
-		-- todo: check dependent-on's
-
-		if (notnull(obj.states)) 
-			and notnull(obj.states[obj.state])
-		  and (obj.states[obj.state] > 0)
-		  and (isnull(obj.owner)) then
-			-- something to draw
-			draw_object(obj)
-		end
-
-		-- capture bounds (even for "invisible", but not untouchable, objects)
-		if isnull(obj.class)
-		  or (notnull(obj.class) and obj.class != class_untouchable) then
-			recalc_bounds(obj, obj.w*8, obj.h*8, cam.x, cam.y)
-			if (show_collision) then rect(obj.bounds.x, obj.bounds.y, obj.bounds.x1, obj.bounds.y1, 8) end
-		end
-	end
-
-	-- draw actors in current room
-	for k,actor in pairs(actors) do
-		if (actor.in_room == room_curr) then
-			actor_draw(actor)
-
-			recalc_bounds(actor, actor.w*8, actor.h*8, cam.x, cam.y)
-			if (show_collision) then rect(actor.bounds.x, actor.bounds.y, actor.bounds.x1, actor.bounds.y1, 8) end
-	
-		end
-	end]]
 end
 
 -- draw actor(s)
