@@ -15,12 +15,11 @@ Wow, really? You still here?! OK, once again. Think of SCUMM-8 as an even more r
 - [x] Cut-scenes
 - [x] Basic Camera system (follow/fixed)
 - [x] Customisable Verbs
-- [x] Other basic features
+- [x] Z-plane ordering of objects/actors
 
 ## Planned Features
-- [ ] Z-plane ordering of objects/actors
-- [ ] Object dependencies
 - [ ] Background scripts (currently only room-level scripts done)
+- [ ] Object dependencies
 - [ ] Cut-scene transitions
 - [ ] Game Save/Load
 - [ ] Game start-up script
