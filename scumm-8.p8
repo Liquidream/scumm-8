@@ -5,10 +5,10 @@ __lua__
 -- scumm-8
 -- paul nicholas
 
--- python c:\users\pauln\owncloud\dev\pico-8\picotool\p8tool luamin c:\users\pauln\owncloud\games\pico-8\carts\scumm-8.p8
+-- python c:\users\pauln\owncloud\dev\pico-8\picotool\p8tool luamin c:\users\pauln\owncloud\games\pico-8\carts\git_repos\scumm-8\scumm-8.p8
 
 -- ### luamin fixes ###
---  cz=type 
+--  da=type
 --	"\65\66\67\68\69\70\71\72\73\74\75\76\77\78\79\80\81\82\83\84\85\86\87\88\89\90\91\92"
 
 
@@ -103,22 +103,25 @@ first_room = {
 	},
 	--sounds = {},
 	--costumes = {},
-	enter = function()
+	enter = function(me)
 		-- animate fireplace
-		start_script(function()
+		d("scr:"..type(me.scripts.anim_fire))
+		start_script(me.scripts.anim_fire, true) -- bg script
+	end,
+	exit = function(me)
+		-- todo: anything here?
+		stop_script(me.scripts.anim_fire)
+	end,
+	lighting = 0, -- state of lights in current room
+	scripts = {	  -- scripts that are at room-level
+		anim_fire = function()
 			while true do
 				for f=1,3 do
 					set_state("fire", f)
 					break_time(8)
 				end
 			end
-		end)
-	end,
-	exit = function()
-		-- todo: anything here?
-	end,
-	lighting = 0, -- state of lights in current room
-	scripts = {	  -- scripts that are at room-level
+		end,
 		spin_top = function()
 			while true do	
 				for f=1,3 do
@@ -126,7 +129,7 @@ first_room = {
 					break_time(8)
 				end
 			end
-		end
+		end		
 	},
 	objects = {
 		fire = {
@@ -720,6 +723,17 @@ function gameupdate()
 		selected_actor.thread = nil
 	end
 
+	--d("gameupdate()")
+
+	-- global scripts (always updated - regardless of cutscene)
+	for scr_obj in all(global_scripts) do
+		--d("update global script!")
+		if scr_obj[2] and not coresume(scr_obj[2], scr_obj[3], scr_obj[4]) then
+			del(global_scripts, scr_obj)
+			scr_obj = nil
+		end
+	end		
+
 
 	-- update active cutscene (if any)
 	if notnull(cutscene_curr) then
@@ -742,15 +756,17 @@ function gameupdate()
 		end
 	else
 		-- no cutscene...
-		-- update all the active scripts
+		-- update all the active scripts (local + global)
 		-- (will auto-remove those that have ended)
-		--d("update local scripts")
+	
+		-- local
 		for scr_obj in all(local_scripts) do
 			if scr_obj[2] and not coresume(scr_obj[2], scr_obj[3], scr_obj[4]) then
 				del(local_scripts, scr_obj)
 				scr_obj = nil
 			end
 		end
+		
 	end
 
 	-- player/ui control
@@ -963,7 +979,7 @@ function input_button_pressed(button_index)
 				d("verb_obj_script!")
 				d("verb = "..verb[2])
 				d("obj = "..obj.name)
-				start_script(obj.verbs[verb[1]], obj, noun2)
+				start_script(obj.verbs[verb[1]], false, obj, noun2)
 			--elseif verb[2] != verb_default[2] then
 			 --	-- e.g. "i don't think that will work"
 			--	unsupported_action(verb[2], obj, noun2)
@@ -1501,7 +1517,7 @@ d("change_room()...")
 	-- execute the exit() script of old room
 	if notnull(room_curr) and notnull(room_curr.exit) then
 		-- run script directly, so wait to finish
-		room_curr.exit()
+		room_curr.exit(room_curr)
 	end
 	
 	-- stop all active (local) scripts
@@ -1520,7 +1536,9 @@ d("change_room()...")
 	-- execute the enter() script of new room
 	if notnull(room_curr.enter) then
 		-- run script directly
-		room_curr.enter()
+		d("t2: "..type(room_curr))
+		d("scr2:"..type(room_curr.scripts.anim_fire))
+		room_curr.enter(room_curr)
 	end
 end
 
@@ -1580,7 +1598,7 @@ function find_object(name)
 	end
 end
 
-function start_script(func, noun1, noun2, bg)	-- me == this
+function start_script(func, bg, noun1, noun2)	-- me == this
 	-- create new thread for script and add to list of local_scripts
 	local thread = cocreate(func)
 	-- background or local?
@@ -1594,7 +1612,18 @@ end
 function script_running(func)
 	d("script_running()")
 	-- find script and stop it running
+
+	-- try local first
 	for k,scr_obj in pairs(local_scripts) do
+		d("...")
+		if (scr_obj[1] == func) then 
+			d("found!")
+			return true
+		end
+	end
+
+	-- failing that, try global
+	for k,scr_obj in pairs(global_scripts) do
 		d("...")
 		if (scr_obj[1] == func) then 
 			d("found!")
@@ -1608,11 +1637,23 @@ end
 function stop_script(func)
 	d("stop_script()")
 	-- find script and stop it running
+
+	-- try local first
 	for k,scr_obj in pairs(local_scripts) do
 		d("...")
 		if (scr_obj[1] == func) then 
 			d("found!")
 			del(local_scripts, scr_obj)
+			d("deleted!")
+			scr_obj = nil
+		end
+	end
+	-- failing that, try global
+	for k,scr_obj in pairs(global_scripts) do
+		d("...")
+		if (scr_obj[1] == func) then 
+			d("found!")
+			del(global_scripts, scr_obj)
 			d("deleted!")
 			scr_obj = nil
 		end
