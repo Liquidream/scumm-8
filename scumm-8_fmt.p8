@@ -32,8 +32,8 @@ if(dr!=fz.gk) then dv(fz.gk) end
 cv=fz.gl fi.fj=fz.gm fi.fk=fz.gn del(gd,fz) fz=nil if(#gd>0) then
 fz=gd[#gd] end end else for gi in all(gc) do if gi[2] and not coresume(gi[2],gi[3],gi[4]) then
 del(gc,gi) gi=nil end end end go() gp() end function gg() rectfill(0,0,fe,ff,0) if fi.fj==0 then
-fi.bw=mid(0,cv.bw-64,(dr.map.by*8)-fe-1) end camera(fi.bw,0) clip(0,fg,fe,64) gq() camera(0,0) clip() if(c) then print("cpu: "..stat(1),0,fg-16,8) print("mem: "..stat(0),0,fg-8,8) end
-if(a) then print("x: "..cursor.bw.." y:"..cursor.bx,80,fg-8,8) end
+fi.bw=mid(0,cv.bw-64,(dr.map.by*8)-fe-1) end camera(fi.bw,0) clip(0,fg,fe,64) gq() camera(0,0) clip() if(c) then
+print("cpu: "..flr(100*stat(1)).."%",0,fg-16,8) print("mem: "..flr(stat(0)/1024*100).."%",0,fg-8,8) end if(a) then print("x: "..cursor.bw.." y:"..cursor.bx,80,fg-8,8) end
 gr() if gj(fy) and fy.gs then
 gt() gu() return end if(gv==fz) then
 else gv=fz return end if di(fz) then

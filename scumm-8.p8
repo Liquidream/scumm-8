@@ -145,9 +145,8 @@ first_room = {
 			use_dir = face_back,
 			use_pos = pos_infront,
 
-			--[dependent-on object-name being object-state]
-
-			
+			dependent_on = "front_door",	-- object is dependent on the state of another
+			dependent_on_state = states.closed,
 
 			verbs = {
 				lookat = function()
@@ -174,14 +173,12 @@ first_room = {
 		front_door = {
 			name = "front door",
 			class = class_openable,
-			--dependent_on = "closet-door",
-			--dependent_on_state = state_closed,
-			state = states.closed, --state_closed,
+			state = states.closed,
 			x = 1*8, -- (*8 to use map cell pos)
 			y = 2*8,
 			states = { -- states are spr values
-			  79, -- state_closed
-				0   -- state_open
+			  79, -- states.closed
+				0   -- states.open
 			},
 			flip_x = false, -- used for flipping the sprite
 			flip_y = false,
@@ -191,7 +188,7 @@ first_room = {
 			verbs = {
 				walkto = function(me)
 					d("me = "..type(me))
-					if state_of(me) == state_open then
+					if state_of(me) == states.open then
 						-- go to new room!
 						come_out_door(second_room.objects.back_door, second_room)
 					else
@@ -201,14 +198,14 @@ first_room = {
 				open = function(me)
 					if (isnull(me)) d("me is null!")
 					d("me = "..me.name)
-					if state_of(me) == state_open then
+					if state_of(me) == states.open then
 						say_line(selected_actor, "it's already open!")
 					else
-						set_state(me, state_open)
+						set_state(me, states.open)
 					end
 				end,
-				close = function()
-					set_state(me, state_closed)
+				close = function(me)
+					set_state(me, states.closed)
 				end
 			}
 		},
@@ -256,7 +253,7 @@ first_room = {
 				end,
 				--[[use = function(me, noun2)
 					if (noun2.name == "window") then
-						set_state("window", state_open)
+						set_state("window", states.open)
 					end
 				end]]
 			}
@@ -352,7 +349,7 @@ second_room = {
 	objects = {
 		kitchen_door_hall = {
 			name = "hall",
-			state = state_open,
+			state = states.open,
 			x = 1 *8, -- (*8 to use map cell pos)
 			y = 2 *8,
 			w = 1,	-- relates to spr
@@ -368,7 +365,7 @@ second_room = {
 		back_door = {
 			name = "back door",
 			--dependent_on = "closet-door",
-			--dependent_on_state = state_closed,
+			--dependent_on_state = states.closed,
 			state = states.closed,
 			x = 22*8, -- (*8 to use map cell pos)
 			y = 2*8,
@@ -385,7 +382,7 @@ second_room = {
 			verbs = {
 				walkto = function(me)
 					d("me = "..type(me))
-					if state_of(me) == state_open then
+					if state_of(me) == states.open then
 						-- go to new room!
 						come_out_door(first_room.objects.front_door, first_room)
 					else
@@ -394,14 +391,14 @@ second_room = {
 				end,
 				open = function(me)
 					d("me = "..me.name)
-					if state_of(me) == state_open then
+					if state_of(me) == states.open then
 						say_line(selected_actor, "it's already open!")
 					else
-						set_state(me, state_open)
+						set_state(me, states.open)
 					end
 				end,
-				close = function()
-					set_state(me, state_closed)
+				close = function(me)
+					set_state(me, states.closed)
 				end
 			}
 		},
@@ -1135,10 +1132,13 @@ function roomdraw()
 			-- object or actor?
 			if not has_flag(obj.class, class_actor) then
 				-- object
-				if (notnull(obj.states)) 
+				if (notnull(obj.states)) 						-- object has a state?
 				 and notnull(obj.states[obj.state])
 				 and (obj.states[obj.state] > 0)
-				 and (isnull(obj.owner)) then
+				 and (isnull(obj.dependent_on) 			-- object has a valid dependent state?
+				 	or find_object(obj.dependent_on).state == obj.dependent_on_state)
+				 and (isnull(obj.owner)) 						-- object is not "owned"
+				then
 					-- something to draw
 					draw_object(obj)
 				end
@@ -1597,7 +1597,8 @@ function find_object(name)
 	if (type(name) == "table") then return name end
 	-- else look for object by unique name
 	for k,obj in pairs(room_curr.objects) do
-		if (obj.name == name) then return obj end
+		--d("--"..obj.name)
+		if (k == name) then return obj end
 	end
 end
 
