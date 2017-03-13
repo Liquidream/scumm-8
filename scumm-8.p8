@@ -14,7 +14,7 @@ __lua__
 
 -- debugging
 show_debuginfo = false
-show_collision = false
+show_collision = true
 show_perfinfo = true
 enable_mouse = true
 d = printh
@@ -132,7 +132,6 @@ first_room = {
 		fire = {
 			name = "fire",
 			state = 1, --"frame1",
-		--	class = class_talkable + class_pickupable,
 			x = 8*8, -- (*8 to use map cell pos)
 			y = 4*8,
 			states = {145, 146, 147},
@@ -328,7 +327,21 @@ first_room = {
 					)
 				end
 			}
-		}
+		},
+		test_door = {
+			name = "test door",
+			state = states.closed, --state_closed,
+			x = 7*8, -- (*8 to use map cell pos)
+			y = 3*8,
+			states = { -- states are spr values
+			  79, -- state_closed
+				0   -- state_open
+			},
+			flip_x = false, -- used for flipping the sprite
+			flip_y = false,
+			w = 1,	-- relates to spr or map cel, depending on above
+			h = 4  --
+		},
 	}
 }
 
@@ -419,6 +432,7 @@ selected_room = first_room
 actors = {
 	main_actor = { 		-- initialize the actor object
 		name = "",
+		class = class_actor,
 		x = 127/2 - 16,
 		y = 127/2 -16,
 		w = 1,
@@ -444,7 +458,7 @@ actors = {
 		name = "purple tentacle",
 		class = class_talkable + class_actor,
 		x = 127/2 - 24,
-		y = 127/2 -18,
+		y = 127/2 -16,
 		w = 1,
 		h = 3,
 		face_dir = face_front,
@@ -1013,6 +1027,11 @@ function checkcollisions()
 		if iscursorcolliding(obj) then
 			hover_curr.object = obj
 		end
+		-- capture bounds (even for "invisible", but not untouchable, objects)
+		if isnull(obj.class)
+			or (notnull(obj.class) and obj.class != class_untouchable) then
+			recalc_bounds(obj, obj.w*8, obj.h*8, cam.x, cam.y)
+		end
 		-- recalc z-plane
 		recalc_zplane(obj)
 	end
@@ -1020,6 +1039,11 @@ function checkcollisions()
 	-- check actor collisions
 	for k,actor in pairs(actors) do
 		if (actor.in_room == room_curr) then
+
+			recalc_bounds(actor, actor.w*8, actor.h*8, cam.x, cam.y)			
+
+			d(" > actor.y="..actor.y)
+			d(" > actor.offset_y="..actor.offset_y)
 			-- recalc z-plane
 			recalc_zplane(actor)
 			if iscursorcolliding(actor) then
@@ -1049,6 +1073,9 @@ end
 
 function reset_zplanes()
 	draw_zplanes = {}
+	for x=1,8 do
+		draw_zplanes[x] = {}
+	end
 end
 
 function recalc_zplane(obj)
@@ -1069,6 +1096,7 @@ function recalc_zplane(obj)
 		else
 			ypos = obj.y + (obj.h*8)-4
 		end
+		d(" > ypos="..ypos)
 		zplane = flr(ypos/8)
 
 		d(" > zplane="..zplane)
@@ -1101,7 +1129,40 @@ function roomdraw()
 		end
 	end
 
-	-- draw all "visible" room objects (e.g. check dependent-on's)
+	-- draw each zplane, from back to front
+	for z = 1,8 do
+		zplane = draw_zplanes[z]
+		d("drawing zplane "..z)
+		-- draw all objs/actors in current zplane
+		for obj in all(zplane) do
+			-- object or actor?
+			if not has_flag(obj.class, class_actor) then
+				d(" > drawing obj:"..obj.name)
+				-- object
+				if (notnull(obj.states)) 
+				 and notnull(obj.states[obj.state])
+				 and (obj.states[obj.state] > 0)
+				 and (isnull(obj.owner)) then
+					-- something to draw
+					draw_object(obj)
+				end
+			else
+				d(" > drawing actor:"..obj.name)
+				-- actor
+				if (obj.in_room == room_curr) then
+					actor_draw(obj)
+				end
+			end
+			--[[-- capture bounds (even for "invisible", but not untouchable, objects)
+			if isnull(obj.class)
+				or (notnull(obj.class) and obj.class != class_untouchable) then
+				recalc_bounds(obj, obj.w*8, obj.h*8, cam.x, cam.y)
+			end]]
+			if (show_collision) then rect(obj.bounds.x, obj.bounds.y, obj.bounds.x1, obj.bounds.y1, 8) end
+		end
+	end
+
+--[[	-- draw all "visible" room objects (e.g. check dependent-on's)
 	for k,obj in pairs(room_curr.objects) do
 
 		-- todo: check dependent-on's
@@ -1131,15 +1192,16 @@ function roomdraw()
 			if (show_collision) then rect(actor.bounds.x, actor.bounds.y, actor.bounds.x1, actor.bounds.y1, 8) end
 	
 		end
-	end
+	end]]
 end
 
 -- draw actor(s)
 function actor_draw(actor)
  	-- offets
-	actor.offset_x = actor.x - (actor.w *8) /2
-	actor.offset_y = actor.y - (actor.h *8) +2
-	
+	 
+	-- actor.offset_x = actor.x - (actor.w *8) /2
+	-- actor.offset_y = actor.y - (actor.h *8) +2
+
 	if (actor.moving == 1) 
 	 and notnull(actor.walk_anim) then
 		actor.tmr = actor.tmr + 1
@@ -1873,7 +1935,10 @@ function recalc_bounds(obj, w, h, cam_off_x, cam_off_y)
   x = obj.x
 	y = obj.y
 	-- offset for actors?
-	if notnull(obj.offset_x) then
+	if has_flag(obj.class, class_actor) then
+		obj.offset_x = obj.x - (obj.w *8) /2
+		obj.offset_y = obj.y - (obj.h *8) +2
+		--if notnull(obj.offset_x) then
 		x = obj.offset_x
 		y = obj.offset_y
 	end
@@ -2099,8 +2164,8 @@ __gff__
 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 __map__
 444444484848484848484848484444444545454a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a45454500000000000000004444444949494949494949494944444444444449494949494949494949444444444444494949494949494949494444444444444949494949494949494944444444444449494949494949494949444444
-444444488485484848484848484444444545454a4a4a4a4a4a4a848585854a4a4a4a4a4a4a45454500000000000000004444444949494949494949494944444444444449494949494949494949444444444444494949494949494949494444444444444949494949494949494944444444444449494949494949494949444444
-44004448949548484848484848440044450045a5a5a5a5a5a5a594a4a495a5a5a5a5a5a5a545004500000000000000004400444949494949494949494944004444004449494949494949494949440044440044494949494949494949494400444400444949494949494949494944004444004449494949494949494949440044
+444444480000484848484848484444444545454a4a4a4a4a4a4a848585854a4a4a4a4a4a4a45454500000000000000004444444949494949494949494944444444444449494949494949494949444444444444494949494949494949494444444444444949494949494949494944444444444449494949494949494949444444
+44004448000048484848484848440044450045a5a5a5a5a5a5a594a4a495a5a5a5a5a5a5a545004500000000000000004400444949494949494949494944004444004449494949494949494949440044440044494949494949494949494400444400444949494949494949494944004444004449494949494949494949440044
 440044a0a0a0a0a1a2a3a0a0a0440044450045a6a7a6a7a6a7a6a7a6a7a6a7a6a7a6a7a6a745004500000000000000004400444949494949494949494944004444004449494949494949494949440044440044494949494949494949494400444400444949494949494949494944004444004449494949494949494949440044
 440044b0b0b0b0b1b2b3b0b0b0440044450045b6b7b6b7b6b7b6b7b6b7b6b7b6b7b6b7b6b745004500000000000000004400444949494949494949494944004444004449494949494949494949440044440044494949494949494949494400444400444949494949494949494944004444004449494949494949494949440044
 4454647070707070707070707074544445556560606060606060606060606060606060606075534500000000000000004454647070707070707070707074544444546470707070707070707070745444445464707070707070707070707454444454647070707070707070707074544444546470707070707070707070745444
