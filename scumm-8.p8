@@ -1030,10 +1030,16 @@ function checkcollisions()
 		if iscursorcolliding(obj) then
 			hover_curr.object = obj
 		end
-		-- capture bounds (even for "invisible", but not untouchable, objects)
-		if isnull(obj.class)
-			or (notnull(obj.class) and obj.class != class_untouchable) then
+		-- capture bounds (even for "invisible", but not untouchable/dependent, objects)
+		if (isnull(obj.class)
+			 or (notnull(obj.class) and obj.class != class_untouchable))
+			and (isnull(obj.dependent_on) 			-- object has a valid dependent state?
+			 or find_object(obj.dependent_on).state == obj.dependent_on_state) 
+		then
 			recalc_bounds(obj, obj.w*8, obj.h*8, cam.x, cam.y)
+		else
+			-- reset bounds
+			obj.bounds = nil
 		end
 		-- recalc z-plane
 		recalc_zplane(obj)
