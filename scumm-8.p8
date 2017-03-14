@@ -97,9 +97,9 @@ anim_turn = 2  -- show the turning stages of animation
 first_room = {
 	map = {
 		x = 0,
-		y = 0,
-		w = 16,	-- default these?
-		h = 8	-- 
+		y = 0
+		-- ,w = 16,	-- default these?
+		-- h = 8	-- 
 	},
 	--sounds = {},
 	--costumes = {},
@@ -335,8 +335,10 @@ second_room = {
 	map = {
 		x = 16,
 		y = 0,
-		w = 24,	-- default these?
-		h = 8	-- 
+		x1 = 39, 	-- map coordinates to draw to (x,y)
+		y1 = 7
+		-- w = 24,	-- default these?
+		-- h = 8	-- 
 	},
 	enter = function()
 		-- todo: anything here?
@@ -1112,7 +1114,7 @@ end
 function roomdraw()
 	-- draw current room (base layer)
 	room_map = room_curr.map
-	map(room_map.x, room_map.y, 0, stage_top, room_map.w, room_map.h)
+	map(room_map.x, room_map.y, 0, stage_top, room_map.w , room_map.h)
 	
 	-- debug walkable areas
 	if show_collision then
@@ -1538,6 +1540,16 @@ d("change_room()...")
 	-- todo: transition to new room (e.g. iris/swipe)	
 
 	room_curr = new_room
+
+		-- calc map size
+	room_map = room_curr.map
+	if notnull(room_map.x1) then
+		room_map.w = room_map.x1 - room_map.x + 1
+		room_map.h = room_map.y1 - room_map.y + 1
+	else
+		room_map.w = 16
+		room_map.h = 8
+	end
 
 	-- reset camera
 	cam.x = 0
