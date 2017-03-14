@@ -18,13 +18,14 @@ Wow, really? You still here?! OK, once again. Think of SCUMM-8 as an even more r
 - [x] Z-plane ordering of objects/actors
 - [x] Global-level/background & Room-level scripts
 - [x] Object dependencies
+- [x] Replace Color (to allow re-use of room/object gfx)
 
 ## Planned Features
-- [ ] Cut-scene transitions
+- [ ] Pathfinding for walking
+- [ ] Advanced Camera features (pan-to, etc.)
 - [ ] Game Save/Load
 - [ ] Game start-up script
-- [ ] Replace Color (to allow re-use of room/object gfx)
-- [ ] Advanced Camera features (pan-to, etc.)
+- [ ] Cut-scene transitions
 
 ## Thanks & Useful Resources
 A big thanks to [Aric Wilmunder](http://www.wilmunder.com/Arics_World/Games.html) (ex-LucasArts developer) for sharing valuable SCUMM documentation. 
