@@ -14,7 +14,7 @@ __lua__
 
 -- debugging
 show_debuginfo = false
-show_collision = true
+show_collision = false
 show_perfinfo = true
 enable_mouse = true
 d = printh
@@ -124,7 +124,7 @@ first_room = {
 		spin_top = function()
 			while true do	
 				for f=1,3 do
-					set_state("spinning_top", f)
+					set_state("spinning top", f)
 					break_time(8)
 				end
 			end
@@ -287,6 +287,8 @@ first_room = {
 		window = {
 			name = "window",
 			state = states.closed,
+			use_dir = face_back,
+			use_pos = pos_infront,
 			x = 4*8, -- (*8 to use map cell pos)
 			y = 1*8,
 			w = 2,	-- relates to spr or map cel, depending on above
@@ -297,6 +299,7 @@ first_room = {
 			},
 			verbs = {
 				open = function(me)	
+					d("open window!")
 					cutscene(cut_noverbs + cut_hidecursor, 
 						function()
 							-- todo: cutscene code
@@ -434,8 +437,8 @@ actors = {
 		flip = false, 		-- used for flipping the sprite (left/right dir)
 		col = 12,				-- speech text colour
 		trans_col = 11,
-		speed = 0.75,  	-- walking speed
-		moving = 0, 		-- 0=stopped, 1=walking, 2=arrived
+		speed = 0.5,  	-- walking speed
+		moving = 2, 		-- 0=stopped, 1=walking, 2=arrived
 		tmr = 1, 				-- internal timer for managing animation
 		talk_tmr = 1,
 		anim_pos = 1, 	-- used to track anim pos
@@ -966,6 +969,7 @@ function input_button_pressed(button_index)
 		selected_actor.thread = cocreate(function(actor, obj, verb, noun2)
 			if isnull(obj.owner) then
 				-- walk to use pos and face dir
+				todo: find nearest usepos if none set?
 				if (notnull(obj.use_pos)) then d("obj use_pos="..obj.use_pos) end
 				d("obj x="..obj.x..",y="..obj.y)
 				d("obj w="..obj.w..",h="..obj.h)
@@ -973,6 +977,9 @@ function input_button_pressed(button_index)
 				d("dest_pos x="..dest_pos.x..",y="..dest_pos.y)
 				if (notnull(obj.offset_x)) then d("offset x="..obj.offset_x..",y="..obj.offset_y) end
 				walk_to(selected_actor, dest_pos.x, dest_pos.y)
+				-- abort if walk was interrupted
+				d(".moving="..selected_actor.moving)
+				if selected_actor.moving != 2 then return end
 				-- default use direction
 				use_dir=selected_actor.face_dir
 				if (notnull(obj.use_dir) and (verb != verb_default)) then use_dir = obj.use_dir end
@@ -1033,9 +1040,6 @@ function checkcollisions()
 
 	-- check room/object collisions
 	for k,obj in pairs(room_curr.objects) do
-		if iscursorcolliding(obj) then
-			hover_curr.object = obj
-		end
 		-- capture bounds (even for "invisible", but not untouchable/dependent, objects)
 		if (isnull(obj.class)
 			 or (notnull(obj.class) and obj.class != class_untouchable))
@@ -1047,6 +1051,10 @@ function checkcollisions()
 			-- reset bounds
 			obj.bounds = nil
 		end
+
+		if iscursorcolliding(obj) then
+			hover_curr.object = obj
+		end
 		-- recalc z-plane
 		recalc_zplane(obj)
 	end
@@ -1054,12 +1062,12 @@ function checkcollisions()
 	-- check actor collisions
 	for k,actor in pairs(actors) do
 		if (actor.in_room == room_curr) then
-
-			recalc_bounds(actor, actor.w*8, actor.h*8, cam.x, cam.y)			
-
+			recalc_bounds(actor, actor.w*8, actor.h*8, cam.x, cam.y)
 			-- recalc z-plane
 			recalc_zplane(actor)
-			if iscursorcolliding(actor) then
+			-- are we colliding (ignore SELF!)
+			if iscursorcolliding(actor)
+		 	 and actor != selected_actor then
 				hover_curr.object = actor
 			end
 		end
@@ -1168,7 +1176,7 @@ function room_draw()
 					actor_draw(obj)
 				end
 			end
-			if (show_collision) then rect(obj.bounds.x, obj.bounds.y, obj.bounds.x1, obj.bounds.y1, 8) end
+			if (show_collision and notnull(obj.bounds)) then rect(obj.bounds.x, obj.bounds.y, obj.bounds.x1, obj.bounds.y1, 8) end
 		end
 	end
 end
@@ -1864,12 +1872,17 @@ function walk_to(actor, x, y)
 				yield()
 			else
 				-- hit non-walkable block, stop!
+				d("hit nonwalk!")
 				actor.moving = 0 --stopped
-				break
+				-- clear current command
+				clear_curr_cmd()
+				return
 			end
 		end
+		d("reach dest")
 		actor.moving = 2 --arrived
 	else
+		d("non-walk")
 		actor.moving = 0 --stopped
 	end
 end
@@ -1882,9 +1895,9 @@ end
 function iswalkable(x, y)
 		celx = flr(x/8) + room_curr.map.x
 		cely = flr(y/8)
-		d("mapb x="..celx..",y="..cely)
+		--d("mapb x="..celx..",y="..cely)
 		spr_num = mget(celx, cely)
-		d("spr:"..spr_num)
+		--d("spr:"..spr_num)
 		walkable = fget(spr_num,0)
 		return walkable
 end
