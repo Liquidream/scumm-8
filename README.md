@@ -17,9 +17,9 @@ Wow, really? You still here?! OK, once again. Think of SCUMM-8 as an even more r
 - [x] Customisable Verbs
 - [x] Z-plane ordering of objects/actors
 - [x] Global-level/background & Room-level scripts
+- [x] Object dependencies
 
 ## Planned Features
-- [ ] Object dependencies
 - [ ] Cut-scene transitions
 - [ ] Game Save/Load
 - [ ] Game start-up script
