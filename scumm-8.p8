@@ -13,7 +13,7 @@ __lua__
 
 
 -- debugging
-show_debuginfo = false
+show_debuginfo = true
 show_collision = false
 show_perfinfo = true
 enable_mouse = true
@@ -286,9 +286,10 @@ first_room = {
 		},
 		window = {
 			name = "window",
+			class = class_openable,
 			state = states.closed,
 			use_dir = face_back,
-			use_pos = pos_infront,
+			use_pos = { x = 5 *8, y = (7 *8)+1},
 			x = 4*8, -- (*8 to use map cell pos)
 			y = 1*8,
 			w = 2,	-- relates to spr or map cel, depending on above
@@ -371,8 +372,7 @@ second_room = {
 		},
 		back_door = {
 			name = "back door",
-			--dependent_on = "closet-door",
-			--dependent_on_state = states.closed,
+			class = class_openable,
 			state = states.closed,
 			x = 22*8, -- (*8 to use map cell pos)
 			y = 2*8,
@@ -795,7 +795,7 @@ function gamedraw()
 	camera(cam.x, 0)
 
 	-- clip room bounds
-	clip(0, stage_top, screenwidth, 64)
+	clip(0, stage_top, screenwidth+1, 64)
 
 	-- draw room (bg + objects + actors)
 	room_draw()
@@ -809,7 +809,7 @@ function gamedraw()
 		print("cpu: "..flr(100*stat(1)).."%", 0, stage_top - 16, 8) 
 		print("mem: "..flr(stat(0)/1024*100).."%", 0, stage_top - 8, 8)
 	end
-	if (show_debuginfo) then print("x: "..cursor.x.." y:"..cursor.y, 80, stage_top - 8, 8) end
+	if (show_debuginfo) then print("x: "..cursor.x.." y:"..cursor.y-stage_top, 80, stage_top - 8, 8) end
 
 	-- draw active text
 	talking_draw()
@@ -969,8 +969,8 @@ function input_button_pressed(button_index)
 		selected_actor.thread = cocreate(function(actor, obj, verb, noun2)
 			if isnull(obj.owner) then
 				-- walk to use pos and face dir
-				todo: find nearest usepos if none set?
-				if (notnull(obj.use_pos)) then d("obj use_pos="..obj.use_pos) end
+				--todo: find nearest usepos if none set?
+				--if (notnull(obj.use_pos)) then d("obj use_pos="..obj.use_pos) end
 				d("obj x="..obj.x..",y="..obj.y)
 				d("obj w="..obj.w..",h="..obj.h)
 				dest_pos = get_use_pos(obj)
@@ -1487,8 +1487,15 @@ end
 
 function get_use_pos(obj)
 	pos = {}
+	d("get_use_pos")
+	-- first check for specific pos
+	if type(obj.use_pos) == "table" then
+		d("usr tbl")
+		pos.x = obj.use_pos.x-cam.x
+		pos.y = obj.use_pos.y-stage_top
+
 	-- determine use pos
-	if isnull(obj.use_pos) or
+	elseif isnull(obj.use_pos) or
 		(obj.use_pos == pos_infront) then
 		pos.x = obj.x+((obj.w*8)/2)-cam.x-4
 		pos.y = obj.y+(obj.h*8) +2
@@ -1507,7 +1514,7 @@ function get_use_pos(obj)
 		pos.x = obj.x+(obj.w*8)-cam.x
 		pos.y = obj.y+((obj.h*8) -2)
 	end
-	
+
 	return pos
 end
 
