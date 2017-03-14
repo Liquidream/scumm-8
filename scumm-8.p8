@@ -97,12 +97,11 @@ anim_turn = 2  -- show the turning stages of animation
 first_room = {
 	map = {
 		x = 0,
-		y = 0
-		-- ,w = 16,	-- default these?
-		-- h = 8	-- 
+		y = 0,
+		col_replace =      { 7,  4 },
+		col_replace_with = { 15, 5 }
 	},
 	--sounds = {},
-	--costumes = {},
 	enter = function(me)
 		-- animate fireplace
 		d("scr:"..type(me.scripts.anim_fire))
@@ -125,14 +124,15 @@ first_room = {
 		spin_top = function()
 			while true do	
 				for f=1,3 do
-					set_state("spinning top", f)
+					set_state("spinning_top", f)
 					break_time(8)
 				end
 			end
 		end		
 	},
 	objects = {
-		fire = {
+		fire = 
+		{
 			name = "fire",
 			state = 1, --"frame1",
 			x = 8*8, -- (*8 to use map cell pos)
@@ -145,7 +145,7 @@ first_room = {
 			use_dir = face_back,
 			use_pos = pos_infront,
 
-			dependent_on = "front_door",	-- object is dependent on the state of another
+			dependent_on = "front door",	-- object is dependent on the state of another
 			dependent_on_state = states.closed,
 
 			verbs = {
@@ -264,6 +264,8 @@ first_room = {
 			x = 2*8, -- (*8 to use map cell pos)
 			y = 6*8,
 			states = { 192, 193, 194 },
+			col_replace =      { 12,},	-- replace these colors...
+			col_replace_with = { 7, },  -- ...with these
 			trans_col=15,
 			w = 1,	-- relates to spr or map cel, depending on above
 			h = 1,  --
@@ -453,6 +455,8 @@ actors = {
 		idle = { 30, 30, 30, 30 },
 		talk = { 47, 47, 47, 47 },
 		col = 13, --2,				-- speech text colour
+		-- col_replace =      { 2, 11, 3},	-- replace these colors...
+		-- col_replace_with = { 11, 8, 0},  -- ...with these
 		trans_col = 15,
 		speed = 0.25,  	-- walking speed
 		moving = 0,
@@ -791,7 +795,7 @@ function gamedraw()
 	clip(0, stage_top, screenwidth, 64)
 
 	-- draw room (bg + objects + actors)
-	roomdraw()
+	room_draw()
 
 	-- reset camera for "static" content
 	camera(0,0)
@@ -1111,10 +1115,18 @@ function recalc_zplane(obj)
 	end
 end
 
-function roomdraw()
+function room_draw()
 	-- draw current room (base layer)
 	room_map = room_curr.map
+	-- replace colors?
+	if room_map.col_replace then
+		for c = 1, #room_map.col_replace do
+			pal(room_map.col_replace[c], room_map.col_replace_with[c])
+		end
+	end
 	map(room_map.x, room_map.y, 0, stage_top, room_map.w , room_map.h)
+	--reset palette
+	pal() 
 	
 	-- debug walkable areas
 	if show_collision then
@@ -1148,7 +1160,7 @@ function roomdraw()
 				 and (isnull(obj.owner)) 						-- object is not "owned"
 				then
 					-- something to draw
-					draw_object(obj)
+					object_draw(obj)
 				end
 			else
 				-- actor
@@ -1183,10 +1195,17 @@ function actor_draw(actor)
 		sprnum = actor.idle[actor.face_dir]
 	end
 
+	-- replace colors?
+	if actor.col_replace then
+		for c = 1, #actor.col_replace do
+			pal(actor.col_replace[c], actor.col_replace_with[c])
+		end
+	end
+
 	sprdraw(sprnum, actor.offset_x, actor.offset_y, 
 		actor.w , actor.h, actor.trans_col, 
 		actor.flip, false)
-
+	
 	-- talking overlay
 	if (notnull(talking_actor) 
 	 and talking_actor == actor) then
@@ -1203,6 +1222,10 @@ function actor_draw(actor)
 
 		--end
 	end
+
+	--reset palette
+	pal()
+
 end
 
 function command_draw()
@@ -1322,12 +1345,12 @@ function ui_draw()
 		-- draw inventory bg
 		rectfill(xpos-1, stage_top+ypos-1, xpos+8, stage_top+ypos+8, 1)
 		obj = selected_actor.inventory[ipos]
-		if type(obj) != 'nil' then
+		if notnull(obj) then
 			-- something to draw
 			obj.x = xpos
 			obj.y = ypos
 			-- draw object/sprite
-			draw_object(obj)
+			object_draw(obj)
 			-- re-calculate bounds (as pos may have changed)
 			recalc_bounds(obj, obj.w*8, obj.h*8, 0, 0)
 		end
@@ -1616,7 +1639,8 @@ function find_object(name)
 	-- else look for object by unique name
 	for k,obj in pairs(room_curr.objects) do
 		--d("--"..obj.name)
-		if (k == name) then return obj end
+		if (obj.name == name) then return obj end
+		--if (k == name) then return obj end
 	end
 end
 
@@ -1787,9 +1811,17 @@ function print_line(msg, x, y, col, align)
 end
 
 
-function draw_object(obj)
+function object_draw(obj)
+	-- replace colors?
+	if obj.col_replace then
+		for c = 1, #obj.col_replace do
+			pal(obj.col_replace[c], obj.col_replace_with[c])
+		end
+	end
 	-- draw object (depending on state!)
 	sprdraw(obj.states[obj.state], obj.x, obj.y, obj.w, obj.h, obj.trans_col, obj.flip_x)
+	--reset palette
+	pal() 
 end
 
 -- walk actor to position
