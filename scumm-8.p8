@@ -14,7 +14,7 @@ __lua__
 
 -- debugging
 show_debuginfo = false
-show_collision = false
+show_collision = true
 show_perfinfo = true
 enable_mouse = true
 d = printh
@@ -424,7 +424,7 @@ actors = {
 		name = "",
 		class = class_actor,
 		x = 127/2 - 16,
-		y = 127/2 -16,
+		y = 127/2 -18,
 		w = 1,
 		h = 4,
 		face_dir = face_front, 	-- direction facing
@@ -1838,13 +1838,14 @@ function walk_to(actor, x, y)
 	if (distance < 1) then return end
 
 	-- check target position is in walkable block
-	celx = flr(x/8) + room_curr.map.x
+	walkable = iswalkable(x,y)
+	--[[celx = flr(x/8) + room_curr.map.x
 	cely = flr(y/8)
 	d("mapb x="..celx..",y="..cely)
 	spr_num = mget(celx, cely)	
-	d("spr:"..spr_num)
-	
-	walkable = fget(spr_num, 0) -- flag 0 = walkable
+	d("spr:"..spr_num)	
+	walkable = fget(spr_num, 0) -- flag 0 = walkable]]
+
 	-- if it is...
 	if walkable then
 		d("walkable!")
@@ -1856,10 +1857,16 @@ function walk_to(actor, x, y)
 		if (actor.flip) then actor.face_dir = face_left end
 
 		for i = 0, distance/actor.speed do
-			--d("walking...")
-			actor.x = actor.x + step_x
-			actor.y = actor.y + step_y
-			yield()
+			-- check "step" position is "walkable"
+			if iswalkable(actor.x + step_x, actor.y + step_y) then
+				actor.x = actor.x + step_x
+				actor.y = actor.y + step_y
+				yield()
+			else
+				-- hit non-walkable block, stop!
+				actor.moving = 0 --stopped
+				break
+			end
 		end
 		actor.moving = 2 --arrived
 	else
@@ -1871,6 +1878,16 @@ end
 
 -- internal functions -----------------------------------------------
 
+-- returns whether room map cel at position is "walkable"
+function iswalkable(x, y)
+		celx = flr(x/8) + room_curr.map.x
+		cely = flr(y/8)
+		d("mapb x="..celx..",y="..cely)
+		spr_num = mget(celx, cely)
+		d("spr:"..spr_num)
+		walkable = fget(spr_num,0)
+		return walkable
+end
 
 function get_keys(obj)
 	keys = {}
@@ -2194,7 +2211,7 @@ fff50ffffff50ffffff50fff00000000000000000000000000000000000000000000000000000000
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000088888888
 
 __gff__
-0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000100000000000000000000000000010000010101010000000000000000000100010101010100000000000000000001000101010101000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000010000010101010000000000000000000100000101010100000000000000000001000001010101000000000000000000
 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 __map__
 444444484848484848484848484444444545454a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a45454500000000000000004444444949494949494949494944444444444449494949494949494949444444444444494949494949494949494444444444444949494949494949494944444444444449494949494949494949444444
