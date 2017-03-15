@@ -1959,7 +1959,7 @@ end
 -- returns whether room map cel at position is "walkable"
 function iswalkable(x, y)
 		celx = flr(x/8) + room_curr.map.x
-		cely = flr(y/8)
+		cely = flr(y/8) + room_curr.map.y
 		--d("mapb x="..celx..",y="..cely)
 		spr_num = mget(celx, cely)
 		--d("spr:"..spr_num)
