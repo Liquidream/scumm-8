@@ -133,8 +133,7 @@ rooms = {
 			end		
 		},
 		objects = {
-			fire = 
-			{
+			fire = {
 				name = "fire",
 				state = 1, --"frame1",
 				x = 8*8, -- (*8 to use map cell pos)
@@ -187,6 +186,7 @@ rooms = {
 				w = 1,	-- relates to spr or map cel, depending on above
 				h = 4,  --
 				use_pos = pos_right,
+				use_dir = face_left,
 				verbs = {
 					walkto = function(me)
 						d("me = "..type(me))
@@ -511,8 +511,8 @@ actors = {
 	main_actor = { 		-- initialize the actor object
 		name = "",
 		class = class_actor,
-		x = 127/2 - 16,
-		y = 127/2 -18,
+		x = 127/2 + 80,
+		y = 127/2 -24,
 		w = 1,
 		h = 4,
 		face_dir = face_front, 	-- direction facing
@@ -1636,7 +1636,7 @@ function do_anim(actor, cmd_type, cmd_value)
 end
 
 function come_out_door(door_obj) --, new_room)
-	-- todo: switch to new room and...	
+	-- switch to new room and...	
 	d("door1a x:"..door_obj.x..", y:"..door_obj.y)
 	--d("door type:"..type(door_obj.in_room))
 	new_room = door_obj.in_room
@@ -1649,7 +1649,14 @@ function come_out_door(door_obj) --, new_room)
 	selected_actor.y = pos.y
 
 	-- (in opposite use direction)
-	do_anim(selected_actor, face_dir, door_obj.use_pos)
+	d("door usedir:"..door_obj.use_dir)
+	local opp_dir
+	if (door_obj.use_dir - 2 < 1) then
+		opp_dir = door_obj.use_dir + 2
+	else 
+		opp_dir = door_obj.use_dir - 2
+	end
+	do_anim(selected_actor, anim_face, opp_dir)
 
 	selected_actor.in_room = new_room
 
