@@ -94,386 +94,392 @@ anim_turn = 2  -- show the turning stages of animation
 -- #######################################################
 -- room definitions
 -- 
-first_room = {
-	map = {
-		x = 0,
-		y = 0,
-		col_replace =      { 7,  4 },
-		col_replace_with = { 15, 5 }
-	},
-	--sounds = {},
-	enter = function(me)
-		-- animate fireplace
-		d("scr:"..type(me.scripts.anim_fire))
-		start_script(me.scripts.anim_fire, true) -- bg script
-	end,
-	exit = function(me)
-		-- todo: anything here?
-		stop_script(me.scripts.anim_fire)
-	end,
-	lighting = 0, -- state of lights in current room
-	scripts = {	  -- scripts that are at room-level
-		anim_fire = function()
-			while true do
-				for f=1,3 do
-					set_state("fire", f)
-					break_time(8)
-				end
-			end
+rooms = {
+
+	first_room = {
+		map = {
+			x = 0,
+			y = 0,
+			col_replace =      { 7,  4 },
+			col_replace_with = { 15, 5 }
+		},
+		--sounds = {},
+		enter = function(me)
+			-- animate fireplace
+			d("scr:"..type(me.scripts.anim_fire))
+			start_script(me.scripts.anim_fire, true) -- bg script
 		end,
-		spin_top = function()
-			while true do	
-				for f=1,3 do
-					set_state("spinning top", f)
-					break_time(8)
+		exit = function(me)
+			-- todo: anything here?
+			stop_script(me.scripts.anim_fire)
+		end,
+		lighting = 0, -- state of lights in current room
+		scripts = {	  -- scripts that are at room-level
+			anim_fire = function()
+				while true do
+					for f=1,3 do
+						set_state("fire", f)
+						break_time(8)
+					end
 				end
-			end
-		end		
-	},
-	objects = {
-		fire = 
-		{
-			name = "fire",
-			state = 1, --"frame1",
-			x = 8*8, -- (*8 to use map cell pos)
-			y = 4*8,
-			states = {145, 146, 147},
-			w = 1,	-- relates to spr or map cel, depending on above
-			h = 1,  --
-			trans_col = 0,
-			--use_pos (defaults to spr bottom)
-			use_dir = face_back,
-			use_pos = pos_infront,
-
-			dependent_on = "front door",	-- object is dependent on the state of another
-			dependent_on_state = states.closed,
-
-			verbs = {
-				lookat = function()
-					say_line(selected_actor, "it's a nice, warm fire...")
-					wait_for_message()
-					break_time(10)
-					do_anim(selected_actor, anim_turn, face_front)
-					say_line(selected_actor, "ouch! it's hot!;*stupid fire*")
-					wait_for_message()
-				end,
-				talkto = function()
-					say_line(selected_actor, "'hi fire...'")
-					wait_for_message()
-					break_time(10)
-					do_anim(selected_actor, anim_turn, face_front)
-					say_line(selected_actor, "the fire didn't say hello back;burn!!")
-					wait_for_message()
-				end,
-				pickup = function(me)
-					pickup_obj(me)
-				end,
-			}
+			end,
+			spin_top = function()
+				while true do	
+					for f=1,3 do
+						set_state("spinning top", f)
+						break_time(8)
+					end
+				end
+			end		
 		},
-		front_door = {
-			name = "front door",
-			class = class_openable,
-			state = states.closed,
-			x = 1*8, -- (*8 to use map cell pos)
-			y = 2*8,
-			states = { -- states are spr values
-			  143, -- states.closed
-				0   -- states.open
+		objects = {
+			fire = 
+			{
+				name = "fire",
+				state = 1, --"frame1",
+				x = 8*8, -- (*8 to use map cell pos)
+				y = 4*8,
+				states = {145, 146, 147},
+				w = 1,	-- relates to spr or map cel, depending on above
+				h = 1,  --
+				trans_col = 0,
+				--use_pos (defaults to spr bottom)
+				use_dir = face_back,
+				use_pos = pos_infront,
+
+				dependent_on = "front door",	-- object is dependent on the state of another
+				dependent_on_state = states.closed,
+
+				verbs = {
+					lookat = function()
+						say_line(selected_actor, "it's a nice, warm fire...")
+						wait_for_message()
+						break_time(10)
+						do_anim(selected_actor, anim_turn, face_front)
+						say_line(selected_actor, "ouch! it's hot!;*stupid fire*")
+						wait_for_message()
+					end,
+					talkto = function()
+						say_line(selected_actor, "'hi fire...'")
+						wait_for_message()
+						break_time(10)
+						do_anim(selected_actor, anim_turn, face_front)
+						say_line(selected_actor, "the fire didn't say hello back;burn!!")
+						wait_for_message()
+					end,
+					pickup = function(me)
+						pickup_obj(me)
+					end,
+				}
 			},
-			flip_x = false, -- used for flipping the sprite
-			flip_y = false,
-			w = 1,	-- relates to spr or map cel, depending on above
-			h = 4,  --
-			use_pos = pos_right,
-			verbs = {
-				walkto = function(me)
-					d("me = "..type(me))
-					if state_of(me) == states.open then
+			front_door = {
+				name = "front door",
+				class = class_openable,
+				state = states.closed,
+				x = 1*8, -- (*8 to use map cell pos)
+				y = 2*8,
+				states = { -- states are spr values
+					143, -- states.closed
+					0   -- states.open
+				},
+				flip_x = false, -- used for flipping the sprite
+				flip_y = false,
+				w = 1,	-- relates to spr or map cel, depending on above
+				h = 4,  --
+				use_pos = pos_right,
+				verbs = {
+					walkto = function(me)
+						d("me = "..type(me))
+						if state_of(me) == states.open then
+							-- go to new room!
+							come_out_door(rooms.outside_room.objects.front_door) --, outside_room)
+						else
+							say_line(selected_actor, "the door is closed")
+						end
+					end,
+					open = function(me)
+						if (isnull(me)) d("me is null!")
+						d("me = "..me.name)
+						if state_of(me) == states.open then
+							say_line(selected_actor, "it's already open!")
+						else
+							set_state(me, states.open)
+						end
+					end,
+					close = function(me)
+						set_state(me, states.closed)
+					end
+				}
+			},
+			hall_door_kitchen = {
+				name = "kitchen",
+				state = states.open,
+				x = 14 *8, -- (*8 to use map cell pos)
+				y = 2 *8,
+				w = 1,	-- relates to spr or map cel, depending on above
+				h = 4,  --
+				use_pos = pos_left,
+				verbs = {
+					walkto = function()
 						-- go to new room!
-						come_out_door(outside_room.objects.front_door, outside_room)
-					else
-						say_line(selected_actor, "the door is closed")
+						come_out_door(rooms.second_room.objects.kitchen_door_hall) --, second_room) -- ()
 					end
-				end,
-				open = function(me)
-					if (isnull(me)) d("me is null!")
-					d("me = "..me.name)
-					if state_of(me) == states.open then
-						say_line(selected_actor, "it's already open!")
-					else
-						set_state(me, states.open)
-					end
-				end,
-				close = function(me)
-					set_state(me, states.closed)
-				end
-			}
-		},
-		hall_door_kitchen = {
-			name = "kitchen",
-			state = states.open,
-			x = 14 *8, -- (*8 to use map cell pos)
-			y = 2 *8,
-			w = 1,	-- relates to spr or map cel, depending on above
-			h = 4,  --
-			use_pos = pos_left,
-			verbs = {
-				walkto = function()
-					-- go to new room!
-					come_out_door(second_room.objects.kitchen_door_hall, second_room) -- ()
-				end
-			}
-		},
-		bat = {
-			name = "bucket",
-			class = class_pickupable,
-			state = states.open,
-			x = 13 *8, -- (*8 to use map cell pos)
-			y = 6 *8,
-			w = 1,	-- relates to spr or map cel, depending on above
-			h = 1,  --
-			states = { -- states are spr values
-				207,  -- closed
-				223 -- open
+				}
 			},
-			trans_col=15,
-			--owner (set on pickup)
-			--[dependent-on object-name being object-state]
-			verbs = {
-				lookat = function(me)
-					if owner_of(me) == selected_actor then
-						say_line(selected_actor, "it is a bucket in my pocket")
-					else
-						say_line(selected_actor, "it is a bucket")
-					end
-				end,
-				pickup = function(me)
-					d("b4 pickup")
-					pickup_obj(me)
-				end,
-				--[[use = function(me, noun2)
-					if (noun2.name == "window") then
-						set_state("window", states.open)
-					end
-				end]]
-			}
-		},
-		spinning_top = {
-			name = "spinning top",
-			state = 1,
-			x = 2*8, -- (*8 to use map cell pos)
-			y = 6*8,
-			states = { 192, 193, 194 },
-			col_replace =      { 12,},	-- replace these colors...
-			col_replace_with = { 7, },  -- ...with these
-			trans_col=15,
-			w = 1,	-- relates to spr or map cel, depending on above
-			h = 1,  --
-			verbs = {
-				push = function(me)
-					if script_running(room_curr.scripts.spin_top) then
+			bat = {
+				name = "bucket",
+				class = class_pickupable,
+				state = states.open,
+				x = 13 *8, -- (*8 to use map cell pos)
+				y = 6 *8,
+				w = 1,	-- relates to spr or map cel, depending on above
+				h = 1,  --
+				states = { -- states are spr values
+					207,  -- closed
+					223 -- open
+				},
+				trans_col=15,
+				--owner (set on pickup)
+				--[dependent-on object-name being object-state]
+				verbs = {
+					lookat = function(me)
+						if owner_of(me) == selected_actor then
+							say_line(selected_actor, "it is a bucket in my pocket")
+						else
+							say_line(selected_actor, "it is a bucket")
+						end
+					end,
+					pickup = function(me)
+						d("b4 pickup")
+						pickup_obj(me)
+					end,
+					--[[use = function(me, noun2)
+						if (noun2.name == "window") then
+							set_state("window", states.open)
+						end
+					end]]
+				}
+			},
+			spinning_top = {
+				name = "spinning top",
+				state = 1,
+				x = 2*8, -- (*8 to use map cell pos)
+				y = 6*8,
+				states = { 192, 193, 194 },
+				col_replace =      { 12,},	-- replace these colors...
+				col_replace_with = { 7, },  -- ...with these
+				trans_col=15,
+				w = 1,	-- relates to spr or map cel, depending on above
+				h = 1,  --
+				verbs = {
+					push = function(me)
+						if script_running(room_curr.scripts.spin_top) then
+							stop_script(room_curr.scripts.spin_top)
+							set_state(me, 1)
+						else
+							start_script(room_curr.scripts.spin_top)
+						end
+					end,
+					pull = function(me)
 						stop_script(room_curr.scripts.spin_top)
 						set_state(me, 1)
-					else
-						start_script(room_curr.scripts.spin_top)
 					end
-				end,
-				pull = function(me)
-					stop_script(room_curr.scripts.spin_top)
-					set_state(me, 1)
-				end
-			}
-		},
-		window = {
-			name = "window",
-			class = class_openable,
-			state = states.closed,
-			use_dir = face_back,
-			use_pos = { x = 5 *8, y = (7 *8)+1},
-			x = 4*8, -- (*8 to use map cell pos)
-			y = 1*8,
-			w = 2,	-- relates to spr or map cel, depending on above
-			h = 2,  --
-			states = {  -- states are spr values
-				132, -- closed
-				134  -- open
+				}
 			},
-			verbs = {
-				open = function(me)	
-					d("open window!")
-					cutscene(cut_noverbs + cut_hidecursor, 
-						function()
-							-- todo: cutscene code
-							print_line("*creak*",40,20,8,1)
-							wait_for_message()
-							change_room(second_room)
-							selected_actor = actors.purp_tentacle
-							walk_to(selected_actor, 
-								selected_actor.x+10, 
-								selected_actor.y)
-							say_line(selected_actor, "what was that?!")
-							wait_for_message()
-							say_line(selected_actor, "i'd better check...")
-							wait_for_message()
-							walk_to(selected_actor, 
-								selected_actor.x-10, 
-								selected_actor.y)
-							change_room(first_room)
-							-- wait for a bit, then appear in room1
-							break_time(50)
-							selected_actor.x = 115
-							selected_actor.y = 44
-							selected_actor.in_room = first_room
-							walk_to(selected_actor, 
-								selected_actor.x-10, 
-								selected_actor.y)
-							say_line(selected_actor, "intruder!!!")
-							wait_for_message()
-						end
-					)
-				end
+			window = {
+				name = "window",
+				class = class_openable,
+				state = states.closed,
+				use_dir = face_back,
+				use_pos = { x = 5 *8, y = (7 *8)+1},
+				x = 4*8, -- (*8 to use map cell pos)
+				y = 1*8,
+				w = 2,	-- relates to spr or map cel, depending on above
+				h = 2,  --
+				states = {  -- states are spr values
+					132, -- closed
+					134  -- open
+				},
+				verbs = {
+					open = function(me)	
+						d("open window!")
+						cutscene(cut_noverbs + cut_hidecursor, 
+							function()
+								-- todo: cutscene code
+								print_line("*creak*",40,20,8,1)
+								wait_for_message()
+								change_room(rooms.second_room)
+								selected_actor = actors.purp_tentacle
+								walk_to(selected_actor, 
+									selected_actor.x+10, 
+									selected_actor.y)
+								say_line(selected_actor, "what was that?!")
+								wait_for_message()
+								say_line(selected_actor, "i'd better check...")
+								wait_for_message()
+								walk_to(selected_actor, 
+									selected_actor.x-10, 
+									selected_actor.y)
+								change_room(rooms.first_room)
+								-- wait for a bit, then appear in room1
+								break_time(50)
+								selected_actor.x = 115
+								selected_actor.y = 44
+								selected_actor.in_room = rooms.first_room
+								walk_to(selected_actor, 
+									selected_actor.x-10, 
+									selected_actor.y)
+								say_line(selected_actor, "intruder!!!")
+								wait_for_message()
+							end
+						)
+					end
+				}
 			}
 		}
+	},
+
+	second_room = {
+		map = {
+			x = 16,
+			y = 0,
+			x1 = 39, 	-- map coordinates to draw to (x,y)
+			y1 = 7
+			-- w = 24,	-- default these?
+			-- h = 8	-- 
+		},
+		enter = function()
+			-- todo: anything here?
+		end,
+		exit = function()
+			-- todo: anything here?
+		end,
+		scripts = {	  -- scripts that are at room-level
+		},
+		objects = {
+			kitchen_door_hall = {
+				name = "hall",
+				state = states.open,
+				x = 1 *8, -- (*8 to use map cell pos)
+				y = 2 *8,
+				w = 1,	-- relates to spr
+				h = 4,  --
+				use_pos = pos_right,
+				verbs = {
+					walkto = function()
+						-- go to new room!
+						come_out_door(rooms.first_room.objects.hall_door_kitchen) --, first_room)
+					end
+				}
+			},
+			back_door = {
+				name = "back door",
+				class = class_openable,
+				state = states.closed,
+				x = 22*8, -- (*8 to use map cell pos)
+				y = 2*8,
+				states = {
+					-- states are spr values
+					79, -- closed
+					0   -- open
+				},
+				flip_x = true, -- used for flipping the sprite
+				flip_y = false,
+				w = 1,	-- relates to spr or map cel, depending on above
+				h = 4,  --
+				use_pos = pos_left,
+				verbs = {
+					walkto = function(me)
+						d("me = "..type(me))
+						if state_of(me) == states.open then
+							-- go to new room!
+							come_out_door(rooms.first_room.objects.front_door) --, first_room)
+						else
+							say_line(selected_actor, "the door is closed")
+						end
+					end,
+					open = function(me)
+						d("me = "..me.name)
+						if state_of(me) == states.open then
+							say_line(selected_actor, "it's already open!")
+						else
+							set_state(me, states.open)
+						end
+					end,
+					close = function(me)
+						set_state(me, states.closed)
+					end
+				}
+			},
+		},
+	},
+	
+	outside_room = {
+		map = {
+			x = 16,
+			y = 8,
+			x1 = 47, 	-- map coordinates to draw to (x,y)
+			y1 = 15
+		},
+		enter = function(me)
+			-- todo: anything here?
+		end,
+		exit = function(me)
+			-- todo: anything here?
+		end,
+		scripts = {	  -- scripts that are at room-level
+		},
+		objects = {
+			front_door = {
+				name = "front door",
+				class = class_openable,
+				state = states.closed,
+				x = 15*8, -- (*8 to use map cell pos)
+				y = 1*8,
+				states = {
+					-- states are spr values
+					142, -- closed
+					0   -- open
+				},
+				flip_x = true, -- used for flipping the sprite
+				flip_y = false,
+				w = 1,	-- relates to spr or map cel, depending on above
+				h = 3,  --
+				use_pos = pos_infront,
+				use_dir = face_back,
+				verbs = {
+					walkto = function(me)
+						if state_of(me) == states.open then
+							-- go to new room!
+							come_out_door(rooms.first_room.objects.front_door) --, first_room)
+						else
+							say_line(selected_actor, "the door is closed")
+						end
+					end,
+					open = function(me)
+						if state_of(me) == states.open then
+							say_line(selected_actor, "it's already open!")
+						else
+							set_state(me, states.open)
+						end
+					end,
+					close = function(me)
+						set_state(me, states.closed)
+					end
+				}
+			},
+		},
 	}
-}
 
-second_room = {
-	map = {
-		x = 16,
-		y = 0,
-		x1 = 39, 	-- map coordinates to draw to (x,y)
-		y1 = 7
-		-- w = 24,	-- default these?
-		-- h = 8	-- 
-	},
-	enter = function()
-		-- todo: anything here?
-	end,
-	exit = function()
-		-- todo: anything here?
-	end,
-	scripts = {	  -- scripts that are at room-level
-	},
-	objects = {
-		kitchen_door_hall = {
-			name = "hall",
-			state = states.open,
-			x = 1 *8, -- (*8 to use map cell pos)
-			y = 2 *8,
-			w = 1,	-- relates to spr
-			h = 4,  --
-			use_pos = pos_right,
-			verbs = {
-				walkto = function()
-					-- go to new room!
-					come_out_door(first_room.objects.hall_door_kitchen, first_room)
-				end
-			}
-		},
-		back_door = {
-			name = "back door",
-			class = class_openable,
-			state = states.closed,
-			x = 22*8, -- (*8 to use map cell pos)
-			y = 2*8,
-			states = {
-				-- states are spr values
-				79, -- closed
-				0   -- open
-			},
-			flip_x = true, -- used for flipping the sprite
-			flip_y = false,
-			w = 1,	-- relates to spr or map cel, depending on above
-			h = 4,  --
-			use_pos = pos_left,
-			verbs = {
-				walkto = function(me)
-					d("me = "..type(me))
-					if state_of(me) == states.open then
-						-- go to new room!
-						come_out_door(first_room.objects.front_door, first_room)
-					else
-						say_line(selected_actor, "the door is closed")
-					end
-				end,
-				open = function(me)
-					d("me = "..me.name)
-					if state_of(me) == states.open then
-						say_line(selected_actor, "it's already open!")
-					else
-						set_state(me, states.open)
-					end
-				end,
-				close = function(me)
-					set_state(me, states.closed)
-				end
-			}
-		},
-	},
+
 }
 
 
-outside_room = {
-	map = {
-		x = 16,
-		y = 8,
-		x1 = 47, 	-- map coordinates to draw to (x,y)
-		y1 = 15
-	},
-	enter = function(me)
-		-- todo: anything here?
-	end,
-	exit = function(me)
-		-- todo: anything here?
-	end,
-	scripts = {	  -- scripts that are at room-level
-	},
-	objects = {
-		front_door = {
-			name = "front door",
-			class = class_openable,
-			state = states.closed,
-			x = 15*8, -- (*8 to use map cell pos)
-			y = 1*8,
-			states = {
-				-- states are spr values
-				142, -- closed
-				0   -- open
-			},
-			flip_x = true, -- used for flipping the sprite
-			flip_y = false,
-			w = 1,	-- relates to spr or map cel, depending on above
-			h = 3,  --
-			use_pos = pos_infront,
-			use_dir = face_back,
-			verbs = {
-				walkto = function(me)
-					if state_of(me) == states.open then
-						-- go to new room!
-						come_out_door(first_room.objects.front_door, first_room)
-					else
-						say_line(selected_actor, "the door is closed")
-					end
-				end,
-				open = function(me)
-					if state_of(me) == states.open then
-						say_line(selected_actor, "it's already open!")
-					else
-						set_state(me, states.open)
-					end
-				end,
-				close = function(me)
-					set_state(me, states.closed)
-				end
-			}
-		},
-	},
-}
 
 -- set which room to start the game in 
 -- (could be a "pseudo" room for title screen!)
-selected_room = first_room
---selected_room = second_room
+selected_room = rooms.first_room
+--selected_room = rooms.second_room
 
 
 -- #######################################################
@@ -525,8 +531,8 @@ actors = {
 		talk_tmr = 1,
 		anim_pos = 1,
 		use_pos = pos_left,
-		--in_room = first_room,
-		in_room = second_room,
+		--in_room = rooms.first_room,
+		in_room = rooms.second_room,
 		verbs = {
 				lookat = function()
 					say_line(selected_actor, "it's a weird looking tentacle, thing!")
@@ -766,6 +772,9 @@ function _init()
 
 	-- init actor
 	selected_actor.in_room = selected_room
+
+	-- init all the rooms
+	init_rooms()
 
 	-- load the initial room
 	change_room(selected_room)
@@ -1600,9 +1609,11 @@ function do_anim(actor, cmd_type, cmd_value)
 	
 end
 
-function come_out_door(door_obj, new_room)
+function come_out_door(door_obj) --, new_room)
 	-- todo: switch to new room and...	
 	d("door1a x:"..door_obj.x..", y:"..door_obj.y)
+	--d("door type:"..type(door_obj.in_room))
+	new_room = door_obj.in_room
 	change_room(new_room)
 	d("door1b x:"..door_obj.x..", y:"..door_obj.y)
 	-- ...auto-position actor at door_obj
@@ -1955,6 +1966,15 @@ end
 
 
 -- internal functions -----------------------------------------------
+
+-- initialise all the rooms (e.g. add in parent links)
+function init_rooms()
+	for kr,room in pairs(rooms) do
+		for ko,obj in pairs(room.objects) do
+			obj.in_room = room
+		end
+	end
+end
 
 -- returns whether room map cel at position is "walkable"
 function iswalkable(x, y)
