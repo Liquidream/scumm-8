@@ -100,8 +100,11 @@ rooms = {
 		map = {
 			x = 0,
 			y = 0,
-			col_replace =      { 7,  4 },
-			col_replace_with = { 15, 5 }
+			col_replace = { 
+				{ 7, 15 }, 
+				-- { 4, 5 }, 
+				-- { 6, 8 } 
+			},
 		},
 		--sounds = {},
 		enter = function(me)
@@ -177,6 +180,7 @@ rooms = {
 				state = states.closed,
 				x = 1*8, -- (*8 to use map cell pos)
 				y = 2*8,
+				elevation = -10, -- force to always be bg
 				states = { -- states are spr values
 					143, -- states.closed
 					0   -- states.open
@@ -200,14 +204,16 @@ rooms = {
 					open = function(me)
 						if (isnull(me)) d("me is null!")
 						d("me = "..me.name)
-						if state_of(me) == states.open then
+						open_door(me, rooms.outside_room.objects.front_door)
+						--[[if state_of(me) == states.open then
 							say_line(selected_actor, "it's already open!")
 						else
 							set_state(me, states.open)
-						end
+						end]]
 					end,
 					close = function(me)
-						set_state(me, states.closed)
+						close_door(me, rooms.outside_room.objects.front_door)
+						--set_state(me, states.closed)
 					end
 				}
 			},
@@ -219,6 +225,7 @@ rooms = {
 				w = 1,	-- relates to spr or map cel, depending on above
 				h = 4,  --
 				use_pos = pos_left,
+				use_dir = face_right,
 				verbs = {
 					walkto = function()
 						-- go to new room!
@@ -266,8 +273,9 @@ rooms = {
 				x = 2*8, -- (*8 to use map cell pos)
 				y = 6*8,
 				states = { 192, 193, 194 },
-				col_replace =      { 12,},	-- replace these colors...
-				col_replace_with = { 7, },  -- ...with these
+				col_replace = { -- replace colors (orig,new)
+					{ 12, 7 } 
+				},	
 				trans_col=15,
 				w = 1,	-- relates to spr or map cel, depending on above
 				h = 1,  --
@@ -365,6 +373,7 @@ rooms = {
 				w = 1,	-- relates to spr
 				h = 4,  --
 				use_pos = pos_right,
+				use_dir = face_left,
 				verbs = {
 					walkto = function()
 						-- go to new room!
@@ -378,9 +387,10 @@ rooms = {
 				state = states.closed,
 				x = 22*8, -- (*8 to use map cell pos)
 				y = 2*8,
+				elevation = -10, -- force to always be bg
 				states = {
 					-- states are spr values
-					79, -- closed
+					143, -- closed
 					0   -- open
 				},
 				flip_x = true, -- used for flipping the sprite
@@ -388,6 +398,7 @@ rooms = {
 				w = 1,	-- relates to spr or map cel, depending on above
 				h = 4,  --
 				use_pos = pos_left,
+				use_dir = face_right,
 				verbs = {
 					walkto = function(me)
 						d("me = "..type(me))
@@ -477,14 +488,16 @@ rooms = {
 						end
 					end,
 					open = function(me)
-						if state_of(me) == states.open then
+						open_door(me, rooms.first_room.objects.front_door)
+						--[[if state_of(me) == states.open then
 							say_line(selected_actor, "it's already open!")
 						else
 							set_state(me, states.open)
-						end
+						end]]
 					end,
 					close = function(me)
-						set_state(me, states.closed)
+						close_door(me, rooms.first_room.objects.front_door)
+						--set_state(me, states.closed)
 					end
 				}
 			},
@@ -543,8 +556,6 @@ actors = {
 		idle = { 30, 30, 30, 30 },
 		talk = { 47, 47, 47, 47 },
 		col = 13, --2,				-- speech text colour
-		-- col_replace =      { 2, 11, 3},	-- replace these colors...
-		-- col_replace_with = { 11, 8, 0},  -- ...with these
 		trans_col = 15,
 		speed = 0.25,  	-- walking speed
 		moving = 0,
@@ -1204,10 +1215,13 @@ function recalc_zplane(obj)
 			ypos = obj.y + (obj.h*8) ---4
 		end
 		zplane = flr(ypos - stage_top)
-		if zplane > 0 then
+
+		if notnull(obj.elevation) then zplane += obj.elevation end
+
+		--if zplane > 0 then
 			-- add to "to draw" list at appropriate zplane index
 			add(draw_zplanes[zplane],obj)
-		end
+		--end
 	end
 end
 
@@ -1215,10 +1229,8 @@ function room_draw()
 	-- draw current room (base layer)
 	room_map = room_curr.map
 	-- replace colors?
-	if room_map.col_replace then
-		for c = 1, #room_map.col_replace do
-			pal(room_map.col_replace[c], room_map.col_replace_with[c])
-		end
+	for c in all(room_map.col_replace) do
+		pal(c[1], c[2])
 	end
 	map(room_map.x, room_map.y, 0, stage_top, room_map.w , room_map.h)
 	--reset palette
@@ -1296,10 +1308,8 @@ function actor_draw(actor)
 	end
 
 	-- replace colors?
-	if actor.col_replace then
-		for c = 1, #actor.col_replace do
-			pal(actor.col_replace[c], actor.col_replace_with[c])
-		end
+	for c in all(actor.col_replace) do
+		pal(c[1], c[2])
 	end
 
 	sprdraw(sprnum, actor.offset_x, actor.offset_y, 
@@ -1635,35 +1645,51 @@ function do_anim(actor, cmd_type, cmd_value)
 	
 end
 
+-- open one (or more) doors
+function open_door(door_obj1, door_obj2)
+	if state_of(door_obj1) == states.open then
+		say_line(selected_actor, "it's already open")
+	else
+		set_state(door_obj1, states.open)
+		if notnull(door_obj2) then set_state(door_obj2, states.open) end
+	end
+end
+
+-- close one (or more) doors
+function close_door(door_obj1, door_obj2)
+	if state_of(door_obj1) == states.closed then
+		say_line(selected_actor, "it's already closed")
+	else
+		set_state(door_obj1, states.closed)
+		if notnull(door_obj2) then set_state(door_obj2, states.closed) end
+	end
+end
+
 function come_out_door(door_obj) --, new_room)
-	-- switch to new room and...	
-	d("door1a x:"..door_obj.x..", y:"..door_obj.y)
-	--d("door type:"..type(door_obj.in_room))
+	-- switch to new room and...
 	new_room = door_obj.in_room
 	change_room(new_room)
-	d("door1b x:"..door_obj.x..", y:"..door_obj.y)
 	-- ...auto-position actor at door_obj
 	pos = get_use_pos(door_obj)
 	d("pos x:"..pos.x..", y:"..pos.y)
 	selected_actor.x = pos.x
 	selected_actor.y = pos.y
-
 	-- (in opposite use direction)
-	d("door usedir:"..door_obj.use_dir)
-	local opp_dir
-	if (door_obj.use_dir - 2 < 1) then
+	if notnull(door_obj.use_dir) then
 		opp_dir = door_obj.use_dir + 2
-	else 
-		opp_dir = door_obj.use_dir - 2
+		if (opp_dir > 4) then
+			opp_dir -= 4
+		end
+	else
+	 opp_dir = 1 -- front
 	end
 	do_anim(selected_actor, anim_face, opp_dir)
 
 	selected_actor.in_room = new_room
-
 end
 
 function change_room(new_room)
-d("change_room()...")
+	d("change_room()...")
 	-- switch to new room
 	-- execute the exit() script of old room
 	if notnull(room_curr) and notnull(room_curr.exit) then
@@ -1930,10 +1956,8 @@ end
 
 function object_draw(obj)
 	-- replace colors?
-	if obj.col_replace then
-		for c = 1, #obj.col_replace do
-			pal(obj.col_replace[c], obj.col_replace_with[c])
-		end
+	for c in all(obj.col_replace) do
+		pal(c[1], c[2])
 	end
 	-- allow for repeating
 	rx=1
@@ -1997,7 +2021,7 @@ function walk_to(actor, x, y)
 		actor.moving = 2 --arrived
 	else
 		d("non-walk")
-		actor.moving = 0 --stopped
+		actor.moving = 2 --stopped
 	end
 end
 
