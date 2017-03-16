@@ -15,8 +15,8 @@ __lua__
 -- ==================================================
 -- token saving todo's:
 -- [x] change cam from object to separate variables
--- [ ] change cursor from object to separate variables
--- [ ] change hover_curr from object to separate variables
+-- [x] change cursor from object to separate variables
+-- [x] change hover_curr from object to separate variables
 -- [ ] 
 -- [ ] 
 -- ==================================================
@@ -742,15 +742,16 @@ cursor_colpos = 1
   cols = {7,12,13,13,12,7},
   colpos = 1 
 }]]
+
 -- keeps reference to currently hovered items
 -- e.g. objects, ui elements, etc.
-hover_curr = {
+--hover_curr...
 	-- verb, 
 	-- default_verb,
 	-- object, 
 	-- dialog sentence
 	-- ui_arrow
-}
+
 last_mouse_x = 0
 last_mouse_y = 0
 -- wait for button release before repeating action
@@ -975,34 +976,34 @@ function input_button_pressed(button_index)
 
 	-- check for sentence selection
 	if dialog_curr and dialog_curr.visible then
-		if hover_curr.sentence then
-			sentence_curr = hover_curr.sentence
+		if hover_curr_sentence then
+			sentence_curr = hover_curr_sentence
 		end
 		-- skip remaining
 		return
 	end
 
 
-	if hover_curr.verb then
-		verb_curr = get_verb(hover_curr.verb)
+	if hover_curr_verb then
+		verb_curr = get_verb(hover_curr_verb)
 		d("verb = "..verb_curr[2])
 
-	elseif hover_curr.object then
+	elseif hover_curr_object then
 		-- if valid obj, complete command
 		-- else, abort command (clear verb, etc.)
 		if button_index == 1 then
 			if verb_curr[1] == "use" and noun1_curr then
-				noun2_curr = hover_curr.object
+				noun2_curr = hover_curr_object
 				d("noun2_curr = "..noun2_curr.name)					
 			else
-				noun1_curr = hover_curr.object						
+				noun1_curr = hover_curr_object						
 				d("noun1_curr = "..noun1_curr.name)
 			end
 
-		elseif (hover_curr.default_verb) then
+		elseif (hover_curr_default_verb) then
 			-- perform default verb action (if present)
-			verb_curr = get_verb(hover_curr.default_verb)
-			noun1_curr = hover_curr.object
+			verb_curr = get_verb(hover_curr_default_verb)
+			noun1_curr = hover_curr_object
 			d("n1 tpe:"..type(noun1_curr))
 			get_keys(noun1_curr)
 			d("name:"..noun1_curr.name)
@@ -1097,7 +1098,7 @@ function checkcollisions()
 	if dialog_curr and dialog_curr.visible then
 		for s in all(dialog_curr.sentences) do
 			if iscursorcolliding(s) then
-				hover_curr.sentence = s
+				hover_curr_sentence = s
 			end
 		end
 		-- skip remaining collisions
@@ -1123,7 +1124,7 @@ function checkcollisions()
 
 		if iscursorcolliding(obj) then
 			
-			hover_curr.object = obj
+			hover_curr_object = obj
 		end
 		-- recalc z-plane
 		recalc_zplane(obj)
@@ -1138,7 +1139,7 @@ function checkcollisions()
 			-- are we colliding (ignore self!)
 			if iscursorcolliding(actor)
 		 	 and actor != selected_actor then
-				hover_curr.object = actor
+				hover_curr_object = actor
 			end
 		end
 	end
@@ -1146,7 +1147,7 @@ function checkcollisions()
 	-- check ui/inventory collisions
 	for v in all(verbs) do
 		if iscursorcolliding(v) then
-			hover_curr.verb = v
+			hover_curr_verb = v
 		end
 	end
 
@@ -1156,8 +1157,8 @@ function checkcollisions()
 	end
 
 	-- update "default" verb for hovered object (if any)
-	if hover_curr.object then
-		hover_curr.default_verb = find_default_verb(hover_curr.object)
+	if hover_curr_object then
+		hover_curr_default_verb = find_default_verb(hover_curr_object)
 	end
 end
 
@@ -1327,11 +1328,11 @@ function command_draw()
 		end
 		if noun2_curr then
 			command = command.." "..noun2_curr.name
-		elseif hover_curr.object 
-		  and hover_curr.object.name != ""
+		elseif hover_curr_object 
+		  and hover_curr_object.name != ""
 			-- don't show use object with itself!
-			and ( not noun1_curr or (noun1_curr != hover_curr.object) ) then
-			command = command.." "..hover_curr.object.name
+			and ( not noun1_curr or (noun1_curr != hover_curr_object) ) then
+			command = command.." "..hover_curr_object.name
 		end
 		cmd_curr = command
 	else
@@ -1386,11 +1387,11 @@ function ui_draw()
 		txtcol=verb_maincol
 
 		-- highlight default verb
-		if hover_curr.default_verb
-		  and (v == hover_curr.default_verb) then
+		if hover_curr_default_verb
+		  and (v == hover_curr_default_verb) then
 			txtcol = verb_defcol
 		end		
-		if (v == hover_curr.verb) then txtcol=verb_hovcol end
+		if (v == hover_curr_verb) then txtcol=verb_hovcol end
 
 		-- get verb info
 		vi = get_verb(v)
@@ -1457,7 +1458,7 @@ function dialog_draw()
 		recalc_bounds(s, s.char_width*4, #s.lines*5, 0, 0)
 
 		txtcol=dialog_curr.col
-		if (s == hover_curr.sentence) then txtcol=dialog_curr.hlcol end
+		if (s == hover_curr_sentence) then txtcol=dialog_curr.hlcol end
 		
 		for l in all(s.lines) do
 				print(smallcaps(l), xpos, ypos+stage_top, txtcol)
