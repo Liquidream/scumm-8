@@ -14,11 +14,11 @@ __lua__
 
 -- ==================================================
 -- token saving todo's:
---   > change cam from object to separate variables
---   > change cursor from object to separate variables
---   > change hover_curr from object to separate variables
---   > 
---   > 
+-- [x] change cam from object to separate variables
+-- [ ] change cursor from object to separate variables
+-- [ ] change hover_curr from object to separate variables
+-- [ ] 
+-- [ ] 
 -- ==================================================
 
 -- debugging
@@ -710,6 +710,13 @@ stage_top = 16
 -- offset to display speech above actors (dist in px from their feet)
 text_offset = (selected_actor.h-1)*8
 
+cam_x = 0
+cam_max = 0 	-- the maximum x position the camera can move to in the current room
+cam_min = 0  	-- the minimum x position the camera can move to in the current room
+cam_mode = 0 	-- 0=follow, 1=static, 2=pan-to
+cam_following_actor = selected_actor
+
+--[[
 cam = {
 	x = 0,
 	max = 0, -- the maximum x position the camera can move to in the current room
@@ -718,16 +725,23 @@ cam = {
 	following_actor = selected_actor,
 	-- pan_to_x=0
 	-- pan_to_y=0
-}
+}]]
 
-cursor = {
+cursor_x = screenwidth / 2
+cursor_y = screenheight / 2
+cursor_lvl = 1 	-- for cutscenes (<=0 - disable cursor)
+cursor_tmr = 0 	-- used to animate cursor col
+cursor_cols = {7,12,13,13,12,7}
+cursor_colpos = 1
+
+--[[cursor = {
   x = screenwidth/2,
   y = screenheight/2,
 	lvl = 1, -- for cutscenes (<=0 - disable cursor)
   tmr = 0, -- used to animate cursor col
   cols = {7,12,13,13,12,7},
   colpos = 1 
-}
+}]]
 -- keeps reference to currently hovered items
 -- e.g. objects, ui elements, etc.
 hover_curr = {
@@ -801,8 +815,8 @@ function game_update()
 			-- cutscene ended, restore prev state	
 			if (room_curr != cutscene_curr.paused_room) then change_room(cutscene_curr.paused_room) end
 			selected_actor = cutscene_curr.paused_actor
-			cam.mode = cutscene_curr.paused_cam_mode
-			cam.following_actor = cutscene_curr.paused_cam_following
+			cam_mode = cutscene_curr.paused_cam_mode
+			cam_following_actor = cutscene_curr.paused_cam_following
 			-- now delete cutscene
 			del(cutscenes, cutscene_curr)
 			cutscene_curr = nil
@@ -833,11 +847,10 @@ function game_draw()
 	rectfill(0, 0, screenwidth, screenheight, 0)
 
 	-- auto-follow camera?
-	if cam.mode == 0 then
-		--d("cam.x:"..cam.x)
-		cam.x = mid(0, selected_actor.x - 64, (room_curr.map_w*8)-screenwidth-1)
+	if cam_mode == 0 then
+		cam_x = mid(0, selected_actor.x - 64, (room_curr.map_w*8)-screenwidth-1)
 	end
-	camera(cam.x, 0)
+	camera(cam_x, 0)
 
 	-- clip room bounds
 	clip(0, stage_top, screenwidth+1, 64)
@@ -854,7 +867,7 @@ function game_draw()
 		print("cpu: "..flr(100*stat(1)).."%", 0, stage_top - 16, 8) 
 		print("mem: "..flr(stat(0)/1024*100).."%", 0, stage_top - 8, 8)
 	end
-	if (show_debuginfo) then print("x: "..cursor.x.." y:"..cursor.y-stage_top, 80, stage_top - 8, 8) end
+	if (show_debuginfo) then print("x: "..cursor_x.." y:"..cursor_y-stage_top, 80, stage_top - 8, 8) end
 
 	-- draw active text
 	talking_draw()
@@ -902,7 +915,8 @@ function game_draw()
 	cutscene_curr_lastval = cutscene_curr
 
 	if not cutscene_curr
-		or not has_flag(cutscene_curr.flags, cut_hidecursor) then
+		--or not has_flag(cutscene_curr.flags, cut_hidecursor) 
+		then
 		cursor_draw()
 	end
 end
@@ -910,19 +924,29 @@ end
 
 -- handle button inputs
 function playercontrol()	
+
+	-- check for cutscene "skip"
+	if cutscene_curr then
+		if (btnp(4)) and (btnp(5)) then 
+			-- todo: skip cutscene!
+		end
+		-- either way - don't allow other user actions!
+		return
+	end
+
 	-- 
-	if (btn(0)) then cursor.x = cursor.x - 1 end
-	if (btn(1)) then cursor.x = cursor.x + 1 end
-	if (btn(2)) then cursor.y = cursor.x - 1 end
-	if (btn(3)) then cursor.y = cursor.x + 1 end
+	if (btn(0)) then cursor_x = cursor_x - 1 end
+	if (btn(1)) then cursor_x = cursor_x + 1 end
+	if (btn(2)) then cursor_y = cursor_x - 1 end
+	if (btn(3)) then cursor_y = cursor_x + 1 end
 
 	if (btnp(4)) then input_button_pressed(1) end
 	if (btnp(5)) then input_button_pressed(2) end
 
 	-- only update position if mouse moved
 	if (enable_mouse) then	
-		if (stat(32)-1 != last_mouse_x) then cursor.x = stat(32)-1 end	-- mouse xpos
-		if (stat(33)-1 != last_mouse_y) then cursor.y = stat(33)-1	end -- mouse ypos
+		if (stat(32)-1 != last_mouse_x) then cursor_x = stat(32)-1 end	-- mouse xpos
+		if (stat(33)-1 != last_mouse_y) then cursor_y = stat(33)-1	end -- mouse ypos
 		-- don't repeat action if same press/click
 		if (stat(34) > 0) then
 			if (not ismouseclicked) then
@@ -938,10 +962,10 @@ function playercontrol()
 	end
 
 	-- keep cursor within screen
-	cursor.x = max(cursor.x, 0)
-	cursor.x = min(cursor.x, 127)
-	cursor.y = max(cursor.y, 0)
-	cursor.y = min(cursor.y, 127)
+	cursor_x = max(cursor_x, 0)
+	cursor_x = min(cursor_x, 127)
+	cursor_y = max(cursor_y, 0)
+	cursor_y = min(cursor_y, 127)
 end
 
 -- 1 = z/lmb, 2 = x/rmb, (4=middle)
@@ -1049,7 +1073,7 @@ function input_button_pressed(button_index)
 			clear_curr_cmd()
 		end)
 		coresume(selected_actor.thread, selected_actor, noun1_curr, verb_curr, noun2_curr)
-	elseif (cursor.y > stage_top and cursor.y < stage_top+64) then
+	elseif (cursor_y > stage_top and cursor_y < stage_top+64) then
 		-- in map area
 		executing_cmd = true
 		-- attempt to walk to target
@@ -1058,7 +1082,7 @@ function input_button_pressed(button_index)
 			-- clear current command
 			clear_curr_cmd()
 		end)
-		coresume(selected_actor.thread, cursor.x, cursor.y - stage_top)
+		coresume(selected_actor.thread, cursor_x, cursor_y - stage_top)
 	end
 
 	d("--------------------------------")
@@ -1091,7 +1115,7 @@ function checkcollisions()
 			and (not obj.dependent_on 			-- object has a valid dependent state?
 			 or find_object(obj.dependent_on).state == obj.dependent_on_state) 
 		then
-			recalc_bounds(obj, obj.w*8, obj.h*8, cam.x, cam.y)
+			recalc_bounds(obj, obj.w*8, obj.h*8, cam_x, cam_y)
 		else
 			-- reset bounds
 			obj.bounds = nil
@@ -1108,7 +1132,7 @@ function checkcollisions()
 	-- check actor collisions
 	for k,actor in pairs(actors) do
 		if (actor.in_room == room_curr) then
-			recalc_bounds(actor, actor.w*8, actor.h*8, cam.x, cam.y)
+			recalc_bounds(actor, actor.w*8, actor.h*8, cam_x, cam_y)
 			-- recalc z-plane
 			recalc_zplane(actor)
 			-- are we colliding (ignore self!)
@@ -1185,15 +1209,13 @@ function room_draw()
 	
 	-- debug walkable areas
 	if show_collision then
-		celx = flr((cursor.x + cam.x) /8) + room_curr.map_x
-		cely = flr((cursor.y - stage_top)/8 ) + room_curr.map_y
+		celx = flr((cursor_x + cam_x) /8) + room_curr.map_x
+		cely = flr((cursor_y - stage_top)/8 ) + room_curr.map_y
 		spr_num = mget(celx, cely)
-		
 		--d("mapa x="..celx..",y="..cely)
 		--d("spr:"..spr_num)
 		walkable = fget(spr_num,0)
-		--walkable = iswalkable(cursor.x + cam.x, cursor.y - stage_top)
-		--d("flg:"..flags)
+
 		if walkable then
 			rect(
 				(celx-room_curr.map_x)*8, 
@@ -1451,19 +1473,19 @@ end
 
 -- draw cursor
 function cursor_draw()
-	col = cursor.cols[cursor.colpos]
+	col = cursor_cols[cursor_colpos]
 	-- switch sprite color accordingly
 	pal(7,col)
-	spr(32, cursor.x-4, cursor.y-3, 1, 1, 0)
+	spr(32, cursor_x-4, cursor_y-3, 1, 1, 0)
 	pal() --reset palette
 
-	cursor.tmr = cursor.tmr + 1
-	if (cursor.tmr > 7) then
+	cursor_tmr = cursor_tmr + 1
+	if (cursor_tmr > 7) then
 		--reset timer
-		cursor.tmr = 1
+		cursor_tmr = 1
 		-- move to next color?
-		cursor.colpos = cursor.colpos + 1
-		if (cursor.colpos > #cursor.cols) then cursor.colpos = 1 end
+		cursor_colpos = cursor_colpos + 1
+		if (cursor_colpos > #cursor_cols) then cursor_colpos = 1 end
 	end
 end
 
@@ -1484,15 +1506,15 @@ end
 
 function cutscene(flags, func)
 	-- decrement the cursor level
-	cursor.lvl = cursor.lvl - 1
+	cursor_lvl = cursor_lvl - 1
 
 	cut = {
 		flags = flags,
 		thread = cocreate(func),
 		paused_room = room_curr,
 		paused_actor = selected_actor,
-		paused_cam_mode = cam.mode,
-		paused_cam_following = cam.following_actor
+		paused_cam_mode = cam_mode,
+		paused_cam_following = cam_following_actor
 	}
 	add(cutscenes, cut)
 
@@ -1500,8 +1522,8 @@ function cutscene(flags, func)
 	cutscene_curr = cut
 
 	-- reset stuff
-	cam.mode = 1 --fixed
-	cam.x = 0
+	cam_mode = 1 --fixed
+	cam_x = 0
 
 	-- yield for system catch-up
 	break_time()
@@ -1541,27 +1563,27 @@ function get_use_pos(obj)
 	-- first check for specific pos
 	if type(obj.use_pos) == "table" then
 		d("usr tbl")
-		pos.x = obj.use_pos.x-cam.x
+		pos.x = obj.use_pos.x-cam_x
 		pos.y = obj.use_pos.y-stage_top
 
 	-- determine use pos
 	elseif not obj.use_pos or
 		(obj.use_pos == pos_infront) then
-		pos.x = obj.x+((obj.w*8)/2)-cam.x-4
+		pos.x = obj.x+((obj.w*8)/2)-cam_x-4
 		pos.y = obj.y+(obj.h*8) +2
 
 	elseif (obj.use_pos == pos_left) then
 		
 		if obj.offset_x then	-- diff calc for actors
-			pos.x = obj.x-cam.x - (obj.w*8+4)
+			pos.x = obj.x-cam_x - (obj.w*8+4)
 			pos.y = obj.y+1
 		else
-			pos.x = obj.x-cam.x
+			pos.x = obj.x-cam_x
 			pos.y = obj.y+((obj.h*8) -2)
 		end
 
 	elseif (obj.use_pos == pos_right) then
-		pos.x = obj.x+(obj.w*8)-cam.x
+		pos.x = obj.x+(obj.w*8)-cam_x
 		pos.y = obj.y+((obj.h*8) -2)
 	end
 
@@ -1665,7 +1687,7 @@ function change_room(new_room)
 	end
 
 	-- reset camera
-	cam.x = 0
+	cam_x = 0
 
 	-- execute the enter() script of new room
 	if room_curr.enter then
@@ -1928,7 +1950,7 @@ end
 function walk_to(actor, x, y)
 
 	--offset for camera
-		x = x + cam.x
+		x = x + cam_x
 
 	local distance = sqrt((x - actor.x) ^ 2 + (y - actor.y) ^ 2)
 	local step_x = actor.speed * (x - actor.x) / distance
@@ -2164,8 +2186,8 @@ function iscursorcolliding(obj)
 	-- check params
 	if not obj.bounds then return false end
 	bounds=obj.bounds
-	if (cursor.x + bounds.cam_off_x > bounds.x1 or cursor.x + bounds.cam_off_x < bounds.x) 
-	 or (cursor.y>bounds.y1 or cursor.y<bounds.y) then
+	if (cursor_x + bounds.cam_off_x > bounds.x1 or cursor_x + bounds.cam_off_x < bounds.x) 
+	 or (cursor_y>bounds.y1 or cursor_y<bounds.y) then
 		return false
 	else
 		return true
