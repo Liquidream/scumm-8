@@ -1092,7 +1092,12 @@ end
 -- collision detection
 function checkcollisions()
 	-- reset hover collisions
-	hover_curr = {}
+	hover_curr_verb = nil
+	hover_curr_default_verb = nil
+	hover_curr_object = nil
+	hover_curr_sentence = nil
+
+	--hover_curr = {}
 
 	-- are we in dialog mode?
 	if dialog_curr and dialog_curr.visible then
@@ -1175,7 +1180,7 @@ function recalc_zplane(obj)
 	-- if it should, add it at appropriate z-plane (1-64 = far-near)
   -- else, remove from all zplanes
 
-	zplane = -1 -- default is not drawn
+	--zplane = -1 -- default is not drawn
 	
 	if (true) then  -- obj is drawable
 		-- calculate the correct z-plane
