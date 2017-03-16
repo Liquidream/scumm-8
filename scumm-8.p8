@@ -1086,8 +1086,8 @@ function checkcollisions()
 	-- check room/object collisions
 	for k,obj in pairs(room_curr.objects) do
 		-- capture bounds (even for "invisible", but not untouchable/dependent, objects)
-		if not obj.class
-			 or (obj.class and obj.class != class_untouchable)
+		if (not obj.class
+			 or (obj.class and obj.class != class_untouchable))
 			and (not obj.dependent_on 			-- object has a valid dependent state?
 			 or find_object(obj.dependent_on).state == obj.dependent_on_state) 
 		then
@@ -1098,6 +1098,7 @@ function checkcollisions()
 		end
 
 		if iscursorcolliding(obj) then
+			
 			hover_curr.object = obj
 		end
 		-- recalc z-plane
