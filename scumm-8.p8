@@ -8,9 +8,9 @@ __lua__
 -- python c:\users\pauln\owncloud\dev\pico-8\picotool\p8tool luamin c:\users\pauln\owncloud\games\pico-8\carts\git_repos\scumm-8\scumm-8.p8
 
 -- ### luamin fixes ###
---  cc=type
 --	"\65\66\67\68\69\70\71\72\73\74\75\76\77\78\79\80\81\82\83\84\85\86\87\88\89\90\91\92"
 
+-- was 6439 tokens
 
 -- debugging
 show_debuginfo = true
@@ -97,19 +97,17 @@ anim_turn = 2  -- show the turning stages of animation
 rooms = {
 
 	first_room = {
-		map = {
-			x = 0,
-			y = 0,
-			col_replace = { 
-				{ 7, 15 }, 
-				-- { 4, 5 }, 
-				-- { 6, 8 } 
-			},
+		map_x = 0,
+		map_y = 0,
+		col_replace = { 
+			{ 7, 15 }, 
+			-- { 4, 5 }, 
+			-- { 6, 8 } 
 		},
 		--sounds = {},
 		enter = function(me)
 			-- animate fireplace
-			d("scr:"..type(me.scripts.anim_fire))
+			--d("scr:"..type(me.scripts.anim_fire))
 			start_script(me.scripts.anim_fire, true) -- bg script
 		end,
 		exit = function(me)
@@ -144,7 +142,7 @@ rooms = {
 				states = {145, 146, 147},
 				w = 1,	-- relates to spr or map cel, depending on above
 				h = 1,  --
-				trans_col = 0,
+				--trans_col = 0,
 				--use_pos (defaults to spr bottom)
 				use_dir = face_back,
 				use_pos = pos_infront,
@@ -154,19 +152,19 @@ rooms = {
 
 				verbs = {
 					lookat = function()
-						say_line(selected_actor, "it's a nice, warm fire...")
+						say_line("it's a nice, warm fire...")
 						wait_for_message()
 						break_time(10)
 						do_anim(selected_actor, anim_turn, face_front)
-						say_line(selected_actor, "ouch! it's hot!;*stupid fire*")
+						say_line("ouch! it's hot!;*stupid fire*")
 						wait_for_message()
 					end,
 					talkto = function()
-						say_line(selected_actor, "'hi fire...'")
+						say_line("'hi fire...'")
 						wait_for_message()
 						break_time(10)
 						do_anim(selected_actor, anim_turn, face_front)
-						say_line(selected_actor, "the fire didn't say hello back;burn!!")
+						say_line("the fire didn't say hello back;burn!!")
 						wait_for_message()
 					end,
 					pickup = function(me)
@@ -185,35 +183,26 @@ rooms = {
 					143, -- states.closed
 					0   -- states.open
 				},
-				flip_x = false, -- used for flipping the sprite
-				flip_y = false,
+				--flip_x = false, -- used for flipping the sprite
+				--flip_y = false,
 				w = 1,	-- relates to spr or map cel, depending on above
 				h = 4,  --
 				use_pos = pos_right,
 				use_dir = face_left,
 				verbs = {
 					walkto = function(me)
-						d("me = "..type(me))
 						if state_of(me) == states.open then
 							-- go to new room!
 							come_out_door(rooms.outside_room.objects.front_door) --, outside_room)
 						else
-							say_line(selected_actor, "the door is closed")
+							say_line("the door is closed")
 						end
 					end,
 					open = function(me)
-						if (isnull(me)) d("me is null!")
-						d("me = "..me.name)
 						open_door(me, rooms.outside_room.objects.front_door)
-						--[[if state_of(me) == states.open then
-							say_line(selected_actor, "it's already open!")
-						else
-							set_state(me, states.open)
-						end]]
 					end,
 					close = function(me)
 						close_door(me, rooms.outside_room.objects.front_door)
-						--set_state(me, states.closed)
 					end
 				}
 			},
@@ -251,13 +240,12 @@ rooms = {
 				verbs = {
 					lookat = function(me)
 						if owner_of(me) == selected_actor then
-							say_line(selected_actor, "it is a bucket in my pocket")
+							say_line("it is a bucket in my pocket")
 						else
-							say_line(selected_actor, "it is a bucket")
+							say_line("it is a bucket")
 						end
 					end,
 					pickup = function(me)
-						d("b4 pickup")
 						pickup_obj(me)
 					end,
 					--[[use = function(me, noun2)
@@ -275,7 +263,7 @@ rooms = {
 				states = { 192, 193, 194 },
 				col_replace = { -- replace colors (orig,new)
 					{ 12, 7 } 
-				},	
+				},
 				trans_col=15,
 				w = 1,	-- relates to spr or map cel, depending on above
 				h = 1,  --
@@ -299,7 +287,10 @@ rooms = {
 				class = class_openable,
 				state = states.closed,
 				use_dir = face_back,
+
+				-- todo: make this calculated, by closed walkable pos!
 				use_pos = { x = 5 *8, y = (7 *8)+1},
+
 				x = 4*8, -- (*8 to use map cell pos)
 				y = 1*8,
 				w = 2,	-- relates to spr or map cel, depending on above
@@ -309,8 +300,7 @@ rooms = {
 					134  -- open
 				},
 				verbs = {
-					open = function(me)	
-						d("open window!")
+					open = function(me)
 						cutscene(cut_noverbs + cut_hidecursor, 
 							function()
 								-- todo: cutscene code
@@ -321,9 +311,9 @@ rooms = {
 								walk_to(selected_actor, 
 									selected_actor.x+10, 
 									selected_actor.y)
-								say_line(selected_actor, "what was that?!")
+								say_line("what was that?!")
 								wait_for_message()
-								say_line(selected_actor, "i'd better check...")
+								say_line("i'd better check...")
 								wait_for_message()
 								walk_to(selected_actor, 
 									selected_actor.x-10, 
@@ -337,7 +327,7 @@ rooms = {
 								walk_to(selected_actor, 
 									selected_actor.x-10, 
 									selected_actor.y)
-								say_line(selected_actor, "intruder!!!")
+								say_line("intruder!!!")
 								wait_for_message()
 							end
 						)
@@ -348,14 +338,10 @@ rooms = {
 	},
 
 	second_room = {
-		map = {
-			x = 16,
-			y = 0,
-			x1 = 39, 	-- map coordinates to draw to (x,y)
-			y1 = 7
-			-- w = 24,	-- default these?
-			-- h = 8	-- 
-		},
+		map_x = 16,
+		map_y = 0,
+		map_x1 = 39, 	-- map coordinates to draw to (x,y)
+		map_y1 = 7,
 		enter = function()
 			-- todo: anything here?
 		end,
@@ -394,31 +380,24 @@ rooms = {
 					0   -- open
 				},
 				flip_x = true, -- used for flipping the sprite
-				flip_y = false,
 				w = 1,	-- relates to spr or map cel, depending on above
 				h = 4,  --
 				use_pos = pos_left,
 				use_dir = face_right,
 				verbs = {
 					walkto = function(me)
-						d("me = "..type(me))
 						if state_of(me) == states.open then
 							-- go to new room!
 							come_out_door(rooms.first_room.objects.front_door) --, first_room)
 						else
-							say_line(selected_actor, "the door is closed")
+							say_line("the door is closed")
 						end
 					end,
 					open = function(me)
-						d("me = "..me.name)
-						if state_of(me) == states.open then
-							say_line(selected_actor, "it's already open!")
-						else
-							set_state(me, states.open)
-						end
+						open_door(me, rooms.first_room.objects.front_door)
 					end,
 					close = function(me)
-						set_state(me, states.closed)
+						close_door(me, rooms.first_room.objects.front_door)
 					end
 				}
 			},
@@ -426,12 +405,10 @@ rooms = {
 	},
 	
 	outside_room = {
-		map = {
-			x = 16,
-			y = 8,
-			x1 = 47, 	-- map coordinates to draw to (x,y)
-			y1 = 15
-		},
+		map_x = 16,
+		map_y = 8,
+		map_x1 = 47, 	-- map coordinates to draw to (x,y)
+		map_y1 = 15,
 		enter = function(me)
 			-- todo: anything here?
 		end,
@@ -473,7 +450,6 @@ rooms = {
 					0   -- open
 				},
 				flip_x = true, -- used for flipping the sprite
-				flip_y = false,
 				w = 1,	-- relates to spr or map cel, depending on above
 				h = 3,  --
 				use_pos = pos_infront,
@@ -484,20 +460,14 @@ rooms = {
 							-- go to new room!
 							come_out_door(rooms.first_room.objects.front_door) --, first_room)
 						else
-							say_line(selected_actor, "the door is closed")
+							say_line("the door is closed")
 						end
 					end,
 					open = function(me)
 						open_door(me, rooms.first_room.objects.front_door)
-						--[[if state_of(me) == states.open then
-							say_line(selected_actor, "it's already open!")
-						else
-							set_state(me, states.open)
-						end]]
 					end,
 					close = function(me)
 						close_door(me, rooms.first_room.objects.front_door)
-						--set_state(me, states.closed)
 					end
 				}
 			},
@@ -522,28 +492,24 @@ selected_room = rooms.outside_room
 
 actors = {
 	main_actor = { 		-- initialize the actor object
-		name = "",
+		--name = "",
 		class = class_actor,
 		x = 127/2 + 80,
 		y = 127/2 -24,
 		w = 1,
 		h = 4,
 		face_dir = face_front, 	-- direction facing
-		idle = {1,3,5,3},	-- sprites for idle (front, left, back, right) - right=flip
-		talk = {6,22,21,22},
-		walk_anim = {2,3,4,3},
-		flip = false, 		-- used for flipping the sprite (left/right dir)
+		idle = { 1, 3, 5, 3},	-- sprites for idle (front, left, back, right) - right=flip
+		talk = { 6, 22, 21, 22},
+		walk_anim = { 2, 3, 4, 3},
+		--flip = false, 		-- used for flipping the sprite (left/right dir)
 		col = 12,				-- speech text colour
 		trans_col = 11,
 		speed = 0.6,  	-- walking speed
-		moving = 2, 		-- 0=stopped, 1=walking, 2=arrived
-		tmr = 1, 				-- internal timer for managing animation
-		talk_tmr = 1,
-		anim_pos = 1, 	-- used to track anim pos
-		inventory = {
+		--[[inventory = {
 			-- object1,
 			-- object2
-		}
+		}]]
 	},
 	purp_tentacle = {
 		name = "purple tentacle",
@@ -558,10 +524,6 @@ actors = {
 		col = 13, --2,				-- speech text colour
 		trans_col = 15,
 		speed = 0.25,  	-- walking speed
-		moving = 0,
-		tmr = 1,
-		talk_tmr = 1,
-		anim_pos = 1,
 		use_pos = pos_left,
 		--in_room = rooms.first_room,
 		in_room = rooms.second_room,
@@ -577,7 +539,7 @@ actors = {
 					end)
 					-- dialog loop
 					while (isnull(sentence_curr) or sentence_curr.num != 4) do
-						d("start dialog")
+						--d("start dialog")
 						while (true) do
 							-- build dialog options
 							dialog_add("where am i?")
@@ -586,28 +548,27 @@ actors = {
 							dialog_add("nevermind")
 							dialog_start(selected_actor.col, 7)
 							-- wait for selection
-							while isnull(sentence_curr) do break_time(1) end
+							while isnull(sentence_curr) do break_time() end
 							break
 						end
 						-- chosen options
 						dialog_end()
-						d("here...")
 						cutscene(cut_noverbs, function()
-							say_line(selected_actor, sentence_curr.msg)
+							say_line(sentence_curr.msg)
 							wait_for_message()
 							
 							d("sentence num: "..sentence_curr.num)
 							if sentence_curr.num == 1 then
-								say_line(me,"you are in paul's game")
+								say_line(me, "you are in paul's game")
 								wait_for_message()
 							elseif sentence_curr.num == 2 then
-								say_line(me,"it's complicated...")
+								say_line(me, "it's complicated...")
 								wait_for_message()
 							elseif sentence_curr.num == 3 then
-								say_line(me,"a wood-chuck would chuck no amount of wood, coz a wood-chuck can't chuck wood!")
+								say_line(me, "a wood-chuck would chuck no amount of wood, coz a wood-chuck can't chuck wood!")
 								wait_for_message()
 							elseif sentence_curr.num == 4 then
-								say_line(me,"ok bye!")
+								say_line(me, "ok bye!")
 								wait_for_message()
 								return -- exit dialog loop
 							end
@@ -639,12 +600,9 @@ function find_default_verb(obj)
 		default_verb = "lookat"
 	end
 
-	--d(default_verb)
-
 	-- now find the full verb definition
 	for v in all(verbs) do
 		vi = get_verb(v)
-		--d("lookin..."..vi[1])
 		if (vi[2] == default_verb) then default_verb=v break end
 	end
 	return default_verb
@@ -659,67 +617,67 @@ function unsupported_action(verb, obj1, obj2)
 
 	elseif verb == "pickup" then
 		if has_flag(obj1.class, class_actor) then
-			say_line(selected_actor, "i don't need them")
+			say_line("i don't need them")
 		else
-			say_line(selected_actor, "i don't need that")
+			say_line("i don't need that")
 		end
 
 	elseif verb == "use" then
 		if has_flag(obj1.class, class_actor) then
-			say_line(selected_actor, "i can't just *use* someone")
+			say_line("i can't just *use* someone")
 		end
 		if obj2 then
 			if has_flag(obj2.class, class_actor) then
-				say_line(selected_actor, "i can't use that on someone!")
+				say_line("i can't use that on someone!")
 			else
-				say_line(selected_actor, "that doesn't work")
+				say_line("that doesn't work")
 			end
 		end
 
 	elseif verb == "give" then
 		if has_flag(obj1.class, class_actor) then
-			say_line(selected_actor, "i don't think i should be giving this away")
+			say_line("i don't think i should be giving this away")
 		else
-			say_line(selected_actor, "i can't do that")
+			say_line("i can't do that")
 		end
 
 	elseif verb == "lookat" then
 		if has_flag(obj1.class, class_actor) then
-			say_line(selected_actor, "i think it's alive")
+			say_line("i think it's alive")
 		else
-			say_line(selected_actor, "looks pretty ordinary")
+			say_line("looks pretty ordinary")
 		end
 
 	elseif verb == "open" then
 		if has_flag(obj1.class, class_actor) then
-			say_line(selected_actor, "they don't seem to open")
+			say_line("they don't seem to open")
 		else
-			say_line(selected_actor, "it doesn't seem to open")
+			say_line("it doesn't seem to open")
 		end
 
 	elseif verb == "close" then
 		if has_flag(obj1.class, class_actor) then
-			say_line(selected_actor, "they don't seem to close")
+			say_line(s"they don't seem to close")
 		else
-			say_line(selected_actor, "it doesn't seem to close")
+			say_line("it doesn't seem to close")
 		end
 
 	elseif verb == "push" or verb == "pull" then
 		if has_flag(obj1.class, class_actor) then
-			say_line(selected_actor, "moving them would accomplish nothing")
+			say_line("moving them would accomplish nothing")
 		else
-			say_line(selected_actor, "it won't budge!")
+			say_line("it won't budge!")
 		end
 
 	elseif verb == "talkto" then
 		if has_flag(obj1.class, class_actor) then
-			say_line(selected_actor, "erm... i don't think they want to talk")
+			say_line("erm... i don't think they want to talk")
 		else
-			say_line(selected_actor, "i am not talking to that!")
+			say_line("i am not talking to that!")
 		end
 
 	else
-		say_line(selected_actor, "hmm. no.")
+		say_line("hmm. no.")
 	end
 end 
 
@@ -856,8 +814,6 @@ function gameupdate()
 			if (#cutscenes > 0) then
 				cutscene_curr = cutscenes[#cutscenes]
 			end
-			-- add a pause for sys to catch-up??
-			--break_time(1)
 		end
 	else
 		-- no cutscene...
@@ -889,7 +845,7 @@ function gamedraw()
 	-- auto-follow camera?
 	if cam.mode == 0 then
 		--d("cam.x:"..cam.x)
-		cam.x = mid(0, selected_actor.x - 64, (room_curr.map.w*8)-screenwidth-1)
+		cam.x = mid(0, selected_actor.x - 64, (room_curr.map_w*8)-screenwidth-1)
 	end
 	camera(cam.x, 0)
 
@@ -1227,19 +1183,19 @@ end
 
 function room_draw()
 	-- draw current room (base layer)
-	room_map = room_curr.map
+	--room_map = room_curr.map
 	-- replace colors?
-	for c in all(room_map.col_replace) do
+	for c in all(room_curr.col_replace) do
 		pal(c[1], c[2])
 	end
-	map(room_map.x, room_map.y, 0, stage_top, room_map.w , room_map.h)
+	map(room_curr.map_x, room_curr.map_y, 0, stage_top, room_curr.map_w , room_curr.map_h)
 	--reset palette
 	pal() 
 	
 	-- debug walkable areas
 	if show_collision then
-		celx = flr((cursor.x + cam.x) /8) + room_curr.map.x
-		cely = flr((cursor.y - stage_top)/8 ) + room_curr.map.y
+		celx = flr((cursor.x + cam.x) /8) + room_curr.map_x
+		cely = flr((cursor.y - stage_top)/8 ) + room_curr.map_y
 		spr_num = mget(celx, cely)
 		
 		--d("mapa x="..celx..",y="..cely)
@@ -1249,10 +1205,10 @@ function room_draw()
 		--d("flg:"..flags)
 		if walkable then
 			rect(
-				(celx-room_curr.map.x)*8, 
-				stage_top+(cely-room_curr.map.y)*8, 
-				(celx-room_curr.map.x)*8+7, 
-				stage_top+(cely-room_curr.map.y)*8+7, 11)
+				(celx-room_curr.map_x)*8, 
+				stage_top+(cely-room_curr.map_y)*8, 
+				(celx-room_curr.map_x)*8+7, 
+				stage_top+(cely-room_curr.map_y)*8+7, 11)
 		end
 	end
 
@@ -1557,7 +1513,7 @@ function cutscene(flags, func)
 	cam.x = 0
 
 	-- yield for system catch-up
-	break_time(1)
+	break_time()
 end
 
 function dialog_add(msg)
@@ -1708,13 +1664,13 @@ function change_room(new_room)
 	room_curr = new_room
 
 		-- calc map size
-	room_map = room_curr.map
-	if notnull(room_map.x1) then
-		room_map.w = room_map.x1 - room_map.x + 1
-		room_map.h = room_map.y1 - room_map.y + 1
+	--room_map = room_curr.map
+	if notnull(room_curr.map_x1) then
+		room_curr.map_w = room_curr.map_x1 - room_curr.map_x + 1
+		room_curr.map_h = room_curr.map_y1 - room_curr.map_y + 1
 	else
-		room_map.w = 16
-		room_map.h = 8
+		room_curr.map_w = 16
+		room_curr.map_h = 8
 	end
 
 	-- reset camera
@@ -1850,6 +1806,7 @@ function stop_script(func)
 end
 
 function break_time(jiffies)
+	jiffies = jiffies or 1
 	-- draw object (depending on state!)
 	for x = 1, jiffies do
 		yield()
@@ -1866,6 +1823,12 @@ end
 
 -- uses actor's position and color
 function say_line(actor, msg)
+	-- check for missing actor
+	if type(actor) == "string" then
+		-- assume actor ommitted and default to current
+		msg = actor
+		actor = selected_actor
+	end
 	-- get pos above actor's head
 	ypos = actor.y-text_offset
 		-- trigger actor's talk anim
@@ -1985,12 +1948,6 @@ function walk_to(actor, x, y)
 
 	-- check target position is in walkable block
 	walkable = iswalkable(x,y)
-	--[[celx = flr(x/8) + room_curr.map.x
-	cely = flr(y/8)
-	d("mapb x="..celx..",y="..cely)
-	spr_num = mget(celx, cely)	
-	d("spr:"..spr_num)	
-	walkable = fget(spr_num, 0) -- flag 0 = walkable]]
 
 	-- if it is...
 	if walkable then
@@ -2036,12 +1993,23 @@ function init_rooms()
 			obj.in_room = room
 		end
 	end
+	-- init actors with defaults
+	for ka,actor in pairs(actors) do
+		actor.moving = 2 		-- 0=stopped, 1=walking, 2=arrived
+		actor.tmr = 1 				-- internal timer for managing animation
+		actor.talk_tmr = 1
+		actor.anim_pos = 1 	-- used to track anim pos
+		actor.inventory = {
+			-- object1,
+			-- object2
+		}
+	end
 end
 
 -- returns whether room map cel at position is "walkable"
 function iswalkable(x, y)
-		celx = flr(x/8) + room_curr.map.x
-		cely = flr(y/8) + room_curr.map.y
+		celx = flr(x/8) + room_curr.map_x
+		cely = flr(y/8) + room_curr.map_y
 		--d("mapb x="..celx..",y="..cely)
 		spr_num = mget(celx, cely)
 		--d("spr:"..spr_num)
@@ -2343,8 +2311,8 @@ fbbbbccff8888bbffcccc88f00000000000000000000000000000000000000000000000000000000
 bbbcccc8888bbbbcccc8888b000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000d666666d
 fccccc8ffbbbbbcff88888bf000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000f666650f
 fccc888ffbbbcccff888bbbf000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000f666650f
-ff5500ffff5500ffff5500ff000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000f666650f
-fff50ffffff50ffffff50fff000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000ff6665ff
+fff00ffffff00ffffff00fff000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000f666650f
+fff00ffffff00ffffff00fff000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000ff6665ff
 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000ffffffff
 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000f666666f
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000065555556
