@@ -12,6 +12,15 @@ __lua__
 
 -- was 6439 tokens
 
+-- ==================================================
+-- token saving todo's:
+--   > change cam from object to separate variables
+--   > change cursor from object to separate variables
+--   > change hover_curr from object to separate variables
+--   > 
+--   > 
+-- ==================================================
+
 -- debugging
 show_debuginfo = true
 show_collision = false
@@ -506,10 +515,6 @@ actors = {
 		col = 12,				-- speech text colour
 		trans_col = 11,
 		speed = 0.6,  	-- walking speed
-		--[[inventory = {
-			-- object1,
-			-- object2
-		}]]
 	},
 	purp_tentacle = {
 		name = "purple tentacle",
@@ -521,7 +526,7 @@ actors = {
 		face_dir = face_front,
 		idle = { 30, 30, 30, 30 },
 		talk = { 47, 47, 47, 47 },
-		col = 13, --2,				-- speech text colour
+		col = 13,    		-- speech text colour
 		trans_col = 15,
 		speed = 0.25,  	-- walking speed
 		use_pos = pos_left,
@@ -764,42 +769,33 @@ function _init()
 	selected_actor.in_room = selected_room
 
 	-- init all the rooms
-	init_rooms()
+	game_init()
 
 	-- load the initial room
 	change_room(selected_room)
 end
 
 function _update60()  -- _update()
-	gameupdate()
+	game_update()
 end
 
 function _draw()
-	gamedraw()
+	game_draw()
 end
 
 -- update functions
 
-function gameupdate()
+function game_update()
 	-- process selected_actor threads/actions
 	if selected_actor.thread and not coresume(selected_actor.thread) then
 		selected_actor.thread = nil
 	end
 
-	--d("gameupdate()")
-
 	-- global scripts (always updated - regardless of cutscene)
-	for scr_obj in all(global_scripts) do
-		--d("update global script!")
-		if scr_obj[2] and not coresume(scr_obj[2], scr_obj[3], scr_obj[4]) then
-			del(global_scripts, scr_obj)
-			scr_obj = nil
-		end
-	end		
-
+	update_scripts(global_scripts)
 
 	-- update active cutscene (if any)
-	if notnull(cutscene_curr) then
+	if cutscene_curr then
 		--d("playing cutscene...")
 		if cutscene_curr.thread and not coresume(cutscene_curr.thread) then
 			-- cutscene ended, restore prev state	
@@ -820,14 +816,8 @@ function gameupdate()
 		-- update all the active scripts (local + global)
 		-- (will auto-remove those that have ended)
 	
-		-- local
-		for scr_obj in all(local_scripts) do
-			if scr_obj[2] and not coresume(scr_obj[2], scr_obj[3], scr_obj[4]) then
-				del(local_scripts, scr_obj)
-				scr_obj = nil
-			end
-		end
-		
+		-- local/room-level scripts
+		update_scripts(local_scripts)		
 	end
 
 	-- player/ui control
@@ -838,9 +828,9 @@ function gameupdate()
 end
 
 
-function gamedraw()
+function game_draw()
 	-- clear screen every frame?
-	rectfill(0,0,screenwidth, screenheight, 0)
+	rectfill(0, 0, screenwidth, screenheight, 0)
 
 	-- auto-follow camera?
 	if cam.mode == 0 then
@@ -869,7 +859,7 @@ function gamedraw()
 	-- draw active text
 	talking_draw()
 
-	-- no dialog?
+	-- in dialog mode?
 	if notnull(dialog_curr) and dialog_curr.visible then
 		-- draw dialog sentences?
 		dialog_draw()
@@ -959,6 +949,7 @@ function input_button_pressed(button_index)
 
 	local verb_in = verb_curr
 
+	-- check for sentence selection
 	if notnull(dialog_curr) and dialog_curr.visible then
 		if notnull(hover_curr.sentence) then
 			sentence_curr = hover_curr.sentence
@@ -968,43 +959,43 @@ function input_button_pressed(button_index)
 	end
 
 
-		if hover_curr.verb then
-			verb_curr = get_verb(hover_curr.verb)
-			d("verb = "..verb_curr[2])
+	if hover_curr.verb then
+		verb_curr = get_verb(hover_curr.verb)
+		d("verb = "..verb_curr[2])
 
-		elseif hover_curr.object then
-			-- if valid obj, complete command
-			-- else, abort command (clear verb, etc.)
-			if button_index == 1 then
-				if verb_curr[1] == "use" and notnull(noun1_curr) then
-					noun2_curr = hover_curr.object
-					d("noun2_curr = "..noun2_curr.name)					
-				else
-					noun1_curr = hover_curr.object						
-					d("noun1_curr = "..noun1_curr.name)
-				end
-
-			elseif (notnull(hover_curr.default_verb)) then
-				-- perform default verb action (if present)
-				verb_curr = get_verb(hover_curr.default_verb)
-				noun1_curr = hover_curr.object
-				d("n1 tpe:"..type(noun1_curr))
-				get_keys(noun1_curr)
-				d("name:"..noun1_curr.name)
-				-- force repaint of command (to reflect default verb)
-				command_draw()
+	elseif hover_curr.object then
+		-- if valid obj, complete command
+		-- else, abort command (clear verb, etc.)
+		if button_index == 1 then
+			if verb_curr[1] == "use" and notnull(noun1_curr) then
+				noun2_curr = hover_curr.object
+				d("noun2_curr = "..noun2_curr.name)					
+			else
+				noun1_curr = hover_curr.object						
+				d("noun1_curr = "..noun1_curr.name)
 			end
-		
-		elseif k == "ui_arrow" then
-			-- todo: ui arrow clicked...
-			--break
 
-		--[[elseif k == "inv_object" then
-			-- todo: inventory object clicked
-			break]]
-		else
-			-- what else could there be? actors!?
+		elseif (hover_curr.default_verb) then
+			-- perform default verb action (if present)
+			verb_curr = get_verb(hover_curr.default_verb)
+			noun1_curr = hover_curr.object
+			d("n1 tpe:"..type(noun1_curr))
+			get_keys(noun1_curr)
+			d("name:"..noun1_curr.name)
+			-- force repaint of command (to reflect default verb)
+			command_draw()
 		end
+	
+	elseif k == "ui_arrow" then
+		-- todo: ui arrow clicked...
+		--break
+
+	--[[elseif k == "inv_object" then
+		-- todo: inventory object clicked
+		break]]
+	else
+		-- what else could there be? actors!?
+	end
 
 	-- attempt to use verb on object
 	if (noun1_curr != nil) then
@@ -1987,7 +1978,7 @@ end
 -- internal functions -----------------------------------------------
 
 -- initialise all the rooms (e.g. add in parent links)
-function init_rooms()
+function game_init()
 	for kr,room in pairs(rooms) do
 		for ko,obj in pairs(room.objects) do
 			obj.in_room = room
@@ -2003,6 +1994,15 @@ function init_rooms()
 			-- object1,
 			-- object2
 		}
+	end
+end
+
+function update_scripts(scripts)
+	for scr_obj in all(scripts) do
+		if scr_obj[2] and not coresume(scr_obj[2], scr_obj[3], scr_obj[4]) then
+			del(scripts, scr_obj)
+			scr_obj = nil
+		end
 	end
 end
 
