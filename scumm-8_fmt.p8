@@ -1,164 +1,163 @@
 pico-8 cartridge // http://www.pico-8.com
 version 8
 __lua__
-a=true b=false c=true d=true e=printh f={{{g="open"},h="open"},{{i="close"},h="close"},{{j="give"},h="give"},{{k="pickup"},h="pick-up"},{{l="lookat"},h="look-at"},{{m="talkto"},h="talk-to"},{{n="push"},h="push"},{{o="pull"},h="pull"},{{p="use"},h="use"}} q={{r="walkto"},h="walk to"} s=12 t=7 u=1 v=10 w={x=1,y=1,z=1,g=2,ba=2,bb=2} bc=1 bd=2 be=4 bf=8 bg=16 bh=32 bi=1 bj=2 bk=1 bl=2 bm=3 bn=4 bo=1 bp=3 bq=2 br=4 bs=5 bt=1 bu=2 bv={bw={map={bx=0,by=0,bz={{7,15},},},ca=function(cb) e("scr:"..type(cb.cc.cd)) ce(cb.cc.cd,true) end,cf=function(cb) cg(cb.cc.cd) end,ch=0,cc={cd=function() while true do for ci=1,3 do cj("fire",ci) ck(8) end end end,cl=function() while true do for ci=1,3 do cj("spinning top",ci) ck(8) end end end},cm={cn={co="fire",cp=1,bx=8*8,by=4*8,w={145,146,147},cq=1,cr=1,cs=0,ct=bm,cu=bo,cv="front door",cw=w.x,f={l=function() cx(cy,"it's a nice, warm fire...") cz() ck(10) da(cy,bu,bk) cx(cy,"ouch! it's hot!;*stupid fire*") cz() end,m=function() cx(cy,"'hi fire...'") cz() ck(10) da(cy,bu,bk) cx(cy,"the fire didn't say hello back;burn!!") cz() end,k=function(cb) db(cb) end,}},dc={co="front door",dd=bg,cp=w.x,bx=1*8,by=2*8,de=-10,w={143,0},df=false,dg=false,cq=1,cr=4,cu=br,ct=bl,f={r=function(cb) e("me = "..type(cb)) if dh(cb)==w.g then
-di(bv.dj.cm.dc) else cx(cy,"the door is closed") end end,g=function(cb) if(dk(cb)) e("me is null!")
-e("me = "..cb.co) dl(cb,bv.dj.cm.dc) end,i=function(cb) dm(cb,bv.dj.cm.dc) end}},dn={co="kitchen",cp=w.g,bx=14*8,by=2*8,cq=1,cr=4,cu=bq,ct=bn,f={r=function() di(bv.dp.cm.dq) end}},dr={co="bucket",dd=bd,cp=w.g,bx=13*8,by=6*8,cq=1,cr=1,w={207,223},cs=15,f={l=function(cb) if ds(cb)==cy then
-cx(cy,"it is a bucket in my pocket") else cx(cy,"it is a bucket") end end,k=function(cb) e("b4 pickup") db(cb) end,}},dt={co="spinning top",cp=1,bx=2*8,by=6*8,w={192,193,194},bz={{12,7}},cs=15,cq=1,cr=1,f={n=function(cb) if du(dv.cc.cl) then
-cg(dv.cc.cl) cj(cb,1) else ce(dv.cc.cl) end end,o=function(cb) cg(dv.cc.cl) cj(cb,1) end}},dw={co="window",dd=bg,cp=w.x,ct=bm,cu={bx=5*8,by=(7*8)+1},bx=4*8,by=1*8,cq=2,cr=2,w={132,134},f={g=function(cb) e("open window!") dx(bi+bj,function() dy("*creak*",40,20,8,1) cz() dz(bv.dp) cy=ea.eb ec(cy,cy.bx+10,cy.by) cx(cy,"what was that?!") cz() cx(cy,"i'd better check...") cz() ec(cy,cy.bx-10,cy.by) dz(bv.bw) ck(50) cy.bx=115 cy.by=44 cy.ed=bv.bw ec(cy,cy.bx-10,cy.by) cx(cy,"intruder!!!") cz() end) end}}}},dp={map={bx=16,by=0,ee=39,ef=7},ca=function() end,cf=function() end,cc={},cm={dq={co="hall",cp=w.g,bx=1*8,by=2*8,cq=1,cr=4,cu=br,ct=bl,f={r=function() di(bv.bw.cm.dn) end}},eg={co="back door",dd=bg,cp=w.x,bx=22*8,by=2*8,de=-10,w={143,0},df=true,dg=false,cq=1,cr=4,cu=bq,ct=bn,f={r=function(cb) e("me = "..type(cb)) if dh(cb)==w.g then
-di(bv.bw.cm.dc) else cx(cy,"the door is closed") end end,g=function(cb) e("me = "..cb.co) if dh(cb)==w.g then
-cx(cy,"it's already open!") else cj(cb,w.g) end end,i=function(cb) cj(cb,w.x) end}},},},dj={map={bx=16,by=8,ee=47,ef=15},ca=function(cb) end,cf=function(cb) end,cc={},cm={eh={dd=bc,bx=10*8,by=3*8,cp=1,w={111},cq=1,cr=2,ei=8},ej={dd=bc,bx=22*8,by=3*8,cp=1,w={111},cq=1,cr=2,ei=8},dc={co="front door",dd=bg,cp=w.x,bx=19*8,by=1*8,w={142,0},df=true,dg=false,cq=1,cr=3,cu=bo,ct=bm,f={r=function(cb) if dh(cb)==w.g then
-di(bv.bw.cm.dc) else cx(cy,"the door is closed") end end,g=function(cb) dl(cb,bv.bw.cm.dc) end,i=function(cb) dm(cb,bv.bw.cm.dc) end}},},}} ek=bv.dj ea={el={co="",dd=bh,bx=127/2+80,by=127/2-24,cq=1,cr=4,em=bk,en={1,3,5,3},eo={6,22,21,22},ep={2,3,4,3},flip=false,eq=12,cs=11,er=0.6,es=2,et=1,eu=1,ev=1,ew={}},eb={co="purple tentacle",dd=be+bh,bx=127/2-24,by=127/2-16,cq=1,cr=3,em=bk,en={30,30,30,30},eo={47,47,47,47},eq=13,cs=15,er=0.25,es=0,et=1,eu=1,ev=1,cu=bq,ed=bv.dp,f={l=function() cx(cy,"it's a weird looking tentacle, thing!") end,m=function(cb) dx(bi,function() cx(cb,"what do you want?") cz() end) while(dk(ex) or ex.ey!=4) do e("start dialog") while(true) do ez("where am i?") ez("who are you?") ez("how much wood would a wood-chuck chuck, if a wood-chuck could chuck wood?") ez("nevermind") fa(cy.eq,7) while dk(ex) do ck(1) end break end fb() e("here...") dx(bi,function() cx(cy,ex.fc) cz() e("sentence num: "..ex.ey) if ex.ey==1 then
-cx(cb,"you are in paul's game") cz() elseif ex.ey==2 then cx(cb,"it's complicated...") cz() elseif ex.ey==3 then cx(cb,"a wood-chuck would chuck no amount of wood, coz a wood-chuck can't chuck wood!") cz() elseif ex.ey==4 then cx(cb,"ok bye!") cz() return end end) end end}}} cy=ea.el function fd(fe) local ff=nil if fg(fe.dd,be) then
-ff="talkto"elseif fg(fe.dd,bg) then if fe.cp==w.x then
-ff="open"else ff="close"end else ff="lookat"end for fh in all(f) do fi=fj(fh) if(fi[2]==ff) then ff=fh break end
-end return ff end function fk(fl,fm,fn) e("verb:"..fl.." , obj:"..fm.co) if fl=="walkto"then
-return elseif fl=="pickup"then if fg(fm.dd,bh) then
-cx(cy,"i don't need them") else cx(cy,"i don't need that") end elseif fl=="use"then if fg(fm.dd,bh) then
-cx(cy,"i can't just *use* someone") end if fn then
-if fg(fn.dd,bh) then
-cx(cy,"i can't use that on someone!") else cx(cy,"that doesn't work") end end elseif fl=="give"then if fg(fm.dd,bh) then
-cx(cy,"i don't think i should be giving this away") else cx(cy,"i can't do that") end elseif fl=="lookat"then if fg(fm.dd,bh) then
-cx(cy,"i think it's alive") else cx(cy,"looks pretty ordinary") end elseif fl=="open"then if fg(fm.dd,bh) then
-cx(cy,"they don't seem to open") else cx(cy,"it doesn't seem to open") end elseif fl=="close"then if fg(fm.dd,bh) then
-cx(cy,"they don't seem to close") else cx(cy,"it doesn't seem to close") end elseif fl=="push"or fl=="pull"then if fg(fm.dd,bh) then
-cx(cy,"moving them would accomplish nothing") else cx(cy,"it won't budge!") end elseif fl=="talkto"then if fg(fm.dd,bh) then
-cx(cy,"erm... i don't think they want to talk") else cx(cy,"i am not talking to that!") end else cx(cy,"hmm. no.") end end fo=127 fp=127 fq=16 fr=(cy.cr-1)*8 fs={bx=0,max=0,min=0,ft=0,fu=cy,} cursor={bx=fo/2,by=fp/2,fv=1,et=0,fw={7,12,13,13,12,7},fx=1} fy={} fz=0 ga=0 gb=false dv=nil gc=nil gd=nil ge=nil gf=""gg=false gh=nil gi=nil ex=nil gj=nil gk=nil gl={} gm={} gn={} go={} function _init() if(d) then poke(0x5f2d,1) end
-cy.ed=ek gp() dz(ek) end function _update60() gq() end function _draw() gr() end function gq() if cy.gs and not coresume(cy.gs) then
-cy.gs=nil end for gt in all(gl) do if gt[2] and not coresume(gt[2],gt[3],gt[4]) then
-del(gl,gt) gt=nil end end if gu(gj) then
-if gj.gs and not coresume(gj.gs) then
-if(dv!=gj.gv) then dz(gj.gv) end
-cy=gj.gw fs.ft=gj.gx fs.fu=gj.gy del(gn,gj) gj=nil if(#gn>0) then
-gj=gn[#gn] end end else for gt in all(gm) do if gt[2] and not coresume(gt[2],gt[3],gt[4]) then
-del(gm,gt) gt=nil end end end gz() ha() end function gr() rectfill(0,0,fo,fp,0) if fs.ft==0 then
-fs.bx=mid(0,cy.bx-64,(dv.map.cq*8)-fo-1) end camera(fs.bx,0) clip(0,fq,fo+1,64) hb() camera(0,0) clip() if(c) then
-print("cpu: "..flr(100*stat(1)).."%",0,fq-16,8) print("mem: "..flr(stat(0)/1024*100).."%",0,fq-8,8) end if(a) then print("x: "..cursor.bx.." y:"..cursor.by-fq,80,fq-8,8) end
-hc() if gu(gi) and gi.hd then
-he() hf() return end if(hg==gj) then
-else hg=gj return end if dk(gj) then
-hh() end if(dk(gj)
-or not fg(gj.hi,bi)) and(hg==gj) then hj() else end hg=gj if dk(gj)
-or not fg(gj.hi,bj) then hf() end end function gz() if(btn(0)) then cursor.bx=cursor.bx-1 end
-if(btn(1)) then cursor.bx=cursor.bx+1 end
-if(btn(2)) then cursor.by=cursor.bx-1 end
-if(btn(3)) then cursor.by=cursor.bx+1 end
-if(btnp(4)) then hk(1) end
-if(btnp(5)) then hk(2) end
+a=true b=false c=true d=true e=printh f={{{g="open"},h="open"},{{i="close"},h="close"},{{j="give"},h="give"},{{k="pickup"},h="pick-up"},{{l="lookat"},h="look-at"},{{m="talkto"},h="talk-to"},{{n="push"},h="push"},{{o="pull"},h="pull"},{{p="use"},h="use"}} q={{r="walkto"},h="walk to"} s=12 t=7 u=1 v=10 w={x=1,y=1,z=1,g=2,ba=2,bb=2} bc=1 bd=2 be=4 bf=8 bg=16 bh=32 bi=1 bj=2 bk=1 bl=2 bm=3 bn=4 bo=1 bp=3 bq=2 br=4 bs=5 bt=1 bu=2 bv={bw={bx=0,by=0,bz={{7,15},},ca=function(cb) cc(cb.cd.ce,true) end,cf=function(cb) cg(cb.cd.ce) end,ch=0,cd={ce=function() while true do for ci=1,3 do cj("fire",ci) ck(8) end end end,cl=function() while true do for ci=1,3 do cj("spinning top",ci) ck(8) end end end},cm={cn={co="fire",cp=1,cq=8*8,cr=4*8,w={145,146,147},cs=1,ct=1,cu=bm,cv=bo,cw="front door",cx=w.x,f={l=function() cy("it's a nice, warm fire...") cz() ck(10) da(db,bu,bk) cy("ouch! it's hot!;*stupid fire*") cz() end,m=function() cy("'hi fire...'") cz() ck(10) da(db,bu,bk) cy("the fire didn't say hello back;burn!!") cz() end,k=function(cb) dc(cb) end,}},dd={co="front door",de=bg,cp=w.x,cq=1*8,cr=2*8,df=-10,w={143,0},cs=1,ct=4,cv=br,cu=bl,f={r=function(cb) if dg(cb)==w.g then
+dh(bv.di.cm.dd) else cy("the door is closed") end end,g=function(cb) dj(cb,bv.di.cm.dd) end,i=function(cb) dk(cb,bv.di.cm.dd) end}},dl={co="kitchen",cp=w.g,cq=14*8,cr=2*8,cs=1,ct=4,cv=bq,cu=bn,f={r=function() dh(bv.dm.cm.dn) end}},dp={co="bucket",de=bd,cp=w.g,cq=13*8,cr=6*8,cs=1,ct=1,w={207,223},dq=15,f={l=function(cb) if dr(cb)==db then
+cy("it is a bucket in my pocket") else cy("it is a bucket") end end,k=function(cb) dc(cb) end,}},ds={co="spinning top",cp=1,cq=2*8,cr=6*8,w={192,193,194},bz={{12,7}},dq=15,cs=1,ct=1,f={n=function(cb) if dt(du.cd.cl) then
+cg(du.cd.cl) cj(cb,1) else cc(du.cd.cl) end end,o=function(cb) cg(du.cd.cl) cj(cb,1) end}},dv={co="window",de=bg,cp=w.x,cu=bm,cv={cq=5*8,cr=(7*8)+1},cq=4*8,cr=1*8,cs=2,ct=2,w={132,134},f={g=function(cb) dw(bi+bj,function() dx("*creak*",40,20,8,1) cz() dy(bv.dm) db=dz.ea eb(db,db.cq+10,db.cr) cy("what was that?!") cz() cy("i'd better check...") cz() eb(db,db.cq-10,db.cr) dy(bv.bw) ck(50) db.cq=115 db.cr=44 db.ec=bv.bw eb(db,db.cq-10,db.cr) cy("intruder!!!") cz() end) end}}}},dm={bx=16,by=0,ed=39,ee=7,ca=function() end,cf=function() end,cd={},cm={dn={co="hall",cp=w.g,cq=1*8,cr=2*8,cs=1,ct=4,cv=br,cu=bl,f={r=function() dh(bv.bw.cm.dl) end}},ef={co="back door",de=bg,cp=w.x,cq=22*8,cr=2*8,df=-10,w={143,0},eg=true,cs=1,ct=4,cv=bq,cu=bn,f={r=function(cb) if dg(cb)==w.g then
+dh(bv.bw.cm.dd) else cy("the door is closed") end end,g=function(cb) dj(cb,bv.bw.cm.dd) end,i=function(cb) dk(cb,bv.bw.cm.dd) end}},},},di={bx=16,by=8,ed=47,ee=15,ca=function(cb) end,cf=function(cb) end,cd={},cm={eh={de=bc,cq=10*8,cr=3*8,cp=1,w={111},cs=1,ct=2,ei=8},ej={de=bc,cq=22*8,cr=3*8,cp=1,w={111},cs=1,ct=2,ei=8},dd={co="front door",de=bg,cp=w.x,cq=19*8,cr=1*8,w={142,0},eg=true,cs=1,ct=3,cv=bo,cu=bm,f={r=function(cb) if dg(cb)==w.g then
+dh(bv.bw.cm.dd) else cy("the door is closed") end end,g=function(cb) dj(cb,bv.bw.cm.dd) end,i=function(cb) dk(cb,bv.bw.cm.dd) end}},},}} ek=bv.di dz={el={de=bh,cq=127/2+80,cr=127/2-24,cs=1,ct=4,em=bk,en={1,3,5,3},eo={6,22,21,22},ep={2,3,4,3},eq=12,dq=11,er=0.6,},ea={co="purple tentacle",de=be+bh,cq=127/2-24,cr=127/2-16,cs=1,ct=3,em=bk,en={30,30,30,30},eo={47,47,47,47},eq=13,dq=15,er=0.25,cv=bq,ec=bv.dm,f={l=function() cy(db,"it's a weird looking tentacle, thing!") end,m=function(cb) dw(bi,function() cy(cb,"what do you want?") cz() end) while(es(et) or et.eu!=4) do while(true) do ev("where am i?") ev("who are you?") ev("how much wood would a wood-chuck chuck, if a wood-chuck could chuck wood?") ev("nevermind") ew(db.eq,7) while es(et) do ck() end break end ex() dw(bi,function() cy(et.ey) cz() e("sentence num: "..et.eu) if et.eu==1 then
+cy(cb,"you are in paul's game") cz() elseif et.eu==2 then cy(cb,"it's complicated...") cz() elseif et.eu==3 then cy(cb,"a wood-chuck would chuck no amount of wood, coz a wood-chuck can't chuck wood!") cz() elseif et.eu==4 then cy(cb,"ok bye!") cz() return end end) end end}}} db=dz.el function ez(fa) local fb=nil if fc(fa.de,be) then
+fb="talkto"elseif fc(fa.de,bg) then if fa.cp==w.x then
+fb="open"else fb="close"end else fb="lookat"end for fd in all(f) do fe=ff(fd) if(fe[2]==fb) then fb=fd break end
+end return fb end function fg(fh,fi,fj) e("verb:"..fh.." , obj:"..fi.co) if fh=="walkto"then
+return elseif fh=="pickup"then if fc(fi.de,bh) then
+cy("i don't need them") else cy("i don't need that") end elseif fh=="use"then if fc(fi.de,bh) then
+cy("i can't just *use* someone") end if fj then
+if fc(fj.de,bh) then
+cy("i can't use that on someone!") else cy("that doesn't work") end end elseif fh=="give"then if fc(fi.de,bh) then
+cy("i don't think i should be giving this away") else cy("i can't do that") end elseif fh=="lookat"then if fc(fi.de,bh) then
+cy("i think it's alive") else cy("looks pretty ordinary") end elseif fh=="open"then if fc(fi.de,bh) then
+cy("they don't seem to open") else cy("it doesn't seem to open") end elseif fh=="close"then if fc(fi.de,bh) then
+cy(fk"they don't seem to close") else cy("it doesn't seem to close") end elseif fh=="push"or fh=="pull"then if fc(fi.de,bh) then
+cy("moving them would accomplish nothing") else cy("it won't budge!") end elseif fh=="talkto"then if fc(fi.de,bh) then
+cy("erm... i don't think they want to talk") else cy("i am not talking to that!") end else cy("hmm. no.") end end fl=127 fm=127 fn=16 fo=(db.ct-1)*8 fp={cq=0,max=0,min=0,fq=0,fr=db,} cursor={cq=fl/2,cr=fm/2,fs=1,ft=0,fu={7,12,13,13,12,7},fv=1} fw={} fx=0 fy=0 fz=false du=nil ga=nil gb=nil gc=nil gd=""ge=false gf=nil gg=nil et=nil gh=nil gi=nil gj={} gk={} gl={} gm={} function _init() if(d) then poke(0x5f2d,1) end
+db.ec=ek gn() dy(ek) end function _update60() go() end function _draw() gp() end function go() if db.gq and not coresume(db.gq) then
+db.gq=nil end for gr in all(gj) do if gr[2] and not coresume(gr[2],gr[3],gr[4]) then
+del(gj,gr) gr=nil end end if gs(gh) then
+if gh.gq and not coresume(gh.gq) then
+if(du!=gh.gt) then dy(gh.gt) end
+db=gh.gu fp.fq=gh.gv fp.fr=gh.gw del(gl,gh) gh=nil if(#gl>0) then
+gh=gl[#gl] end end else for gr in all(gk) do if gr[2] and not coresume(gr[2],gr[3],gr[4]) then
+del(gk,gr) gr=nil end end end gx() gy() end function gp() rectfill(0,0,fl,fm,0) if fp.fq==0 then
+fp.cq=mid(0,db.cq-64,(du.gz*8)-fl-1) end camera(fp.cq,0) clip(0,fn,fl+1,64) ha() camera(0,0) clip() if(c) then
+print("cpu: "..flr(100*stat(1)).."%",0,fn-16,8) print("mem: "..flr(stat(0)/1024*100).."%",0,fn-8,8) end if(a) then print("x: "..cursor.cq.." y:"..cursor.cr-fn,80,fn-8,8) end
+hb() if gs(gg) and gg.hc then
+hd() he() return end if(hf==gh) then
+else hf=gh return end if es(gh) then
+hg() end if(es(gh)
+or not fc(gh.hh,bi)) and(hf==gh) then hi() else end hf=gh if es(gh)
+or not fc(gh.hh,bj) then he() end end function gx() if(btn(0)) then cursor.cq=cursor.cq-1 end
+if(btn(1)) then cursor.cq=cursor.cq+1 end
+if(btn(2)) then cursor.cr=cursor.cq-1 end
+if(btn(3)) then cursor.cr=cursor.cq+1 end
+if(btnp(4)) then hj(1) end
+if(btnp(5)) then hj(2) end
 if(d) then
-if(stat(32)-1!=fz) then cursor.bx=stat(32)-1 end
-if(stat(33)-1!=ga) then cursor.by=stat(33)-1 end
+if(stat(32)-1!=fx) then cursor.cq=stat(32)-1 end
+if(stat(33)-1!=fy) then cursor.cr=stat(33)-1 end
 if(stat(34)>0) then
-if(not gb) then
-hk(stat(34)) gb=true end else gb=false end fz=stat(32)-1 ga=stat(33)-1 end cursor.bx=max(cursor.bx,0) cursor.bx=min(cursor.bx,127) cursor.by=max(cursor.by,0) cursor.by=min(cursor.by,127) end function hk(hl) local hm=gc if gu(gi) and gi.hd then
-if gu(fy.hn) then
-ex=fy.hn end return end if fy.fl then
-gc=fj(fy.fl) e("verb = "..gc[2]) elseif fy.ho then if hl==1 then
-if gc[1]=="use"and gu(gd) then
-ge=fy.ho e("noun2_curr = "..ge.co) else gd=fy.ho e("noun1_curr = "..gd.co) end elseif(gu(fy.ff)) then gc=fj(fy.ff) gd=fy.ho e("n1 tpe:"..type(gd)) hp(gd) e("name:"..gd.co) hh() end elseif hq=="ui_arrow"then else end if(gd!=nil) then
-if gc[2]=="use"then
-if gu(ge) then
-else return end end gg=true cy.gs=cocreate(function(hr,fe,fl,hs) if dk(fe.ht) then
-e("obj x="..fe.bx..",y="..fe.by) e("obj w="..fe.cq..",h="..fe.cr) hu=hv(fe) e("dest_pos x="..hu.bx..",y="..hu.by) if(gu(fe.hw)) then e("offset x="..fe.hw..",y="..fe.hx) end
-ec(cy,hu.bx,hu.by) e(".moving="..cy.es) if cy.es!=2 then return end
-ct=cy.em if(gu(fe.ct) and(fl!=q)) then ct=fe.ct end
-da(cy,bu,ct) end if hy(fl,fe) then
-e("verb_obj_script!") e("verb = "..fl[2]) e("obj = "..fe.co) ce(fe.f[fl[1]],false,fe,hs) else fk(fl[2],fe,hs) end hz() end) coresume(cy.gs,cy,gd,gc,ge) elseif(cursor.by>fq and cursor.by<fq+64) then gg=true cy.gs=cocreate(function(bx,by) ec(cy,bx,by) hz() end) coresume(cy.gs,cursor.bx,cursor.by-fq) end e("--------------------------------") end function ha() fy={} if gu(gi) and gi.hd then
-for ia in all(gi.ib) do if ic(ia) then
-fy.hn=ia end end return end id() for hq,fe in pairs(dv.cm) do if(dk(fe.dd)
-or(gu(fe.dd) and fe.dd!=bc)) and(dk(fe.cv) or ie(fe.cv).cp==fe.cw) then ig(fe,fe.cq*8,fe.cr*8,fs.bx,fs.by) else fe.ih=nil end if ic(fe) then
-fy.ho=fe end ii(fe) end for hq,hr in pairs(ea) do if(hr.ed==dv) then
-ig(hr,hr.cq*8,hr.cr*8,fs.bx,fs.by) ii(hr) if ic(hr)
-and hr!=cy then fy.ho=hr end end end for fh in all(f) do if ic(fh) then
-fy.fl=fh end end if(gc==nil) then
-gc=fj(q) end if gu(fy.ho) then
-fy.ff=fd(fy.ho) end end function id() go={} for bx=1,64 do go[bx]={} end end function ii(fe) ij=-1 if(true) then
-ik=-1 if gu(fe.hx) then
-ik=fe.by else ik=fe.by+(fe.cr*8) end ij=flr(ik-fq) if gu(fe.de) then ij+=fe.de end
-add(go[ij],fe) end end function hb() il=dv.map for im in all(il.bz) do pal(im[1],im[2]) end map(il.bx,il.by,0,fq,il.cq,il.cr) pal() if b then
-io=flr((cursor.bx+fs.bx)/8)+dv.map.bx ip=flr((cursor.by-fq)/8)+dv.map.by iq=mget(io,ip) ir=fget(iq,0) if ir then
-rect((io-dv.map.bx)*8,fq+(ip-dv.map.by)*8,(io-dv.map.bx)*8+7,fq+(ip-dv.map.by)*8+7,11) end end for is=1,64 do ij=go[is] for fe in all(ij) do if not fg(fe.dd,bh) then
-if(gu(fe.w))
-and gu(fe.w[fe.cp]) and(fe.w[fe.cp]>0) and(dk(fe.cv) or ie(fe.cv).cp==fe.cw) and(dk(fe.ht)) then it(fe) end else if(fe.ed==dv) then
-iu(fe) end end if(b and gu(fe.ih)) then rect(fe.ih.bx,fe.ih.by,fe.ih.ee,fe.ih.ef,8) end
-end end end function iu(hr) if(hr.es==1)
-and gu(hr.ep) then hr.et=hr.et+1 if(hr.et>5) then
-hr.et=1 hr.ev=hr.ev+1 if(hr.ev>#hr.ep) then hr.ev=1 end
-end iv=hr.ep[hr.ev] else iv=hr.en[hr.em] end for im in all(hr.bz) do pal(im[1],im[2]) end iw(iv,hr.hw,hr.hx,hr.cq,hr.cr,hr.cs,hr.flip,false) if(gu(gk)
-and gk==hr) then if(hr.eu<7) then
-iv=hr.eo[hr.em] iw(iv,hr.hw,hr.hx+8,1,1,hr.cs,hr.flip,false) end hr.eu=hr.eu+1 if(hr.eu>14) then hr.eu=1 end
-end pal() end function hh() ix=""iy=12 if not gg then
-if gu(gc) then
-ix=gc[3] end if gu(gd) then
-ix=ix.." "..gd.co end if gc[2]=="use"
-and gu(gd) then ix=ix.." with"end if gu(ge) then
-ix=ix.." "..ge.co elseif gu(fy.ho) and fy.ho.co!=""and(dk(gd) or(gd!=fy.ho)) then ix=ix.." "..fy.ho.co end gf=ix else ix=gf iy=7 end print(iz(ix),ja(ix),fq+66,iy) end function hc() if type(gh)!='nil'then
-jb=0 for jc in all(gh.jd) do je=0 if gh.jf==1 then
-je=((gh.jg*4)-(#jc*4))/2 end jh(jc,gh.bx+je,gh.by+jb,gh.eq) jb+=6 end gh.ji=gh.ji-1 if(gh.ji<=0) then gh=nil gk=nil e("talking actor cleared") end
-end end function hj() jj=0 ik=75 jk=0 for fh in all(f) do jl=s if gu(fy.ff)
-and(fh==fy.ff) then jl=v end if(fh==fy.fl) then jl=t end
-fi=fj(fh) print(fi[3],jj,ik+fq+1,u) print(fi[3],jj,ik+fq,jl) fh.bx=jj fh.by=ik ig(fh,#fi[3]*4,5,0,0) if(b) then rect(fh.ih.bx,fh.ih.by,fh.ih.ee,fh.ih.ef,8) end
-if(#fi[3]>jk) then jk=#fi[3] end
-ik=ik+8 if ik>=95 then
-ik=75 jj=jj+(jk+1.0)*4 jk=0 end end iw(16,75,fq+60,1,1,0) iw(48,75,fq+73,1,1,0) jj=86 ik=76 for jm=1,8 do rectfill(jj-1,fq+ik-1,jj+8,fq+ik+8,1) fe=cy.ew[jm] if gu(fe) then
-fe.bx=jj fe.by=ik it(fe) ig(fe,fe.cq*8,fe.cr*8,0,0) end jj=jj+11 if jj>=125 then
-ik=ik+12 jj=86 end jm=jm+1 end end function he() jj=0 ik=70 for ia in all(gi.ib) do ia.bx=jj ia.by=ik ig(ia,ia.jg*4,#ia.jn*5,0,0) jl=gi.eq if(ia==fy.hn) then jl=gi.jo end
-for jc in all(ia.jn) do print(iz(jc),jj,ik+fq,jl) ik=ik+5 end if(b) then rect(ia.ih.bx,ia.ih.by,ia.ih.ee,ia.ih.ef,8) end
-ik=ik+2 end end function hf() eq=cursor.fw[cursor.fx] pal(7,eq) spr(32,cursor.bx-4,cursor.by-3,1,1,0) pal() cursor.et=cursor.et+1 if(cursor.et>7) then
-cursor.et=1 cursor.fx=cursor.fx+1 if(cursor.fx>#cursor.fw) then cursor.fx=1 end
-end end function iw(jp,bx,by,cq,cr,jq,df,dg) palt(0,false) palt(jq,true) spr(jp,bx,fq+by,cq,cr,df,dg) palt(jq,false) palt(0,true) end function dx(hi,jr) cursor.fv=cursor.fv-1 js={hi=hi,gs=cocreate(jr),gv=dv,gw=cy,gx=fs.ft,gy=fs.fu} add(gn,js) gj=js fs.ft=1 fs.bx=0 ck(1) end function ez(fc) if(dk(gi)) then gi={ib={},hd=false} end
-jn=jt(fc,32) ju=jv(jn) hn={ey=#gi.ib+1,fc=fc,jn=jn,jg=ju} add(gi.ib,hn) end function fa(eq,jo) gi.eq=eq gi.jo=jo gi.hd=true ex=nil end function fb() gi.hd=false gi=nil end function hv(fe) jw={} e("get_use_pos") if type(fe.cu)=="table"then
-e("usr tbl") jw.bx=fe.cu.bx-fs.bx jw.by=fe.cu.by-fq elseif dk(fe.cu) or(fe.cu==bo) then jw.bx=fe.bx+((fe.cq*8)/2)-fs.bx-4 jw.by=fe.by+(fe.cr*8)+2 elseif(fe.cu==bq) then if gu(fe.hw) then
-jw.bx=fe.bx-fs.bx-(fe.cq*8+4) jw.by=fe.by+1 else jw.bx=fe.bx-fs.bx jw.by=fe.by+((fe.cr*8)-2) end elseif(fe.cu==br) then jw.bx=fe.bx+(fe.cq*8)-fs.bx jw.by=fe.by+((fe.cr*8)-2) end return jw end function da(hr,jx,jy) hr.flip=(jy==bl) if jx==bt then
-e(" > anim_face") hr.em=jy elseif jx==bu then e(" > anim_turn") while(hr.em!=jy) do if(hr.em<jy) then
-hr.em=hr.em+1 else hr.em=hr.em-1 end ck(10) end end end function dl(jz,ka) if dh(jz)==w.g then
-cx(cy,"it's already open") else cj(jz,w.g) if gu(ka) then cj(ka,w.g) end
-end end function dm(jz,ka) if dh(jz)==w.x then
-cx(cy,"it's already closed") else cj(jz,w.x) if gu(ka) then cj(ka,w.x) end
-end end function di(kb) kc=kb.ed dz(kc) jw=hv(kb) e("pos x:"..jw.bx..", y:"..jw.by) cy.bx=jw.bx cy.by=jw.by if gu(kb.ct) then
-kd=kb.ct+2 if(kd>4) then
-kd-=4 end else kd=1 end da(cy,bt,kd) cy.ed=kc end function dz(kc) e("change_room()...") if gu(dv) and gu(dv.cf) then
-dv.cf(dv) end gm={} hz() dv=kc il=dv.map if gu(il.ee) then
-il.cq=il.ee-il.bx+1 il.cr=il.ef-il.by+1 else il.cq=16 il.cr=8 end fs.bx=0 if gu(dv.ca) then
-e("t2: "..type(dv)) e("scr2:"..type(dv.cc.cd)) dv.ca(dv) end end function hy(fl,ho) if(dk(ho)) then return false end
-if(dk(ho.f)) then return false end
-if type(fl)=="table"then
-if gu(ho.f[fl[1]]) then return true end
-else if(gu(ho.f[fl])) then return true end
-end return false end function db(ke) fe=ie(ke) if gu(fe)
-and dk(fe.ht) then e("adding to inv") add(cy.ew,fe) fe.ht=cy end end function ds(ke) fe=ie(ke) if gu(fe) then
-return fe.ht end end function dh(ke,cp) fe=ie(ke) if gu(fe) then
-return fe.cp end end function cj(ke,cp) fe=ie(ke) if gu(fe) then
-fe.cp=cp end end function ie(co) if(type(co)=="table") then return co end
-for hq,fe in pairs(dv.cm) do if(fe.co==co) then return fe end
-end end function ce(jr,kf,kg,hs) local gs=cocreate(jr) if kf then
-add(gl,{jr,gs,kg,hs}) else add(gm,{jr,gs,kg,hs}) end end function du(jr) e("script_running()") for hq,gt in pairs(gm) do e("...") if(gt[1]==jr) then
-e("found!") return true end end for hq,gt in pairs(gl) do e("...") if(gt[1]==jr) then
-e("found!") return true end end return false end function cg(jr) e("stop_script()") for hq,gt in pairs(gm) do e("...") if(gt[1]==jr) then
-e("found!") del(gm,gt) e("deleted!") gt=nil end end for hq,gt in pairs(gl) do e("...") if(gt[1]==jr) then
-e("found!") del(gl,gt) e("deleted!") gt=nil end end end function ck(kh) for bx=1,kh do yield() end end function cz() while gh!=nil do yield() end end function cx(hr,fc) ik=hr.by-fr gk=hr e("talking actor set") dy(fc,hr.bx,ik,hr.eq,1) end function dy(fc,bx,by,eq,jf) e("print_line") local eq=eq or 7 local jf=jf or 0 e(fc) local jn={} local ki=""local kj=""ju=0 kk=min(bx,fo-bx) kl=max(flr(kk/2),16) kj=""for km=1,#fc do ki=sub(fc,km,km) if ki==";"then
-e("msg break!") kj=sub(fc,km+1) e("msg_left:"..kj) fc=sub(fc,1,km-1) break end end jn=jt(fc,kl,true) ju=jv(jn) if jf==1 then
-jj=bx-((ju*4)/2) end jj=max(2,jj) ik=max(18,by) jj=min(jj,fo-(ju*4)-1) gh={jd=jn,bx=jj,by=ik,eq=eq,jf=jf,ji=(#fc)*8,jg=ju} if(#kj>0) then
-kn=gk cz() gk=kn dy(kj,bx,by,eq,jf) end end function it(fe) for im in all(fe.bz) do pal(im[1],im[2]) end ko=1 if gu(fe.ei) then ko=fe.ei end
-for cr=0,ko-1 do iw(fe.w[fe.cp],fe.bx+(cr*(fe.cq*8)),fe.by,fe.cq,fe.cr,fe.cs,fe.df) end pal() end function ec(hr,bx,by) bx=bx+fs.bx local kp=sqrt((bx-hr.bx)^2+(by-hr.by)^2) local kq=hr.er*(bx-hr.bx)/kp local kr=hr.er*(by-hr.by)/kp if(kp<1) then return end
-ir=ks(bx,by) if ir then
-e("walkable!") hr.es=1 hr.flip=(kq<0) hr.em=bn if(hr.flip) then hr.em=bl end
-for km=0,kp/hr.er do if ks(hr.bx+kq,hr.by+kr) then
-hr.bx=hr.bx+kq hr.by=hr.by+kr yield() else e("hit nonwalk!") hr.es=0 hz() return end end e("reach dest") hr.es=2 else e("non-walk") hr.es=2 end end function gp() for kt,ku in pairs(bv) do for kv,fe in pairs(ku.cm) do fe.ed=ku end end end function ks(bx,by) io=flr(bx/8)+dv.map.bx ip=flr(by/8)+dv.map.by iq=mget(io,ip) ir=fget(iq,0) return ir end function hp(fe) kw={} for hq,fh in pairs(fe) do add(kw,hq) end return kw end function fj(fe) fl={} kw=hp(fe[1]) add(fl,kw[1]) add(fl,fe[1][kw[1]]) add(fl,fe.h) return fl end function jt(fc,kl,kx) local jn={} local ky=""local kz=""local ki=""local la=function(lb) if#kz+#ky>lb then
-add(jn,ky) ky=""end ky=ky..kz kz=""end for km=1,#fc do ki=sub(fc,km,km) kz=kz..ki if(ki==" ")
-or(#kz>kl-1) then la(kl) elseif#kz>kl-1 then kz=kz.."-"la(kl) elseif ki==","and kx then e("line break!") ky=ky..sub(kz,1,#kz-1) kz=""la(0) end end la(kl) if ky!=""then
-add(jn,ky) end return jn end function jv(jn) if(gu(jn)) e(#jn[1])
-ju=0 for jc in all(jn) do if(#jc>ju) then ju=#jc end
-end return ju end function fg(fe,lc) if(band(fe,lc)!=0) then return true end
-return false end function hz() gc=fj(q) gd=nil ge=nil cb=nil gg=false gf=""e("command wiped") end function ig(fe,cq,cr,ld,le) bx=fe.bx by=fe.by if fg(fe.dd,bh) then
-fe.hw=fe.bx-(fe.cq*8)/2 fe.hx=fe.by-(fe.cr*8)+1 bx=fe.hw by=fe.hx end fe.ih={bx=bx,by=by+fq,ee=bx+cq-1,ef=by+cr+fq-1,ld=ld,le=le} end function jh(lf,bx,by,lg,lh) local lg=lg or 7 local lh=lh or 0 lf=iz(lf) print(lf,bx,by+1,lh) print(lf,bx,by-1,lh) print(lf,bx+1,by,lh) print(lf,bx+1,by+1,lh) print(lf,bx+1,by-1,lh) print(lf,bx-1,by,lh) print(lf,bx-1,by+1,lh) print(lf,bx-1,by-1,lh) print(lf,bx,by,lg) end function ja(ia) return(fo/2)-flr((#ia*4)/2) end function li(ia) return(fp/2)-flr(5/2) end function ic(fe) if(dk(fe.ih)) then return false end
-ih=fe.ih if(cursor.bx+ih.ld>ih.ee or cursor.bx+ih.ld<ih.bx)
-or(cursor.by>ih.ef or cursor.by<ih.by) then return false else return true end end function iz(ia) local e=""local jc,im,lj=false,false for km=1,#ia do local lk=sub(ia,km,km) if lk=="^"then
-if(im) then e=e..lk end
-im=not im elseif lk=="~"then if(lj) then e=e..lk end
-lj,jc=not lj,not jc else if im==jc and lk>="a"and lk<="z"then
-for ll=1,26 do if lk==sub("abcdefghijklmnopqrstuvwxyz",ll,ll) then
-lk=sub("\65\66\67\68\69\70\71\72\73\74\75\76\77\78\79\80\81\82\83\84\85\86\87\88\89\90\91\92",ll,ll) break end end end e=e..lk im,lj=false,false end end return e end function dk(lm) return(type(lm)=='nil') end function gu(lm) return(type(lm)!='nil') end
+if(not fz) then
+hj(stat(34)) fz=true end else fz=false end fx=stat(32)-1 fy=stat(33)-1 end cursor.cq=max(cursor.cq,0) cursor.cq=min(cursor.cq,127) cursor.cr=max(cursor.cr,0) cursor.cr=min(cursor.cr,127) end function hj(hk) local hl=ga if gs(gg) and gg.hc then
+if gs(fw.hm) then
+et=fw.hm end return end if fw.fh then
+ga=ff(fw.fh) e("verb = "..ga[2]) elseif fw.hn then if hk==1 then
+if ga[1]=="use"and gs(gb) then
+gc=fw.hn e("noun2_curr = "..gc.co) else gb=fw.hn e("noun1_curr = "..gb.co) end elseif(gs(fw.fb)) then ga=ff(fw.fb) gb=fw.hn e("n1 tpe:"..type(gb)) ho(gb) e("name:"..gb.co) hg() end elseif hp=="ui_arrow"then else end if(gb!=nil) then
+if ga[2]=="use"then
+if gs(gc) then
+else return end end ge=true db.gq=cocreate(function(hq,fa,fh,hr) if es(fa.hs) then
+e("obj x="..fa.cq..",y="..fa.cr) e("obj w="..fa.cs..",h="..fa.ct) ht=hu(fa) e("dest_pos x="..ht.cq..",y="..ht.cr) if(gs(fa.hv)) then e("offset x="..fa.hv..",y="..fa.hw) end
+eb(db,ht.cq,ht.cr) e(".moving="..db.hx) if db.hx!=2 then return end
+cu=db.em if(gs(fa.cu) and(fh!=q)) then cu=fa.cu end
+da(db,bu,cu) end if hy(fh,fa) then
+e("verb_obj_script!") e("verb = "..fh[2]) e("obj = "..fa.co) cc(fa.f[fh[1]],false,fa,hr) else fg(fh[2],fa,hr) end hz() end) coresume(db.gq,db,gb,ga,gc) elseif(cursor.cr>fn and cursor.cr<fn+64) then ge=true db.gq=cocreate(function(cq,cr) eb(db,cq,cr) hz() end) coresume(db.gq,cursor.cq,cursor.cr-fn) end e("--------------------------------") end function gy() fw={} if gs(gg) and gg.hc then
+for fk in all(gg.ia) do if ib(fk) then
+fw.hm=fk end end return end ic() for hp,fa in pairs(du.cm) do if(es(fa.de)
+or(gs(fa.de) and fa.de!=bc)) and(es(fa.cw) or id(fa.cw).cp==fa.cx) then ie(fa,fa.cs*8,fa.ct*8,fp.cq,fp.cr) else fa.ig=nil end if ib(fa) then
+fw.hn=fa end ih(fa) end for hp,hq in pairs(dz) do if(hq.ec==du) then
+ie(hq,hq.cs*8,hq.ct*8,fp.cq,fp.cr) ih(hq) if ib(hq)
+and hq!=db then fw.hn=hq end end end for fd in all(f) do if ib(fd) then
+fw.fh=fd end end if(ga==nil) then
+ga=ff(q) end if gs(fw.hn) then
+fw.fb=ez(fw.hn) end end function ic() gm={} for cq=1,64 do gm[cq]={} end end function ih(fa) ii=-1 if(true) then
+ij=-1 if gs(fa.hw) then
+ij=fa.cr else ij=fa.cr+(fa.ct*8) end ii=flr(ij-fn) if gs(fa.df) then ii+=fa.df end
+add(gm[ii],fa) end end function ha() for ik in all(du.bz) do pal(ik[1],ik[2]) end map(du.bx,du.by,0,fn,du.gz,du.il) pal() if b then
+im=flr((cursor.cq+fp.cq)/8)+du.bx io=flr((cursor.cr-fn)/8)+du.by ip=mget(im,io) iq=fget(ip,0) if iq then
+rect((im-du.bx)*8,fn+(io-du.by)*8,(im-du.bx)*8+7,fn+(io-du.by)*8+7,11) end end for ir=1,64 do ii=gm[ir] for fa in all(ii) do if not fc(fa.de,bh) then
+if(gs(fa.w))
+and gs(fa.w[fa.cp]) and(fa.w[fa.cp]>0) and(es(fa.cw) or id(fa.cw).cp==fa.cx) and(es(fa.hs)) then is(fa) end else if(fa.ec==du) then
+it(fa) end end if(b and gs(fa.ig)) then rect(fa.ig.cq,fa.ig.cr,fa.ig.iu,fa.ig.iv,8) end
+end end end function it(hq) if(hq.hx==1)
+and gs(hq.ep) then hq.ft=hq.ft+1 if(hq.ft>5) then
+hq.ft=1 hq.iw=hq.iw+1 if(hq.iw>#hq.ep) then hq.iw=1 end
+end ix=hq.ep[hq.iw] else ix=hq.en[hq.em] end for ik in all(hq.bz) do pal(ik[1],ik[2]) end iy(ix,hq.hv,hq.hw,hq.cs,hq.ct,hq.dq,hq.flip,false) if(gs(gi)
+and gi==hq) then if(hq.iz<7) then
+ix=hq.eo[hq.em] iy(ix,hq.hv,hq.hw+8,1,1,hq.dq,hq.flip,false) end hq.iz=hq.iz+1 if(hq.iz>14) then hq.iz=1 end
+end pal() end function hg() ja=""jb=12 if not ge then
+if gs(ga) then
+ja=ga[3] end if gs(gb) then
+ja=ja.." "..gb.co end if ga[2]=="use"
+and gs(gb) then ja=ja.." with"end if gs(gc) then
+ja=ja.." "..gc.co elseif gs(fw.hn) and fw.hn.co!=""and(es(gb) or(gb!=fw.hn)) then ja=ja.." "..fw.hn.co end gd=ja else ja=gd jb=7 end print(jc(ja),jd(ja),fn+66,jb) end function hb() if type(gf)!='nil'then
+je=0 for jf in all(gf.jg) do jh=0 if gf.ji==1 then
+jh=((gf.jj*4)-(#jf*4))/2 end jk(jf,gf.cq+jh,gf.cr+je,gf.eq) je+=6 end gf.jl=gf.jl-1 if(gf.jl<=0) then gf=nil gi=nil e("talking actor cleared") end
+end end function hi() jm=0 ij=75 jn=0 for fd in all(f) do jo=s if gs(fw.fb)
+and(fd==fw.fb) then jo=v end if(fd==fw.fh) then jo=t end
+fe=ff(fd) print(fe[3],jm,ij+fn+1,u) print(fe[3],jm,ij+fn,jo) fd.cq=jm fd.cr=ij ie(fd,#fe[3]*4,5,0,0) if(b) then rect(fd.ig.cq,fd.ig.cr,fd.ig.iu,fd.ig.iv,8) end
+if(#fe[3]>jn) then jn=#fe[3] end
+ij=ij+8 if ij>=95 then
+ij=75 jm=jm+(jn+1.0)*4 jn=0 end end iy(16,75,fn+60,1,1,0) iy(48,75,fn+73,1,1,0) jm=86 ij=76 for jp=1,8 do rectfill(jm-1,fn+ij-1,jm+8,fn+ij+8,1) fa=db.jq[jp] if gs(fa) then
+fa.cq=jm fa.cr=ij is(fa) ie(fa,fa.cs*8,fa.ct*8,0,0) end jm=jm+11 if jm>=125 then
+ij=ij+12 jm=86 end jp=jp+1 end end function hd() jm=0 ij=70 for fk in all(gg.ia) do fk.cq=jm fk.cr=ij ie(fk,fk.jj*4,#fk.jr*5,0,0) jo=gg.eq if(fk==fw.hm) then jo=gg.js end
+for jf in all(fk.jr) do print(jc(jf),jm,ij+fn,jo) ij=ij+5 end if(b) then rect(fk.ig.cq,fk.ig.cr,fk.ig.iu,fk.ig.iv,8) end
+ij=ij+2 end end function he() eq=cursor.fu[cursor.fv] pal(7,eq) spr(32,cursor.cq-4,cursor.cr-3,1,1,0) pal() cursor.ft=cursor.ft+1 if(cursor.ft>7) then
+cursor.ft=1 cursor.fv=cursor.fv+1 if(cursor.fv>#cursor.fu) then cursor.fv=1 end
+end end function iy(jt,cq,cr,cs,ct,ju,eg,jv) palt(0,false) palt(ju,true) spr(jt,cq,fn+cr,cs,ct,eg,jv) palt(ju,false) palt(0,true) end function dw(hh,jw) cursor.fs=cursor.fs-1 jx={hh=hh,gq=cocreate(jw),gt=du,gu=db,gv=fp.fq,gw=fp.fr} add(gl,jx) gh=jx fp.fq=1 fp.cq=0 ck() end function ev(ey) if(es(gg)) then gg={ia={},hc=false} end
+jr=jy(ey,32) jz=ka(jr) hm={eu=#gg.ia+1,ey=ey,jr=jr,jj=jz} add(gg.ia,hm) end function ew(eq,js) gg.eq=eq gg.js=js gg.hc=true et=nil end function ex() gg.hc=false gg=nil end function hu(fa) kb={} e("get_use_pos") if type(fa.cv)=="table"then
+e("usr tbl") kb.cq=fa.cv.cq-fp.cq kb.cr=fa.cv.cr-fn elseif es(fa.cv) or(fa.cv==bo) then kb.cq=fa.cq+((fa.cs*8)/2)-fp.cq-4 kb.cr=fa.cr+(fa.ct*8)+2 elseif(fa.cv==bq) then if gs(fa.hv) then
+kb.cq=fa.cq-fp.cq-(fa.cs*8+4) kb.cr=fa.cr+1 else kb.cq=fa.cq-fp.cq kb.cr=fa.cr+((fa.ct*8)-2) end elseif(fa.cv==br) then kb.cq=fa.cq+(fa.cs*8)-fp.cq kb.cr=fa.cr+((fa.ct*8)-2) end return kb end function da(hq,kc,kd) hq.flip=(kd==bl) if kc==bt then
+e(" > anim_face") hq.em=kd elseif kc==bu then e(" > anim_turn") while(hq.em!=kd) do if(hq.em<kd) then
+hq.em=hq.em+1 else hq.em=hq.em-1 end ck(10) end end end function dj(ke,kf) if dg(ke)==w.g then
+cy(db,"it's already open") else cj(ke,w.g) if gs(kf) then cj(kf,w.g) end
+end end function dk(ke,kf) if dg(ke)==w.x then
+cy(db,"it's already closed") else cj(ke,w.x) if gs(kf) then cj(kf,w.x) end
+end end function dh(kg) kh=kg.ec dy(kh) kb=hu(kg) e("pos x:"..kb.cq..", y:"..kb.cr) db.cq=kb.cq db.cr=kb.cr if gs(kg.cu) then
+ki=kg.cu+2 if(ki>4) then
+ki-=4 end else ki=1 end da(db,bt,ki) db.ec=kh end function dy(kh) e("change_room()...") if gs(du) and gs(du.cf) then
+du.cf(du) end gk={} hz() du=kh if gs(du.ed) then
+du.gz=du.ed-du.bx+1 du.il=du.ee-du.by+1 else du.gz=16 du.il=8 end fp.cq=0 if gs(du.ca) then
+e("t2: "..type(du)) e("scr2:"..type(du.cd.ce)) du.ca(du) end end function hy(fh,hn) if(es(hn)) then return false end
+if(es(hn.f)) then return false end
+if type(fh)=="table"then
+if gs(hn.f[fh[1]]) then return true end
+else if(gs(hn.f[fh])) then return true end
+end return false end function dc(kj) fa=id(kj) if gs(fa)
+and es(fa.hs) then e("adding to inv") add(db.jq,fa) fa.hs=db end end function dr(kj) fa=id(kj) if gs(fa) then
+return fa.hs end end function dg(kj,cp) fa=id(kj) if gs(fa) then
+return fa.cp end end function cj(kj,cp) fa=id(kj) if gs(fa) then
+fa.cp=cp end end function id(co) if(type(co)=="table") then return co end
+for hp,fa in pairs(du.cm) do if(fa.co==co) then return fa end
+end end function cc(jw,kk,kl,hr) local gq=cocreate(jw) if kk then
+add(gj,{jw,gq,kl,hr}) else add(gk,{jw,gq,kl,hr}) end end function dt(jw) e("script_running()") for hp,gr in pairs(gk) do e("...") if(gr[1]==jw) then
+e("found!") return true end end for hp,gr in pairs(gj) do e("...") if(gr[1]==jw) then
+e("found!") return true end end return false end function cg(jw) e("stop_script()") for hp,gr in pairs(gk) do e("...") if(gr[1]==jw) then
+e("found!") del(gk,gr) e("deleted!") gr=nil end end for hp,gr in pairs(gj) do e("...") if(gr[1]==jw) then
+e("found!") del(gj,gr) e("deleted!") gr=nil end end end function ck(km) km=km or 1 for cq=1,km do yield() end end function cz() while gf!=nil do yield() end end function cy(hq,ey) if type(hq)=="string"then
+ey=hq hq=db end ij=hq.cr-fo gi=hq e("talking actor set") dx(ey,hq.cq,ij,hq.eq,1) end function dx(ey,cq,cr,eq,ji) e("print_line") local eq=eq or 7 local ji=ji or 0 e(ey) local jr={} local kn=""local ko=""jz=0 kp=min(cq,fl-cq) kq=max(flr(kp/2),16) ko=""for kr=1,#ey do kn=sub(ey,kr,kr) if kn==";"then
+e("msg break!") ko=sub(ey,kr+1) e("msg_left:"..ko) ey=sub(ey,1,kr-1) break end end jr=jy(ey,kq,true) jz=ka(jr) if ji==1 then
+jm=cq-((jz*4)/2) end jm=max(2,jm) ij=max(18,cr) jm=min(jm,fl-(jz*4)-1) gf={jg=jr,cq=jm,cr=ij,eq=eq,ji=ji,jl=(#ey)*8,jj=jz} if(#ko>0) then
+ks=gi cz() gi=ks dx(ko,cq,cr,eq,ji) end end function is(fa) for ik in all(fa.bz) do pal(ik[1],ik[2]) end kt=1 if gs(fa.ei) then kt=fa.ei end
+for ct=0,kt-1 do iy(fa.w[fa.cp],fa.cq+(ct*(fa.cs*8)),fa.cr,fa.cs,fa.ct,fa.dq,fa.eg) end pal() end function eb(hq,cq,cr) cq=cq+fp.cq local ku=sqrt((cq-hq.cq)^2+(cr-hq.cr)^2) local kv=hq.er*(cq-hq.cq)/ku local kw=hq.er*(cr-hq.cr)/ku if(ku<1) then return end
+iq=kx(cq,cr) if iq then
+e("walkable!") hq.hx=1 hq.flip=(kv<0) hq.em=bn if(hq.flip) then hq.em=bl end
+for kr=0,ku/hq.er do if kx(hq.cq+kv,hq.cr+kw) then
+hq.cq=hq.cq+kv hq.cr=hq.cr+kw yield() else e("hit nonwalk!") hq.hx=0 hz() return end end e("reach dest") hq.hx=2 else e("non-walk") hq.hx=2 end end function gn() for ky,kz in pairs(bv) do for la,fa in pairs(kz.cm) do fa.ec=kz end end for lb,hq in pairs(dz) do hq.hx=2 hq.ft=1 hq.iz=1 hq.iw=1 hq.jq={} end end function kx(cq,cr) im=flr(cq/8)+du.bx io=flr(cr/8)+du.by ip=mget(im,io) iq=fget(ip,0) return iq end function ho(fa) lc={} for hp,fd in pairs(fa) do add(lc,hp) end return lc end function ff(fa) fh={} lc=ho(fa[1]) add(fh,lc[1]) add(fh,fa[1][lc[1]]) add(fh,fa.h) return fh end function jy(ey,kq,ld) local jr={} local le=""local lf=""local kn=""local lg=function(lh) if#lf+#le>lh then
+add(jr,le) le=""end le=le..lf lf=""end for kr=1,#ey do kn=sub(ey,kr,kr) lf=lf..kn if(kn==" ")
+or(#lf>kq-1) then lg(kq) elseif#lf>kq-1 then lf=lf.."-"lg(kq) elseif kn==","and ld then e("line break!") le=le..sub(lf,1,#lf-1) lf=""lg(0) end end lg(kq) if le!=""then
+add(jr,le) end return jr end function ka(jr) if(gs(jr)) e(#jr[1])
+jz=0 for jf in all(jr) do if(#jf>jz) then jz=#jf end
+end return jz end function fc(fa,li) if(band(fa,li)!=0) then return true end
+return false end function hz() ga=ff(q) gb=nil gc=nil cb=nil ge=false gd=""e("command wiped") end function ie(fa,cs,ct,lj,lk) cq=fa.cq cr=fa.cr if fc(fa.de,bh) then
+fa.hv=fa.cq-(fa.cs*8)/2 fa.hw=fa.cr-(fa.ct*8)+1 cq=fa.hv cr=fa.hw end fa.ig={cq=cq,cr=cr+fn,iu=cq+cs-1,iv=cr+ct+fn-1,lj=lj,lk=lk} end function jk(ll,cq,cr,lm,ln) local lm=lm or 7 local ln=ln or 0 ll=jc(ll) print(ll,cq,cr+1,ln) print(ll,cq,cr-1,ln) print(ll,cq+1,cr,ln) print(ll,cq+1,cr+1,ln) print(ll,cq+1,cr-1,ln) print(ll,cq-1,cr,ln) print(ll,cq-1,cr+1,ln) print(ll,cq-1,cr-1,ln) print(ll,cq,cr,lm) end function jd(fk) return(fl/2)-flr((#fk*4)/2) end function lo(fk) return(fm/2)-flr(5/2) end function ib(fa) if(es(fa.ig)) then return false end
+ig=fa.ig if(cursor.cq+ig.lj>ig.iu or cursor.cq+ig.lj<ig.cq)
+or(cursor.cr>ig.iv or cursor.cr<ig.cr) then return false else return true end end function jc(fk) local e=""local jf,ik,lp=false,false for kr=1,#fk do local lq=sub(fk,kr,kr) if lq=="^"then
+if(ik) then e=e..lq end
+ik=not ik elseif lq=="~"then if(lp) then e=e..lq end
+lp,jf=not lp,not jf else if ik==jf and lq>="a"and lq<="z"then
+for lr=1,26 do if lq==sub("abcdefghijklmnopqrstuvwxyz",lr,lr) then
+lq=sub("\65\66\67\68\69\70\71\72\73\74\75\76\77\78\79\80\81\82\83\84\85\86\87\88\89\90\91\92",lr,lr) break end end end e=e..lq ik,lp=false,false end end return e end function es(lt) return(type(lt)=='nil') end function gs(lt) return(type(lt)!='nil') end
 __gfx__
 00000000bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb0f5ff5f0000000000000000000000000000000000000000000000000000000000000000000000000
 00000000bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb4ffffff4000000000000000000000000000000000000000000000000000000000000000000000000
@@ -262,8 +261,8 @@ fbbbbccff8888bbffcccc88f00000000000000000000000000000000000000000000000000000000
 bbbcccc8888bbbbcccc8888b000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000d666666d
 fccccc8ffbbbbbcff88888bf000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000f666650f
 fccc888ffbbbcccff888bbbf000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000f666650f
-ff5500ffff5500ffff5500ff000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000f666650f
-fff50ffffff50ffffff50fff000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000ff6665ff
+fff00ffffff00ffffff00fff000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000f666650f
+fff00ffffff00ffffff00fff000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000ff6665ff
 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000ffffffff
 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000f666666f
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000065555556
