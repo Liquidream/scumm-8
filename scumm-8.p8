@@ -312,7 +312,7 @@ rooms = {
 					open = function(me)
 						cutscene(cut_noverbs + cut_hidecursor, 
 							function()
-								-- todo: cutscene code
+								-- cutscene code
 								print_line("*creak*",40,20,8,1)
 								wait_for_message()
 								change_room(rooms.second_room)
@@ -338,6 +338,13 @@ rooms = {
 									selected_actor.y)
 								say_line("intruder!!!")
 								wait_for_message()
+							end,
+							-- override for cutscene
+							function()
+								change_room(rooms.first_room)
+								actors.purp_tentacle.in_room = rooms.first_room
+								actors.purp_tentacle.x = 105
+								actors.purp_tentacle.y = 44
 							end
 						)
 					end
@@ -933,9 +940,15 @@ end
 function playercontrol()	
 
 	-- check for cutscene "skip"
+	--d(stat(34))
 	if cutscene_curr then
-		if (btnp(4)) and (btnp(5)) then 
-			-- todo: skip cutscene!
+		if ((btnp(4) and btnp(5)) or (enable_mouse and stat(34) == 2))
+		 and cutscene_curr.override then 
+			-- skip cutscene!
+			cutscene_curr.thread = cocreate(cutscene_curr.override)
+			cutscene_curr.override = nil
+			if (enable_mouse) then ismouseclicked = true end
+			return
 		end
 		-- either way - don't allow other user actions!
 		return
@@ -1375,7 +1388,7 @@ function talking_draw()
 	-- alignment 
 	--   0 = no align
 	--   1 = center 
-	if type(talking_curr) != 'nil' then
+	if talking_curr then
 		line_offset_y = 0
 		for l in all(talking_curr.msg_lines) do
 			line_offset_x=0
@@ -1394,9 +1407,7 @@ function talking_draw()
 		talking_curr.time_left = talking_curr.time_left - 1
 		-- remove text & reset actor's talk anim
 		if (talking_curr.time_left <=0) then 
-			talking_curr = nil 
-			talking_actor = nil 
-			d("talking actor cleared") 
+			stop_talking()
 		end
 	end
 end
@@ -1553,13 +1564,14 @@ end
 
 -- scumm core functions -------------------------------------------
 
-function cutscene(flags, func)
+function cutscene(flags, func_cutscene, func_override)
 	-- decrement the cursor level
 	cursor_lvl = cursor_lvl - 1
 
 	cut = {
 		flags = flags,
-		thread = cocreate(func),
+		thread = cocreate(func_cutscene),
+		override = func_override,
 		paused_room = room_curr,
 		paused_actor = selected_actor,
 		paused_cam_mode = cam_mode,
@@ -1900,6 +1912,13 @@ function say_line(actor, msg)
 	d("talking actor set")
 	-- call the base print_line to show actor line
 	print_line(msg, actor.x, ypos, actor.col, 1)
+end
+
+
+function stop_talking()
+	talking_curr = nil 
+	talking_actor = nil 
+	d("talking actor cleared") 
 end
 
 
