@@ -1457,18 +1457,16 @@ function ui_draw()
 		-- draw inventory bg
 		rectfill(xpos-1, stage_top+ypos-1, xpos+8, stage_top+ypos+8, 1)
 
-		if (start_pos+1 <= end_pos) then
-			obj = selected_actor.inventory[start_pos+ipos]
-			if obj then
-				-- something to draw
-				obj.x = xpos
-				obj.y = ypos
-				-- draw object/sprite
-				object_draw(obj)
-				-- re-calculate bounds (as pos may have changed)
-				recalc_bounds(obj, obj.w*8, obj.h*8, 0, 0)
-				show_collision_box(obj)
-			end
+		obj = selected_actor.inventory[start_pos+ipos]
+		if obj then
+			-- something to draw
+			obj.x = xpos
+			obj.y = ypos
+			-- draw object/sprite
+			object_draw(obj)
+			-- re-calculate bounds (as pos may have changed)
+			recalc_bounds(obj, obj.w*8, obj.h*8, 0, 0)
+			show_collision_box(obj)
 		end
 		xpos = xpos + 11
 
@@ -2073,7 +2071,7 @@ function game_init()
 	end
 
 	-- debug --------------
-	--[[for i=1,16 do 
+--[[	for i=1,16 do 
 		obj = {
 				name = "dummy"..i,
 				class = class_pickupable,
