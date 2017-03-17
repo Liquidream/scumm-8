@@ -23,7 +23,7 @@ __lua__
 
 -- debugging
 show_debuginfo = true
-show_collision = false
+show_collision = true
 show_perfinfo = true
 enable_mouse = true
 d = printh
@@ -752,6 +752,12 @@ cursor_colpos = 1
 	-- dialog sentence
 	-- ui_arrow
 
+ui_arrows = {
+	{ spr = 16, x = 75, y = stage_top + 60 },
+	{ spr = 48, x = 75, y = stage_top + 72 }
+}
+
+
 last_mouse_x = 0
 last_mouse_y = 0
 -- wait for button release before repeating action
@@ -1000,7 +1006,7 @@ function input_button_pressed(button_index)
 				d("noun1_curr = "..noun1_curr.name)
 			end
 
-		elseif (hover_curr_default_verb) then
+		elseif hover_curr_default_verb then
 			-- perform default verb action (if present)
 			verb_curr = get_verb(hover_curr_default_verb)
 			noun1_curr = hover_curr_object
@@ -1011,9 +1017,9 @@ function input_button_pressed(button_index)
 			command_draw()
 		end
 	
-	elseif k == "ui_arrow" then
+	elseif hover_curr_arrow then
 		-- todo: ui arrow clicked...
-		--break
+		return
 
 	--[[elseif k == "inv_object" then
 		-- todo: inventory object clicked
@@ -1096,6 +1102,7 @@ function checkcollisions()
 	hover_curr_default_verb = nil
 	hover_curr_object = nil
 	hover_curr_sentence = nil
+	hover_curr_arrow = nil
 
 	--hover_curr = {}
 
@@ -1128,7 +1135,6 @@ function checkcollisions()
 		end
 
 		if iscursorcolliding(obj) then
-			
 			hover_curr_object = obj
 		end
 		-- recalc z-plane
@@ -1153,6 +1159,11 @@ function checkcollisions()
 	for v in all(verbs) do
 		if iscursorcolliding(v) then
 			hover_curr_verb = v
+		end
+	end
+	for a in all(ui_arrows) do
+		if iscursorcolliding(a) then
+			hover_curr_arrow = a
 		end
 	end
 
@@ -1180,26 +1191,22 @@ function recalc_zplane(obj)
 	-- if it should, add it at appropriate z-plane (1-64 = far-near)
   -- else, remove from all zplanes
 
-	--zplane = -1 -- default is not drawn
-	
-	if (true) then  -- obj is drawable
+	--if true then  -- obj is drawable
+
 		-- calculate the correct z-plane
 		-- based on x,y pos + elevation
 		ypos = -1
 		if obj.offset_y then
 			ypos = obj.y
 		else
-			ypos = obj.y + (obj.h*8) ---4
+			ypos = obj.y + (obj.h*8)
 		end
 		zplane = flr(ypos - stage_top)
 
 		if obj.elevation then zplane += obj.elevation end
 
-		--if zplane > 0 then
-			-- add to "to draw" list at appropriate zplane index
-			add(draw_zplanes[zplane],obj)
-		--end
-	end
+		add(draw_zplanes[zplane],obj)
+	--end
 end
 
 function room_draw()
@@ -1255,17 +1262,14 @@ function room_draw()
 					actor_draw(obj)
 				end
 			end
-			if (show_collision and obj.bounds) then rect(obj.bounds.x, obj.bounds.y, obj.bounds.x1, obj.bounds.y1, 8) end
+			show_collision_box(obj)
+			-- if (show_collision and obj.bounds) then rect(obj.bounds.x, obj.bounds.y, obj.bounds.x1, obj.bounds.y1, 8) end
 		end
 	end
 end
 
 -- draw actor(s)
 function actor_draw(actor)
- 	-- offets
-	 
-	-- actor.offset_x = actor.x - (actor.w *8) /2
-	-- actor.offset_y = actor.y - (actor.h *8) +2
 
 	if (actor.moving == 1) 
 	 and actor.walk_anim then
@@ -1304,8 +1308,6 @@ function actor_draw(actor)
 			end
 			actor.talk_tmr = actor.talk_tmr + 1	
 			if (actor.talk_tmr > 14) then actor.talk_tmr = 1 end
-
-		--end
 	end
 
 	--reset palette
@@ -1372,12 +1374,14 @@ function talking_draw()
 				talking_curr.col)
 			line_offset_y += 6
 		end
-
 		-- update message lifespan
 		talking_curr.time_left = talking_curr.time_left - 1
 		-- remove text & reset actor's talk anim
-		if (talking_curr.time_left <=0) then talking_curr = nil talking_actor = nil d("talking actor cleared") end
-
+		if (talking_curr.time_left <=0) then 
+			talking_curr = nil 
+			talking_actor = nil 
+			d("talking actor cleared") 
+		end
 	end
 end
 
@@ -1407,7 +1411,8 @@ function ui_draw()
 		v.x = xpos
 		v.y = ypos
 		recalc_bounds(v, #vi[3]*4, 5, 0, 0)
-		if (show_collision) then rect(v.bounds.x, v.bounds.y, v.bounds.x1, v.bounds.y1, 8) end
+		show_collision_box(v)
+		--if (show_collision) then rect(v.bounds.x, v.bounds.y, v.bounds.x1, v.bounds.y1, 8) end
 		-- auto-size column
 		if (#vi[3] > col_len) then col_len = #vi[3] end
 		ypos = ypos + 8
@@ -1421,8 +1426,19 @@ function ui_draw()
 	end
 
 	-- draw arrows
-	sprdraw(16, 75, stage_top + 60, 1, 1, 0)
-	sprdraw(48, 75, stage_top + 73, 1, 1, 0)
+	for i = 1,2 do
+		arrow = ui_arrows[i]
+		if hover_curr_arrow == arrow then pal(verb_maincol,7) end
+		sprdraw(arrow.spr, arrow.x, arrow.y, 1, 1, 0)
+		-- capture bounds
+		recalc_bounds(arrow, 8, 7, 0, 0)
+		show_collision_box(arrow)
+		--if (show_collision) then rect(arrow.bounds.x, arrow.bounds.y, arrow.bounds.x1, arrow.bounds.y1, 8) end
+		pal() --reset palette
+	end
+
+	-- sprdraw(16, 75, stage_top + 60, 1, 1, 0)
+	-- sprdraw(48, 75, stage_top + 73, 1, 1, 0)
 
 	-- draw inventory
 	xpos = 86
@@ -1470,7 +1486,8 @@ function dialog_draw()
 			ypos = ypos + 5
 		end
 
-		if (show_collision) then rect(s.bounds.x, s.bounds.y, s.bounds.x1, s.bounds.y1, 8) end
+		show_collision_box(s)
+		--if (show_collision) then rect(s.bounds.x, s.bounds.y, s.bounds.x1, s.bounds.y1, 8) end
 		
 		ypos = ypos + 2
 
@@ -2023,6 +2040,12 @@ function game_init()
 			-- object2
 		}
 	end
+end
+
+function show_collision_box(obj)
+	if show_collision and obj.bounds then 
+		rect(obj.bounds.x, obj.bounds.y, obj.bounds.x1, obj.bounds.y1, 8) 
+	end	
 end
 
 function update_scripts(scripts)
