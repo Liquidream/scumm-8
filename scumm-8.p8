@@ -231,7 +231,7 @@ rooms = {
 					end
 				}
 			},
-			bat = {
+			bucket = {
 				name = "bucket",
 				class = class_pickupable,
 				state = states.open,
@@ -1166,6 +1166,12 @@ function checkcollisions()
 			hover_curr_arrow = a
 		end
 	end
+	-- check room/object collisions
+	for k,obj in pairs(selected_actor.inventory) do
+		if iscursorcolliding(obj) then
+			hover_curr_object = obj
+		end
+	end
 
 	-- default to walkto (if nothing set)
 	if (verb_curr == nil) then
@@ -1455,6 +1461,7 @@ function ui_draw()
 			object_draw(obj)
 			-- re-calculate bounds (as pos may have changed)
 			recalc_bounds(obj, obj.w*8, obj.h*8, 0, 0)
+			show_collision_box(obj)
 		end
 		xpos = xpos + 11
 
@@ -1743,6 +1750,8 @@ function pickup_obj(objname)
 		-- assume selected_actor picked-up at this point
 		add(selected_actor.inventory, obj)
 		obj.owner = selected_actor
+		-- remove it from room
+		remove(obj.in_room.objects,obj)
 	end
 end
 
@@ -2040,6 +2049,28 @@ function game_init()
 			-- object2
 		}
 	end
+
+	-- debug --------------
+	for i=1,16 do 
+		obj = {
+				name = "dummy"..i,
+				class = class_pickupable,
+				state = 1,
+				x = 1, -- (*8 to use map cell pos)
+				y = 1 - stage_top,
+				w = 1,	-- relates to spr or map cel, depending on above
+				h = 1,  --
+				states = { 
+					239
+					--255 
+				}
+			}
+		add(selected_actor.inventory, obj)
+		obj.owner = selected_actor
+		--[[recalc_bounds(obj, 8, 8, 1, 1)
+		show_collision_box(obj)]]
+	end
+
 end
 
 function show_collision_box(obj)
