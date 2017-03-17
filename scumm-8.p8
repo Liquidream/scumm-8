@@ -257,6 +257,15 @@ rooms = {
 					pickup = function(me)
 						pickup_obj(me)
 					end,
+					give = function(me, noun2)
+						if noun2 == actors.purp_tentacle then
+							say_line(actors.purp_tentacle, "Thanks!")
+							wait_for_message()
+							me.owner = actors.purp_tentacle
+						else
+							say_line("I might need this")
+						end
+					end
 					--[[use = function(me, noun2)
 						if (noun2.name == "window") then
 							set_state("window", states.open)
@@ -310,43 +319,47 @@ rooms = {
 				},
 				verbs = {
 					open = function(me)
-						cutscene(cut_noverbs + cut_hidecursor, 
-							function()
-								-- cutscene code
-								print_line("*creak*",40,20,8,1)
-								wait_for_message()
-								change_room(rooms.second_room)
-								selected_actor = actors.purp_tentacle
-								walk_to(selected_actor, 
-									selected_actor.x+10, 
-									selected_actor.y)
-								say_line("what was that?!")
-								wait_for_message()
-								say_line("i'd better check...")
-								wait_for_message()
-								walk_to(selected_actor, 
-									selected_actor.x-10, 
-									selected_actor.y)
-								change_room(rooms.first_room)
-								-- wait for a bit, then appear in room1
-								break_time(50)
-								selected_actor.x = 115
-								selected_actor.y = 44
-								selected_actor.in_room = rooms.first_room
-								walk_to(selected_actor, 
-									selected_actor.x-10, 
-									selected_actor.y)
-								say_line("intruder!!!")
-								wait_for_message()
-							end,
-							-- override for cutscene
-							function()
-								change_room(rooms.first_room)
-								actors.purp_tentacle.in_room = rooms.first_room
-								actors.purp_tentacle.x = 105
-								actors.purp_tentacle.y = 44
-							end
-						)
+						if not me.done_cutscene then
+							cutscene(cut_noverbs + cut_hidecursor, 
+								function()
+									me.done_cutscene = true
+									-- cutscene code
+									print_line("*creak*",40,20,8,1)
+									wait_for_message()
+									change_room(rooms.second_room)
+									selected_actor = actors.purp_tentacle
+									walk_to(selected_actor, 
+										selected_actor.x+10, 
+										selected_actor.y)
+									say_line("what was that?!")
+									wait_for_message()
+									say_line("i'd better check...")
+									wait_for_message()
+									walk_to(selected_actor, 
+										selected_actor.x-10, 
+										selected_actor.y)
+									change_room(rooms.first_room)
+									-- wait for a bit, then appear in room1
+									break_time(50)
+									selected_actor.x = 115
+									selected_actor.y = 44
+									selected_actor.in_room = rooms.first_room
+									walk_to(selected_actor, 
+										selected_actor.x-10, 
+										selected_actor.y)
+									say_line("intruder!!!")
+									wait_for_message()
+								end,
+								-- override for cutscene
+								function()
+									change_room(rooms.first_room)
+									actors.purp_tentacle.in_room = rooms.first_room
+									actors.purp_tentacle.x = 105
+									actors.purp_tentacle.y = 44
+									stop_talking()
+								end
+							)
+						end
 					end
 				}
 			}
@@ -586,7 +599,8 @@ actors = {
 							end
 						end)
 					end --dialog loop
-				end
+				end -- talkto
+				
 			}
 	}
 }
@@ -940,7 +954,6 @@ end
 function playercontrol()	
 
 	-- check for cutscene "skip"
-	--d(stat(34))
 	if cutscene_curr then
 		if ((btnp(4) and btnp(5)) or (enable_mouse and stat(34) == 2))
 		 and cutscene_curr.override then 
@@ -1011,7 +1024,9 @@ function input_button_pressed(button_index)
 		-- if valid obj, complete command
 		-- else, abort command (clear verb, etc.)
 		if button_index == 1 then
-			if verb_curr[1] == "use" and noun1_curr then
+
+			if (verb_curr[1] == "use" or verb_curr[1] == "give") 
+			 and noun1_curr then
 				noun2_curr = hover_curr_object
 				d("noun2_curr = "..noun2_curr.name)					
 			else
@@ -1054,7 +1069,7 @@ function input_button_pressed(button_index)
 	-- attempt to use verb on object
 	if (noun1_curr != nil) then
 		-- are we starting a 'use' command?
-		if verb_curr[2] == "use" then
+		if verb_curr[2] == "use" or verb_curr[2] == "give" then
 			if noun2_curr then
 				-- 'use' part 2
 			else
@@ -1193,6 +1208,10 @@ function checkcollisions()
 	for k,obj in pairs(selected_actor.inventory) do
 		if iscursorcolliding(obj) then
 			hover_curr_object = obj
+		end
+		-- check for disowned objects!
+		if obj.owner != selected_actor then 
+			del(selected_actor.inventory, obj)
 		end
 	end
 
@@ -1361,6 +1380,10 @@ function command_draw()
 		if verb_curr[2] == "use" 
 		 and noun1_curr then
 			command = command.." with"
+		end
+		if verb_curr[2] == "give" 
+		 and noun1_curr then
+			command = command.." to"
 		end
 		if noun2_curr then
 			command = command.." "..noun2_curr.name
@@ -1782,7 +1805,7 @@ function pickup_obj(objname)
 		add(selected_actor.inventory, obj)
 		obj.owner = selected_actor
 		-- remove it from room
-		remove(obj.in_room.objects,obj)
+		del(obj.in_room.objects,obj)
 	end
 end
 
