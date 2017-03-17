@@ -1451,23 +1451,24 @@ function ui_draw()
 	start_pos = selected_actor.inv_pos*4 --min(selected_actor.inv_pos*4, flr(#selected_actor.inventory/4)+1)
 	end_pos = min(start_pos+8, #selected_actor.inventory)
 
-	for ipos = start_pos+1, end_pos do
-	--for ipos=1, 8 do
+	for ipos = 1,8 do
+	--for ipos = start_pos+1, end_pos do
 
 		-- draw inventory bg
 		rectfill(xpos-1, stage_top+ypos-1, xpos+8, stage_top+ypos+8, 1)
 
-
-		obj = selected_actor.inventory[ipos]
-		if obj then
-			-- something to draw
-			obj.x = xpos
-			obj.y = ypos
-			-- draw object/sprite
-			object_draw(obj)
-			-- re-calculate bounds (as pos may have changed)
-			recalc_bounds(obj, obj.w*8, obj.h*8, 0, 0)
-			show_collision_box(obj)
+		if (start_pos+1 <= end_pos) then
+			obj = selected_actor.inventory[start_pos+ipos]
+			if obj then
+				-- something to draw
+				obj.x = xpos
+				obj.y = ypos
+				-- draw object/sprite
+				object_draw(obj)
+				-- re-calculate bounds (as pos may have changed)
+				recalc_bounds(obj, obj.w*8, obj.h*8, 0, 0)
+				show_collision_box(obj)
+			end
 		end
 		xpos = xpos + 11
 
@@ -2072,7 +2073,7 @@ function game_init()
 	end
 
 	-- debug --------------
-	for i=1,16 do 
+	--[[for i=1,16 do 
 		obj = {
 				name = "dummy"..i,
 				class = class_pickupable,
@@ -2088,7 +2089,7 @@ function game_init()
 			}
 		add(selected_actor.inventory, obj)
 		obj.owner = selected_actor
-	end
+	end]]
 
 end
 
