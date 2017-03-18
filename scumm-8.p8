@@ -1273,7 +1273,7 @@ function room_draw()
 	
 	-- debug walkable areas
 	if show_pathfinding then
-		--d("###################################################################")
+
 		actor_cell_pos = getcellpos(selected_actor)
 
 		celx = flr((cursor_x + cam_x) /8) + room_curr.map_x
@@ -1283,7 +1283,7 @@ function room_draw()
 		path = find_path(actor_cell_pos, target_cell_pos)
 
 		for p in all(path) do
-			d("  > "..p[1]..","..p[2])
+			--d("  > "..p[1]..","..p[2])
 			rect(
 				(p[1]-room_curr.map_x)*8, 
 				stage_top+(p[2]-room_curr.map_y)*8, 
@@ -2066,7 +2066,43 @@ function walk_to(actor, x, y)
 	--offset for camera
 		x = x + cam_x
 
-	local distance = sqrt((x - actor.x) ^ 2 + (y - actor.y) ^ 2)
+		actor_cell_pos = getcellpos(actor)
+		d("act-cel x="..actor_cell_pos[1]..", y="..actor_cell_pos[2])
+
+		celx = flr(x /8) + room_curr.map_x
+		cely = flr(y /8) + room_curr.map_y
+		d("cel x="..celx..", y="..cely)
+
+		target_cell_pos = { celx, cely }
+
+		path = find_path(actor_cell_pos, target_cell_pos)
+
+		for p in all(path) do
+		--p=path[1]
+
+			d("  > "..p[1]..", "..p[2])
+			px = (p[1]-room_curr.map_x)*8 + 2
+			py = (p[2]-room_curr.map_y)*8 + 2
+			d("px:"..px)
+			d("py:"..py)
+			d("act "..actor.x..", "..actor.y)
+
+			local distance = sqrt((px - actor.x) ^ 2 + (py - actor.y) ^ 2)
+			local step_x = actor.speed * (px - actor.x) / distance
+			local step_y = actor.speed * (py - actor.y) / distance
+
+			d("sx:"..step_x)
+			d("sy:"..step_y)
+
+			for i = 0, distance/actor.speed do
+				actor.x = actor.x + step_x
+				actor.y = actor.y + step_y
+				yield()
+			end
+
+		end
+
+--[[	local distance = sqrt((x - actor.x) ^ 2 + (y - actor.y) ^ 2)
 	local step_x = actor.speed * (x - actor.x) / distance
 	local step_y = actor.speed * (y - actor.y) / distance
 
@@ -2106,7 +2142,7 @@ function walk_to(actor, x, y)
 	else
 		d("non-walk")
 		actor.moving = 2 --stopped
-	end
+	end]]
 end
 
 
@@ -2316,8 +2352,8 @@ function find_path(start, goal)
 
  wallid = 1
 
- d("start = "..start[1]..","..start[2])
- d("goal = "..goal[1]..","..goal[2])
+ --d("start = "..start[1]..","..start[2])
+ --d("goal = "..goal[1]..","..goal[2])
  
  frontier = {}
  insert(frontier, start, 0)
