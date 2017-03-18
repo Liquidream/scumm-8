@@ -511,9 +511,9 @@ rooms = {
 
 -- set which room to start the game in 
 -- (could be a "pseudo" room for title screen!)
-selected_room = rooms.first_room
+--selected_room = rooms.first_room
 --selected_room = rooms.second_room
---selected_room = rooms.outside_room
+selected_room = rooms.outside_room
 
 
 -- #######################################################
@@ -524,10 +524,10 @@ actors = {
 	main_actor = { 		-- initialize the actor object
 		--name = "",
 		class = class_actor,
-		x = 127/2 ,
-		y = 127/2 ,
-		-- x = 127/2 + 80,
-		-- y = 127/2 -24,
+		-- x = 127/2 ,
+		-- y = 127/2 -30,
+		x = 127/2 + 80,
+		y = 127/2 -24,
 		w = 1,
 		h = 4,
 		face_dir = face_front, 	-- direction facing
@@ -1273,7 +1273,7 @@ function room_draw()
 	
 	-- debug walkable areas
 	if show_pathfinding then
-		d("###################################################################")
+		--d("###################################################################")
 		actor_cell_pos = getcellpos(selected_actor)
 
 		celx = flr((cursor_x + cam_x) /8) + room_curr.map_x
@@ -1283,6 +1283,7 @@ function room_draw()
 		path = find_path(actor_cell_pos, target_cell_pos)
 
 		for p in all(path) do
+			d("  > "..p[1]..","..p[2])
 			rect(
 				(p[1]-room_curr.map_x)*8, 
 				stage_top+(p[2]-room_curr.map_y)*8, 
@@ -1290,7 +1291,7 @@ function room_draw()
 				stage_top+(p[2]-room_curr.map_y)*8+7, 11)
 		end
 
-		--[[celx = flr((cursor_x + cam_x) /8) + room_curr.map_x
+		celx = flr((cursor_x + cam_x) /8) + room_curr.map_x
 		cely = flr((cursor_y - stage_top)/8 ) + room_curr.map_y
 		spr_num = mget(celx, cely)
 		--d("mapa x="..celx..",y="..cely)
@@ -1303,7 +1304,7 @@ function room_draw()
 				stage_top+(cely-room_curr.map_y)*8, 
 				(celx-room_curr.map_x)*8+7, 
 				stage_top+(cely-room_curr.map_y)*8+7, 11)
-		end]]
+		end
 	end
 
 	-- draw each zplane, from back to front
@@ -2329,12 +2330,14 @@ function find_path(start, goal)
   current = popend(frontier)
 
   if vectoindex(current) == vectoindex(goal) then
+	 --d("found!")
+	 --came_from[goal] = vectoindex(goal)
    break
   end
 
   local neighbours = getneighbours(current)
 
-	d("nbrs:"..#neighbours)
+	--d("nbrs:"..#neighbours)
 
   for next in all(neighbours) do
    local nextindex = vectoindex(next)
@@ -2351,21 +2354,26 @@ function find_path(start, goal)
   end
  end
 
- printh("find goal..")
- d("came:"..#came_from)
+ --printh("find goal..")
+ 
  current = came_from[vectoindex(goal)]
- path = {}
- local cindex = vectoindex(current)
- local sindex = vectoindex(start)
+ if current then
+	path = {}
+	local cindex = vectoindex(current)
+	local sindex = vectoindex(start)
 
- while cindex != sindex do
-  add(path, current)
-  current = came_from[cindex]
-  cindex = vectoindex(current)
+	while cindex != sindex do
+		add(path, current)
+		current = came_from[cindex]
+		cindex = vectoindex(current)
+	end
+	reverse(path)
+	--printh("..done")
+	return path
+ else
+ 	return {}
  end
- reverse(path)
- --printh("..done")
- return path
+ --return path
 end
 
 function heuristic(a, b)
@@ -2382,8 +2390,8 @@ function getneighbours(pos)
  local xpos = pos[1]
  local ypos = pos[2]
 
- d("xpos:"..xpos)
- d("ypos:"..ypos)
+--  d("xpos:"..xpos)
+--  d("ypos:"..ypos)
 
  
 
@@ -2397,25 +2405,25 @@ function getneighbours(pos)
 
       if abs(x) != abs(y) then cost=1 else cost=1.4 end
 
-			d("chk_x:"..chk_x)
- 			d("chk_y:"..chk_y)
-			d("map_x:"..room_curr.map_x)
-			d("map_y:"..room_curr.map_y)
-			d("map_w:"..room_curr.map_w)
-			d("map_h:"..room_curr.map_h)
+			-- d("chk_x:"..chk_x)
+ 			-- d("chk_y:"..chk_y)
+			-- d("map_x:"..room_curr.map_x)
+			-- d("map_y:"..room_curr.map_y)
+			-- d("map_w:"..room_curr.map_w)
+			-- d("map_h:"..room_curr.map_h)
 
       if chk_x >= room_curr.map_x and chk_x <= room_curr.map_x + room_curr.map_w 
        and chk_y >= room_curr.map_y and chk_y <= room_curr.map_y + room_curr.map_h
 			 and is_cell_walkable(chk_x,chk_y) then
-			 	d("addded!--------------------")
+			 	--d("addded!--------------------")
         add( neighbours, {chk_x,chk_y,cost} )
       end
 
-			if is_cell_walkable(chk_x,chk_y) then 
-				d(" > walkable")
-			else
-				d(" > NOT walkable")
-			end
+			-- if is_cell_walkable(chk_x,chk_y) then 
+			-- 	d(" > walkable")
+			-- else
+			-- 	d(" > NOT walkable")
+			-- end
 			-- if chk_x > 0 and chk_x < 15 
       --  and chk_y > 0 and chk_y < 15 
       --  and mget(chk_x, chk_y) != wallid then
@@ -2465,8 +2473,8 @@ end
 
 -- translate a 2d x,y coordinate to a 1d index and back again
 function vectoindex(vec)
-	d("t:"..type(vec))
-	d("vec: "..vec[1]..","..vec[2])
+	-- d("t:"..type(vec))
+	-- d("vec: "..vec[1]..","..vec[2])
  return maptoindex(vec[1],vec[2])
 end
 function maptoindex(x, y)
