@@ -2455,15 +2455,11 @@ function getneighbours(pos)
 
       if chk_x >= room_curr.map_x and chk_x <= room_curr.map_x + room_curr.map_w 
        and chk_y >= room_curr.map_y and chk_y <= room_curr.map_y + room_curr.map_h
-			 and is_cell_walkable(chk_x,chk_y) then
-				-- squeeze check for corners
-				if abs(x) == abs(y) then
-				 if is_cell_walkable(xpos,chk_y) then
-				 	add( neighbours, {chk_x,chk_y,cost} )
-				 end
-				else
-        	add( neighbours, {chk_x,chk_y,cost} )
-				end
+			 and is_cell_walkable(chk_x,chk_y)
+			 -- squeeze check for corners
+			 and ((abs(x) != abs(y)) or is_cell_walkable(xpos,chk_y) ) then
+			 	-- add as valid neighbour
+			 	add( neighbours, {chk_x,chk_y,cost} )
       end
 
 			-- if is_cell_walkable(chk_x,chk_y) then 
