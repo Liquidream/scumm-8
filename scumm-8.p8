@@ -1282,6 +1282,11 @@ function room_draw()
 
 		path = find_path(actor_cell_pos, target_cell_pos)
 
+		-- finally, add our destination to list
+		if (#path>0) then
+			add(path, getcellpos({x=(cursor_x + cam_x), y=(cursor_y - stage_top)}))
+		end
+
 		for p in all(path) do
 			--d("  > "..p[1]..","..p[2])
 			rect(
@@ -1291,7 +1296,8 @@ function room_draw()
 				stage_top+(p[2]-room_curr.map_y)*8+7, 11)
 		end
 
-		celx = flr((cursor_x + cam_x) /8) + room_curr.map_x
+
+	--[[	celx = flr((cursor_x + cam_x) /8) + room_curr.map_x
 		cely = flr((cursor_y - stage_top)/8 ) + room_curr.map_y
 		spr_num = mget(celx, cely)
 		--d("mapa x="..celx..",y="..cely)
@@ -1304,7 +1310,7 @@ function room_draw()
 				stage_top+(cely-room_curr.map_y)*8, 
 				(celx-room_curr.map_x)*8+7, 
 				stage_top+(cely-room_curr.map_y)*8+7, 11)
-		end
+		end]]
 	end
 
 	-- draw each zplane, from back to front
@@ -2077,12 +2083,14 @@ function walk_to(actor, x, y)
 
 		path = find_path(actor_cell_pos, target_cell_pos)
 
+		-- finally, add our destination to list
+		add(path, getcellpos({x=x, y=y}))
+
 		for p in all(path) do
-		--p=path[1]
 
 			d("  > "..p[1]..", "..p[2])
-			px = (p[1]-room_curr.map_x)*8 + 2
-			py = (p[2]-room_curr.map_y)*8 + 2
+			px = (p[1]-room_curr.map_x)*8 + 4
+			py = (p[2]-room_curr.map_y)*8 + 4
 			d("px:"..px)
 			d("py:"..py)
 			d("act "..actor.x..", "..actor.y)
