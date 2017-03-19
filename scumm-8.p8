@@ -147,13 +147,11 @@ rooms = {
 			fire = {
 				name = "fire",
 				state = 1, --"frame1",
-				x = 8*8, -- (*8 to use map cell pos)
-				y = 4*8,
+				x = 8 *8, -- (*8 to use map cell pos)
+				y = 4 *8,
 				states = {145, 146, 147},
 				w = 1,	-- relates to spr or map cel, depending on above
 				h = 1,  --
-				--trans_col = 0,
-				--use_pos (defaults to spr bottom)
 				use_dir = face_back,
 				use_pos = pos_infront,
 
@@ -246,7 +244,6 @@ rooms = {
 				},
 				trans_col=15,
 				--owner (set on pickup)
-				--[dependent-on object-name being object-state]
 				verbs = {
 					lookat = function(me)
 						if owner_of(me) == selected_actor then
@@ -260,9 +257,16 @@ rooms = {
 					end,
 					give = function(me, noun2)
 						if noun2 == actors.purp_tentacle then
-							say_line(actors.purp_tentacle, "Thanks!")
+							say_line("Can you fill this up for me?")
+							wait_for_message()
+							say_line(actors.purp_tentacle, "Sure")
 							wait_for_message()
 							me.owner = actors.purp_tentacle
+							break_time(10)
+							say_line(actors.purp_tentacle, "Here ya go...")
+							wait_for_message()
+							me.state = states.closed
+							pickup_obj(me)
 						else
 							say_line("I might need this")
 						end
@@ -512,8 +516,8 @@ rooms = {
 -- set which room to start the game in 
 -- (could be a "pseudo" room for title screen!)
 --selected_room = rooms.first_room
-selected_room = rooms.second_room
---selected_room = rooms.outside_room
+--selected_room = rooms.second_room
+selected_room = rooms.outside_room
 
 
 -- #######################################################
@@ -557,7 +561,7 @@ actors = {
 		in_room = rooms.second_room,
 		verbs = {
 				lookat = function()
-					say_line(selected_actor, "it's a weird looking tentacle, thing!")
+					say_line("it's a weird looking tentacle, thing!")
 				end,
 				talkto = function(me)
 					cutscene(cut_noverbs, function()
@@ -1217,6 +1221,10 @@ function checkcollisions()
 	for k,obj in pairs(selected_actor.inventory) do
 		if iscursorcolliding(obj) then
 			hover_curr_object = obj
+			-- pickup override for inventory objects
+			if verb_curr[1] == "pickup" and hover_curr_object.owner then
+				verb_curr = nil
+			end
 		end
 		-- check for disowned objects!
 		if obj.owner != selected_actor then 
@@ -1548,7 +1556,7 @@ function ui_draw()
 end
 
 function dialog_draw()
-	d("dialog_draw()")
+	--d("dialog_draw()")
 	-- draw verbs
 	xpos = 0
 	ypos = 70
@@ -1735,7 +1743,7 @@ end
 -- open one (or more) doors
 function open_door(door_obj1, door_obj2)
 	if state_of(door_obj1) == states.open then
-		say_line(selected_actor, "it's already open")
+		say_line("it's already open")
 	else
 		set_state(door_obj1, states.open)
 		if door_obj2 then set_state(door_obj2, states.open) end
@@ -1745,7 +1753,7 @@ end
 -- close one (or more) doors
 function close_door(door_obj1, door_obj2)
 	if state_of(door_obj1) == states.closed then
-		say_line(selected_actor, "it's already closed")
+		say_line("it's already closed")
 	else
 		set_state(door_obj1, states.closed)
 		if door_obj2 then set_state(door_obj2, states.closed) end
@@ -1833,7 +1841,8 @@ end
 function pickup_obj(objname)
 	obj = find_object(objname)
 	if obj
-	 and not obj.owner then
+	 --and not obj.owner 
+	 then
 	 	d("adding to inv")
 		-- assume selected_actor picked-up at this point
 		add(selected_actor.inventory, obj)
