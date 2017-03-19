@@ -571,47 +571,47 @@ actors = {
 					end)
 
 					-- dialog loop start
-					::dialogLoop::
+					while (true) do
 						-- build dialog options
-					dialog_add("where am i?")
-					dialog_add("who are you?")
-					dialog_add("how much wood would a wood-chuck chuck, if a wood-chuck could chuck wood?")
-					dialog_add("nevermind")
-					dialog_start(selected_actor.col, 7)
+						dialog_add("where am i?")
+						dialog_add("who are you?")
+						dialog_add("how much wood would a wood-chuck chuck, if a wood-chuck could chuck wood?")
+						dialog_add("nevermind")
+						dialog_start(selected_actor.col, 7)
 
-					-- wait for selection
-					while not dialog_curr.selection do break_time() end
-					-- chosen options
-					sentence = dialog_curr.selection
-					dialog_hide()
+						-- wait for selection
+						while not dialog_curr.selection do break_time() end
+						-- chosen options
+						sentence = dialog_curr.selection
+						dialog_hide()
 
-					cutscene(cut_noverbs, function()
-						say_line(sentence.msg)
-						wait_for_message()
-						
-						if sentence.num == 1 then
-							say_line(me, "you are in paul's game")
+						cutscene(cut_noverbs, function()
+							say_line(sentence.msg)
 							wait_for_message()
+							
+							if sentence.num == 1 then
+								say_line(me, "you are in paul's game")
+								wait_for_message()
 
-						elseif sentence.num == 2 then
-							say_line(me, "it's complicated...")
-							wait_for_message()
+							elseif sentence.num == 2 then
+								say_line(me, "it's complicated...")
+								wait_for_message()
 
-						elseif sentence.num == 3 then
-							say_line(me, "a wood-chuck would chuck no amount of wood, coz a wood-chuck can't chuck wood!")
-							wait_for_message()
+							elseif sentence.num == 3 then
+								say_line(me, "a wood-chuck would chuck no amount of wood, coz a wood-chuck can't chuck wood!")
+								wait_for_message()
 
-						elseif sentence.num == 4 then
-							say_line(me, "ok bye!")
-							wait_for_message()
-							dialog_end()
-							return
-						end
-					end)
+							elseif sentence.num == 4 then
+								say_line(me, "ok bye!")
+								wait_for_message()
+								dialog_end()
+								return
+							end
+						end)
 
-					dialog_clear()
+						dialog_clear()
 
-					goto dialogLoop	
+					end --dialog loop
 				end -- talkto
 			}
 	}
@@ -1037,8 +1037,7 @@ function input_button_pressed(button_index)
 		-- if valid obj, complete command
 		-- else, abort command (clear verb, etc.)
 		if button_index == 1 then
-
-			if (verb_curr[1] == "use" or verb_curr[1] == "give") 
+			if (verb_curr[2] == "use" or verb_curr[2] == "give") 
 			 and noun1_curr then
 				noun2_curr = hover_curr_object
 				d("noun2_curr = "..noun2_curr.name)					
@@ -1051,9 +1050,9 @@ function input_button_pressed(button_index)
 			-- perform default verb action (if present)
 			verb_curr = get_verb(hover_curr_default_verb)
 			noun1_curr = hover_curr_object
-			d("n1 tpe:"..type(noun1_curr))
+			--d("n1 tpe:"..type(noun1_curr))
 			get_keys(noun1_curr)
-			d("name:"..noun1_curr.name)
+			--d("name:"..noun1_curr.name)
 			-- force repaint of command (to reflect default verb)
 			command_draw()
 		end
@@ -1222,7 +1221,7 @@ function checkcollisions()
 		if iscursorcolliding(obj) then
 			hover_curr_object = obj
 			-- pickup override for inventory objects
-			if verb_curr[1] == "pickup" and hover_curr_object.owner then
+			if verb_curr[2] == "pickup" and hover_curr_object.owner then
 				verb_curr = nil
 			end
 		end
