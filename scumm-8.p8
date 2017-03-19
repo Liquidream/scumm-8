@@ -565,63 +565,50 @@ actors = {
 						say_line(me,"what do you want?")
 						wait_for_message()
 					end)
-					-- d("dlg tpe:"..type(sentence_curr))
-					-- if sentence_curr then
-					-- 	d("dlg num:"..sentence_curr.num)
-					-- end
 
-					-- dialog loop
-					::dialogLoop:: -- label
+					-- dialog loop start
+					::dialogLoop::
+						-- build dialog options
+					dialog_add("where am i?")
+					dialog_add("who are you?")
+					dialog_add("how much wood would a wood-chuck chuck, if a wood-chuck could chuck wood?")
+					dialog_add("nevermind")
+					dialog_start(selected_actor.col, 7)
 
-					
-					--while (not sentence_curr or sentence_curr.num != 4) do
-						--d("start dialog")
-						--while (true) do
-							-- build dialog options
-							dialog_add("where am i?")
-							dialog_add("who are you?")
-							dialog_add("how much wood would a wood-chuck chuck, if a wood-chuck could chuck wood?")
-							dialog_add("nevermind")
-							dialog_start(selected_actor.col, 7)
-							-- wait for selection
-							while not sentence_curr do break_time() end
-							--break
-						--end
-						-- chosen options
-						sentence = sentence_curr
-						dialog_end()
-						--dialog_hide()
-						cutscene(cut_noverbs, function()
-							say_line(sentence.msg)
+					-- wait for selection
+					while not dialog_curr.selection do break_time() end
+					-- chosen options
+					sentence = dialog_curr.selection
+					dialog_hide()
+
+					cutscene(cut_noverbs, function()
+						say_line(sentence.msg)
+						wait_for_message()
+						
+						if sentence.num == 1 then
+							say_line(me, "you are in paul's game")
 							wait_for_message()
-							
-							d("sentence num: "..sentence.num)
-							if sentence.num == 1 then
-								say_line(me, "you are in paul's game")
-								wait_for_message()
-							elseif sentence.num == 2 then
-								say_line(me, "it's complicated...")
-								wait_for_message()
-							elseif sentence.num == 3 then
-								say_line(me, "a wood-chuck would chuck no amount of wood, coz a wood-chuck can't chuck wood!")
-								wait_for_message()
-							elseif sentence.num == 4 then
-								say_line(me, "ok bye!")
-								wait_for_message()
-								--dialog_end()
-								d("exit loop")
-								--return -- exit dialog loop
-							end
-						end)
-						if sentence.num == 4 then
-							d("exit loop2")
+
+						elseif sentence.num == 2 then
+							say_line(me, "it's complicated...")
+							wait_for_message()
+
+						elseif sentence.num == 3 then
+							say_line(me, "a wood-chuck would chuck no amount of wood, coz a wood-chuck can't chuck wood!")
+							wait_for_message()
+
+						elseif sentence.num == 4 then
+							say_line(me, "ok bye!")
+							wait_for_message()
+							dialog_end()
 							return
-						else
-							goto dialogLoop -- jump
 						end
-					--end --dialog loop
+					end)
+
+					dialog_clear()
+
+					goto dialogLoop	
 				end -- talkto
-				
 			}
 	}
 }
@@ -813,7 +800,7 @@ cmd_curr = "" 			-- contains last displayed or actioned command
 executing_cmd = false
 talking_curr = nil 	-- currently displayed speech {x,y,col,lines...}
 dialog_curr = nil   -- currently displayed dialog options to pick
-sentence_curr = nil -- selected dialog sentence
+--sentence_curr = nil -- selected dialog sentence
 cutscene_curr = nil -- currently active cutscene
 talking_actor = nil -- currently talking actor
 
@@ -1030,7 +1017,8 @@ function input_button_pressed(button_index)
 	-- check for sentence selection
 	if dialog_curr and dialog_curr.visible then
 		if hover_curr_sentence then
-			sentence_curr = hover_curr_sentence
+			dialog_curr.selection = hover_curr_sentence
+			--sentence_curr = hover_curr_sentence
 		end
 		-- skip remaining
 		return
@@ -1665,28 +1653,34 @@ function dialog_start(col, hlcol)
 	dialog_curr.col = col
 	dialog_curr.hlcol = hlcol
 	dialog_curr.visible = true
-	sentence_curr = nil
+	dialog_curr.selection = nil
+	--sentence_curr = nil
 end
 
 function dialog_hide()
 	dialog_curr.visible = false
-	dialog_curr=nil
+	--dialog_curr=nil
+end
+
+function dialog_clear()
+	dialog_curr.sentences = {}
+	dialog_curr.selection = nil
 end
 
 function dialog_end()
-	d("dialog_end()")
+	--d("dialog_end()")
 	dialog_curr=nil
-	sentence_curr = nil
-	d("2")
+	--sentence_curr = nil
+	--d("2")
 end
 
 
 function get_use_pos(obj)
 	pos = {}
-	d("get_use_pos")
+	--d("get_use_pos")
 	-- first check for specific pos
 	if type(obj.use_pos) == "table" then
-		d("usr tbl")
+	--d("usr tbl")
 		pos.x = obj.use_pos.x-cam_x
 		pos.y = obj.use_pos.y-stage_top
 
