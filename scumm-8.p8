@@ -2060,11 +2060,11 @@ function walk_to(actor, x, y)
 		x = x + cam_x
 
 		actor_cell_pos = getcellpos(actor)
-		d("act-cel x="..actor_cell_pos[1]..", y="..actor_cell_pos[2])
+		--d("act-cel x="..actor_cell_pos[1]..", y="..actor_cell_pos[2])
 
 		celx = flr(x /8) + room_curr.map_x
 		cely = flr(y /8) + room_curr.map_y
-		d("cel x="..celx..", y="..cely)
+		--d("cel x="..celx..", y="..cely)
 
 		target_cell_pos = { celx, cely }
 
@@ -2078,21 +2078,18 @@ function walk_to(actor, x, y)
 		end
 
 		for p in all(path) do
-
-
-			d("  > "..p[1]..", "..p[2])
+			--d("  > "..p[1]..", "..p[2])
 			px = (p[1]-room_curr.map_x)*8 + 4
 			py = (p[2]-room_curr.map_y)*8 + 4
-			d("px:"..px)
-			d("py:"..py)
-			d("act "..actor.x..", "..actor.y)
+			-- d("px:"..px)
+			-- d("py:"..py)
+			-- d("act "..actor.x..", "..actor.y)
 
 			local distance = sqrt((px - actor.x) ^ 2 + (py - actor.y) ^ 2)
 			local step_x = actor.speed * (px - actor.x) / distance
 			local step_y = actor.speed * (py - actor.y) / distance
-
-			d("sx:"..step_x)
-			d("sy:"..step_y)
+			-- d("sx:"..step_x)
+			-- d("sy:"..step_y)
 
 			--walking
 			actor.moving = 1 
@@ -2107,7 +2104,7 @@ function walk_to(actor, x, y)
 				yield()
 			end
 
-			d("reach dest")
+			--d("reach dest")
 			actor.moving = 2 --arrived
 		end
 
@@ -2358,12 +2355,6 @@ end
 
 
 function find_path(start, goal)
-
- wallid = 1
-
- --d("start = "..start[1]..","..start[2])
- --d("goal = "..goal[1]..","..goal[2])
- 
  frontier = {}
  insert(frontier, start, 0)
  came_from = {}
@@ -2372,38 +2363,66 @@ function find_path(start, goal)
  cost_so_far[vectoindex(start)] = 0
 
  while (#frontier > 0 and #frontier < 1000) do
-  current = popend(frontier)
+ 	-- pop the last element off a table
+	local top = frontier[#frontier]
+	del(frontier,frontier[#frontier])
+	current = top[1]
+  --current = popend(frontier)
 
   if vectoindex(current) == vectoindex(goal) then
-	 --d("found!")
-	 --came_from[goal] = vectoindex(goal)
    break
   end
 
-  local neighbours = getneighbours(current)
+  --local neighbours = getneighbours(current)
+	local neighbours = {}
+	for x = -1, 1 do
+		for y = -1, 1 do
+			if x == 0 and y == 0 then 
+				--continue 
+			else
+				chk_x = current[1] + x
+				chk_y = current[2] + y
 
-	--d("nbrs:"..#neighbours)
+				-- diagonals cost more
+				if abs(x) != abs(y) then cost=1 else cost=1.4 end
+				
+				if chk_x >= room_curr.map_x and chk_x <= room_curr.map_x + room_curr.map_w 
+				and chk_y >= room_curr.map_y and chk_y <= room_curr.map_y + room_curr.map_h
+				and is_cell_walkable(chk_x,chk_y)
+				-- squeeze check for corners
+				and ((abs(x) != abs(y)) 
+						or is_cell_walkable(chk_x, current[2]) 
+						or is_cell_walkable(chk_x - x, chk_y)) 
+				then
+					-- add as valid neighbour
+					add( neighbours, {chk_x, chk_y, cost} )
+				end
+			end
+		end
+	end
+	-- --------------
 
   for next in all(neighbours) do
    local nextindex = vectoindex(next)
-  
-   local new_cost = cost_so_far[vectoindex(current)] + next[3]  --+ 1 -- add extra costs here
+   local new_cost = cost_so_far[vectoindex(current)] + next[3] -- add extra costs here
 
    if (cost_so_far[nextindex] == nil) or (new_cost < cost_so_far[nextindex]) then
     cost_so_far[nextindex] = new_cost
-    local priority = new_cost + heuristic(goal, next)
+
+		-- diagonal movement - assumes diag dist is 1, same as cardinals
+		local priority = new_cost +  max(abs(goal[1] - next[1]), abs(goal[2] - next[2]))
+    --local priority = new_cost + heuristic(goal, next)
+
     insert(frontier, next, priority)
-    
     came_from[nextindex] = current
    end 
   end
  end
 
  --printh("find goal..")
- 
+ path = {}
  current = came_from[vectoindex(goal)]
  if current then
-	path = {}
 	local cindex = vectoindex(current)
 	local sindex = vectoindex(start)
 
@@ -2412,78 +2431,21 @@ function find_path(start, goal)
 		current = came_from[cindex]
 		cindex = vectoindex(current)
 	end
-	reverse(path)
+
+	--reverse(path)
+	for i=1,(#path/2) do
+  local temp = path[i]
+  local oppindex = #path-(i-1)
+  path[i] = path[oppindex]
+  path[oppindex] = temp
+
+ end
 	--printh("..done")
-	return path
- else
- 	return {}
  end
- --return path
+
+ return path
 end
 
-function heuristic(a, b)
- 	-- diagonal movement - assumes diag dist is 1, same as cardinals
-	return max(abs(a[1] - b[1]), abs(a[2] - b[2]));
-
- 	-- manhattan distance on a square grid
- 	--return abs(a[1] - b[1]) + abs(a[2] - b[2])
-end
-
--- find all existing neighbours of a position that are not walls
-function getneighbours(pos)
- local neighbours={}
- local xpos = pos[1]
- local ypos = pos[2]
-
---  d("xpos:"..xpos)
---  d("ypos:"..ypos)
-
- 
-
- for x = -1, 1 do
-  for y = -1, 1 do
-    if x==0 and y==0 then 
-      --continue 
-    else
-      chk_x = xpos + x
-      chk_y = ypos + y
-
-      if abs(x) != abs(y) then cost=1 else cost=1.4 end
-
-			-- d("chk_x:"..chk_x)
- 			-- d("chk_y:"..chk_y)
-			-- d("map_x:"..room_curr.map_x)
-			-- d("map_y:"..room_curr.map_y)
-			-- d("map_w:"..room_curr.map_w)
-			-- d("map_h:"..room_curr.map_h)
-
-      if chk_x >= room_curr.map_x and chk_x <= room_curr.map_x + room_curr.map_w 
-       and chk_y >= room_curr.map_y and chk_y <= room_curr.map_y + room_curr.map_h
-			 and is_cell_walkable(chk_x,chk_y)
-			 -- squeeze check for corners
-			 and ((abs(x) != abs(y)) 
-			 	--or ( ( mget(chk_x, ypos) != wallid ) or ( mget(chk_x-x, chk_y) != wallid )  )  )
-			  or is_cell_walkable(chk_x,ypos) or is_cell_walkable(chk_x-x,chk_y)) 
-			then
-			 	-- add as valid neighbour
-			 	add( neighbours, {chk_x,chk_y,cost} )
-      end
-
-			-- if is_cell_walkable(chk_x,chk_y) then 
-			-- 	d(" > walkable")
-			-- else
-			-- 	d(" > NOT walkable")
-			-- end
-			-- if chk_x > 0 and chk_x < 15 
-      --  and chk_y > 0 and chk_y < 15 
-      --  and mget(chk_x, chk_y) != wallid then
-      --   add( neighbours, {chk_x,chk_y,cost} )
-      -- end
-    end
-  end
- end
- return neighbours
-end
 
 -- insert into table and sort by priority
 function insert(t, val, p)
@@ -2505,43 +2467,87 @@ function insert(t, val, p)
  end
 end
 
--- pop the last element off a table
-function popend(t)
- local top = t[#t]
- del(t,t[#t])
- return top[1]
-end
-
-function reverse(t)
- for i=1,(#t/2) do
-  local temp = t[i]
-  local oppindex = #t-(i-1)
-  t[i] = t[oppindex]
-  t[oppindex] = temp
- end
-end
-
 -- translate a 2d x,y coordinate to a 1d index and back again
 function vectoindex(vec)
 	-- d("t:"..type(vec))
 	-- d("vec: "..vec[1]..","..vec[2])
- return maptoindex(vec[1],vec[2])
+	return ((vec[1]+1) * 16) + vec[2]
+ --return maptoindex(vec[1],vec[2])
 end
-function maptoindex(x, y)
- return ((x+1) * 16) + y
-end
+
+-- function heuristic(a, b)
+--  	-- diagonal movement - assumes diag dist is 1, same as cardinals
+-- 	return max(abs(a[1] - b[1]), abs(a[2] - b[2]));
+
+--  	-- manhattan distance on a square grid
+--  	--return abs(a[1] - b[1]) + abs(a[2] - b[2])
+-- end
+
+-- find all existing neighbours of a position that are not walls
+-- function getneighbours(pos)
+--  local neighbours = {}
+
+--  for x = -1, 1 do
+--   for y = -1, 1 do
+--     if x == 0 and y == 0 then 
+--       --continue 
+--     else
+--       chk_x = pos[1] + x
+--       chk_y = pos[2] + y
+
+-- 			-- diagonals cost more
+--       if abs(x) != abs(y) then cost=1 else cost=1.4 end
+			
+--       if chk_x >= room_curr.map_x and chk_x <= room_curr.map_x + room_curr.map_w 
+--        and chk_y >= room_curr.map_y and chk_y <= room_curr.map_y + room_curr.map_h
+-- 			 and is_cell_walkable(chk_x,chk_y)
+-- 			 -- squeeze check for corners
+-- 			 and ((abs(x) != abs(y)) 
+-- 				  or is_cell_walkable(chk_x, pos[2]) 
+-- 					or is_cell_walkable(chk_x - x, chk_y)) 
+-- 			then
+-- 			 	-- add as valid neighbour
+-- 			 	add( neighbours, {chk_x, chk_y, cost} )
+--       end
+--     end
+--   end
+--  end
+--  return neighbours
+-- end
+
+
+-- -- pop the last element off a table
+-- function popend(t)
+--  local top = t[#t]
+--  del(t,t[#t])
+--  return top[1]
+-- end
+
+-- function reverse(t)
+--  for i=1,(#t/2) do
+--   local temp = t[i]
+--   local oppindex = #t-(i-1)
+--   t[i] = t[oppindex]
+--   t[oppindex] = temp
+--  end
+-- end
+
+-- function maptoindex(x, y)
+--  return ((x+1) * 16) + y
+-- end
+
 -- pop the first element off a table (unused
-function pop(t)
- local top = t[1]
- for i=1,(#t) do
-  if i == (#t) then
-   del(t,t[i])
-  else
-   t[i] = t[i+1]
-  end
- end
- return top
-end
+-- function pop(t)
+--  local top = t[1]
+--  for i=1,(#t) do
+--   if i == (#t) then
+--    del(t,t[i])
+--   else
+--    t[i] = t[i+1]
+--   end
+--  end
+--  return top
+-- end
 
 
 
@@ -2556,14 +2562,20 @@ function outline_text(str,x,y,c0,c1)
 
  str = smallcaps(str)
 
- print(str,x,y+1,c1)
- print(str,x,y-1,c1)
- print(str,x+1,y,c1)
- print(str,x+1,y+1,c1)
- print(str,x+1,y-1,c1)
- print(str,x-1,y,c1)
- print(str,x-1,y+1,c1)
- print(str,x-1,y-1,c1)
+ for xx = -1, 1 do
+		for yy = -1, 1 do
+			print(str, x+xx, y+yy, c1)
+		end
+ end
+
+--  print(str,x,y+1,c1)
+--  print(str,x,y-1,c1)
+--  print(str,x+1,y,c1)
+--  print(str,x+1,y+1,c1)
+--  print(str,x+1,y-1,c1)
+--  print(str,x-1,y,c1)
+--  print(str,x-1,y+1,c1)
+--  print(str,x-1,y-1,c1)
 
  print(str,x,y,c0)
 end
@@ -2580,7 +2592,7 @@ end
 function iscursorcolliding(obj)
 	-- check params
 	if not obj.bounds then return false end
-	bounds=obj.bounds
+	bounds = obj.bounds
 	if (cursor_x + bounds.cam_off_x > bounds.x1 or cursor_x + bounds.cam_off_x < bounds.x) 
 	 or (cursor_y>bounds.y1 or cursor_y<bounds.y) then
 		return false
