@@ -1296,21 +1296,6 @@ function room_draw()
 				stage_top+(p[2]-room_curr.map_y)*8+7, 11)
 		end
 
-
-	--[[	celx = flr((cursor_x + cam_x) /8) + room_curr.map_x
-		cely = flr((cursor_y - stage_top)/8 ) + room_curr.map_y
-		spr_num = mget(celx, cely)
-		--d("mapa x="..celx..",y="..cely)
-		--d("spr:"..spr_num)
-		walkable = fget(spr_num,0)
-
-		if walkable then
-			rect(
-				(celx-room_curr.map_x)*8, 
-				stage_top+(cely-room_curr.map_y)*8, 
-				(celx-room_curr.map_x)*8+7, 
-				stage_top+(cely-room_curr.map_y)*8+7, 11)
-		end]]
 	end
 
 	-- draw each zplane, from back to front
@@ -2084,9 +2069,12 @@ function walk_to(actor, x, y)
 		path = find_path(actor_cell_pos, target_cell_pos)
 
 		-- finally, add our destination to list
-		add(path, getcellpos({x=x, y=y}))
+		if (#path>0) then
+			add(path, getcellpos({x=x, y=y}))
+		end
 
 		for p in all(path) do
+
 
 			d("  > "..p[1]..", "..p[2])
 			px = (p[1]-room_curr.map_x)*8 + 4
@@ -2102,12 +2090,21 @@ function walk_to(actor, x, y)
 			d("sx:"..step_x)
 			d("sy:"..step_y)
 
+			--walking
+			actor.moving = 1 
+			actor.flip = (step_x<0)
+			-- face dir (at end of walk)
+			actor.face_dir = face_right
+			if (actor.flip) then actor.face_dir = face_left end
+
 			for i = 0, distance/actor.speed do
 				actor.x = actor.x + step_x
 				actor.y = actor.y + step_y
 				yield()
 			end
 
+			d("reach dest")
+			actor.moving = 2 --arrived
 		end
 
 --[[	local distance = sqrt((x - actor.x) ^ 2 + (y - actor.y) ^ 2)
@@ -2459,8 +2456,14 @@ function getneighbours(pos)
       if chk_x >= room_curr.map_x and chk_x <= room_curr.map_x + room_curr.map_w 
        and chk_y >= room_curr.map_y and chk_y <= room_curr.map_y + room_curr.map_h
 			 and is_cell_walkable(chk_x,chk_y) then
-			 	--d("addded!--------------------")
-        add( neighbours, {chk_x,chk_y,cost} )
+				-- squeeze check for corners
+				if abs(x) == abs(y) then
+				 if is_cell_walkable(xpos,chk_y) then
+				 	add( neighbours, {chk_x,chk_y,cost} )
+				 end
+				else
+        	add( neighbours, {chk_x,chk_y,cost} )
+				end
       end
 
 			-- if is_cell_walkable(chk_x,chk_y) then 
