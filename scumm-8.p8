@@ -24,7 +24,7 @@ __lua__
 -- debugging
 show_debuginfo = true
 show_collision = false
-show_pathfinding = true
+show_pathfinding = false
 show_perfinfo = true
 enable_mouse = true
 d = printh
@@ -512,8 +512,8 @@ rooms = {
 -- set which room to start the game in 
 -- (could be a "pseudo" room for title screen!)
 --selected_room = rooms.first_room
---selected_room = rooms.second_room
-selected_room = rooms.outside_room
+selected_room = rooms.second_room
+--selected_room = rooms.outside_room
 
 
 -- #######################################################
@@ -565,10 +565,18 @@ actors = {
 						say_line(me,"what do you want?")
 						wait_for_message()
 					end)
+					-- d("dlg tpe:"..type(sentence_curr))
+					-- if sentence_curr then
+					-- 	d("dlg num:"..sentence_curr.num)
+					-- end
+
 					-- dialog loop
-					while (not sentence_curr or sentence_curr.num != 4) do
+					::dialogLoop:: -- label
+
+					
+					--while (not sentence_curr or sentence_curr.num != 4) do
 						--d("start dialog")
-						while (true) do
+						--while (true) do
 							-- build dialog options
 							dialog_add("where am i?")
 							dialog_add("who are you?")
@@ -577,31 +585,41 @@ actors = {
 							dialog_start(selected_actor.col, 7)
 							-- wait for selection
 							while not sentence_curr do break_time() end
-							break
-						end
+							--break
+						--end
 						-- chosen options
+						sentence = sentence_curr
 						dialog_end()
+						--dialog_hide()
 						cutscene(cut_noverbs, function()
-							say_line(sentence_curr.msg)
+							say_line(sentence.msg)
 							wait_for_message()
 							
-							d("sentence num: "..sentence_curr.num)
-							if sentence_curr.num == 1 then
+							d("sentence num: "..sentence.num)
+							if sentence.num == 1 then
 								say_line(me, "you are in paul's game")
 								wait_for_message()
-							elseif sentence_curr.num == 2 then
+							elseif sentence.num == 2 then
 								say_line(me, "it's complicated...")
 								wait_for_message()
-							elseif sentence_curr.num == 3 then
+							elseif sentence.num == 3 then
 								say_line(me, "a wood-chuck would chuck no amount of wood, coz a wood-chuck can't chuck wood!")
 								wait_for_message()
-							elseif sentence_curr.num == 4 then
+							elseif sentence.num == 4 then
 								say_line(me, "ok bye!")
 								wait_for_message()
-								return -- exit dialog loop
+								--dialog_end()
+								d("exit loop")
+								--return -- exit dialog loop
 							end
 						end)
-					end --dialog loop
+						if sentence.num == 4 then
+							d("exit loop2")
+							return
+						else
+							goto dialogLoop -- jump
+						end
+					--end --dialog loop
 				end -- talkto
 				
 			}
@@ -1542,6 +1560,7 @@ function ui_draw()
 end
 
 function dialog_draw()
+	d("dialog_draw()")
 	-- draw verbs
 	xpos = 0
 	ypos = 70
@@ -1649,9 +1668,16 @@ function dialog_start(col, hlcol)
 	sentence_curr = nil
 end
 
-function dialog_end()
+function dialog_hide()
 	dialog_curr.visible = false
 	dialog_curr=nil
+end
+
+function dialog_end()
+	d("dialog_end()")
+	dialog_curr=nil
+	sentence_curr = nil
+	d("2")
 end
 
 
@@ -2307,10 +2333,9 @@ end
 
 -- find longest line
 function longest_line_size(lines)
-	--if lines d(#lines[1])
 	longest_line = 0
 	for l in all(lines) do
-		if (#l > longest_line) then longest_line = #l end
+		if #l > longest_line then longest_line = #l end
 	end
 	return longest_line
 end
@@ -2388,7 +2413,7 @@ function find_path(start, goal)
 				
 				if chk_x >= room_curr.map_x and chk_x <= room_curr.map_x + room_curr.map_w 
 				and chk_y >= room_curr.map_y and chk_y <= room_curr.map_y + room_curr.map_h
-				and is_cell_walkable(chk_x,chk_y)
+				and is_cell_walkable(chk_x, chk_y)
 				-- squeeze check for corners
 				and ((abs(x) != abs(y)) 
 						or is_cell_walkable(chk_x, current[2]) 
