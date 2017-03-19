@@ -11,6 +11,7 @@ Wow, really? You still here?! OK, once again. Think of SCUMM-8 as an even more r
 
 ## Current Features
 - [x] Multiple Rooms (up to 32, technically)
+- [x] Pathfinding for walking
 - [x] Dialogs between Actors
 - [x] Cut-scenes
 - [x] Basic Camera system (follow/fixed)
@@ -21,11 +22,10 @@ Wow, really? You still here?! OK, once again. Think of SCUMM-8 as an even more r
 - [x] Replace Color (to allow re-use of room/object gfx)
 
 ## Planned Features
-- [ ] Pathfinding for walking
 - [ ] Advanced Camera features (pan-to, etc.)
-- [ ] Game Save/Load
-- [ ] Game start-up script
 - [ ] Cut-scene transitions
+- [ ] Game start-up script
+- [ ] Game Save/Load
 
 ## Thanks & Useful Resources
 A big thanks to [Aric Wilmunder](http://www.wilmunder.com/Arics_World/Games.html) (ex-LucasArts developer) for sharing valuable SCUMM documentation. 
