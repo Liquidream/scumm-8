@@ -12,15 +12,6 @@ __lua__
 
 -- was 6439 tokens
 
--- ==================================================
--- token saving todo's:
--- [x] change cam from object to separate variables
--- [x] change cursor from object to separate variables
--- [x] change hover_curr from object to separate variables
--- [ ] 
--- [ ] 
--- ==================================================
-
 -- debugging
 show_debuginfo = true
 show_collision = false
@@ -49,9 +40,9 @@ verb_default = {
 
 
 verb_maincol = 12  -- main color (lt blue)
-verb_hovcol = 7   -- hover color (white)
+verb_hovcol = 7    -- hover color (white)
 verb_shadcol = 1   -- shadow (dk blue)
-verb_defcol = 10    -- default action (yellow)
+verb_defcol = 10   -- default action (yellow)
 
 -- object states
 states = {
@@ -62,15 +53,6 @@ states = {
 	on = 2,
 	here = 2
 }
-
--- prepositions { " ", " in", " with", " on", " to" },   // english
---[[void resetsentence()
-{
-		variables[variablesentenceverb.value] = variables[variablebackupverb.value];
-		variables[variablesentenceobject1.value] = 0;
-		variables[variablesentenceobject2.value] = 0;
-		variables[variablesentencepreposition.value] = 0;
-}]]
 
 -- object classes (bitflags)
 class_untouchable = 1 -- will not register when the cursor moves over it. the object is invisible to the user.
@@ -114,7 +96,6 @@ rooms = {
 			-- { 4, 5 }, 
 			-- { 6, 8 } 
 		},
-		--sounds = {},
 		enter = function(me)
 			-- animate fireplace
 			--d("scr:"..type(me.scripts.anim_fire))
@@ -201,7 +182,7 @@ rooms = {
 					walkto = function(me)
 						if state_of(me) == states.open then
 							-- go to new room!
-							come_out_door(rooms.outside_room.objects.front_door) --, outside_room)
+							come_out_door(rooms.outside_room.objects.front_door)
 						else
 							say_line("the door is closed")
 						end
@@ -262,10 +243,11 @@ rooms = {
 							say_line(actors.purp_tentacle, "Sure")
 							wait_for_message()
 							me.owner = actors.purp_tentacle
-							break_time(10)
+							break_time(30)
 							say_line(actors.purp_tentacle, "Here ya go...")
 							wait_for_message()
 							me.state = states.closed
+							me.name = "full bucket"
 							pickup_obj(me)
 						else
 							say_line("I might need this")
@@ -357,6 +339,7 @@ rooms = {
 								end,
 								-- override for cutscene
 								function()
+									--d("override!")
 									change_room(rooms.first_room)
 									actors.purp_tentacle.in_room = rooms.first_room
 									actors.purp_tentacle.x = 105
@@ -641,14 +624,14 @@ function find_default_verb(obj)
 	-- now find the full verb definition
 	for v in all(verbs) do
 		vi = get_verb(v)
-		if (vi[2] == default_verb) then default_verb=v break end
+		if vi[2] == default_verb then default_verb=v break end
 	end
 	return default_verb
 end
 
 -- actions to perform when object doesn't have an entry for verb
 function unsupported_action(verb, obj1, obj2)
-	d("verb:"..verb.." , obj:"..obj1.name)
+	--d("verb:"..verb.." , obj:"..obj1.name)
 
 	if verb == "walkto" then
 		return
@@ -748,42 +731,15 @@ cam_max = 0 	-- the maximum x position the camera can move to in the current roo
 cam_min = 0  	-- the minimum x position the camera can move to in the current room
 cam_mode = 0 	-- 0=follow, 1=static, 2=pan-to
 cam_following_actor = selected_actor
-
---[[
-cam = {
-	x = 0,
-	max = 0, -- the maximum x position the camera can move to in the current room
-	min = 0,  -- the minimum x position the camera can move to in the current room
-	mode = 0, -- 0=follow, 1=static, 2=pan-to
-	following_actor = selected_actor,
-	-- pan_to_x=0
-	-- pan_to_y=0
-}]]
+-- pan_to_x=0
+-- pan_to_y=0
 
 cursor_x = screenwidth / 2
 cursor_y = screenheight / 2
-cursor_lvl = 1 	-- for cutscenes (<=0 - disable cursor)
+--cursor_lvl = 1 	-- for cutscenes (<=0 - disable cursor)
 cursor_tmr = 0 	-- used to animate cursor col
 cursor_cols = {7,12,13,13,12,7}
 cursor_colpos = 1
-
---[[cursor = {
-  x = screenwidth/2,
-  y = screenheight/2,
-	lvl = 1, -- for cutscenes (<=0 - disable cursor)
-  tmr = 0, -- used to animate cursor col
-  cols = {7,12,13,13,12,7},
-  colpos = 1 
-}]]
-
--- keeps reference to currently hovered items
--- e.g. objects, ui elements, etc.
---hover_curr...
-	-- verb, 
-	-- default_verb,
-	-- object, 
-	-- dialog sentence
-	-- ui_arrow
 
 ui_arrows = {
 	{ spr = 16, x = 75, y = stage_top + 60 },
@@ -804,7 +760,6 @@ cmd_curr = "" 			-- contains last displayed or actioned command
 executing_cmd = false
 talking_curr = nil 	-- currently displayed speech {x,y,col,lines...}
 dialog_curr = nil   -- currently displayed dialog options to pick
---sentence_curr = nil -- selected dialog sentence
 cutscene_curr = nil -- currently active cutscene
 talking_actor = nil -- currently talking actor
 
@@ -817,7 +772,7 @@ draw_zplanes = {}		-- table of tables for each of the (8) zplanes for drawing de
 
 function _init()
 	-- use mouse input?
-	if (enable_mouse) then poke(0x5f2d, 1) end
+	if enable_mouse then poke(0x5f2d, 1) end
 
 	-- init actor
 	selected_actor.in_room = selected_room
@@ -861,7 +816,7 @@ function game_update()
 			del(cutscenes, cutscene_curr)
 			cutscene_curr = nil
 			-- any more cutscenes?
-			if (#cutscenes > 0) then
+			if #cutscenes > 0 then
 				cutscene_curr = cutscenes[#cutscenes]
 			end
 		end
@@ -903,11 +858,11 @@ function game_draw()
 	-- reset clip
 	clip()
 
-	if (show_perfinfo) then 
+	if show_perfinfo then 
 		print("cpu: "..flr(100*stat(1)).."%", 0, stage_top - 16, 8) 
 		print("mem: "..flr(stat(0)/1024*100).."%", 0, stage_top - 8, 8)
 	end
-	if (show_debuginfo) then print("x: "..cursor_x.." y:"..cursor_y-stage_top, 80, stage_top - 8, 8) end
+	if show_debuginfo then print("x: "..cursor_x.." y:"..cursor_y-stage_top, 80, stage_top - 8, 8) end
 
 	-- draw active text
 	talking_draw()
@@ -927,7 +882,7 @@ function game_draw()
  -- as could be going straight into a dialog
  -- (would prefer a better way than this, but couldn't find one!)
  -- --------------------------------------------------------------
-	if (cutscene_curr_lastval == cutscene_curr) then
+	if cutscene_curr_lastval == cutscene_curr then
 		--d("cut_same")
 	else
 		--d("cut_diff")
@@ -954,9 +909,8 @@ function game_draw()
 	-- hack: fix for display issue (see above hack info)
 	cutscene_curr_lastval = cutscene_curr
 
-	if not cutscene_curr
-		--or not has_flag(cutscene_curr.flags, cut_hidecursor) 
-		then
+	--if cursor_lvl == 0 then
+	if not cutscene_curr then
 		cursor_draw()
 	end
 end
@@ -967,12 +921,13 @@ function playercontrol()
 
 	-- check for cutscene "skip"
 	if cutscene_curr then
-		if ((btnp(4) and btnp(5)) or (enable_mouse and stat(34) == 2))
-		 and cutscene_curr.override then 
+		if btnp(4) and btnp(5) and cutscene_curr.override then 
+		-- if ((btnp(4) and btnp(5)) or (enable_mouse and stat(34) == 2))
+		--  and cutscene_curr.override then 
 			-- skip cutscene!
 			cutscene_curr.thread = cocreate(cutscene_curr.override)
 			cutscene_curr.override = nil
-			if (enable_mouse) then ismouseclicked = true end
+			--if (enable_mouse) then ismouseclicked = true end
 			return
 		end
 		-- either way - don't allow other user actions!
@@ -980,21 +935,21 @@ function playercontrol()
 	end
 
 	-- 
-	if (btn(0)) then cursor_x = cursor_x - 1 end
-	if (btn(1)) then cursor_x = cursor_x + 1 end
-	if (btn(2)) then cursor_y = cursor_x - 1 end
-	if (btn(3)) then cursor_y = cursor_x + 1 end
+	if btn(0) then cursor_x -= 1 end
+	if btn(1) then cursor_x += 1 end
+	if btn(2) then cursor_y -= 1 end
+	if btn(3) then cursor_y += 1 end
 
-	if (btnp(4)) then input_button_pressed(1) end
-	if (btnp(5)) then input_button_pressed(2) end
+	if btnp(4) then input_button_pressed(1) end
+	if btnp(5) then input_button_pressed(2) end
 
 	-- only update position if mouse moved
-	if (enable_mouse) then	
-		if (stat(32)-1 != last_mouse_x) then cursor_x = stat(32)-1 end	-- mouse xpos
-		if (stat(33)-1 != last_mouse_y) then cursor_y = stat(33)-1	end -- mouse ypos
+	if enable_mouse then	
+		if stat(32)-1 != last_mouse_x then cursor_x = stat(32)-1 end	-- mouse xpos
+		if stat(33)-1 != last_mouse_y then cursor_y = stat(33)-1 end  -- mouse ypos
 		-- don't repeat action if same press/click
-		if (stat(34) > 0) then
-			if (not ismouseclicked) then
+		if stat(34) > 0 then
+			if not ismouseclicked then
 				input_button_pressed(stat(34))
 				ismouseclicked = true
 			end
@@ -1108,20 +1063,17 @@ function input_button_pressed(button_index)
 				if selected_actor.moving != 2 then return end
 				-- default use direction
 				use_dir=selected_actor.face_dir
-				if (obj.use_dir and (verb != verb_default)) then use_dir = obj.use_dir end
+				if obj.use_dir and verb != verb_default then use_dir = obj.use_dir end
 				-- anim to use dir
 				do_anim(selected_actor, anim_turn, use_dir)
 			end
 			-- does current object support active verb?
 			if valid_verb(verb,obj) then
 				-- finally, execute verb script
-				d("verb_obj_script!")
-				d("verb = "..verb[2])
-				d("obj = "..obj.name)
+				-- d("verb_obj_script!")
+				-- d("verb = "..verb[2])
+				-- d("obj = "..obj.name)
 				start_script(obj.verbs[verb[1]], false, obj, noun2)
-			--elseif verb[2] != verb_default[2] then
-			 --	-- e.g. "i don't think that will work"
-			--	unsupported_action(verb[2], obj, noun2)
 			else
 				-- e.g. "i don't think that will work"
 				unsupported_action(verb[2], obj, noun2)
@@ -1142,7 +1094,7 @@ function input_button_pressed(button_index)
 		coresume(selected_actor.thread, cursor_x, cursor_y - stage_top)
 	end
 
-	d("--------------------------------")
+	--d("--------------------------------")
 end
 
 -- collision detection
@@ -1193,7 +1145,7 @@ function checkcollisions()
 
 	-- check actor collisions
 	for k,actor in pairs(actors) do
-		if (actor.in_room == room_curr) then
+		if actor.in_room == room_curr then
 			recalc_bounds(actor, actor.w*8, actor.h*8, cam_x, cam_y)
 			-- recalc z-plane
 			recalc_zplane(actor)
@@ -1232,7 +1184,7 @@ function checkcollisions()
 	end
 
 	-- default to walkto (if nothing set)
-	if (verb_curr == nil) then
+	if verb_curr == nil then
 		verb_curr = get_verb(verb_default)
 	end
 
@@ -1251,35 +1203,29 @@ function reset_zplanes()
 end
 
 function recalc_zplane(obj)
-	-- determine if object is/should be "drawn"
-	-- if it should, add it at appropriate z-plane (1-64 = far-near)
-  -- else, remove from all zplanes
+	-- calculate the correct z-plane
+	-- based on x,y pos + elevation
+	ypos = -1
+	if obj.offset_y then
+		ypos = obj.y
+	else
+		ypos = obj.y + (obj.h*8)
+	end
+	zplane = flr(ypos - stage_top)
 
-	--if true then  -- obj is drawable
+	if obj.elevation then zplane += obj.elevation end
 
-		-- calculate the correct z-plane
-		-- based on x,y pos + elevation
-		ypos = -1
-		if obj.offset_y then
-			ypos = obj.y
-		else
-			ypos = obj.y + (obj.h*8)
-		end
-		zplane = flr(ypos - stage_top)
-
-		if obj.elevation then zplane += obj.elevation end
-
-		add(draw_zplanes[zplane],obj)
-	--end
+	add(draw_zplanes[zplane],obj)
 end
 
 function room_draw()
 	-- draw current room (base layer)
 	--room_map = room_curr.map
 	-- replace colors?
-	for c in all(room_curr.col_replace) do
+	replace_colors(room_curr)
+	--[[for c in all(room_curr.col_replace) do
 		pal(c[1], c[2])
-	end
+	end]]
 	map(room_curr.map_x, room_curr.map_y, 0, stage_top, room_curr.map_w , room_curr.map_h)
 	--reset palette
 	pal() 
@@ -1343,16 +1289,40 @@ function room_draw()
 	end
 end
 
+function replace_colors(obj)
+	for c in all(obj.col_replace) do
+		pal(c[1], c[2])
+	end
+end
+
+
+function object_draw(obj)
+	-- replace colors?
+	replace_colors(obj)
+	--[[for c in all(obj.col_replace) do
+		pal(c[1], c[2])
+	end]]
+	-- allow for repeating
+	rx=1
+	if obj.repeat_x then rx = obj.repeat_x end
+	for h = 0, rx-1 do
+		-- draw object (in its state!)
+		sprdraw(obj.states[obj.state], obj.x+(h*(obj.w*8)), obj.y, obj.w, obj.h, obj.trans_col, obj.flip_x)
+	end
+	--reset palette
+	pal() 
+end
+
 -- draw actor(s)
 function actor_draw(actor)
 
-	if (actor.moving == 1) 
+	if actor.moving == 1
 	 and actor.walk_anim then
-		actor.tmr = actor.tmr + 1
-		if (actor.tmr > 5) then
+		actor.tmr += 1
+		if actor.tmr > 5 then
 			actor.tmr = 1
-			actor.anim_pos = actor.anim_pos + 1
-			if (actor.anim_pos > #actor.walk_anim) then actor.anim_pos=1 end
+			actor.anim_pos += 1
+			if actor.anim_pos > #actor.walk_anim then actor.anim_pos=1 end
 		end
 		-- choose walk anim frame
 		sprnum = actor.walk_anim[actor.anim_pos]	
@@ -1362,27 +1332,28 @@ function actor_draw(actor)
 	end
 
 	-- replace colors?
-	for c in all(actor.col_replace) do
+	replace_colors(actor)
+	--[[for c in all(actor.col_replace) do
 		pal(c[1], c[2])
-	end
+	end]]
 
 	sprdraw(sprnum, actor.offset_x, actor.offset_y, 
 		actor.w , actor.h, actor.trans_col, 
 		actor.flip, false)
 	
 	-- talking overlay
-	if (talking_actor 
-	 and talking_actor == actor) then
+	if talking_actor 
+	 and talking_actor == actor then
 			--d("talking actor!")
-			if (actor.talk_tmr < 7 ) then
+			if actor.talk_tmr < 7  then
 				sprnum = actor.talk[actor.face_dir]
 				--d("sprnum:"..sprnum)
 				--d("facedir:"..actor.face_dir)
 				sprdraw(sprnum, actor.offset_x, actor.offset_y +8, 1, 1, 
 					actor.trans_col, actor.flip, false)
 			end
-			actor.talk_tmr = actor.talk_tmr + 1	
-			if (actor.talk_tmr > 14) then actor.talk_tmr = 1 end
+			actor.talk_tmr += 1	
+			if actor.talk_tmr > 14 then actor.talk_tmr = 1 end
 	end
 
 	--reset palette
@@ -1396,21 +1367,17 @@ function command_draw()
 	command = ""
 	cmd_col = 12
 
-
 	if not executing_cmd then
 		if verb_curr then
 			command = verb_curr[3]
 		end
 		if noun1_curr then
 			command = command.." "..noun1_curr.name
-		end
-		if verb_curr[2] == "use" 
-		 and noun1_curr then
-			command = command.." with"
-		end
-		if verb_curr[2] == "give" 
-		 and noun1_curr then
-			command = command.." to"
+			if verb_curr[2] == "use" then
+				command = command.." with"
+			elseif verb_curr[2] == "give" then
+				command = command.." to"
+			end
 		end
 		if noun2_curr then
 			command = command.." "..noun2_curr.name
@@ -1454,7 +1421,7 @@ function talking_draw()
 			line_offset_y += 6
 		end
 		-- update message lifespan
-		talking_curr.time_left = talking_curr.time_left - 1
+		talking_curr.time_left -= 1
 		-- remove text & reset actor's talk anim
 		if (talking_curr.time_left <=0) then 
 			stop_talking()
@@ -1477,7 +1444,7 @@ function ui_draw()
 		  and (v == hover_curr_default_verb) then
 			txtcol = verb_defcol
 		end		
-		if (v == hover_curr_verb) then txtcol=verb_hovcol end
+		if v == hover_curr_verb then txtcol=verb_hovcol end
 
 		-- get verb info
 		vi = get_verb(v)
@@ -1491,7 +1458,7 @@ function ui_draw()
 		show_collision_box(v)
 		--if (show_collision) then rect(v.bounds.x, v.bounds.y, v.bounds.x1, v.bounds.y1, 8) end
 		-- auto-size column
-		if (#vi[3] > col_len) then col_len = #vi[3] end
+		if #vi[3] > col_len then col_len = #vi[3] end
 		ypos = ypos + 8
 
 		-- move to next column
@@ -1501,9 +1468,6 @@ function ui_draw()
 			col_len = 0
 		end
 	end
-
-	-- sprdraw(16, 75, stage_top + 60, 1, 1, 0)
-	-- sprdraw(48, 75, stage_top + 73, 1, 1, 0)
 
 	-- draw inventory
 	xpos = 86
@@ -1529,14 +1493,13 @@ function ui_draw()
 			recalc_bounds(obj, obj.w*8, obj.h*8, 0, 0)
 			show_collision_box(obj)
 		end
-		xpos = xpos + 11
+		xpos += 11
 
 		if xpos >= 125 then
-			ypos = ypos + 12
-
+			ypos += 12
 			xpos=86
 		end
-		ipos = ipos + 1
+		ipos += 1
 	end
 
 
@@ -1555,8 +1518,6 @@ function ui_draw()
 end
 
 function dialog_draw()
-	--d("dialog_draw()")
-	-- draw verbs
 	xpos = 0
 	ypos = 70
 	
@@ -1567,18 +1528,17 @@ function dialog_draw()
 		recalc_bounds(s, s.char_width*4, #s.lines*5, 0, 0)
 
 		txtcol=dialog_curr.col
-		if (s == hover_curr_sentence) then txtcol=dialog_curr.hlcol end
+		if s == hover_curr_sentence then txtcol=dialog_curr.hlcol end
 		
 		for l in all(s.lines) do
 				print(smallcaps(l), xpos, ypos+stage_top, txtcol)
-			ypos = ypos + 5
+			ypos += 5
 		end
 
 		show_collision_box(s)
 		--if (show_collision) then rect(s.bounds.x, s.bounds.y, s.bounds.x1, s.bounds.y1, 8) end
 		
-		ypos = ypos + 2
-
+		ypos += 2
 	end
 end
 
@@ -1590,12 +1550,12 @@ function cursor_draw()
 	spr(32, cursor_x-4, cursor_y-3, 1, 1, 0)
 	pal() --reset palette
 
-	cursor_tmr = cursor_tmr + 1
-	if (cursor_tmr > 7) then
+	cursor_tmr += 1
+	if cursor_tmr > 7 then
 		--reset timer
 		cursor_tmr = 1
 		-- move to next color?
-		cursor_colpos = cursor_colpos + 1
+		cursor_colpos += 1
 		if (cursor_colpos > #cursor_cols) then cursor_colpos = 1 end
 	end
 end
@@ -1617,7 +1577,7 @@ end
 
 function cutscene(flags, func_cutscene, func_override)
 	-- decrement the cursor level
-	cursor_lvl = cursor_lvl - 1
+	--cursor_lvl = cursor_lvl - 1
 
 	cut = {
 		flags = flags,
@@ -1661,12 +1621,10 @@ function dialog_start(col, hlcol)
 	dialog_curr.hlcol = hlcol
 	dialog_curr.visible = true
 	dialog_curr.selection = nil
-	--sentence_curr = nil
 end
 
 function dialog_hide()
 	dialog_curr.visible = false
-	--dialog_curr=nil
 end
 
 function dialog_clear()
@@ -1675,10 +1633,7 @@ function dialog_clear()
 end
 
 function dialog_end()
-	--d("dialog_end()")
 	dialog_curr=nil
-	--sentence_curr = nil
-	--d("2")
 end
 
 
@@ -1693,11 +1648,11 @@ function get_use_pos(obj)
 
 	-- determine use pos
 	elseif not obj.use_pos or
-		(obj.use_pos == pos_infront) then
+		 obj.use_pos == pos_infront then
 		pos.x = obj.x+((obj.w*8)/2)-cam_x-4
 		pos.y = obj.y+(obj.h*8) +2
 
-	elseif (obj.use_pos == pos_left) then
+	elseif obj.use_pos == pos_left then
 		
 		if obj.offset_x then	-- diff calc for actors
 			pos.x = obj.x-cam_x - (obj.w*8+4)
@@ -1707,7 +1662,7 @@ function get_use_pos(obj)
 			pos.y = obj.y+((obj.h*8) -2)
 		end
 
-	elseif (obj.use_pos == pos_right) then
+	elseif obj.use_pos == pos_right then
 		pos.x = obj.x+(obj.w*8)-cam_x
 		pos.y = obj.y+((obj.h*8) -2)
 	end
@@ -2068,22 +2023,6 @@ function print_line(msg, x, y, col, align)
 end
 
 
-function object_draw(obj)
-	-- replace colors?
-	for c in all(obj.col_replace) do
-		pal(c[1], c[2])
-	end
-	-- allow for repeating
-	rx=1
-	if obj.repeat_x then rx = obj.repeat_x end
-	for h = 0, rx-1 do
-		-- draw object (in its state!)
-		sprdraw(obj.states[obj.state], obj.x+(h*(obj.w*8)), obj.y, obj.w, obj.h, obj.trans_col, obj.flip_x)
-	end
-	--reset palette
-	pal() 
-end
-
 -- walk actor to position
 function walk_to(actor, x, y)
 
@@ -2121,25 +2060,24 @@ function walk_to(actor, x, y)
 			-- d("sx:"..step_x)
 			-- d("sy:"..step_y)
 
-			-- abort if we're already there!
-			if distance < 1 then return end
+			-- only walk if we're not already there!
+			if distance > 1 then 
+				--walking
+				actor.moving = 1 
+				actor.flip = (step_x<0)
+				-- face dir (at end of walk)
+				actor.face_dir = face_right
+				if (actor.flip) then actor.face_dir = face_left end
 
-			--walking
-			actor.moving = 1 
-			actor.flip = (step_x<0)
-			-- face dir (at end of walk)
-			actor.face_dir = face_right
-			if (actor.flip) then actor.face_dir = face_left end
-
-			for i = 0, distance/actor.speed do
-				actor.x = actor.x + step_x
-				actor.y = actor.y + step_y
-				yield()
+				for i = 0, distance/actor.speed do
+					actor.x = actor.x + step_x
+					actor.y = actor.y + step_y
+					yield()
+				end
 			end
-
-			--d("reach dest")
-			actor.moving = 2 --arrived
 		end
+		--d("reach dest")
+		actor.moving = 2 --arrived
 end
 
 
