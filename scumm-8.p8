@@ -1283,8 +1283,10 @@ function room_draw()
 		path = find_path(actor_cell_pos, target_cell_pos)
 
 		-- finally, add our destination to list
-		if (#path>0) then
-			add(path, getcellpos({x=(cursor_x + cam_x), y=(cursor_y - stage_top)}))
+		click_cell = getcellpos({x=(cursor_x + cam_x), y=(cursor_y - stage_top)})
+		if is_cell_walkable(click_cell[1], click_cell[2]) then
+		--if (#path>0) then
+			add(path, click_cell)
 		end
 
 		for p in all(path) do
@@ -2069,8 +2071,10 @@ function walk_to(actor, x, y)
 		path = find_path(actor_cell_pos, target_cell_pos)
 
 		-- finally, add our destination to list
-		if (#path>0) then
-			add(path, getcellpos({x=x, y=y}))
+		final_cell = getcellpos({x=x, y=y})
+		if is_cell_walkable(final_cell[1], final_cell[2]) then
+		--if (#path>0) then
+			add(path, final_cell)
 		end
 
 		for p in all(path) do
