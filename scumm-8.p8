@@ -24,7 +24,7 @@ __lua__
 -- debugging
 show_debuginfo = true
 show_collision = false
-show_pathfinding = false
+show_pathfinding = true
 show_perfinfo = true
 enable_mouse = true
 d = printh
@@ -1720,17 +1720,20 @@ function do_anim(actor, cmd_type, cmd_value)
 	actor.flip = (cmd_value == face_left)
 
 	if cmd_type == anim_face then
-		d(" > anim_face")
+		--d(" > anim_face")
 		actor.face_dir = cmd_value
 
 	elseif cmd_type == anim_turn then
-		d(" > anim_turn")
-		while (actor.face_dir != cmd_value) do
-			if (actor.face_dir < cmd_value) then
-				actor.face_dir = actor.face_dir + 1
+		--d(" > anim_turn to "..cmd_value)
+		--d("    > face_dir "..actor.face_dir )
+		while actor.face_dir != cmd_value do
+			
+			if actor.face_dir < cmd_value then
+				actor.face_dir += 1 --actor.face_dir + 1
 			else 
-				actor.face_dir = actor.face_dir - 1
+				actor.face_dir -= 1-- actor.face_dir - 1
 			end
+			--d("    > face_dir "..actor.face_dir )
 			break_time(10)
 		end
 	end
@@ -1765,13 +1768,13 @@ function come_out_door(door_obj) --, new_room)
 	change_room(new_room)
 	-- ...auto-position actor at door_obj
 	pos = get_use_pos(door_obj)
-	d("pos x:"..pos.x..", y:"..pos.y)
+	--d("pos x:"..pos.x..", y:"..pos.y)
 	selected_actor.x = pos.x
 	selected_actor.y = pos.y
 	-- (in opposite use direction)
 	if door_obj.use_dir then
 		opp_dir = door_obj.use_dir + 2
-		if (opp_dir > 4) then
+		if opp_dir > 4 then
 			opp_dir -= 4
 		end
 	else
@@ -1783,7 +1786,7 @@ function come_out_door(door_obj) --, new_room)
 end
 
 function change_room(new_room)
-	d("change_room()...")
+	--d("change_room()...")
 	-- switch to new room
 	-- execute the exit() script of old room
 	if room_curr and room_curr.exit then
@@ -1817,8 +1820,8 @@ function change_room(new_room)
 	-- execute the enter() script of new room
 	if room_curr.enter then
 		-- run script directly
-		d("t2: "..type(room_curr))
-		d("scr2:"..type(room_curr.scripts.anim_fire))
+		--d("t2: "..type(room_curr))
+		--d("scr2:"..type(room_curr.scripts.anim_fire))
 		room_curr.enter(room_curr)
 	end
 end
@@ -1831,7 +1834,7 @@ function valid_verb(verb, object)
 	if type(verb) == "table" then
 		if object.verbs[verb[1]] then return true end
 	else
-		if (object.verbs[verb]) then return true end
+		if object.verbs[verb] then return true end
 	end
 	-- must not be valid if reached here
 	return false
@@ -1842,7 +1845,7 @@ function pickup_obj(objname)
 	if obj
 	 --and not obj.owner 
 	 then
-	 	d("adding to inv")
+	 	--d("adding to inv")
 		-- assume selected_actor picked-up at this point
 		add(selected_actor.inventory, obj)
 		obj.owner = selected_actor
@@ -1875,11 +1878,11 @@ end
 -- find object by ref or name
 function find_object(name)
 	-- if object passed, just return object!
-	if (type(name) == "table") then return name end
+	if type(name) == "table" then return name end
 	-- else look for object by unique name
 	for k,obj in pairs(room_curr.objects) do
 		--d("--"..obj.name)
-		if (obj.name == name) then return obj end
+		if obj.name == name then return obj end
 		--if (k == name) then return obj end
 	end
 end
@@ -1896,23 +1899,23 @@ function start_script(func, bg, noun1, noun2)	-- me == this
 end
 
 function script_running(func)
-	d("script_running()")
+	--d("script_running()")
 	-- find script and stop it running
 
 	-- try local first
 	for k,scr_obj in pairs(local_scripts) do
-		d("...")
+		--d("...")
 		if (scr_obj[1] == func) then 
-			d("found!")
+			--d("found!")
 			return true
 		end
 	end
 
 	-- failing that, try global
 	for k,scr_obj in pairs(global_scripts) do
-		d("...")
+		--d("...")
 		if (scr_obj[1] == func) then 
-			d("found!")
+			--d("found!")
 			return true
 		end
 	end
@@ -1921,26 +1924,26 @@ function script_running(func)
 end
 
 function stop_script(func)
-	d("stop_script()")
+	--d("stop_script()")
 	-- find script and stop it running
 
 	-- try local first
 	for k,scr_obj in pairs(local_scripts) do
-		d("...")
+		--d("...")
 		if (scr_obj[1] == func) then 
-			d("found!")
+			--d("found!")
 			del(local_scripts, scr_obj)
-			d("deleted!")
+			--d("deleted!")
 			scr_obj = nil
 		end
 	end
 	-- failing that, try global
 	for k,scr_obj in pairs(global_scripts) do
-		d("...")
+		--d("...")
 		if (scr_obj[1] == func) then 
-			d("found!")
+			--d("found!")
 			del(global_scripts, scr_obj)
-			d("deleted!")
+			--d("deleted!")
 			scr_obj = nil
 		end
 	end
@@ -1974,7 +1977,7 @@ function say_line(actor, msg)
 	ypos = actor.y-text_offset
 		-- trigger actor's talk anim
 	talking_actor = actor
-	d("talking actor set")
+	--d("talking actor set")
 	-- call the base print_line to show actor line
 	print_line(msg, actor.x, ypos, actor.col, 1)
 end
@@ -1983,12 +1986,12 @@ end
 function stop_talking()
 	talking_curr = nil 
 	talking_actor = nil 
-	d("talking actor cleared") 
+	--d("talking actor cleared") 
 end
 
 
 function print_line(msg, x, y, col, align)
-	d("print_line")
+	--d("print_line")
   -- punctuation...
 	--  > ":" new line, shown after text prior expires
 	--  > "," new line, shown immediately
@@ -2017,13 +2020,13 @@ function print_line(msg, x, y, col, align)
 	for i = 1, #msg do
 		curchar=sub(msg,i,i)
 		if curchar == ";" then -- msg break
-			d("msg break!")
+			--d("msg break!")
 			-- show msg up to this point
 			-- and process the rest as new message
 			
 			-- next message?
 			msg_left = sub(msg,i+1)
-			d("msg_left:"..msg_left)
+			--d("msg_left:"..msg_left)
 			-- redefine curr msg
 			msg = sub(msg,1,i-1)
 			break
@@ -2101,7 +2104,6 @@ function walk_to(actor, x, y)
 		-- finally, add our destination to list
 		final_cell = getcellpos({x=x, y=y})
 		if is_cell_walkable(final_cell[1], final_cell[2]) then
-		--if (#path>0) then
 			add(path, final_cell)
 		end
 
@@ -2119,6 +2121,9 @@ function walk_to(actor, x, y)
 			-- d("sx:"..step_x)
 			-- d("sy:"..step_y)
 
+			-- abort if we're already there!
+			if distance < 1 then return end
+
 			--walking
 			actor.moving = 1 
 			actor.flip = (step_x<0)
@@ -2135,48 +2140,6 @@ function walk_to(actor, x, y)
 			--d("reach dest")
 			actor.moving = 2 --arrived
 		end
-
---[[	local distance = sqrt((x - actor.x) ^ 2 + (y - actor.y) ^ 2)
-	local step_x = actor.speed * (x - actor.x) / distance
-	local step_y = actor.speed * (y - actor.y) / distance
-
-	-- abort if we're already there!
-	if (distance < 1) then return end
-
-	-- check target position is in walkable block
-	walkable = iswalkable(x,y)
-
-	-- if it is...
-	if walkable then
-		d("walkable!")
-		actor.moving = 1 --walking
-		actor.flip = (step_x<0)
-
-		-- face dir (at end of walk)
-		actor.face_dir = face_right
-		if (actor.flip) then actor.face_dir = face_left end
-
-		for i = 0, distance/actor.speed do
-			-- check "step" position is "walkable"
-			if iswalkable(actor.x + step_x, actor.y + step_y) then
-				actor.x = actor.x + step_x
-				actor.y = actor.y + step_y
-				yield()
-			else
-				-- hit non-walkable block, stop!
-				d("hit nonwalk!")
-				actor.moving = 0 --stopped
-				-- clear current command
-				clear_curr_cmd()
-				return
-			end
-		end
-		d("reach dest")
-		actor.moving = 2 --arrived
-	else
-		d("non-walk")
-		actor.moving = 2 --stopped
-	end]]
 end
 
 
@@ -2252,11 +2215,6 @@ function getcellpos(obj)
 	cely = flr(obj.y/8) + room_curr.map_y
 	return { celx, cely }
 end
---[[function obj_cell_pos(obj)
-	celx = flr(x/8) + room_curr.map_x
-	cely = flr((y)/8) + room_curr.map_y
-	return { celx, cely }
-end]]
 
 function is_cell_walkable(celx, cely)
 		spr_num = mget(celx, cely)
@@ -2343,7 +2301,7 @@ function longest_line_size(lines)
 end
 
 function has_flag(obj, value)
-  if (band(obj, value) != 0) then return true end
+  if band(obj, value) != 0 then return true end
   return false
 end
 
@@ -2389,7 +2347,7 @@ function find_path(start, goal)
  cost_so_far = {}
  cost_so_far[vectoindex(start)] = 0
 
- while (#frontier > 0 and #frontier < 1000) do
+ while #frontier > 0 and #frontier < 1000 do
  	-- pop the last element off a table
 	local top = frontier[#frontier]
 	del(frontier,frontier[#frontier])
@@ -2438,7 +2396,6 @@ function find_path(start, goal)
 
 		-- diagonal movement - assumes diag dist is 1, same as cardinals
 		local priority = new_cost +  max(abs(goal[1] - next[1]), abs(goal[2] - next[2]))
-    --local priority = new_cost + heuristic(goal, next)
 
     insert(frontier, next, priority)
     came_from[nextindex] = current
@@ -2460,13 +2417,13 @@ function find_path(start, goal)
 	end
 
 	--reverse(path)
-	for i=1,(#path/2) do
-  local temp = path[i]
-  local oppindex = #path-(i-1)
-  path[i] = path[oppindex]
-  path[oppindex] = temp
+	for i=1,#path/2 do
+		local temp = path[i]
+		local oppindex = #path-(i-1)
+		path[i] = path[oppindex]
+		path[oppindex] = temp
 
- end
+	end
 	--printh("..done")
  end
 
@@ -2496,88 +2453,8 @@ end
 
 -- translate a 2d x,y coordinate to a 1d index and back again
 function vectoindex(vec)
-	-- d("t:"..type(vec))
-	-- d("vec: "..vec[1]..","..vec[2])
 	return ((vec[1]+1) * 16) + vec[2]
- --return maptoindex(vec[1],vec[2])
 end
-
--- function heuristic(a, b)
---  	-- diagonal movement - assumes diag dist is 1, same as cardinals
--- 	return max(abs(a[1] - b[1]), abs(a[2] - b[2]));
-
---  	-- manhattan distance on a square grid
---  	--return abs(a[1] - b[1]) + abs(a[2] - b[2])
--- end
-
--- find all existing neighbours of a position that are not walls
--- function getneighbours(pos)
---  local neighbours = {}
-
---  for x = -1, 1 do
---   for y = -1, 1 do
---     if x == 0 and y == 0 then 
---       --continue 
---     else
---       chk_x = pos[1] + x
---       chk_y = pos[2] + y
-
--- 			-- diagonals cost more
---       if abs(x) != abs(y) then cost=1 else cost=1.4 end
-			
---       if chk_x >= room_curr.map_x and chk_x <= room_curr.map_x + room_curr.map_w 
---        and chk_y >= room_curr.map_y and chk_y <= room_curr.map_y + room_curr.map_h
--- 			 and is_cell_walkable(chk_x,chk_y)
--- 			 -- squeeze check for corners
--- 			 and ((abs(x) != abs(y)) 
--- 				  or is_cell_walkable(chk_x, pos[2]) 
--- 					or is_cell_walkable(chk_x - x, chk_y)) 
--- 			then
--- 			 	-- add as valid neighbour
--- 			 	add( neighbours, {chk_x, chk_y, cost} )
---       end
---     end
---   end
---  end
---  return neighbours
--- end
-
-
--- -- pop the last element off a table
--- function popend(t)
---  local top = t[#t]
---  del(t,t[#t])
---  return top[1]
--- end
-
--- function reverse(t)
---  for i=1,(#t/2) do
---   local temp = t[i]
---   local oppindex = #t-(i-1)
---   t[i] = t[oppindex]
---   t[oppindex] = temp
---  end
--- end
-
--- function maptoindex(x, y)
---  return ((x+1) * 16) + y
--- end
-
--- pop the first element off a table (unused
--- function pop(t)
---  local top = t[1]
---  for i=1,(#t) do
---   if i == (#t) then
---    del(t,t[i])
---   else
---    t[i] = t[i+1]
---   end
---  end
---  return top
--- end
-
-
-
 
 
 -- library functions -----------------------------------------------
@@ -2594,16 +2471,6 @@ function outline_text(str,x,y,c0,c1)
 			print(str, x+xx, y+yy, c1)
 		end
  end
-
---  print(str,x,y+1,c1)
---  print(str,x,y-1,c1)
---  print(str,x+1,y,c1)
---  print(str,x+1,y+1,c1)
---  print(str,x+1,y-1,c1)
---  print(str,x-1,y,c1)
---  print(str,x-1,y+1,c1)
---  print(str,x-1,y-1,c1)
-
  print(str,x,y,c0)
 end
 
