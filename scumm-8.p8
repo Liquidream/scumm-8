@@ -501,10 +501,6 @@ actors = {
 	main_actor = { 		-- initialize the actor object
 		--name = "",
 		class = class_actor,
-		-- x = 127/2 ,
-		-- y = 127/2 -30,
-		x = 127/2 + 80,
-		y = 127/2 -24,
 		w = 1,
 		h = 4,
 		face_dir = face_front, 	-- direction facing
@@ -597,14 +593,27 @@ function startup_script()
 	-- (could be a "pseudo" room for title screen!)
 	--selected_room = rooms.first_room
 	--selected_room = rooms.second_room
-	selected_room = rooms.outside_room
+	--selected_room = rooms.outside_room
 
 	-- set which actor the player controls by default
 	selected_actor = actors.main_actor
+	
 	-- init actor
-	selected_actor.in_room = selected_room
+	selected_actor.in_room = rooms.outside_room
+	--selected_actor.x = 64
+	--selected_actor.y = 34
+	selected_actor.x = 144
+	selected_actor.y = 40
+
 	-- load the initial room
-	change_room(selected_room)
+	change_room(rooms.outside_room)
+
+	-- make camera follow player
+	--cam_following_actor = selected_actor
+	camera_pan_to(selected_actor)
+	--wait_for_camera()
+	say_line("let's do this")
+	--wait_for_message()
 end
 
 -- logic used to determine a "default" verb to use
@@ -707,13 +716,25 @@ end
 
 
 
+function camera_pan_to(val) --,y)
+	-- check params for ong/actor
+	if type(val) == "table" then
+		x = val.x
+	end
+	cam_pan_to_x = x
+	d("cam_pan_to_x:"..cam_pan_to_x)
+end
 
 
 
 
 
-
-
+function wait_for_camera()
+	while cam_x != cam_pan_to_x do
+		d("wait_for_camera...")
+		yield()
+	end
+end
 
 
 -- #######################################################
@@ -732,9 +753,9 @@ stage_top = 16
 cam_x = 0
 cam_max = 0 	-- the maximum x position the camera can move to in the current room
 cam_min = 0  	-- the minimum x position the camera can move to in the current room
-cam_mode = 0 	-- 0=follow, 1=static, 2=pan-to
+--cam_mode = 0 	-- 0=follow, 1=static, 2=pan-to
 --cam_following_actor = selected_actor
-cam_pan_to_x = 0	-- target pos to pad camera to
+cam_pan_to_x = nil	-- target pos to pad camera to
 --cam_pan_to_y = 0
 
 cursor_x = screenwidth / 2
@@ -816,7 +837,7 @@ function game_update()
 			-- cutscene ended, restore prev state	
 			if (room_curr != cutscene_curr.paused_room) then change_room(cutscene_curr.paused_room) end
 			selected_actor = cutscene_curr.paused_actor
-			cam_mode = cutscene_curr.paused_cam_mode
+			--cam_mode = cutscene_curr.paused_cam_mode
 			cam_following_actor = cutscene_curr.paused_cam_following
 			-- now delete cutscene
 			del(cutscenes, cutscene_curr)
@@ -844,13 +865,30 @@ end
 
 
 function game_draw()
+	d("game_draw")
 	-- clear screen every frame?
 	rectfill(0, 0, screenwidth, screenheight, 0)
 
+	-- camera modes ----
+
 	-- auto-follow camera?
-	if cam_mode == 0 then
-		cam_x = mid(0, selected_actor.x - 64, (room_curr.map_w*8)-screenwidth-1)
+	if cam_following_actor 
+	 and cam_following_actor.in_room == room_curr then
+	--if cam_mode == 0 then
+		d("follow mode!")
+		cam_x = mid(0, cam_following_actor.x - 64, (room_curr.map_w*8)-screenwidth-1)
+	elseif cam_pan_to_x then
+		d("pan mode!")
+		if cam_x == cam_pan_to_x - flr(screenwidth/2) then
+			-- pan complete
+			cam_pan_to_x = nil
+		elseif cam_pan_to_x > cam_x then
+			cam_x += 1
+		else
+			cam_x -= 1
+		end
 	end
+	d("cam_x:"..cam_x)
 	camera(cam_x, 0)
 
 	-- clip room bounds
@@ -1920,10 +1958,8 @@ function break_time(jiffies)
 end
 
 function wait_for_message()
-	-- draw object (depending on state!)
 	while talking_curr != nil do
 		yield()
-		--d("wait_for_message")
 	end
 end
 
