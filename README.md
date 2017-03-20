@@ -14,17 +14,16 @@ Wow, really? You still here?! OK, once again. Think of SCUMM-8 as an even more r
 - [x] Pathfinding for walking
 - [x] Dialogs between Actors
 - [x] Cut-scenes
-- [x] Basic Camera system (follow/fixed)
+- [x] Camera system (pan-to, follow, static)
 - [x] Customisable Verbs
 - [x] Z-plane ordering of objects/actors
-- [x] Global-level/background & Room-level scripts
+- [x] Global-level (background) & Room-level scripts
+- [x] Game start-up script
 - [x] Object dependencies
 - [x] Replace Color (to allow re-use of room/object gfx)
 
 ## Planned Features
-- [ ] Advanced Camera features (pan-to, etc.)
 - [ ] Cut-scene transitions
-- [ ] Game start-up script
 - [ ] Game Save/Load
 
 ## Thanks & Useful Resources
