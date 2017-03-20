@@ -1974,9 +1974,11 @@ function print_line(msg, x, y, col, align)
 	longest_line=0
 	-- auto-wrap
 	-- calc max line width based on x-pos/available space
-	screen_space = min(x, screenwidth - x)
+	screen_space = min(x -cam_x, screenwidth - (x -cam_x))
 	-- (or no less than min length)
 	max_line_length = max(flr(screen_space/2), 16)
+
+	d("screen_space:"..screen_space)
 
 	-- search for ";"'s
 	msg_left = ""
@@ -2003,7 +2005,7 @@ function print_line(msg, x, y, col, align)
 
 	-- center-align text block
 	if align == 1 then
-		xpos = x - ((longest_line*4)/2)
+		xpos = x -cam_x - ((longest_line*4)/2)
 	end
 
 	-- screen bound check
