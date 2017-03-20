@@ -10,7 +10,9 @@ __lua__
 -- ### luamin fixes ###
 --	"\65\66\67\68\69\70\71\72\73\74\75\76\77\78\79\80\81\82\83\84\85\86\87\88\89\90\91\92"
 
--- was 6439 tokens
+-- was  6439 tokens (b4 pathfinding)
+-- then 6500 tokens (after pathfinding & token hunting)
+
 
 -- debugging
 show_debuginfo = true
@@ -611,9 +613,10 @@ function startup_script()
 	-- make camera follow player
 	--cam_following_actor = selected_actor
 	camera_pan_to(selected_actor)
-	--wait_for_camera()
+	wait_for_camera()
 	say_line("let's do this")
-	--wait_for_message()
+	wait_for_message()
+	camera_follow(selected_actor)
 end
 
 -- logic used to determine a "default" verb to use
@@ -715,23 +718,65 @@ function unsupported_action(verb, obj1, obj2)
 end 
 
 
-
-function camera_pan_to(val) --,y)
-	-- check params for ong/actor
+function camera_follow(actor)
+	-- check params for obj/actor
 	if type(val) == "table" then
 		x = val.x
 	end
-	cam_pan_to_x = x
-	d("cam_pan_to_x:"..cam_pan_to_x)
+	-- set target
+	cam_following_actor = actor
+	--d("camera_follow:"..actor.name)
+	-- clear other cam values
+	cam_pan_to_x = nil
+
+	cam_script = function()
+		-- keep the camera following actor
+		-- (until further notice)
+		while cam_following_actor do
+			cam_x = mid(
+						0, 
+						cam_following_actor.x - 64, 
+						(room_curr.map_w*8)-screenwidth-1)
+			yield()
+		end
+	end
+	start_script(cam_script, true) -- bg script
 end
 
 
+function camera_pan_to(val) --,y)
+	-- check params for obj/actor
+	if type(val) == "table" then
+		x = val.x
+	end
+	-- set target
+	cam_pan_to_x = x
+	--d("cam_pan_to_x:"..cam_pan_to_x)
+	-- clear other cam values
+	cam_following_actor = nil
 
+	cam_script = function()
+		-- update the camera pan until reaches dest
+		while (true) do
+			if cam_x == cam_pan_to_x - flr(screenwidth/2) then
+				-- pan complete
+				cam_pan_to_x = nil
+				return
+			elseif cam_pan_to_x > cam_x then
+		  	cam_x += 0.5
+			else
+				cam_x -= 0.5
+			end
+			yield()
+		end
+	end
+	start_script(cam_script, true) -- bg script
+end
 
 
 function wait_for_camera()
-	while cam_x != cam_pan_to_x do
-		d("wait_for_camera...")
+	while script_running(cam_script) do
+		--d("wait_for_camera...")
 		yield()
 	end
 end
@@ -756,7 +801,7 @@ cam_min = 0  	-- the minimum x position the camera can move to in the current ro
 --cam_mode = 0 	-- 0=follow, 1=static, 2=pan-to
 --cam_following_actor = selected_actor
 cam_pan_to_x = nil	-- target pos to pad camera to
---cam_pan_to_y = 0
+cam_script = nil	-- active camera logic script (pan-to, follow, etc.)
 
 cursor_x = screenwidth / 2
 cursor_y = screenheight / 2
@@ -808,7 +853,7 @@ function _init()
 	--change_room(selected_room)
 
 	-- run any startup script(s)
-  startup_script()
+  start_script(startup_script, true)
 end
 
 function _update60()  -- _update()
@@ -823,7 +868,7 @@ end
 
 function game_update()
 	-- process selected_actor threads/actions
-	if selected_actor.thread and not coresume(selected_actor.thread) then
+	if selected_actor and selected_actor.thread and not coresume(selected_actor.thread) then
 		selected_actor.thread = nil
 	end
 
@@ -865,14 +910,14 @@ end
 
 
 function game_draw()
-	d("game_draw")
+	--d("game_draw")
 	-- clear screen every frame?
 	rectfill(0, 0, screenwidth, screenheight, 0)
 
 	-- camera modes ----
 
 	-- auto-follow camera?
-	if cam_following_actor 
+	--[[if cam_following_actor 
 	 and cam_following_actor.in_room == room_curr then
 	--if cam_mode == 0 then
 		d("follow mode!")
@@ -887,8 +932,8 @@ function game_draw()
 		else
 			cam_x -= 1
 		end
-	end
-	d("cam_x:"..cam_x)
+	end]]
+	--d("cam_x:"..cam_x)
 	camera(cam_x, 0)
 
 	-- clip room bounds
@@ -1899,14 +1944,13 @@ function start_script(func, bg, noun1, noun2)	-- me == this
 end
 
 function script_running(func)
-	--d("script_running()")
 	-- find script and stop it running
 
 	-- try local first
 	for k,scr_obj in pairs(local_scripts) do
 		--d("...")
 		if (scr_obj[1] == func) then 
-			--d("found!")
+			--d("found in local!")
 			return true
 		end
 	end
@@ -1915,7 +1959,7 @@ function script_running(func)
 	for k,scr_obj in pairs(global_scripts) do
 		--d("...")
 		if (scr_obj[1] == func) then 
-			--d("found!")
+			--d("found in global!")
 			return true
 		end
 	end
@@ -2178,8 +2222,11 @@ function show_collision_box(obj)
 end
 
 function update_scripts(scripts)
+	--d("update_scripts")
+	d("count:"..#scripts)
 	for scr_obj in all(scripts) do
 		if scr_obj[2] and not coresume(scr_obj[2], scr_obj[3], scr_obj[4]) then
+			d("script removed!######")
 			del(scripts, scr_obj)
 			scr_obj = nil
 		end
