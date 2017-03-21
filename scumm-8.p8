@@ -17,7 +17,7 @@ __lua__
 -- debugging
 show_debuginfo = true
 show_collision = false
---show_pathfinding = true
+show_pathfinding = true
 show_perfinfo = true
 enable_mouse = true
 d = printh
@@ -602,25 +602,23 @@ function startup_script()
 	selected_actor = actors.main_actor
 	
 	-- init actor
-	--selected_actor.in_room = rooms.outside_room
+	-- selected_actor.in_room = rooms.outside_room
 	-- selected_actor.x = 144
 	-- selected_actor.y = 36
 	selected_actor.in_room = rooms.first_room
 	selected_actor.x = 64
 	selected_actor.y = 44
-	
 
+	change_room(rooms.first_room, 1)
+--	camera_at(500)
 	-- load the initial room
-	--change_room(rooms.outside_room)
-	change_room(rooms.first_room)
+	--change_room(rooms.outside_room, 1) -- iris fade
 
-	-- make camera follow player
-	--cam_following_actor = selected_actor
 	camera_pan_to(selected_actor)
 	wait_for_camera()
-	say_line("let's do this")
+	say_line("let's do this1")
 	wait_for_message()
-	d("11")
+	-- make camera follow player
 	camera_follow(selected_actor)
 end
 
@@ -740,8 +738,8 @@ stage_top = 16
 --text_offset = (selected_actor.h-1)*8
 
 cam_x = 0
-cam_max = 0 	-- the maximum x position the camera can move to in the current room
-cam_min = 0  	-- the minimum x position the camera can move to in the current room
+-- cam_max = 0 	-- the maximum x position the camera can move to in the current room
+-- cam_min = 0  	-- the minimum x position the camera can move to in the current room
 --cam_mode = 0 	-- 0=follow, 1=static, 2=pan-to
 --cam_following_actor = selected_actor
 cam_pan_to_x = nil	-- target pos to pad camera to
@@ -862,6 +860,8 @@ function game_draw()
 	-- clear screen every frame?
 	rectfill(0, 0, screenwidth, screenheight, 0)
 
+	-- keep camera within "room" bounds
+	cam_x = mid(0, cam_x, (room_curr.map_w*8)-screenwidth-1 )
 	camera(cam_x, 0)
 
 	-- clip room bounds
@@ -1254,31 +1254,31 @@ function room_draw()
 	-- ===============================================================
 	-- debug walkable areas
 	-- ===============================================================
-	--if show_pathfinding then
-	-- 	actor_cell_pos = getcellpos(selected_actor)
+	if show_pathfinding then
+		actor_cell_pos = getcellpos(selected_actor)
 
-	-- 	celx = flr((cursor_x + cam_x) /8) + room_curr.map_x
-	-- 	cely = flr((cursor_y - stage_top)/8 ) + room_curr.map_y
-	-- 	target_cell_pos = { celx, cely }
+		celx = flr((cursor_x + cam_x) /8) + room_curr.map_x
+		cely = flr((cursor_y - stage_top)/8 ) + room_curr.map_y
+		target_cell_pos = { celx, cely }
 
-	-- 	path = find_path(actor_cell_pos, target_cell_pos)
+		path = find_path(actor_cell_pos, target_cell_pos)
 
-	-- 	-- finally, add our destination to list
-	-- 	click_cell = getcellpos({x=(cursor_x + cam_x), y=(cursor_y - stage_top)})
-	-- 	if is_cell_walkable(click_cell[1], click_cell[2]) then
-	-- 	--if (#path>0) then
-	-- 		add(path, click_cell)
-	-- 	end
+		-- finally, add our destination to list
+		click_cell = getcellpos({x=(cursor_x + cam_x), y=(cursor_y - stage_top)})
+		if is_cell_walkable(click_cell[1], click_cell[2]) then
+		--if (#path>0) then
+			add(path, click_cell)
+		end
 
-	-- 	for p in all(path) do
-	-- 		--d("  > "..p[1]..","..p[2])
-	-- 		rect(
-	-- 			(p[1]-room_curr.map_x)*8, 
-	-- 			stage_top+(p[2]-room_curr.map_y)*8, 
-	-- 			(p[1]-room_curr.map_x)*8+7, 
-	-- 			stage_top+(p[2]-room_curr.map_y)*8+7, 11)
-	-- 	end
-	-- end
+		for p in all(path) do
+			--d("  > "..p[1]..","..p[2])
+			rect(
+				(p[1]-room_curr.map_x)*8, 
+				stage_top+(p[2]-room_curr.map_y)*8, 
+				(p[1]-room_curr.map_x)*8+7, 
+				stage_top+(p[2]-room_curr.map_y)*8+7, 11)
+		end
+	end
 	-- ===============================================================
 
 	-- draw each zplane, from back to front
@@ -1603,8 +1603,8 @@ function camera_at(val)
 	if type(val) == "table" then
 		x = val.x
 	end
-	-- set target
-	cam_x = x
+	-- set target	
+	cam_x = val
 	-- clear other cam values
 	cam_pan_to_x = nil
 	cam_following_actor = nil
@@ -1626,10 +1626,9 @@ function camera_follow(actor)
 		-- keep the camera following actor
 		-- (until further notice)
 		while cam_following_actor do
-			cam_x = mid(
-						0, 
-						cam_following_actor.x - 64, 
-						(room_curr.map_w*8)-screenwidth-1)
+			-- don't worry about bounds edges, 
+			-- will be checked on camera position setting
+			cam_x = cam_following_actor.x - 64
 			yield()
 		end
 	end
@@ -1650,14 +1649,22 @@ function camera_pan_to(val) --,y)
 
 	cam_script = function()
 		-- update the camera pan until reaches dest
-		while (true) do
-			if cam_x == cam_pan_to_x - flr(screenwidth/2) then
+		while (true) do		
+			d("panning...")
+			center_view = cam_x + flr(screenwidth/2) +1
+			if center_view == cam_pan_to_x then
+				d("1")
 				-- pan complete
 				cam_pan_to_x = nil
 				return
-			elseif cam_pan_to_x > cam_x then
+			elseif cam_pan_to_x > center_view then
+				d("2")
+				d("cam_pan_to_x:"..cam_pan_to_x)
+				d("cam_x:"..cam_x)
+				d("center_view:"..center_view)
 		  	cam_x += 0.5
 			else
+				d("3")
 				cam_x -= 0.5
 			end
 			yield()
@@ -1669,7 +1676,6 @@ end
 
 function wait_for_camera()
 	while script_running(cam_script) do
-		--d("wait_for_camera...")
 		yield()
 	end
 end
@@ -1696,8 +1702,8 @@ function cutscene(flags, func_cutscene, func_override)
 	cutscene_curr = cut
 
 	-- reset stuff
-	cam_mode = 1 --fixed
-	cam_x = 0
+	--cam_mode = 1 --fixed
+	--cam_x = 0
 
 	-- yield for system catch-up
 	break_time()
@@ -1856,7 +1862,6 @@ function fades(fade, dir) -- 1=down, -1=up
 		 or fade_amount < 0 then
 			return
 		end
-
 		if fade == 1 then
 			-- iris down/up
 			fade_iris = min(fade_amount, 32)
@@ -1880,11 +1885,11 @@ function change_room(new_room, fade)
 	clear_curr_cmd()
 
 	-- transition to new room (e.g. iris/swipe)
-	d("fade down!")
-	if fade then
+	-- fade down existing room (or skip if first room)
+	if fade and room_curr then
 		fades(fade, 1)
 	end
-
+	
 	room_curr = new_room
 
 		-- calc map size
@@ -1898,7 +1903,7 @@ function change_room(new_room, fade)
 	end
 
 	-- reset camera
-	cam_x = 0
+	--cam_x = 0
 
 	-- execute the enter() script of new room
 	if room_curr.enter then
@@ -1909,7 +1914,6 @@ function change_room(new_room, fade)
 	end
 
 	-- fade up again?
-	d("fade up!")
 	if fade then
 		fades(fade, -1)
 	end
