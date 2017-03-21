@@ -313,9 +313,10 @@ rooms = {
 								function()
 									me.done_cutscene = true
 									-- cutscene code
-									print_line("*creak*",40,20,8,1)
+									print_line("*bang*",40,20,8,1)
+									set_state(me, states.open)
 									wait_for_message()
-									change_room(rooms.second_room)
+									change_room(rooms.second_room, 1)
 									selected_actor = actors.purp_tentacle
 									walk_to(selected_actor, 
 										selected_actor.x+10, 
@@ -327,7 +328,7 @@ rooms = {
 									walk_to(selected_actor, 
 										selected_actor.x-10, 
 										selected_actor.y)
-									change_room(rooms.first_room)
+									change_room(rooms.first_room, 1)
 									-- wait for a bit, then appear in room1
 									break_time(50)
 									selected_actor.x = 115
@@ -601,14 +602,17 @@ function startup_script()
 	selected_actor = actors.main_actor
 	
 	-- init actor
-	selected_actor.in_room = rooms.outside_room
-	--selected_actor.x = 64
-	--selected_actor.y = 34
-	selected_actor.x = 144
-	selected_actor.y = 36
+	--selected_actor.in_room = rooms.outside_room
+	-- selected_actor.x = 144
+	-- selected_actor.y = 36
+	selected_actor.in_room = rooms.first_room
+	selected_actor.x = 64
+	selected_actor.y = 44
+	
 
 	-- load the initial room
-	change_room(rooms.outside_room)
+	--change_room(rooms.outside_room)
+	change_room(rooms.first_room)
 
 	-- make camera follow player
 	--cam_following_actor = selected_actor
@@ -616,6 +620,7 @@ function startup_script()
 	wait_for_camera()
 	say_line("let's do this")
 	wait_for_message()
+	d("11")
 	camera_follow(selected_actor)
 end
 
@@ -717,80 +722,8 @@ function unsupported_action(verb, obj1, obj2)
 	end
 end 
 
-function camera_at(val)
-	-- check params for obj/actor
-	if type(val) == "table" then
-		x = val.x
-	end
-	-- set target
-	cam_x = x
-	-- clear other cam values
-	cam_pan_to_x = nil
-	cam_following_actor = nil
-end
-
-function camera_follow(actor)
-	-- check params for obj/actor
-	if type(val) == "table" then
-		x = val.x
-	end
-	-- set target
-	cam_following_actor = actor
-	--d("camera_follow:"..actor.name)
-	-- clear other cam values
-	cam_pan_to_x = nil
-
-	cam_script = function()
-		-- keep the camera following actor
-		-- (until further notice)
-		while cam_following_actor do
-			cam_x = mid(
-						0, 
-						cam_following_actor.x - 64, 
-						(room_curr.map_w*8)-screenwidth-1)
-			yield()
-		end
-	end
-	start_script(cam_script, true) -- bg script
-end
 
 
-function camera_pan_to(val) --,y)
-	-- check params for obj/actor
-	if type(val) == "table" then
-		x = val.x
-	end
-	-- set target
-	cam_pan_to_x = x
-	--d("cam_pan_to_x:"..cam_pan_to_x)
-	-- clear other cam values
-	cam_following_actor = nil
-
-	cam_script = function()
-		-- update the camera pan until reaches dest
-		while (true) do
-			if cam_x == cam_pan_to_x - flr(screenwidth/2) then
-				-- pan complete
-				cam_pan_to_x = nil
-				return
-			elseif cam_pan_to_x > cam_x then
-		  	cam_x += 0.5
-			else
-				cam_x -= 0.5
-			end
-			yield()
-		end
-	end
-	start_script(cam_script, true) -- bg script
-end
-
-
-function wait_for_camera()
-	while script_running(cam_script) do
-		--d("wait_for_camera...")
-		yield()
-	end
-end
 
 
 -- #######################################################
@@ -842,6 +775,8 @@ talking_curr = nil 	-- currently displayed speech {x,y,col,lines...}
 dialog_curr = nil   -- currently displayed dialog options to pick
 cutscene_curr = nil -- currently active cutscene
 talking_actor = nil -- currently talking actor
+--fade_effect = nil 	-- room transition effect (0=none, 1=iris, 2=fade)
+fade_iris = 0			  -- depends on effect above
 
 global_scripts = {}	-- table of scripts that are at game-level (background)
 local_scripts = {}	-- table of scripts that are actively running
@@ -894,7 +829,9 @@ function game_update()
 			if (room_curr != cutscene_curr.paused_room) then change_room(cutscene_curr.paused_room) end
 			selected_actor = cutscene_curr.paused_actor
 			--cam_mode = cutscene_curr.paused_cam_mode
-			cam_following_actor = cutscene_curr.paused_cam_following
+			--d("paused follow:"..cutscene_curr.paused_cam_following.name)
+			camera_follow(cutscene_curr.paused_cam_following)
+			--cam_following_actor = cutscene_curr.paused_cam_following
 			-- now delete cutscene
 			del(cutscenes, cutscene_curr)
 			cutscene_curr = nil
@@ -925,30 +862,14 @@ function game_draw()
 	-- clear screen every frame?
 	rectfill(0, 0, screenwidth, screenheight, 0)
 
-	-- camera modes ----
-
-	-- auto-follow camera?
-	--[[if cam_following_actor 
-	 and cam_following_actor.in_room == room_curr then
-	--if cam_mode == 0 then
-		d("follow mode!")
-		cam_x = mid(0, cam_following_actor.x - 64, (room_curr.map_w*8)-screenwidth-1)
-	elseif cam_pan_to_x then
-		d("pan mode!")
-		if cam_x == cam_pan_to_x - flr(screenwidth/2) then
-			-- pan complete
-			cam_pan_to_x = nil
-		elseif cam_pan_to_x > cam_x then
-			cam_x += 1
-		else
-			cam_x -= 1
-		end
-	end]]
-	--d("cam_x:"..cam_x)
 	camera(cam_x, 0)
 
 	-- clip room bounds
-	clip(0, stage_top, screenwidth+1, 64)
+	clip(
+		0 +fade_iris, 
+		stage_top +fade_iris, 
+		screenwidth+1 -fade_iris*2, 
+		64 -fade_iris*2)
 
 	-- draw room (bg + objects + actors)
 	room_draw()
@@ -1676,17 +1597,97 @@ end
 
 -- scumm core functions -------------------------------------------
 
+
+function camera_at(val)
+	-- check params for obj/actor
+	if type(val) == "table" then
+		x = val.x
+	end
+	-- set target
+	cam_x = x
+	-- clear other cam values
+	cam_pan_to_x = nil
+	cam_following_actor = nil
+end
+
+function camera_follow(actor)
+	-- check params for obj/actor
+	if type(val) == "table" then
+		x = val.x
+	end
+	-- set target
+	d("setting cam follow to:"..type(actor))
+	cam_following_actor = actor
+	--d("camera_follow:"..actor.name)
+	-- clear other cam values
+	cam_pan_to_x = nil
+
+	cam_script = function()
+		-- keep the camera following actor
+		-- (until further notice)
+		while cam_following_actor do
+			cam_x = mid(
+						0, 
+						cam_following_actor.x - 64, 
+						(room_curr.map_w*8)-screenwidth-1)
+			yield()
+		end
+	end
+	start_script(cam_script, true) -- bg script
+end
+
+
+function camera_pan_to(val) --,y)
+	-- check params for obj/actor
+	if type(val) == "table" then
+		x = val.x
+	end
+	-- set target
+	cam_pan_to_x = x
+	--d("cam_pan_to_x:"..cam_pan_to_x)
+	-- clear other cam values
+	cam_following_actor = nil
+
+	cam_script = function()
+		-- update the camera pan until reaches dest
+		while (true) do
+			if cam_x == cam_pan_to_x - flr(screenwidth/2) then
+				-- pan complete
+				cam_pan_to_x = nil
+				return
+			elseif cam_pan_to_x > cam_x then
+		  	cam_x += 0.5
+			else
+				cam_x -= 0.5
+			end
+			yield()
+		end
+	end
+	start_script(cam_script, true) -- bg script
+end
+
+
+function wait_for_camera()
+	while script_running(cam_script) do
+		--d("wait_for_camera...")
+		yield()
+	end
+end
+
+
 function cutscene(flags, func_cutscene, func_override)
 	-- decrement the cursor level
 	--cursor_lvl = cursor_lvl - 1
 
+	d("follow:"..type(cam_following_actor))
+			
 	cut = {
 		flags = flags,
 		thread = cocreate(func_cutscene),
 		override = func_override,
 		paused_room = room_curr,
 		paused_actor = selected_actor,
-		paused_cam_mode = cam_mode,
+		--paused_cam_mode = cam_mode,
 		paused_cam_following = cam_following_actor
 	}
 	add(cutscenes, cut)
@@ -1818,10 +1819,10 @@ function close_door(door_obj1, door_obj2)
 	end
 end
 
-function come_out_door(door_obj) --, new_room)
+function come_out_door(door_obj, fade_effect)
 	-- switch to new room and...
 	new_room = door_obj.in_room
-	change_room(new_room)
+	change_room(new_room, fade_effect)
 	-- ...auto-position actor at door_obj
 	pos = get_use_pos(door_obj)
 	--d("pos x:"..pos.x..", y:"..pos.y)
@@ -1841,8 +1842,30 @@ function come_out_door(door_obj) --, new_room)
 	selected_actor.in_room = new_room
 end
 
-function change_room(new_room)
-	--d("change_room()...")
+function fades(fade, dir) -- 1=down, -1=up
+	if dir == 1 then
+		fade_amount = 0
+	else
+		fade_amount = 50
+	end
+
+	while true do
+		fade_amount += dir*2
+
+		if fade_amount > 50
+		 or fade_amount < 0 then
+			return
+		end
+
+		if fade == 1 then
+			-- iris down/up
+			fade_iris = min(fade_amount, 32)
+		end
+		yield()
+	end
+end
+
+function change_room(new_room, fade)
 	-- switch to new room
 	-- execute the exit() script of old room
 	if room_curr and room_curr.exit then
@@ -1856,7 +1879,11 @@ function change_room(new_room)
 	-- clear current command
 	clear_curr_cmd()
 
-	-- todo: transition to new room (e.g. iris/swipe)	
+	-- transition to new room (e.g. iris/swipe)
+	d("fade down!")
+	if fade then
+		fades(fade, 1)
+	end
 
 	room_curr = new_room
 
@@ -1879,6 +1906,12 @@ function change_room(new_room)
 		--d("t2: "..type(room_curr))
 		--d("scr2:"..type(room_curr.scripts.anim_fire))
 		room_curr.enter(room_curr)
+	end
+
+	-- fade up again?
+	d("fade up!")
+	if fade then
+		fades(fade, -1)
 	end
 end
 
@@ -2234,10 +2267,10 @@ end
 
 function update_scripts(scripts)
 	--d("update_scripts")
-	d("count:"..#scripts)
+	--d("count:"..#scripts)
 	for scr_obj in all(scripts) do
 		if scr_obj[2] and not coresume(scr_obj[2], scr_obj[3], scr_obj[4]) then
-			d("script removed!######")
+			--d("script removed!######")
 			del(scripts, scr_obj)
 			scr_obj = nil
 		end
