@@ -860,8 +860,7 @@ function game_draw()
 	-- clear screen every frame?
 	rectfill(0, 0, screenwidth, screenheight, 0)
 
-	-- keep camera within "room" bounds
-	cam_x = mid(0, cam_x, (room_curr.map_w*8)-screenwidth-1 )
+	
 	camera(cam_x, 0)
 
 	-- clip room bounds
@@ -1604,6 +1603,11 @@ function camera_at(val)
 		x = val.x
 	end
 	-- set target	
+	
+	-- keep camera within "room" bounds
+	d("cam_x1:"..cam_x)
+	cam_x = mid(0, val, (room_curr.map_w*8)-screenwidth-1 )
+	d("cam_x2:"..cam_x)
 	cam_x = val
 	-- clear other cam values
 	cam_pan_to_x = nil
@@ -1626,9 +1630,11 @@ function camera_follow(actor)
 		-- keep the camera following actor
 		-- (until further notice)
 		while cam_following_actor do
-			-- don't worry about bounds edges, 
-			-- will be checked on camera position setting
-			cam_x = cam_following_actor.x - 64
+			-- keep camera within "room" bounds
+			d("cam_x1:"..cam_x)
+			cam_x = mid(0, cam_following_actor.x - 64, (room_curr.map_w*8)-screenwidth-1 )
+			d("cam_x2:"..cam_x)
+			--cam_x = cam_following_actor.x - 64
 			yield()
 		end
 	end
@@ -1667,6 +1673,11 @@ function camera_pan_to(val) --,y)
 				d("3")
 				cam_x -= 0.5
 			end
+			-- keep camera within "room" bounds
+			d("cam_x1:"..cam_x)
+			cam_x = mid(0, val, (room_curr.map_w*8)-screenwidth-1 )
+			d("cam_x2:"..cam_x)
+
 			yield()
 		end
 	end
@@ -2163,9 +2174,13 @@ end
 
 -- walk actor to position
 function walk_to(actor, x, y)
-
+		d("walk_to")
+		d("x1:"..x)
+		d("cam_x:"..cam_x)
 	--offset for camera
 		x = x + cam_x
+
+		d("x2:"..x)
 
 		actor_cell_pos = getcellpos(actor)
 		--d("act-cel x="..actor_cell_pos[1]..", y="..actor_cell_pos[2])
