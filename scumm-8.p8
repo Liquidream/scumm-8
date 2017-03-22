@@ -15,10 +15,10 @@ __lua__
 
 
 -- debugging
-show_debuginfo = true
+show_debuginfo = false
 show_collision = false
 show_pathfinding = true
-show_perfinfo = true
+show_perfinfo = false
 enable_mouse = true
 d = printh
 
@@ -602,21 +602,21 @@ function startup_script()
 	selected_actor = actors.main_actor
 	
 	-- init actor
-	-- selected_actor.in_room = rooms.outside_room
-	-- selected_actor.x = 144
-	-- selected_actor.y = 36
-	selected_actor.in_room = rooms.first_room
-	selected_actor.x = 64
-	selected_actor.y = 44
+	selected_actor.in_room = rooms.outside_room
+	selected_actor.x = 144
+	selected_actor.y = 36
+	-- selected_actor.in_room = rooms.first_room
+	-- selected_actor.x = 64
+	-- selected_actor.y = 44
 
-	change_room(rooms.first_room, 1)
+	--change_room(rooms.first_room, 1)
 --	camera_at(500)
 	-- load the initial room
-	--change_room(rooms.outside_room, 1) -- iris fade
+	change_room(rooms.outside_room, 1) -- iris fade
 
 	camera_pan_to(selected_actor)
 	wait_for_camera()
-	say_line("let's do this1")
+	say_line("let's do this")
 	wait_for_message()
 	-- make camera follow player
 	camera_follow(selected_actor)
@@ -1253,31 +1253,31 @@ function room_draw()
 	-- ===============================================================
 	-- debug walkable areas
 	-- ===============================================================
-	if show_pathfinding then
-		actor_cell_pos = getcellpos(selected_actor)
+	-- if show_pathfinding then
+	-- 	actor_cell_pos = getcellpos(selected_actor)
 
-		celx = flr((cursor_x + cam_x) /8) + room_curr.map_x
-		cely = flr((cursor_y - stage_top)/8 ) + room_curr.map_y
-		target_cell_pos = { celx, cely }
+	-- 	celx = flr((cursor_x + cam_x) /8) + room_curr.map_x
+	-- 	cely = flr((cursor_y - stage_top)/8 ) + room_curr.map_y
+	-- 	target_cell_pos = { celx, cely }
 
-		path = find_path(actor_cell_pos, target_cell_pos)
+	-- 	path = find_path(actor_cell_pos, target_cell_pos)
 
-		-- finally, add our destination to list
-		click_cell = getcellpos({x=(cursor_x + cam_x), y=(cursor_y - stage_top)})
-		if is_cell_walkable(click_cell[1], click_cell[2]) then
-		--if (#path>0) then
-			add(path, click_cell)
-		end
+	-- 	-- finally, add our destination to list
+	-- 	click_cell = getcellpos({x=(cursor_x + cam_x), y=(cursor_y - stage_top)})
+	-- 	if is_cell_walkable(click_cell[1], click_cell[2]) then
+	-- 	--if (#path>0) then
+	-- 		add(path, click_cell)
+	-- 	end
 
-		for p in all(path) do
-			--d("  > "..p[1]..","..p[2])
-			rect(
-				(p[1]-room_curr.map_x)*8, 
-				stage_top+(p[2]-room_curr.map_y)*8, 
-				(p[1]-room_curr.map_x)*8+7, 
-				stage_top+(p[2]-room_curr.map_y)*8+7, 11)
-		end
-	end
+	-- 	for p in all(path) do
+	-- 		--d("  > "..p[1]..","..p[2])
+	-- 		rect(
+	-- 			(p[1]-room_curr.map_x)*8, 
+	-- 			stage_top+(p[2]-room_curr.map_y)*8, 
+	-- 			(p[1]-room_curr.map_x)*8+7, 
+	-- 			stage_top+(p[2]-room_curr.map_y)*8+7, 11)
+	-- 	end
+	-- end
 	-- ===============================================================
 
 	-- draw each zplane, from back to front
@@ -1605,9 +1605,9 @@ function camera_at(val)
 	-- set target	
 	
 	-- keep camera within "room" bounds
-	d("cam_x1:"..cam_x)
+	d("cam_x1 at:"..cam_x)
 	cam_x = mid(0, val, (room_curr.map_w*8)-screenwidth-1 )
-	d("cam_x2:"..cam_x)
+	d("cam_x2 at:"..cam_x)
 	cam_x = val
 	-- clear other cam values
 	cam_pan_to_x = nil
@@ -1675,7 +1675,7 @@ function camera_pan_to(val) --,y)
 			end
 			-- keep camera within "room" bounds
 			d("cam_x1:"..cam_x)
-			cam_x = mid(0, val, (room_curr.map_w*8)-screenwidth-1 )
+			cam_x = mid(0, cam_x, (room_curr.map_w*8)-screenwidth-1 )
 			d("cam_x2:"..cam_x)
 
 			yield()
@@ -1758,10 +1758,13 @@ end
 
 function get_use_pos(obj)
 	pos = {}
-	--d("get_use_pos")
+	d("get_use_pos")
+			d("xxx :"..obj.use_pos)
+
 	-- first check for specific pos
 	if type(obj.use_pos) == "table" then
 	--d("usr tbl")
+
 		pos.x = obj.use_pos.x-cam_x
 		pos.y = obj.use_pos.y-stage_top
 
@@ -1837,12 +1840,24 @@ function close_door(door_obj1, door_obj2)
 end
 
 function come_out_door(door_obj, fade_effect)
+	d("come_out_door()")
+	d("cam_x:  "..cam_x)
 	-- switch to new room and...
 	new_room = door_obj.in_room
+
+	d("cam_x:  "..cam_x)
+	d("door_obj:  "..door_obj.x)
+	d("new room w:"..new_room.map_w)
+	-- -- reset camera centered onto door
+	cam_x = mid(0, door_obj.x -64, (new_room.map_w*8)-screenwidth-1 )
+	-- camera_at(door_obj)
+
 	change_room(new_room, fade_effect)
+	d("cam_x:  "..cam_x)
 	-- ...auto-position actor at door_obj
 	pos = get_use_pos(door_obj)
-	--d("pos x:"..pos.x..", y:"..pos.y)
+	d("cam_x:  "..cam_x)
+	d("pos x:"..pos.x..", y:"..pos.y)
 	selected_actor.x = pos.x
 	selected_actor.y = pos.y
 	-- (in opposite use direction)
@@ -1905,13 +1920,13 @@ function change_room(new_room, fade)
 
 		-- calc map size
 	--room_map = room_curr.map
-	if room_curr.map_x1 then
-		room_curr.map_w = room_curr.map_x1 - room_curr.map_x + 1
-		room_curr.map_h = room_curr.map_y1 - room_curr.map_y + 1
-	else
-		room_curr.map_w = 16
-		room_curr.map_h = 8
-	end
+	-- if room_curr.map_x1 then
+	-- 	room_curr.map_w = room_curr.map_x1 - room_curr.map_x + 1
+	-- 	room_curr.map_h = room_curr.map_y1 - room_curr.map_y + 1
+	-- else
+	-- 	room_curr.map_w = 16
+	-- 	room_curr.map_h = 8
+	-- end
 
 	-- reset camera
 	--cam_x = 0
@@ -2240,6 +2255,15 @@ end
 -- initialise all the rooms (e.g. add in parent links)
 function game_init()
 	for kr,room in pairs(rooms) do
+		-- init room
+		if room.map_x1 then
+			room.map_w = room.map_x1 - room.map_x + 1
+			room.map_h = room.map_y1 - room.map_y + 1
+		else
+			room.map_w = 16
+			room.map_h = 8
+		end
+		-- init objects (in room)
 		for ko,obj in pairs(room.objects) do
 			obj.in_room = room
 		end
