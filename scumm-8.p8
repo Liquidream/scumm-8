@@ -1900,6 +1900,17 @@ function fades(fade, dir) -- 1=down, -1=up
 end
 
 function change_room(new_room, fade)
+
+
+	-- fade down existing room (or skip if first room)
+	if fade and room_curr then
+		-- start_script( function() 
+		-- 			fades(fade, -1) 
+		-- 	end, true)
+		fades(fade, 1)
+	end
+
+
 	-- switch to new room
 	-- execute the exit() script of old room
 	if room_curr and room_curr.exit then
@@ -1913,10 +1924,7 @@ function change_room(new_room, fade)
 	-- clear current command
 	clear_curr_cmd()
 
-	-- fade down existing room (or skip if first room)
-	if fade and room_curr then
-		fades(fade, 1)
-	end
+	
 	
 	room_curr = new_room
 
