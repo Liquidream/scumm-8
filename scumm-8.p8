@@ -434,27 +434,30 @@ rooms = {
 			-- initialise game in first room entry...
 			-- =========================================
 			
-			if not playedIntro then
+			if not me.done_intro then
 				-- set which actor the player controls by default
 				selected_actor = actors.main_actor
-				-- init actor
-				selected_actor.in_room = rooms.outside_room
-				selected_actor.x = 144
-				selected_actor.y = 36
-
-				camera_at(400)	
-
-				--fades(1,-1)
-
-				camera_pan_to(selected_actor)
-				wait_for_camera()
-				say_line("let's do this")
-				wait_for_message()
 				-- make camera follow player
 				camera_follow(selected_actor)
+				
+				cutscene(cut_noverbs + cut_hidecursor, 
+					-- cutscene code
+					function()
+						-- Don't do this again
+						me.done_intro = true
+						
+					
+						-- init actor
+						selected_actor.in_room = rooms.outside_room
+						selected_actor.x = 144
+						selected_actor.y = 36
 
-				-- Don't do this again
-				playedIntro = true
+						camera_pan_to(selected_actor)
+						wait_for_camera()
+						say_line("let's do this")
+						wait_for_message()
+						
+				end)
 			end
 
 
@@ -828,10 +831,7 @@ function game_update()
 			-- cutscene ended, restore prev state	
 			if (room_curr != cutscene_curr.paused_room) then change_room(cutscene_curr.paused_room) end
 			selected_actor = cutscene_curr.paused_actor
-			--cam_mode = cutscene_curr.paused_cam_mode
-			--d("paused follow:"..cutscene_curr.paused_cam_following.name)
 			camera_follow(cutscene_curr.paused_cam_following)
-			--cam_following_actor = cutscene_curr.paused_cam_following
 			-- now delete cutscene
 			del(cutscenes, cutscene_curr)
 			cutscene_curr = nil
@@ -1602,29 +1602,19 @@ end
 function camera_at(val)
 	-- check params for obj/actor
 	if type(val) == "table" then
-		x = val.x
+		val = val.x
 	end
-	-- set target	
-	
 	-- keep camera within "room" bounds
-	d("cam_x1 at:"..cam_x)
-	cam_x = mid(0, val, (room_curr.map_w*8)-screenwidth-1 )
-	d("cam_x2 at:"..cam_x)
-	cam_x = val
+	cam_x = mid(0, val-64, (room_curr.map_w*8)-screenwidth-1 )
 	-- clear other cam values
 	cam_pan_to_x = nil
 	cam_following_actor = nil
 end
 
 function camera_follow(actor)
-	-- check params for obj/actor
-	if type(val) == "table" then
-		x = val.x
-	end
 	-- set target
 	d("setting cam follow to:"..type(actor))
 	cam_following_actor = actor
-	--d("camera_follow:"..actor.name)
 	-- clear other cam values
 	cam_pan_to_x = nil
 
@@ -1633,10 +1623,7 @@ function camera_follow(actor)
 		-- (until further notice)
 		while cam_following_actor do
 			-- keep camera within "room" bounds
-			d("cam_x1:"..cam_x)
 			cam_x = mid(0, cam_following_actor.x - 64, (room_curr.map_w*8)-screenwidth-1 )
-			d("cam_x2:"..cam_x)
-			--cam_x = cam_following_actor.x - 64
 			yield()
 		end
 	end
@@ -1651,32 +1638,26 @@ function camera_pan_to(val) --,y)
 	end
 	-- set target
 	cam_pan_to_x = x
-	--d("cam_pan_to_x:"..cam_pan_to_x)
 	-- clear other cam values
 	cam_following_actor = nil
 
 	cam_script = function()
 		-- update the camera pan until reaches dest
 		while (true) do		
-			d("panning...")
+			--d("panning...")
 			center_view = cam_x + flr(screenwidth/2) +1
 			if center_view == cam_pan_to_x then
 				-- pan complete
 				cam_pan_to_x = nil
 				return
 			elseif cam_pan_to_x > center_view then
-				-- d("cam_pan_to_x:"..cam_pan_to_x)
-				-- d("cam_x:"..cam_x)
-				-- d("center_view:"..center_view)
 		  	cam_x += 0.5
 			else
 				cam_x -= 0.5
 			end
 			-- keep camera within "room" bounds
-			d("cam_x1:"..cam_x)
 			cam_x = mid(0, cam_x, (room_curr.map_w*8)-screenwidth-1 )
-			d("cam_x2:"..cam_x)
-
+			
 			yield()
 		end
 	end
@@ -1695,7 +1676,7 @@ function cutscene(flags, func_cutscene, func_override)
 	-- decrement the cursor level
 	--cursor_lvl = cursor_lvl - 1
 
-	d("follow:"..type(cam_following_actor))
+	--d("follow:"..type(cam_following_actor))
 			
 	cut = {
 		flags = flags,
@@ -1901,7 +1882,6 @@ end
 
 function change_room(new_room, fade)
 
-
 	-- fade down existing room (or skip if first room)
 	if fade and room_curr then
 		-- start_script( function() 
@@ -1909,7 +1889,6 @@ function change_room(new_room, fade)
 		-- 	end, true)
 		fades(fade, 1)
 	end
-
 
 	-- switch to new room
 	-- execute the exit() script of old room
@@ -1923,28 +1902,13 @@ function change_room(new_room, fade)
 
 	-- clear current command
 	clear_curr_cmd()
-
 	
-	
+	-- actually change rooms now
 	room_curr = new_room
-
-		-- calc map size
-	--room_map = room_curr.map
-	-- if room_curr.map_x1 then
-	-- 	room_curr.map_w = room_curr.map_x1 - room_curr.map_x + 1
-	-- 	room_curr.map_h = room_curr.map_y1 - room_curr.map_y + 1
-	-- else
-	-- 	room_curr.map_w = 16
-	-- 	room_curr.map_h = 8
-	-- end
-
-	-- reset camera
-	--cam_x = 0
-
 
 	-- fade up again?
 	-- (use "thread" so that room.enter code is able to 
-	--  reposition camera before fade-up)
+	--  reposition camera before fade-up, if needed)
 	if fade then		
 		start_script( function() 
 				fades(fade, -1) 
