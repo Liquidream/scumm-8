@@ -1072,14 +1072,14 @@ function input_button_pressed(button_index)
 			if not obj.owner then
 				-- walk to use pos and face dir
 				--todo: find nearest usepos if none set?
-				d("obj x="..obj.x..",y="..obj.y)
-				d("obj w="..obj.w..",h="..obj.h)
+				-- d("obj x="..obj.x..",y="..obj.y)
+				-- d("obj w="..obj.w..",h="..obj.h)
 				dest_pos = get_use_pos(obj)
-				d("dest_pos x="..dest_pos.x..",y="..dest_pos.y)
+				--d("dest_pos x="..dest_pos.x..",y="..dest_pos.y)
 				if (obj.offset_x) then d("offset x="..obj.offset_x..",y="..obj.offset_y) end
 				walk_to(selected_actor, dest_pos.x, dest_pos.y)
 				-- abort if walk was interrupted
-				d(".moving="..selected_actor.moving)
+				--d(".moving="..selected_actor.moving)
 				if selected_actor.moving != 2 then return end
 				-- default use direction
 				use_dir=selected_actor.face_dir
@@ -1659,18 +1659,15 @@ function camera_pan_to(val) --,y)
 			d("panning...")
 			center_view = cam_x + flr(screenwidth/2) +1
 			if center_view == cam_pan_to_x then
-				d("1")
 				-- pan complete
 				cam_pan_to_x = nil
 				return
 			elseif cam_pan_to_x > center_view then
-				d("2")
-				d("cam_pan_to_x:"..cam_pan_to_x)
-				d("cam_x:"..cam_x)
-				d("center_view:"..center_view)
+				-- d("cam_pan_to_x:"..cam_pan_to_x)
+				-- d("cam_x:"..cam_x)
+				-- d("center_view:"..center_view)
 		  	cam_x += 0.5
 			else
-				d("3")
 				cam_x -= 0.5
 			end
 			-- keep camera within "room" bounds
@@ -1758,8 +1755,8 @@ end
 
 function get_use_pos(obj)
 	pos = {}
-	d("get_use_pos")
-			d("xxx :"..obj.use_pos)
+	-- d("get_use_pos")
+	-- d("xxx :"..obj.use_pos)
 
 	-- first check for specific pos
 	if type(obj.use_pos) == "table" then
@@ -1840,24 +1837,27 @@ function close_door(door_obj1, door_obj2)
 end
 
 function come_out_door(door_obj, fade_effect)
-	d("come_out_door()")
-	d("cam_x:  "..cam_x)
+	-- d("come_out_door()")
+	-- d("cam_x:  "..cam_x)
 	-- switch to new room and...
 	new_room = door_obj.in_room
 
-	d("cam_x:  "..cam_x)
-	d("door_obj:  "..door_obj.x)
-	d("new room w:"..new_room.map_w)
-	-- -- reset camera centered onto door
-	cam_x = mid(0, door_obj.x -64, (new_room.map_w*8)-screenwidth-1 )
+	-- d("cam_x:  "..cam_x)
+	-- d("door_obj:  "..door_obj.x)
+	-- d("new room w:"..new_room.map_w)
+
+	-- reset camera pos in new room
+	-- (if camera following, then this will still apply)
+	cam_x = 0
+	--cam_x = mid(0, door_obj.x -64, (new_room.map_w*8)-screenwidth-1 )
 	-- camera_at(door_obj)
 
 	change_room(new_room, fade_effect)
-	d("cam_x:  "..cam_x)
+	--d("cam_x:  "..cam_x)
 	-- ...auto-position actor at door_obj
 	pos = get_use_pos(door_obj)
-	d("cam_x:  "..cam_x)
-	d("pos x:"..pos.x..", y:"..pos.y)
+	-- d("cam_x:  "..cam_x)
+	-- d("pos x:"..pos.x..", y:"..pos.y)
 	selected_actor.x = pos.x
 	selected_actor.y = pos.y
 	-- (in opposite use direction)
@@ -2132,7 +2132,7 @@ function print_line(msg, x, y, col, align)
 	-- (or no less than min length)
 	max_line_length = max(flr(screen_space/2), 16)
 
-	d("screen_space:"..screen_space)
+	--d("screen_space:"..screen_space)
 
 	-- search for ";"'s
 	msg_left = ""
@@ -2189,13 +2189,12 @@ end
 
 -- walk actor to position
 function walk_to(actor, x, y)
-		d("walk_to")
-		d("x1:"..x)
-		d("cam_x:"..cam_x)
+		-- d("walk_to")
+		-- d("x1:"..x)
+		-- d("cam_x:"..cam_x)
+
 	--offset for camera
 		x = x + cam_x
-
-		d("x2:"..x)
 
 		actor_cell_pos = getcellpos(actor)
 		--d("act-cel x="..actor_cell_pos[1]..", y="..actor_cell_pos[2])
@@ -2394,7 +2393,7 @@ function create_text_lines(msg, max_line_length, comma_is_newline)
 			curword=curword.."-"
 			upt(max_line_length)
 		elseif curchar == "," and comma_is_newline then -- line break
-			d("line break!")
+			--d("line break!")
 			currline=currline..sub(curword,1,#curword-1)
 			curword=""
 			upt(0)
@@ -2431,7 +2430,7 @@ function clear_curr_cmd()
 	me = nil
 	executing_cmd = false
 	cmd_curr = ""
-	d("command wiped")
+	--d("command wiped")
 end
 
 function recalc_bounds(obj, w, h, cam_off_x, cam_off_y)
