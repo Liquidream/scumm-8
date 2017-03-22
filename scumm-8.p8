@@ -430,7 +430,34 @@ rooms = {
 		map_x1 = 47, 	-- map coordinates to draw to (x,y)
 		map_y1 = 15,
 		enter = function(me)
-			-- todo: anything here?
+			-- =========================================
+			-- initialise game in first room entry...
+			-- =========================================
+			
+			if not playedIntro then
+				-- set which actor the player controls by default
+				selected_actor = actors.main_actor
+				-- init actor
+				selected_actor.in_room = rooms.outside_room
+				selected_actor.x = 144
+				selected_actor.y = 36
+
+				camera_at(400)	
+
+				--fades(1,-1)
+
+				camera_pan_to(selected_actor)
+				wait_for_camera()
+				say_line("let's do this")
+				wait_for_message()
+				-- make camera follow player
+				camera_follow(selected_actor)
+
+				-- Don't do this again
+				playedIntro = true
+			end
+
+
 		end,
 		exit = function(me)
 			-- todo: anything here?
@@ -591,35 +618,10 @@ actors = {
 
 
 -- this script is execute once on game startup
-function startup_script()
+function startup_script()	
 	-- set which room to start the game in 
 	-- (could be a "pseudo" room for title screen!)
-	--selected_room = rooms.first_room
-	--selected_room = rooms.second_room
-	--selected_room = rooms.outside_room
-
-	-- set which actor the player controls by default
-	selected_actor = actors.main_actor
-	
-	-- init actor
-	selected_actor.in_room = rooms.outside_room
-	selected_actor.x = 144
-	selected_actor.y = 36
-	-- selected_actor.in_room = rooms.first_room
-	-- selected_actor.x = 64
-	-- selected_actor.y = 44
-
-	--change_room(rooms.first_room, 1)
---	camera_at(500)
-	-- load the initial room
 	change_room(rooms.outside_room, 1) -- iris fade
-
-	camera_pan_to(selected_actor)
-	wait_for_camera()
-	say_line("let's do this")
-	wait_for_message()
-	-- make camera follow player
-	camera_follow(selected_actor)
 end
 
 -- logic used to determine a "default" verb to use
@@ -1886,6 +1888,7 @@ function fades(fade, dir) -- 1=down, -1=up
 
 		if fade_amount > 50
 		 or fade_amount < 0 then
+		 	d("done!")
 			return
 		end
 		if fade == 1 then
@@ -1910,7 +1913,6 @@ function change_room(new_room, fade)
 	-- clear current command
 	clear_curr_cmd()
 
-	-- transition to new room (e.g. iris/swipe)
 	-- fade down existing room (or skip if first room)
 	if fade and room_curr then
 		fades(fade, 1)
@@ -1931,17 +1933,24 @@ function change_room(new_room, fade)
 	-- reset camera
 	--cam_x = 0
 
+
+	-- fade up again?
+	-- (use "thread" so that room.enter code is able to 
+	--  reposition camera before fade-up)
+	if fade then		
+		start_script( function() 
+				fades(fade, -1) 
+		end, true)
+		
+		--fades(fade, -1)
+	end
+
 	-- execute the enter() script of new room
 	if room_curr.enter then
 		-- run script directly
-		--d("t2: "..type(room_curr))
-		--d("scr2:"..type(room_curr.scripts.anim_fire))
 		room_curr.enter(room_curr)
-	end
 
-	-- fade up again?
-	if fade then
-		fades(fade, -1)
+		--start_script( room_curr.enter(room_curr), true)
 	end
 end
 
