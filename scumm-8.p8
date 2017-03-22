@@ -433,34 +433,31 @@ rooms = {
 			-- =========================================
 			-- initialise game in first room entry...
 			-- =========================================
-			
 			if not me.done_intro then
+				-- Don't do this again
+				me.done_intro = true
 				-- set which actor the player controls by default
 				selected_actor = actors.main_actor
+				-- init actor
+				selected_actor.in_room = rooms.outside_room
+				selected_actor.x = 144
+				selected_actor.y = 36
 				-- make camera follow player
+				-- (setting now, will be re-instated after cutscene)
 				camera_follow(selected_actor)
 				
+				-- do cutscene
 				cutscene(cut_noverbs + cut_hidecursor, 
-					-- cutscene code
+					-- cutscene code (hides ui, etc.)
 					function()
-						-- Don't do this again
-						me.done_intro = true
-						
-					
-						-- init actor
-						selected_actor.in_room = rooms.outside_room
-						selected_actor.x = 144
-						selected_actor.y = 36
-
+						camera_at(0)
 						camera_pan_to(selected_actor)
 						wait_for_camera()
 						say_line("let's do this")
 						wait_for_message()
-						
-				end)
+					end
+				)
 			end
-
-
 		end,
 		exit = function(me)
 			-- todo: anything here?
