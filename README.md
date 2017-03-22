@@ -15,6 +15,7 @@ Wow, really? You still here?! OK, once again. Think of SCUMM-8 as an even more r
 - [x] Dialogs between Actors
 - [x] Cut-scenes
 - [x] Camera system (pan-to, follow, static)
+- [x] Room transitions ("iris", cut)
 - [x] Customisable Verbs
 - [x] Z-plane ordering of objects/actors
 - [x] Global-level (background) & Room-level scripts
@@ -23,7 +24,6 @@ Wow, really? You still here?! OK, once again. Think of SCUMM-8 as an even more r
 - [x] Replace Color (to allow re-use of room/object gfx)
 
 ## Planned Features
-- [ ] Cut-scene transitions
 - [ ] Game Save/Load
 
 ## Thanks & Useful Resources
