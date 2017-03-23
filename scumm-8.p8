@@ -81,8 +81,8 @@ pos_right = 4
 pos_inside = 5
 
 -- actor animations
-anim_face = 1	 -- position the actor immediately to the direction indicated
-anim_turn = 2  -- show the turning stages of animation
+anim_face = 1	 -- face actor in a direction (show the turning stages of animation)
+--anim_turn = 2  -- show the turning stages of animation
 
 
 -- #######################################################
@@ -146,7 +146,7 @@ rooms = {
 						say_line("it's a nice, warm fire...")
 						wait_for_message()
 						break_time(10)
-						do_anim(selected_actor, anim_turn, face_front)
+						do_anim(selected_actor, anim_face, face_front)
 						say_line("ouch! it's hot!;*stupid fire*")
 						wait_for_message()
 					end,
@@ -154,7 +154,7 @@ rooms = {
 						say_line("'hi fire...'")
 						wait_for_message()
 						break_time(10)
-						do_anim(selected_actor, anim_turn, face_front)
+						do_anim(selected_actor, anim_face, face_front)
 						say_line("the fire didn't say hello back;burn!!")
 						wait_for_message()
 					end,
@@ -353,6 +353,8 @@ rooms = {
 								end
 							)
 						end
+						-- now face tentacle
+						do_anim(selected_actor, anim_face, actors.purp_tentacle)
 					end
 				}
 			}
@@ -1088,7 +1090,7 @@ function input_button_pressed(button_index)
 				use_dir=selected_actor.face_dir
 				if obj.use_dir and verb != verb_default then use_dir = obj.use_dir end
 				-- anim to use dir
-				do_anim(selected_actor, anim_turn, use_dir)
+				do_anim(selected_actor, anim_face, use_dir)
 			end
 			-- does current object support active verb?
 			if valid_verb(verb,obj) then
@@ -1774,14 +1776,14 @@ function get_use_pos(obj)
 end
 
 function do_anim(actor, cmd_type, cmd_value)
-	-- is target dir left?
+	-- is target dir left? flip?
 	actor.flip = (cmd_value == face_left)
 
 	if cmd_type == anim_face then
 		--d(" > anim_face")
-		actor.face_dir = cmd_value
+	--	actor.face_dir = cmd_value
 
-	elseif cmd_type == anim_turn then
+	--elseif cmd_type == anim_turn then
 		--d(" > anim_turn to "..cmd_value)
 		--d("    > face_dir "..actor.face_dir )
 		while actor.face_dir != cmd_value do
@@ -1795,9 +1797,6 @@ function do_anim(actor, cmd_type, cmd_value)
 			break_time(10)
 		end
 	end
-
-	-- flip?
-	
 end
 
 -- open one (or more) doors
