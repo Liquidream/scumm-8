@@ -102,38 +102,8 @@ rooms = {
 			-- animate fireplace
 			--d("scr:"..type(me.scripts.anim_fire))
 			start_script(me.scripts.anim_fire, true) -- bg script
-
-			if not me.done_intro then
-				-- Don't do this again
-				--me.done_intro = true
-				-- set which actor the player controls by default
-				selected_actor = actors.main_actor
-				-- init actor
-				put_actor_at(selected_actor, 68, 50, rooms.first_room)
-
-				start_script(me.scripts.watch_tentacle, true) -- bg script
-
-				put_actor_at(actors.purp_tentacle, 110, 50, rooms.first_room)
-				break_time(200)
-
-
-				--walk_to(actors.purp_tentacle, 68, 60)
-				put_actor_at(actors.purp_tentacle, 68, 60)
-				break_time(200)
-				--walk_to(actors.purp_tentacle, 20, 50)
-				put_actor_at(actors.purp_tentacle, 20, 50)
-				break_time(200)
-				--walk_to(actors.purp_tentacle, 68, 42)
-				put_actor_at(actors.purp_tentacle, 68, 42)
-				break_time(200)
-				--walk_to(actors.purp_tentacle, 110, 50)
-				put_actor_at(actors.purp_tentacle, 110, 50)
-				break_time(200)
-
-				-- make camera follow player
-				-- (setting now, will be re-instated after cutscene)
-				camera_follow(selected_actor)
-			end
+		
+			--start_script(me.scripts.watch_tentacle, true) -- bg script
 		end,
 		exit = function(me)
 			-- todo: anything here?
@@ -156,14 +126,14 @@ rooms = {
 						break_time(8)
 					end
 				end
-			end,
-			watch_tentacle = function()
-				while true do
-					d("watching tentacle...")
-					do_anim(selected_actor, anim_face, actors.purp_tentacle)
-					break_time(10)
-				end
 			end
+			-- ,watch_tentacle = function()
+			-- 	while true do
+			-- 		d("watching tentacle...")
+			-- 		do_anim(selected_actor, anim_face, actors.purp_tentacle)
+			-- 		break_time(10)
+			-- 	end
+			-- end
 		},
 		objects = {
 			fire = {
@@ -665,8 +635,8 @@ function startup_script()
 	-- set which room to start the game in 
 	-- (could be a "pseudo" room for title screen!)
 	
-	change_room(rooms.first_room, 1) -- iris fade	
-	--change_room(rooms.outside_room, 1) -- iris fade
+	--change_room(rooms.first_room, 1) -- iris fade	
+	change_room(rooms.outside_room, 1) -- iris fade
 end
 
 -- logic used to determine a "default" verb to use
@@ -1424,7 +1394,7 @@ function actor_draw(actor)
 	--reset palette
 	pal()
 
-	pset(actor.x, actor.y+stage_top, 8)
+	--pset(actor.x, actor.y+stage_top, 8)
 end
 
 function command_draw()
@@ -1844,11 +1814,7 @@ function do_anim(actor, cmd_type, cmd_value)
 			--printh("degrees_adj:"..degrees)
 
 			cmd_value = 4 - flr(degrees/90)
-			--actor.face_dir = 4 - flr(degrees/90)
-			d("face_dir:"..cmd_value)
-
-			-- -- is target dir left? flip?
-			-- actor.flip = (cmd_value == face_left)
+			--d("face_dir:"..cmd_value)
 		end
 
 		while actor.face_dir != cmd_value do
@@ -1858,11 +1824,9 @@ function do_anim(actor, cmd_type, cmd_value)
 			else 
 				actor.face_dir -= 1
 			end
-
 			-- is target dir left? flip?
 			actor.flip = (actor.face_dir  == face_left)
-
-			d("    > face_dir "..actor.face_dir )
+			--d("    > face_dir "..actor.face_dir )
 			break_time(10)
 		end
 	end
@@ -1986,7 +1950,9 @@ function change_room(new_room, fade)
 				fades(fade, -1) 
 		end, true)
 		
-		--fades(fade, -1)
+	else
+		-- no fade - reset any existing
+		fade_iris = 0
 	end
 
 	-- execute the enter() script of new room
