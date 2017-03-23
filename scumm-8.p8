@@ -332,9 +332,6 @@ rooms = {
 									-- wait for a bit, then appear in room1
 									break_time(50)
 									put_actor_at(selected_actor, 115, 44, rooms.first_room)
-									-- selected_actor.x = 115
-									-- selected_actor.y = 44
-									-- selected_actor.in_room = rooms.first_room
 									walk_to(selected_actor, 
 										selected_actor.x-10, 
 										selected_actor.y)
@@ -345,16 +342,17 @@ rooms = {
 								function()
 									--d("override!")
 									change_room(rooms.first_room)
-									put_actor_at(actors.purp_tentacle, 105, 44, rooms.first_room)
-									-- actors.purp_tentacle.in_room = rooms.first_room
-									-- actors.purp_tentacle.x = 105
-									-- actors.purp_tentacle.y = 44
+									put_actor_at(actors.purp_tentacle, 60, 50, rooms.first_room)
+									--put_actor_at(actors.purp_tentacle, 105, 44, rooms.first_room)
 									stop_talking()
+									d("about to face...")
+									do_anim(selected_actor, anim_face, actors.purp_tentacle)
 								end
 							)
 						end
 						-- now face tentacle
-						do_anim(selected_actor, anim_face, actors.purp_tentacle)
+						-- d("about to face...")
+						-- do_anim(selected_actor, anim_face, actors.purp_tentacle)
 					end
 				}
 			}
@@ -1776,22 +1774,38 @@ function get_use_pos(obj)
 end
 
 function do_anim(actor, cmd_type, cmd_value)
-	-- is target dir left? flip?
-	actor.flip = (cmd_value == face_left)
+	-- -- is target dir left? flip?
+	-- actor.flip = (cmd_value == face_left)
 
 	if cmd_type == anim_face then
 		--d(" > anim_face")
-	--	actor.face_dir = cmd_value
+		
+		-- check if cmd_value is an actor/object, rather than explicit face_dir
+		if type(cmd_value) == "table" then
+			-- need to calculate face_dir from positions
+			-- angle
+			angle = atan2(cmd_value.x - actor.x, cmd_value.y - actor.y)
+			d("angle1:"..angle)
+			-- angle = angle - 0.25
+			-- d("angle2:"..angle)
+			degrees = angle * (1080/3.1415)
+			d("degrees:"..degrees)
+			degrees = (degrees + 360 +45) % 360
+			d("degrees2:"..degrees)
+			actor.face_dir = 4 - flr(degrees/90)
+			d("face_dir:"..actor.face_dir)
 
-	--elseif cmd_type == anim_turn then
-		--d(" > anim_turn to "..cmd_value)
-		--d("    > face_dir "..actor.face_dir )
+			-- is target dir left? flip?
+			actor.flip = (actor.face_dir == face_left)
+			return
+		end
+
 		while actor.face_dir != cmd_value do
-			
+			-- turn to target face_dir
 			if actor.face_dir < cmd_value then
-				actor.face_dir += 1 --actor.face_dir + 1
+				actor.face_dir += 1
 			else 
-				actor.face_dir -= 1-- actor.face_dir - 1
+				actor.face_dir -= 1
 			end
 			--d("    > face_dir "..actor.face_dir )
 			break_time(10)
@@ -2234,6 +2248,9 @@ function walk_to(actor, x, y)
 		end
 		--d("reach dest")
 		actor.moving = 2 --arrived
+
+		d("about to face...")
+		do_anim(selected_actor, anim_face, actors.purp_tentacle)
 end
 
 
