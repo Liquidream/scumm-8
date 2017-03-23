@@ -15,10 +15,10 @@ __lua__
 
 
 -- debugging
-show_debuginfo = false
+show_debuginfo = true
 show_collision = false
 show_pathfinding = true
-show_perfinfo = false
+show_perfinfo = true
 enable_mouse = true
 d = printh
 
@@ -105,13 +105,31 @@ rooms = {
 
 			if not me.done_intro then
 				-- Don't do this again
-				me.done_intro = true
+				--me.done_intro = true
 				-- set which actor the player controls by default
 				selected_actor = actors.main_actor
 				-- init actor
-				put_actor_at(selected_actor, 30, 50, rooms.first_room)
+				put_actor_at(selected_actor, 68, 50, rooms.first_room)
 
-				put_actor_at(actors.purp_tentacle, 50, 50, rooms.first_room)
+				start_script(me.scripts.watch_tentacle, true) -- bg script
+
+				put_actor_at(actors.purp_tentacle, 110, 50, rooms.first_room)
+				break_time(200)
+
+
+				--walk_to(actors.purp_tentacle, 68, 60)
+				put_actor_at(actors.purp_tentacle, 68, 60)
+				break_time(200)
+				--walk_to(actors.purp_tentacle, 20, 50)
+				put_actor_at(actors.purp_tentacle, 20, 50)
+				break_time(200)
+				--walk_to(actors.purp_tentacle, 68, 42)
+				put_actor_at(actors.purp_tentacle, 68, 42)
+				break_time(200)
+				--walk_to(actors.purp_tentacle, 110, 50)
+				put_actor_at(actors.purp_tentacle, 110, 50)
+				break_time(200)
+
 				-- make camera follow player
 				-- (setting now, will be re-instated after cutscene)
 				camera_follow(selected_actor)
@@ -138,7 +156,14 @@ rooms = {
 						break_time(8)
 					end
 				end
-			end		
+			end,
+			watch_tentacle = function()
+				while true do
+					d("watching tentacle...")
+					do_anim(selected_actor, anim_face, actors.purp_tentacle)
+					break_time(10)
+				end
+			end
 		},
 		objects = {
 			fire = {
@@ -1818,51 +1843,12 @@ function do_anim(actor, cmd_type, cmd_value)
 			if (degrees < 0) then degrees += 360 end
 			--printh("degrees_adj:"..degrees)
 
-			actor.face_dir = 4 - flr(degrees/90)
-			--d("face_dir:"..actor.face_dir)
-
-			-- is target dir left? flip?
-			actor.flip = (actor.face_dir == face_left)
-
-			-- d("cmd_value.y:"..cmd_value.y)
-			-- d("actor.y:"..actor.y)
-
-			-- angle = atan2(cmd_value.y - actor.y, cmd_value.x - actor.x)
-			-- --angle = atan2(cmd_value.x - actor.x, cmd_value.y - actor.y)
-			-- d("angle1a:"..angle)
-			
-			-- plr_angle = 45 * (3.1415/180)
-			-- d("plr_angle:"..plr_angle)
-			
-			-- rad_diff = plr_angle - angle
-			-- d("rad_diff:"..rad_diff)
-
-			-- degrees_diff = rad_diff * (180/3.1415)
-			-- d("degreea:"..degrees_diff)
-			-- if degrees < 0 then degrees = 360 - (-degrees) end
-			-- d("degrees2:"..degrees)
-
-			-- offset = 45 * (3.1415/180)
-			-- d("offset:"..offset)
-			-- degrees = degrees - offset
-			-- d("degrees2:"..degrees)
-
-			-- degrees = degrees % 360
-			-- if degrees < 0 then degrees += 360 end
-			-- d("degrees3:"..degrees)
-
-			-- x = (degrees +45) % 360
-			-- d("x:"..x)
-			-- if x < 0 then x += 360 end
-			-- degrees = x
-			-- d("degrees2:"..degrees)
-
-			-- actor.face_dir = 4 - flr(degrees/90)
-			-- d("face_dir:"..actor.face_dir)
+			cmd_value = 4 - flr(degrees/90)
+			--actor.face_dir = 4 - flr(degrees/90)
+			d("face_dir:"..cmd_value)
 
 			-- -- is target dir left? flip?
-			-- actor.flip = (actor.face_dir == face_left)
-			return
+			-- actor.flip = (cmd_value == face_left)
 		end
 
 		while actor.face_dir != cmd_value do
@@ -1872,7 +1858,11 @@ function do_anim(actor, cmd_type, cmd_value)
 			else 
 				actor.face_dir -= 1
 			end
-			--d("    > face_dir "..actor.face_dir )
+
+			-- is target dir left? flip?
+			actor.flip = (actor.face_dir  == face_left)
+
+			d("    > face_dir "..actor.face_dir )
 			break_time(10)
 		end
 	end
@@ -2250,7 +2240,7 @@ function print_line(msg, x, y, col, align)
 end
 
 function put_actor_at(actor, x, y, room)
-	actor.in_room = room
+	if room then actor.in_room = room end
 	actor.x = x
 	actor.y = y
 end
@@ -2313,9 +2303,6 @@ function walk_to(actor, x, y)
 		end
 		--d("reach dest")
 		actor.moving = 2 --arrived
-
-		d("about to face...")
-		do_anim(selected_actor, anim_face, actors.purp_tentacle)
 end
 
 
