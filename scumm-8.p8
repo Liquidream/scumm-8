@@ -1090,13 +1090,14 @@ function input_button_pressed(button_index)
 				-- d("obj w="..obj.w..",h="..obj.h)
 				dest_pos = get_use_pos(obj)
 				--d("dest_pos x="..dest_pos.x..",y="..dest_pos.y)
-				if (obj.offset_x) then d("offset x="..obj.offset_x..",y="..obj.offset_y) end
+				--if (obj.offset_x) then d("offset x="..obj.offset_x..",y="..obj.offset_y) end
 				walk_to(selected_actor, dest_pos.x, dest_pos.y)
 				-- abort if walk was interrupted
 				--d(".moving="..selected_actor.moving)
 				if selected_actor.moving != 2 then return end
 				-- default use direction
-				use_dir=selected_actor.face_dir
+				use_dir = obj
+				--use_dir = selected_actor.face_dir
 				if obj.use_dir and verb != verb_default then use_dir = obj.use_dir end
 				-- anim to use dir
 				do_anim(selected_actor, anim_face, use_dir)
@@ -1625,7 +1626,7 @@ end
 
 function camera_follow(actor)
 	-- set target
-	d("setting cam follow to:"..type(actor))
+	--d("setting cam follow to:"..type(actor))
 	cam_following_actor = actor
 	-- clear other cam values
 	cam_pan_to_x = nil
@@ -1749,39 +1750,37 @@ end
 
 
 function get_use_pos(obj)
-	pos = {}
-	-- d("get_use_pos")
-	-- d("xxx :"..obj.use_pos)
-
+	obj_use_pos = obj.use_pos
+	
 	-- first check for specific pos
-	if type(obj.use_pos) == "table" then
+	if type(obj_use_pos) == "table" then
 	--d("usr tbl")
 
-		pos.x = obj.use_pos.x-cam_x
-		pos.y = obj.use_pos.y-stage_top
+		x = obj_use_pos.x-cam_x
+		y = obj_use_pos.y-stage_top
 
 	-- determine use pos
-	elseif not obj.use_pos or
-		 obj.use_pos == pos_infront then
-		pos.x = obj.x+((obj.w*8)/2)-cam_x-4
-		pos.y = obj.y+(obj.h*8) +2
+	elseif not obj_use_pos or
+		obj_use_pos == pos_infront then
+		x = obj.x+((obj.w*8)/2)-cam_x-4
+		y = obj.y+(obj.h*8) +2
 
-	elseif obj.use_pos == pos_left then
+	elseif obj_use_pos == pos_left then
 		
 		if obj.offset_x then	-- diff calc for actors
-			pos.x = obj.x-cam_x - (obj.w*8+4)
-			pos.y = obj.y+1
+			x = obj.x-cam_x - (obj.w*8+4)
+			y = obj.y+1
 		else
-			pos.x = obj.x-cam_x
-			pos.y = obj.y+((obj.h*8) -2)
+			x = obj.x-cam_x
+			y = obj.y+((obj.h*8) -2)
 		end
 
-	elseif obj.use_pos == pos_right then
-		pos.x = obj.x+(obj.w*8)-cam_x
-		pos.y = obj.y+((obj.h*8) -2)
+	elseif obj_use_pos == pos_right then
+		x = obj.x+(obj.w*8)-cam_x
+		y = obj.y+((obj.h*8) -2)
 	end
-
-	return pos
+	
+	return {x=x,y=y}
 end
 
 function do_anim(actor, cmd_type, cmd_value)
@@ -1905,7 +1904,7 @@ function fades(fade, dir) -- 1=down, -1=up
 
 		if fade_amount > 50
 		 or fade_amount < 0 then
-		 	d("done!")
+		 	--d("done!")
 			return
 		end
 		if fade == 1 then
