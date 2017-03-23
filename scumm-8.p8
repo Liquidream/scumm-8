@@ -1799,23 +1799,46 @@ function do_anim(actor, cmd_type, cmd_value)
 		-- check if cmd_value is an actor/object, rather than explicit face_dir
 		if type(cmd_value) == "table" then
 			-- need to calculate face_dir from positions
-			-- angle
+			angle_rad = atan2(actor.x  - cmd_value.x , cmd_value.y - actor.y)
+			--printh("angle_rad:"..angle_rad)
 
-			d("cmd_value.y:"..cmd_value.y)
-			d("actor.y:"..actor.y)
-
-			angle = atan2(cmd_value.y - actor.y, cmd_value.x - actor.x)
-			--angle = atan2(cmd_value.x - actor.x, cmd_value.y - actor.y)
-			d("angle1a:"..angle)
+			plr_angle = 93 * (3.1415/180)
+			--printh("plr_angle:"..plr_angle)
 			
-			plr_angle = 45 * (3.1415/180)
-			d("plr_angle:"..plr_angle)
-			
-			rad_diff = plr_angle - angle
-			d("rad_diff:"..rad_diff)
+			angle_rad = plr_angle - angle_rad
+			--printh("angle_rad_adj:"..angle_rad)
 
-			degrees_diff = rad_diff * (180/3.1415)
-			d("degreea:"..degrees_diff)
+			-- convert radians to degrees
+			-- (note: everyone says should be: rad * (180/pi), but
+			--        that only seems to give me degrees 0..57? so...)
+			degrees = angle_rad * (1130.938/3.1415)
+			--printh("degrees:"..degrees)
+
+			degrees = degrees % 360
+			if (degrees < 0) then degrees += 360 end
+			--printh("degrees_adj:"..degrees)
+
+			actor.face_dir = 4 - flr(degrees/90)
+			--d("face_dir:"..actor.face_dir)
+
+			-- is target dir left? flip?
+			actor.flip = (actor.face_dir == face_left)
+
+			-- d("cmd_value.y:"..cmd_value.y)
+			-- d("actor.y:"..actor.y)
+
+			-- angle = atan2(cmd_value.y - actor.y, cmd_value.x - actor.x)
+			-- --angle = atan2(cmd_value.x - actor.x, cmd_value.y - actor.y)
+			-- d("angle1a:"..angle)
+			
+			-- plr_angle = 45 * (3.1415/180)
+			-- d("plr_angle:"..plr_angle)
+			
+			-- rad_diff = plr_angle - angle
+			-- d("rad_diff:"..rad_diff)
+
+			-- degrees_diff = rad_diff * (180/3.1415)
+			-- d("degreea:"..degrees_diff)
 			-- if degrees < 0 then degrees = 360 - (-degrees) end
 			-- d("degrees2:"..degrees)
 
@@ -1834,11 +1857,11 @@ function do_anim(actor, cmd_type, cmd_value)
 			-- degrees = x
 			-- d("degrees2:"..degrees)
 
-			actor.face_dir = 4 - flr(degrees/90)
-			d("face_dir:"..actor.face_dir)
+			-- actor.face_dir = 4 - flr(degrees/90)
+			-- d("face_dir:"..actor.face_dir)
 
-			-- is target dir left? flip?
-			actor.flip = (actor.face_dir == face_left)
+			-- -- is target dir left? flip?
+			-- actor.flip = (actor.face_dir == face_left)
 			return
 		end
 
