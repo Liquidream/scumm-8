@@ -102,6 +102,20 @@ rooms = {
 			-- animate fireplace
 			--d("scr:"..type(me.scripts.anim_fire))
 			start_script(me.scripts.anim_fire, true) -- bg script
+
+			if not me.done_intro then
+				-- Don't do this again
+				me.done_intro = true
+				-- set which actor the player controls by default
+				selected_actor = actors.main_actor
+				-- init actor
+				put_actor_at(selected_actor, 30, 50, rooms.first_room)
+
+				put_actor_at(actors.purp_tentacle, 50, 50, rooms.first_room)
+				-- make camera follow player
+				-- (setting now, will be re-instated after cutscene)
+				camera_follow(selected_actor)
+			end
 		end,
 		exit = function(me)
 			-- todo: anything here?
@@ -625,7 +639,9 @@ actors = {
 function startup_script()	
 	-- set which room to start the game in 
 	-- (could be a "pseudo" room for title screen!)
-	change_room(rooms.outside_room, 1) -- iris fade
+	
+	change_room(rooms.first_room, 1) -- iris fade	
+	--change_room(rooms.outside_room, 1) -- iris fade
 end
 
 -- logic used to determine a "default" verb to use
@@ -1383,7 +1399,7 @@ function actor_draw(actor)
 	--reset palette
 	pal()
 
-	--pset(actor.x, actor.y+stage_top, 10)
+	pset(actor.x, actor.y+stage_top, 8)
 end
 
 function command_draw()
@@ -1784,17 +1800,40 @@ function do_anim(actor, cmd_type, cmd_value)
 		if type(cmd_value) == "table" then
 			-- need to calculate face_dir from positions
 			-- angle
-			angle = atan2(cmd_value.x - actor.x, cmd_value.y - actor.y)
-			d("angle1:"..angle)
-			-- angle = angle - (3.1415/4)
-			-- d("angle2:"..angle)
-			degrees = angle * (1080/3.1415)
-			d("degrees:"..degrees)
-			x = (degrees +45) % 360
-			d("x:"..x)
-			if x < 0 then x += 360 end
-			degrees = x
-			d("degrees2:"..degrees)
+
+			d("cmd_value.y:"..cmd_value.y)
+			d("actor.y:"..actor.y)
+
+			angle = atan2(cmd_value.y - actor.y, cmd_value.x - actor.x)
+			--angle = atan2(cmd_value.x - actor.x, cmd_value.y - actor.y)
+			d("angle1a:"..angle)
+			
+			plr_angle = 45 * (3.1415/180)
+			d("plr_angle:"..plr_angle)
+			
+			rad_diff = plr_angle - angle
+			d("rad_diff:"..rad_diff)
+
+			degrees_diff = rad_diff * (180/3.1415)
+			d("degreea:"..degrees_diff)
+			-- if degrees < 0 then degrees = 360 - (-degrees) end
+			-- d("degrees2:"..degrees)
+
+			-- offset = 45 * (3.1415/180)
+			-- d("offset:"..offset)
+			-- degrees = degrees - offset
+			-- d("degrees2:"..degrees)
+
+			-- degrees = degrees % 360
+			-- if degrees < 0 then degrees += 360 end
+			-- d("degrees3:"..degrees)
+
+			-- x = (degrees +45) % 360
+			-- d("x:"..x)
+			-- if x < 0 then x += 360 end
+			-- degrees = x
+			-- d("degrees2:"..degrees)
+
 			actor.face_dir = 4 - flr(degrees/90)
 			d("face_dir:"..actor.face_dir)
 
