@@ -331,9 +331,10 @@ rooms = {
 									change_room(rooms.first_room, 1)
 									-- wait for a bit, then appear in room1
 									break_time(50)
-									selected_actor.x = 115
-									selected_actor.y = 44
-									selected_actor.in_room = rooms.first_room
+									put_actor_at(selected_actor, 115, 44, rooms.first_room)
+									-- selected_actor.x = 115
+									-- selected_actor.y = 44
+									-- selected_actor.in_room = rooms.first_room
 									walk_to(selected_actor, 
 										selected_actor.x-10, 
 										selected_actor.y)
@@ -344,9 +345,10 @@ rooms = {
 								function()
 									--d("override!")
 									change_room(rooms.first_room)
-									actors.purp_tentacle.in_room = rooms.first_room
-									actors.purp_tentacle.x = 105
-									actors.purp_tentacle.y = 44
+									put_actor_at(actors.purp_tentacle, 105, 44, rooms.first_room)
+									-- actors.purp_tentacle.in_room = rooms.first_room
+									-- actors.purp_tentacle.x = 105
+									-- actors.purp_tentacle.y = 44
 									stop_talking()
 								end
 							)
@@ -1840,8 +1842,11 @@ function come_out_door(door_obj, fade_effect)
 	pos = get_use_pos(door_obj)
 	-- d("cam_x:  "..cam_x)
 	-- d("pos x:"..pos.x..", y:"..pos.y)
-	selected_actor.x = pos.x
-	selected_actor.y = pos.y
+	-- selected_actor.x = pos.x
+	-- selected_actor.y = pos.y
+
+	put_actor_at(selected_actor, pos.x, pos.y, new_room)
+
 	-- (in opposite use direction)
 	if door_obj.use_dir then
 		opp_dir = door_obj.use_dir + 2
@@ -1853,7 +1858,7 @@ function come_out_door(door_obj, fade_effect)
 	end
 	do_anim(selected_actor, anim_face, opp_dir)
 
-	selected_actor.in_room = new_room
+	--selected_actor.in_room = new_room
 end
 
 function fades(fade, dir) -- 1=down, -1=up
