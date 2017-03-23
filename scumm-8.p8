@@ -1786,11 +1786,14 @@ function do_anim(actor, cmd_type, cmd_value)
 			-- angle
 			angle = atan2(cmd_value.x - actor.x, cmd_value.y - actor.y)
 			d("angle1:"..angle)
-			-- angle = angle - 0.25
+			-- angle = angle - (3.1415/4)
 			-- d("angle2:"..angle)
 			degrees = angle * (1080/3.1415)
 			d("degrees:"..degrees)
-			degrees = (degrees + 360 +45) % 360
+			x = (degrees +45) % 360
+			d("x:"..x)
+			if x < 0 then x += 360 end
+			degrees = x
 			d("degrees2:"..degrees)
 			actor.face_dir = 4 - flr(degrees/90)
 			d("face_dir:"..actor.face_dir)
