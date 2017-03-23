@@ -439,9 +439,11 @@ rooms = {
 				-- set which actor the player controls by default
 				selected_actor = actors.main_actor
 				-- init actor
-				selected_actor.in_room = rooms.outside_room
-				selected_actor.x = 144
-				selected_actor.y = 36
+				put_actor_at(selected_actor, 144, 36, rooms.outside_room)
+				-- selected_actor.in_room = rooms.outside_room
+				-- selected_actor.x = 144
+				-- selected_actor.y = 36
+
 				-- make camera follow player
 				-- (setting now, will be re-instated after cutscene)
 				camera_follow(selected_actor)
@@ -2164,6 +2166,11 @@ function print_line(msg, x, y, col, align)
 	end
 end
 
+function put_actor_at(actor, x, y, room)
+	actor.in_room = room
+	actor.x = x
+	actor.y = y
+end
 
 -- walk actor to position
 function walk_to(actor, x, y)
