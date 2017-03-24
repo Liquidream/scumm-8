@@ -100,13 +100,12 @@ rooms = {
 		},
 		enter = function(me)
 			-- animate fireplace
-			--d("scr:"..type(me.scripts.anim_fire))
 			start_script(me.scripts.anim_fire, true) -- bg script
-		
+
 			--start_script(me.scripts.watch_tentacle, true) -- bg script
 		end,
 		exit = function(me)
-			-- todo: anything here?
+			-- pause fireplace while not in room
 			stop_script(me.scripts.anim_fire)
 		end,
 		lighting = 0, -- state of lights in current room
@@ -144,8 +143,8 @@ rooms = {
 				states = {145, 146, 147},
 				w = 1,	-- relates to spr or map cel, depending on above
 				h = 1,  --
-				use_dir = face_back,
-				use_pos = pos_infront,
+				--use_dir = face_back,
+				--use_pos = pos_infront,
 
 				dependent_on = "front door",	-- object is dependent on the state of another
 				dependent_on_state = states.closed,
@@ -302,7 +301,7 @@ rooms = {
 				name = "window",
 				class = class_openable,
 				state = states.closed,
-				use_dir = face_back,
+				--use_dir = face_back,
 
 				-- todo: make this calculated, by closed walkable pos!
 				use_pos = { x = 5 *8, y = (7 *8)+1},
@@ -345,23 +344,21 @@ rooms = {
 										selected_actor.x-10, 
 										selected_actor.y)
 									say_line("intruder!!!")
+									do_anim(actors.main_actor, anim_face, actors.purp_tentacle)
 									wait_for_message()
 								end,
 								-- override for cutscene
 								function()
 									--d("override!")
 									change_room(rooms.first_room)
-									put_actor_at(actors.purp_tentacle, 60, 50, rooms.first_room)
-									--put_actor_at(actors.purp_tentacle, 105, 44, rooms.first_room)
+									put_actor_at(actors.purp_tentacle, 105, 44, rooms.first_room)
 									stop_talking()
-									d("about to face...")
-									do_anim(selected_actor, anim_face, actors.purp_tentacle)
+									do_anim(actors.main_actor, anim_face, actors.purp_tentacle)
 								end
 							)
 						end
 						-- now face tentacle
-						-- d("about to face...")
-						-- do_anim(selected_actor, anim_face, actors.purp_tentacle)
+						-- (code here will not run, as room change nuked "local" code)
 					end
 				}
 			}
@@ -451,14 +448,9 @@ rooms = {
 				selected_actor = actors.main_actor
 				-- init actor
 				put_actor_at(selected_actor, 144, 36, rooms.outside_room)
-				-- selected_actor.in_room = rooms.outside_room
-				-- selected_actor.x = 144
-				-- selected_actor.y = 36
-
 				-- make camera follow player
 				-- (setting now, will be re-instated after cutscene)
 				camera_follow(selected_actor)
-				
 				-- do cutscene
 				cutscene(cut_noverbs + cut_hidecursor, 
 					-- cutscene code (hides ui, etc.)
@@ -512,7 +504,7 @@ rooms = {
 				flip_x = true, -- used for flipping the sprite
 				w = 1,	-- relates to spr or map cel, depending on above
 				h = 3,  --
-				use_pos = pos_infront,
+				--use_pos = pos_infront,
 				use_dir = face_back,
 				verbs = {
 					walkto = function(me)
@@ -1762,7 +1754,7 @@ function get_use_pos(obj)
 	-- determine use pos
 	elseif not obj_use_pos or
 		obj_use_pos == pos_infront then
-		x = obj.x+((obj.w*8)/2)-cam_x-4
+		x = obj.x+((obj.w*8)/2)-cam_x -4
 		y = obj.y+(obj.h*8) +2
 
 	elseif obj_use_pos == pos_left then
@@ -1941,6 +1933,9 @@ function change_room(new_room, fade)
 	-- actually change rooms now
 	room_curr = new_room
 
+	-- stop everyone talking
+	say_line("")
+
 	-- fade up again?
 	-- (use "thread" so that room.enter code is able to 
 	--  reposition camera before fade-up, if needed)
@@ -2107,12 +2102,18 @@ function say_line(actor, msg)
 		msg = actor
 		actor = selected_actor
 	end
+
+	-- check for "silence everyone"
+	if msg == "" then 
+		talking_actor = nil
+		talking_curr = nil
+		return
+	end
+
 	-- offset to display speech above actors (dist in px from their feet)
 	ypos = actor.y - (actor.h)*8 +4  --text_offset
-	--ypos = actor.y - (actor.h-1)*8   --text_offset
-		-- trigger actor's talk anim
+	-- trigger actor's talk anim
 	talking_actor = actor
-	--d("talking actor set")
 	-- call the base print_line to show actor line
 	print_line(msg, actor.x, ypos, actor.col, 1)
 end
