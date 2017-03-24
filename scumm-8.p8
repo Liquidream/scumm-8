@@ -538,13 +538,14 @@ actors = {
 		class = class_actor,
 		w = 1,
 		h = 4,
-		face_dir = face_front, 	-- direction facing
-		idle = { 1, 3, 5, 3},	-- sprites for idle (front, left, back, right) - right=flip
+		face_dir = face_front, 	-- default direction facing
+		-- sprites for idle (front, left, back, right) - right=flip
+		idle = { 1, 3, 5, 3},	
 		talk = { 6, 22, 21, 22},
 		walk_anim = { 2, 3, 4, 3},
-		--flip = false, 		-- used for flipping the sprite (left/right dir)
+		--flip = false, -- used for flipping the sprite (left/right dir)
 		col = 12,				-- speech text colour
-		trans_col = 11,
+		trans_col = 11,	-- transparency col in sprites
 		speed = 0.6,  	-- walking speed
 	},
 	purp_tentacle = {
@@ -555,10 +556,11 @@ actors = {
 		w = 1,
 		h = 3,
 		face_dir = face_front,
+		-- sprites for idle (front, left, back, right) - right=flip
 		idle = { 30, 30, 30, 30 },
 		talk = { 47, 47, 47, 47 },
 		col = 13,    		-- speech text colour
-		trans_col = 15,
+		trans_col = 15, -- transparency col in sprites
 		speed = 0.25,  	-- walking speed
 		use_pos = pos_left,
 		--in_room = rooms.first_room,
@@ -569,7 +571,7 @@ actors = {
 				end,
 				talkto = function(me)
 					cutscene(cut_noverbs, function()
-						--actorface( actor1, actor2 )
+						--do_anim(actors.purp_tentacle, anim_face, selected_actor)
 						say_line(me,"what do you want?")
 						wait_for_message()
 					end)
@@ -747,9 +749,6 @@ stage_top = 16
 --text_offset = (selected_actor.h-1)*8
 
 cam_x = 0
--- cam_max = 0 	-- the maximum x position the camera can move to in the current room
--- cam_min = 0  	-- the minimum x position the camera can move to in the current room
---cam_mode = 0 	-- 0=follow, 1=static, 2=pan-to
 --cam_following_actor = selected_actor
 cam_pan_to_x = nil	-- target pos to pad camera to
 cam_script = nil	-- active camera logic script (pan-to, follow, etc.)
@@ -773,7 +772,7 @@ last_mouse_y = 0
 ismouseclicked = false
 
 room_curr = nil			-- contains the current room definition
-verb_curr = nil 		--verb_default
+verb_curr = nil 		-- contains the active verb to be used (e.g. walk)
 noun1_curr = nil 		-- main/first object in command
 noun2_curr = nil 		-- holds whatever is used after the preposition (e.g. "with <noun2>")
 cmd_curr = "" 			-- contains last displayed or actioned command
@@ -782,7 +781,6 @@ talking_curr = nil 	-- currently displayed speech {x,y,col,lines...}
 dialog_curr = nil   -- currently displayed dialog options to pick
 cutscene_curr = nil -- currently active cutscene
 talking_actor = nil -- currently talking actor
---fade_effect = nil 	-- room transition effect (0=none, 1=iris, 2=fade)
 fade_iris = 0			  -- depends on effect above
 
 global_scripts = {}	-- table of scripts that are at game-level (background)
@@ -796,14 +794,8 @@ function _init()
 	-- use mouse input?
 	if enable_mouse then poke(0x5f2d, 1) end
 
-	-- init actor
-	--selected_actor.in_room = selected_room
-
-	-- init all the rooms
+	-- init all the rooms/objects/actors
 	game_init()
-
-	-- load the initial room
-	--change_room(selected_room)
 
 	-- run any startup script(s)
   start_script(startup_script, true)
@@ -830,7 +822,6 @@ function game_update()
 
 	-- update active cutscene (if any)
 	if cutscene_curr then
-		--d("playing cutscene...")
 		if cutscene_curr.thread and not coresume(cutscene_curr.thread) then
 			-- cutscene ended, restore prev state	
 			if (room_curr != cutscene_curr.paused_room) then change_room(cutscene_curr.paused_room) end
@@ -846,7 +837,7 @@ function game_update()
 		end
 	else
 		-- no cutscene...
-		-- update all the active scripts (local + global)
+		-- update all the active scripts
 		-- (will auto-remove those that have ended)
 	
 		-- local/room-level scripts
@@ -862,14 +853,13 @@ end
 
 
 function game_draw()
-	--d("game_draw")
 	-- clear screen every frame?
 	rectfill(0, 0, screenwidth, screenheight, 0)
 
-	
+	-- reposition camera
 	camera(cam_x, 0)
 
-	-- clip room bounds
+	-- clip room bounds (also used for "iris" transition)
 	clip(
 		0 +fade_iris, 
 		stage_top +fade_iris, 
@@ -879,16 +869,18 @@ function game_draw()
 	-- draw room (bg + objects + actors)
 	room_draw()
 
-	-- reset camera for "static" content
+	-- reset camera for "static" content (UI, etc.)
 	camera(0,0)
-	-- reset clip
+	-- reset clip bounds
 	clip()
 
 	if show_perfinfo then 
 		print("cpu: "..flr(100*stat(1)).."%", 0, stage_top - 16, 8) 
 		print("mem: "..flr(stat(0)/1024*100).."%", 0, stage_top - 8, 8)
 	end
-	if show_debuginfo then print("x: "..cursor_x.." y:"..cursor_y-stage_top, 80, stage_top - 8, 8) end
+	if show_debuginfo then 
+		print("x: "..cursor_x.." y:"..cursor_y-stage_top, 80, stage_top - 8, 8) 
+	end
 
 	-- draw active text
 	talking_draw()
@@ -945,11 +937,9 @@ end
 -- handle button inputs
 function playercontrol()	
 
-	-- check for cutscene "skip"
+	-- check for cutscene "skip/override" (if available)
 	if cutscene_curr then
 		if btnp(4) and btnp(5) and cutscene_curr.override then 
-		-- if ((btnp(4) and btnp(5)) or (enable_mouse and stat(34) == 2))
-		--  and cutscene_curr.override then 
 			-- skip cutscene!
 			cutscene_curr.thread = cocreate(cutscene_curr.override)
 			cutscene_curr.override = nil
@@ -1012,7 +1002,7 @@ function input_button_pressed(button_index)
 
 	if hover_curr_verb then
 		verb_curr = get_verb(hover_curr_verb)
-		d("verb = "..verb_curr[2])
+		--d("verb = "..verb_curr[2])
 
 	elseif hover_curr_object then
 		-- if valid obj, complete command
@@ -1031,16 +1021,15 @@ function input_button_pressed(button_index)
 			-- perform default verb action (if present)
 			verb_curr = get_verb(hover_curr_default_verb)
 			noun1_curr = hover_curr_object
-			--d("n1 tpe:"..type(noun1_curr))
 			get_keys(noun1_curr)
-			--d("name:"..noun1_curr.name)
 			-- force repaint of command (to reflect default verb)
 			command_draw()
 		end
-	
+
+	-- ui arrow clicked
 	elseif hover_curr_arrow then
-		-- todo: ui arrow clicked...
-		if hover_curr_arrow == ui_arrows[1] then -- up arrow
+		-- up arrow
+		if hover_curr_arrow == ui_arrows[1] then 
 			if selected_actor.inv_pos > 0 then
 				selected_actor.inv_pos -= 1
 			end
@@ -1049,13 +1038,8 @@ function input_button_pressed(button_index)
 				selected_actor.inv_pos += 1
 			end
 		end
-		--d("inv_pos = "..selected_actor.inv_pos)
 		return
-
-	--[[elseif k == "inv_object" then
-		-- todo: inventory object clicked
-		break]]
-	else
+	--else
 		-- what else could there be? actors!?
 	end
 
@@ -1078,28 +1062,20 @@ function input_button_pressed(button_index)
 			if not obj.owner then
 				-- walk to use pos and face dir
 				--todo: find nearest usepos if none set?
-				-- d("obj x="..obj.x..",y="..obj.y)
-				-- d("obj w="..obj.w..",h="..obj.h)
 				dest_pos = get_use_pos(obj)
-				--d("dest_pos x="..dest_pos.x..",y="..dest_pos.y)
-				--if (obj.offset_x) then d("offset x="..obj.offset_x..",y="..obj.offset_y) end
 				walk_to(selected_actor, dest_pos.x, dest_pos.y)
 				-- abort if walk was interrupted
-				--d(".moving="..selected_actor.moving)
 				if selected_actor.moving != 2 then return end
-				-- default use direction
+				-- face object/actor by default
 				use_dir = obj
-				--use_dir = selected_actor.face_dir
+				-- unless a diff dir specified
 				if obj.use_dir and verb != verb_default then use_dir = obj.use_dir end
-				-- anim to use dir
+				-- turn to use dir
 				do_anim(selected_actor, anim_face, use_dir)
 			end
 			-- does current object support active verb?
 			if valid_verb(verb,obj) then
 				-- finally, execute verb script
-				-- d("verb_obj_script!")
-				-- d("verb = "..verb[2])
-				-- d("obj = "..obj.name)
 				start_script(obj.verbs[verb[1]], false, obj, noun2)
 			else
 				-- e.g. "i don't think that will work"
@@ -1120,7 +1096,6 @@ function input_button_pressed(button_index)
 		end)
 		coresume(selected_actor.thread, cursor_x, cursor_y - stage_top)
 	end
-
 	--d("--------------------------------")
 end
 
@@ -1132,8 +1107,6 @@ function checkcollisions()
 	hover_curr_object = nil
 	hover_curr_sentence = nil
 	hover_curr_arrow = nil
-
-	--hover_curr = {}
 
 	-- are we in dialog mode?
 	if dialog_curr and dialog_curr.visible then
@@ -1195,6 +1168,7 @@ function checkcollisions()
 			hover_curr_arrow = a
 		end
 	end
+
 	-- check room/object collisions
 	for k,obj in pairs(selected_actor.inventory) do
 		if iscursorcolliding(obj) then
@@ -1246,13 +1220,10 @@ function recalc_zplane(obj)
 end
 
 function room_draw()
-	-- draw current room (base layer)
-	--room_map = room_curr.map
+	-- draw current room
+
 	-- replace colors?
 	replace_colors(room_curr)
-	--[[for c in all(room_curr.col_replace) do
-		pal(c[1], c[2])
-	end]]
 	map(room_curr.map_x, room_curr.map_y, 0, stage_top, room_curr.map_w , room_curr.map_h)
 	--reset palette
 	pal() 
@@ -1312,7 +1283,6 @@ function room_draw()
 				end
 			end
 			show_collision_box(obj)
-			-- if (show_collision and obj.bounds) then rect(obj.bounds.x, obj.bounds.y, obj.bounds.x1, obj.bounds.y1, 8) end
 		end
 	end
 end
@@ -1327,9 +1297,6 @@ end
 function object_draw(obj)
 	-- replace colors?
 	replace_colors(obj)
-	--[[for c in all(obj.col_replace) do
-		pal(c[1], c[2])
-	end]]
 	-- allow for repeating
 	rx=1
 	if obj.repeat_x then rx = obj.repeat_x end
@@ -1361,9 +1328,6 @@ function actor_draw(actor)
 
 	-- replace colors?
 	replace_colors(actor)
-	--[[for c in all(actor.col_replace) do
-		pal(c[1], c[2])
-	end]]
 
 	sprdraw(sprnum, actor.offset_x, actor.offset_y, 
 		actor.w , actor.h, actor.trans_col, 
@@ -1372,11 +1336,8 @@ function actor_draw(actor)
 	-- talking overlay
 	if talking_actor 
 	 and talking_actor == actor then
-			--d("talking actor!")
 			if actor.talk_tmr < 7  then
 				sprnum = actor.talk[actor.face_dir]
-				--d("sprnum:"..sprnum)
-				--d("facedir:"..actor.face_dir)
 				sprdraw(sprnum, actor.offset_x, actor.offset_y +8, 1, 1, 
 					actor.trans_col, actor.flip, false)
 			end
@@ -1421,8 +1382,6 @@ function command_draw()
 		command = cmd_curr
 		cmd_col = 7
 	end
-
-	--d(command)
 
 	print(smallcaps(command), 
 		hcenter(command), 
@@ -1484,7 +1443,7 @@ function ui_draw()
 		v.y = ypos
 		recalc_bounds(v, #vi[3]*4, 5, 0, 0)
 		show_collision_box(v)
-		--if (show_collision) then rect(v.bounds.x, v.bounds.y, v.bounds.x1, v.bounds.y1, 8) end
+
 		-- auto-size column
 		if #vi[3] > col_len then col_len = #vi[3] end
 		ypos = ypos + 8
@@ -1501,12 +1460,10 @@ function ui_draw()
 	xpos = 86
 	ypos = 76
 	-- determine the inventory "window"
-	start_pos = selected_actor.inv_pos*4 --min(selected_actor.inv_pos*4, flr(#selected_actor.inventory/4)+1)
+	start_pos = selected_actor.inv_pos*4
 	end_pos = min(start_pos+8, #selected_actor.inventory)
 
 	for ipos = 1,8 do
-	--for ipos = start_pos+1, end_pos do
-
 		-- draw inventory bg
 		rectfill(xpos-1, stage_top+ypos-1, xpos+8, stage_top+ypos+8, 1)
 
@@ -1530,7 +1487,6 @@ function ui_draw()
 		ipos += 1
 	end
 
-
 	-- draw arrows
 	for i = 1,2 do
 		arrow = ui_arrows[i]
@@ -1541,8 +1497,6 @@ function ui_draw()
 		show_collision_box(arrow)
 		pal() --reset palette
 	end
-
-
 end
 
 function dialog_draw()
@@ -1564,8 +1518,7 @@ function dialog_draw()
 		end
 
 		show_collision_box(s)
-		--if (show_collision) then rect(s.bounds.x, s.bounds.y, s.bounds.x1, s.bounds.y1, 8) end
-		
+
 		ypos += 2
 	end
 end
@@ -1594,14 +1547,13 @@ function sprdraw(n, x, y, w, h, transcol, flip_x, flip_y)
  	palt(transcol, true)
 	 -- draw sprite
 	spr(n, x, stage_top + y, w, h, flip_x, flip_y) --
-	-- restore trans
-	palt(transcol, false)
-	palt(0, true)
+	-- restore default trans
+	pal()
 end
 
 
 
--- scumm core functions -------------------------------------------
+-- scumm-8 core api functions -------------------------------------------
 
 
 function camera_at(val)
@@ -1636,7 +1588,7 @@ function camera_follow(actor)
 end
 
 
-function camera_pan_to(val) --,y)
+function camera_pan_to(val)
 	-- check params for obj/actor
 	if type(val) == "table" then
 		x = val.x
@@ -1648,8 +1600,7 @@ function camera_pan_to(val) --,y)
 
 	cam_script = function()
 		-- update the camera pan until reaches dest
-		while (true) do		
-			--d("panning...")
+		while (true) do
 			center_view = cam_x + flr(screenwidth/2) +1
 			if center_view == cam_pan_to_x then
 				-- pan complete
@@ -1662,10 +1613,10 @@ function camera_pan_to(val) --,y)
 			end
 			-- keep camera within "room" bounds
 			cam_x = mid(0, cam_x, (room_curr.map_w*8)-screenwidth-1 )
-			
 			yield()
 		end
 	end
+
 	start_script(cam_script, true) -- bg script
 end
 
@@ -1680,8 +1631,6 @@ end
 function cutscene(flags, func_cutscene, func_override)
 	-- decrement the cursor level
 	--cursor_lvl = cursor_lvl - 1
-
-	--d("follow:"..type(cam_following_actor))
 			
 	cut = {
 		flags = flags,
@@ -1689,17 +1638,12 @@ function cutscene(flags, func_cutscene, func_override)
 		override = func_override,
 		paused_room = room_curr,
 		paused_actor = selected_actor,
-		--paused_cam_mode = cam_mode,
 		paused_cam_following = cam_following_actor
 	}
 	add(cutscenes, cut)
 
 	-- set as active cutscene
 	cutscene_curr = cut
-
-	-- reset stuff
-	--cam_mode = 1 --fixed
-	--cam_x = 0
 
 	-- yield for system catch-up
 	break_time()
@@ -1746,66 +1690,59 @@ function get_use_pos(obj)
 	
 	-- first check for specific pos
 	if type(obj_use_pos) == "table" then
-	--d("usr tbl")
-
 		x = obj_use_pos.x-cam_x
 		y = obj_use_pos.y-stage_top
 
 	-- determine use pos
 	elseif not obj_use_pos or
 		obj_use_pos == pos_infront then
-		x = obj.x+((obj.w*8)/2)-cam_x -4
-		y = obj.y+(obj.h*8) +2
+		x = obj.x + ((obj.w*8)/2) -cam_x -4
+		y = obj.y + (obj.h*8) +2
 
 	elseif obj_use_pos == pos_left then
 		
 		if obj.offset_x then	-- diff calc for actors
-			x = obj.x-cam_x - (obj.w*8+4)
-			y = obj.y+1
+			x = obj.x -cam_x - (obj.w*8+4)
+			y = obj.y + 1
 		else
-			x = obj.x-cam_x
-			y = obj.y+((obj.h*8) -2)
+			x = obj.x -cam_x
+			y = obj.y + ((obj.h*8) -2)
 		end
 
 	elseif obj_use_pos == pos_right then
-		x = obj.x+(obj.w*8)-cam_x
-		y = obj.y+((obj.h*8) -2)
+		x = obj.x + (obj.w*8)-cam_x
+		y = obj.y + ((obj.h*8) -2)
 	end
 	
 	return {x=x,y=y}
 end
 
-function do_anim(actor, cmd_type, cmd_value)
-	-- -- is target dir left? flip?
-	-- actor.flip = (cmd_value == face_left)
 
+function do_anim(actor, cmd_type, cmd_value)
+
+	-- animate turn to face (object/actor or explicit direction)
 	if cmd_type == anim_face then
-		--d(" > anim_face")
 		
 		-- check if cmd_value is an actor/object, rather than explicit face_dir
 		if type(cmd_value) == "table" then
 			-- need to calculate face_dir from positions
 			angle_rad = atan2(actor.x  - cmd_value.x , cmd_value.y - actor.y)
-			--printh("angle_rad:"..angle_rad)
-
+			-- calc player's angle offset in this
 			plr_angle = 93 * (3.1415/180)
-			--printh("plr_angle:"..plr_angle)
-			
+			-- adjust for player's angle
 			angle_rad = plr_angle - angle_rad
-			--printh("angle_rad_adj:"..angle_rad)
 
 			-- convert radians to degrees
 			-- (note: everyone says should be: rad * (180/pi), but
 			--        that only seems to give me degrees 0..57? so...)
 			degrees = angle_rad * (1130.938/3.1415)
-			--printh("degrees:"..degrees)
 
+			-- angle wrap for circle
 			degrees = degrees % 360
 			if (degrees < 0) then degrees += 360 end
-			--printh("degrees_adj:"..degrees)
 
+			-- set final target face direction to obj/actor
 			cmd_value = 4 - flr(degrees/90)
-			--d("face_dir:"..cmd_value)
 		end
 
 		while actor.face_dir != cmd_value do
@@ -1817,7 +1754,6 @@ function do_anim(actor, cmd_type, cmd_value)
 			end
 			-- is target dir left? flip?
 			actor.flip = (actor.face_dir  == face_left)
-			--d("    > face_dir "..actor.face_dir )
 			break_time(10)
 		end
 	end
@@ -1844,33 +1780,20 @@ function close_door(door_obj1, door_obj2)
 end
 
 function come_out_door(door_obj, fade_effect)
-	-- d("come_out_door()")
-	-- d("cam_x:  "..cam_x)
-	-- switch to new room and...
+	
 	new_room = door_obj.in_room
 
-	-- d("cam_x:  "..cam_x)
-	-- d("door_obj:  "..door_obj.x)
-	-- d("new room w:"..new_room.map_w)
-
 	-- reset camera pos in new room
-	-- (if camera following, then this will still apply)
+	-- (if camera following, then this will get re-applied)
 	cam_x = 0
-	--cam_x = mid(0, door_obj.x -64, (new_room.map_w*8)-screenwidth-1 )
-	-- camera_at(door_obj)
 
+	-- switch to new room and...
 	change_room(new_room, fade_effect)
-	--d("cam_x:  "..cam_x)
-	-- ...auto-position actor at door_obj
+	-- ...auto-position actor at door_obj in new room...
 	pos = get_use_pos(door_obj)
-	-- d("cam_x:  "..cam_x)
-	-- d("pos x:"..pos.x..", y:"..pos.y)
-	-- selected_actor.x = pos.x
-	-- selected_actor.y = pos.y
-
 	put_actor_at(selected_actor, pos.x, pos.y, new_room)
 
-	-- (in opposite use direction)
+	-- ...in opposite use direction!
 	if door_obj.use_dir then
 		opp_dir = door_obj.use_dir + 2
 		if opp_dir > 4 then
@@ -1879,9 +1802,8 @@ function come_out_door(door_obj, fade_effect)
 	else
 	 opp_dir = 1 -- front
 	end
-	do_anim(selected_actor, anim_face, opp_dir)
-
-	--selected_actor.in_room = new_room
+	selected_actor.face_dir = opp_dir
+	--do_anim(selected_actor, anim_face, opp_dir)
 end
 
 function fades(fade, dir) -- 1=down, -1=up
@@ -1896,13 +1818,14 @@ function fades(fade, dir) -- 1=down, -1=up
 
 		if fade_amount > 50
 		 or fade_amount < 0 then
-		 	--d("done!")
 			return
 		end
+
+		-- iris down/up
 		if fade == 1 then
-			-- iris down/up
 			fade_iris = min(fade_amount, 32)
 		end
+
 		yield()
 	end
 end
@@ -1911,9 +1834,6 @@ function change_room(new_room, fade)
 
 	-- fade down existing room (or skip if first room)
 	if fade and room_curr then
-		-- start_script( function() 
-		-- 			fades(fade, -1) 
-		-- 	end, true)
 		fades(fade, 1)
 	end
 
@@ -1943,9 +1863,8 @@ function change_room(new_room, fade)
 		start_script( function() 
 				fades(fade, -1) 
 		end, true)
-		
 	else
-		-- no fade - reset any existing
+		-- no fade - reset any existing fade
 		fade_iris = 0
 	end
 
@@ -1953,8 +1872,6 @@ function change_room(new_room, fade)
 	if room_curr.enter then
 		-- run script directly
 		room_curr.enter(room_curr)
-
-		--start_script( room_curr.enter(room_curr), true)
 	end
 end
 
@@ -1977,7 +1894,6 @@ function pickup_obj(objname)
 	if obj
 	 --and not obj.owner 
 	 then
-	 	--d("adding to inv")
 		-- assume selected_actor picked-up at this point
 		add(selected_actor.inventory, obj)
 		obj.owner = selected_actor
@@ -2013,13 +1929,11 @@ function find_object(name)
 	if type(name) == "table" then return name end
 	-- else look for object by unique name
 	for k,obj in pairs(room_curr.objects) do
-		--d("--"..obj.name)
 		if obj.name == name then return obj end
-		--if (k == name) then return obj end
 	end
 end
 
-function start_script(func, bg, noun1, noun2)	-- me == this
+function start_script(func, bg, noun1, noun2)
 	-- create new thread for script and add to list of local_scripts
 	local thread = cocreate(func)
 	-- background or local?
@@ -2030,24 +1944,23 @@ function start_script(func, bg, noun1, noun2)	-- me == this
 	end
 end
 
+
 function script_running(func)
 	-- find script and stop it running
 
 	-- try local first
 	for k,scr_obj in pairs(local_scripts) do
-		--d("...")
 		if (scr_obj[1] == func) then 
 			--d("found in local!")
-			return true
+			return scr_obj
 		end
 	end
 
 	-- failing that, try global
 	for k,scr_obj in pairs(global_scripts) do
-		--d("...")
 		if (scr_obj[1] == func) then 
 			--d("found in global!")
-			return true
+			return scr_obj
 		end
 	end
 	-- must not be running
@@ -2055,29 +1968,31 @@ function script_running(func)
 end
 
 function stop_script(func)
-	--d("stop_script()")
 	-- find script and stop it running
-
+	scr_obj = script_running(func)
+	if scr_obj then
+		-- just delete from all scripts (don't bother checking!)
+		del(local_scripts, scr_obj)
+		del(global_scripts, scr_obj)
+	end
 	-- try local first
-	for k,scr_obj in pairs(local_scripts) do
-		--d("...")
-		if (scr_obj[1] == func) then 
-			--d("found!")
-			del(local_scripts, scr_obj)
-			--d("deleted!")
-			scr_obj = nil
-		end
-	end
-	-- failing that, try global
-	for k,scr_obj in pairs(global_scripts) do
-		--d("...")
-		if (scr_obj[1] == func) then 
-			--d("found!")
-			del(global_scripts, scr_obj)
-			--d("deleted!")
-			scr_obj = nil
-		end
-	end
+	-- for k,scr_obj in pairs(local_scripts) do
+	-- 	if (scr_obj[1] == func) then 
+	-- 		--d("found!")
+	-- 		del(local_scripts, scr_obj)
+	-- 		--d("deleted!")
+	-- 		scr_obj = nil
+	-- 	end
+	-- end
+	-- -- failing that, try global
+	-- for k,scr_obj in pairs(global_scripts) do
+	-- 	if (scr_obj[1] == func) then 
+	-- 		--d("found!")
+	-- 		del(global_scripts, scr_obj)
+	-- 		--d("deleted!")
+	-- 		scr_obj = nil
+	-- 	end
+	-- end
 end
 
 function break_time(jiffies)
