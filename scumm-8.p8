@@ -5,6 +5,7 @@ __lua__
 -- scumm-8
 -- paul nicholas
 
+-- ### luamin command
 -- python c:\users\pauln\owncloud\dev\pico-8\picotool\p8tool luamin c:\users\pauln\owncloud\games\pico-8\carts\git_repos\scumm-8\scumm-8.p8
 
 -- ### luamin fixes ###
@@ -13,6 +14,9 @@ __lua__
 -- was  6439 tokens (b4 pathfinding)
 -- then 6500 tokens (after pathfinding & token hunting)
 -- then 6673 rokens (after adding transitions, camera pan/follow, turn-to-face, etc)
+
+-- new comment! :D
+ Test commit
 
 -- debugging
 show_debuginfo = false
