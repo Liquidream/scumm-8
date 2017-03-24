@@ -1,19 +1,8 @@
 pico-8 cartridge // http://www.pico-8.com
-version 10
+version 8
 __lua__
-
--- scumm-8
+-- scumm-8 game template
 -- paul nicholas
-
--- ### luamin command
--- python c:\users\pauln\owncloud\dev\pico-8\picotool\p8tool luamin c:\users\pauln\owncloud\games\pico-8\carts\git_repos\scumm-8\scumm-8.p8
-
--- ### luamin fixes ###
---	"\65\66\67\68\69\70\71\72\73\74\75\76\77\78\79\80\81\82\83\84\85\86\87\88\89\90\91\92"
-
--- was  6439 tokens (b4 pathfinding)
--- then 6500 tokens (after pathfinding & token hunting)
--- then 6673 tokens (after adding transitions, camera pan/follow, turn-to-face, etc)
 
 
 -- debugging
@@ -22,13 +11,11 @@ show_collision = false
 --show_pathfinding = true
 show_perfinfo = false
 enable_mouse = true
-d = printh
 
 
 
 -- game verbs (used in room definitions and ui)
 verbs = {
-	--{verb = verb_ref_name}, text = display_name ....bounds{},x,y...
 	{ { open = "open" }, text = "open" },
 	{ { close = "close" }, text = "close" },
 	{ { give = "give" }, text = "give" },
@@ -51,9 +38,7 @@ verb_shadcol = 1   -- shadow (dk blue)
 verb_defcol = 10   -- default action (yellow)
 
 
--- ================================================================
 -- scumm-8 enums/constants
--- ================================================================
 
 -- object states
 state_closed = 1
@@ -64,20 +49,20 @@ state_gone = 1
 state_here = 2
 
 -- object classes (bitflags)
-class_untouchable = 1 -- will not register when the cursor moves over it. the object is invisible to the user.
-class_pickupable = 2  -- can be placed in actor inventory
-class_talkable = 4		-- can talk to actor/object
-class_giveable = 8		-- can be given to an actor/object
-class_openable = 16   -- can be opened/closed
-class_actor = 32      -- is an actor/person
+class_untouchable = 1 
+class_pickupable = 2  
+class_talkable = 4	
+class_giveable = 8	
+class_openable = 16  
+class_actor = 32   
 
-cut_noverbs = 1 		-- this removes the interface during the cut-scene.
-cut_hidecursor = 2  -- this turns off the cursor during the cut-scene.
-cut_no_follow = 4   -- this disables the follow-camera being reinstated after cut-scene.
+cut_noverbs = 1 	
+cut_hidecursor = 2  
+cut_no_follow = 4  
 
 -- actor constants
-face_front = 1	-- states for actor direction
-face_left = 2   -- (not sprite #'s)
+face_front = 1	
+face_left = 2 
 face_back = 3		
 face_right = 4
 --
@@ -88,12 +73,10 @@ pos_right = 4
 pos_inside = 5
 
 -- actor animations
-anim_face = 1	 -- face actor in a direction (show the turning stages of animation)
+anim_face = 1	
 
 
--- ================================================================
 -- room definitions
--- ================================================================
 rooms = {
 
 	first_room = {
@@ -107,8 +90,6 @@ rooms = {
 		enter = function(me)
 			-- animate fireplace
 			start_script(me.scripts.anim_fire, true) -- bg script
-
-			--start_script(me.scripts.watch_tentacle, true) -- bg script
 		end,
 		exit = function(me)
 			-- pause fireplace while not in room
@@ -139,25 +120,16 @@ rooms = {
 					dir *= -1
 				end				
 			end
-			-- ,watch_tentacle = function()
-			-- 	while true do
-			-- 		d("watching tentacle...")
-			-- 		do_anim(selected_actor, anim_face, actors.purp_tentacle)
-			-- 		break_time(10)
-			-- 	end
-			-- end
 		},
 		objects = {
 			fire = {
 				name = "fire",
-				state = 1, --"frame1",
+				state = 1,
 				x = 8 *8, -- (*8 to use map cell pos)
 				y = 4 *8,
 				states = {145, 146, 147},
 				w = 1,	-- relates to spr or map cel, depending on above
 				h = 1,  --
-				--use_dir = face_back,
-				--use_pos = pos_infront,
 
 				-- just as an example
 				dependent_on = "front door",	-- object is dependent on the state of another
@@ -196,8 +168,6 @@ rooms = {
 					143, -- state_closed
 					0   -- state_open
 				},
-				--flip_x = false, -- used for flipping the sprite
-				--flip_y = false,
 				w = 1,	-- relates to spr or map cel, depending on above
 				h = 4,  --
 				use_pos = pos_right,
@@ -231,7 +201,7 @@ rooms = {
 				verbs = {
 					walkto = function()
 						-- go to new room!
-						come_out_door(rooms.second_room.objects.kitchen_door_hall) --, second_room) -- ()
+						come_out_door(rooms.second_room.objects.kitchen_door_hall)
 					end
 				}
 			},
@@ -277,11 +247,6 @@ rooms = {
 							say_line("i might need this")
 						end
 					end
-					--[[use = function(me, noun2)
-						if (noun2.name == "window") then
-							set_state("window", state_open)
-						end
-					end]]
 				}
 			},
 			spinning_top = {
@@ -290,7 +255,8 @@ rooms = {
 				x = 2*8, -- (*8 to use map cell pos)
 				y = 6*8,
 				states = { 192, 193, 194 },
-				col_replace = { -- replace colors (orig,new)
+				col_replace = { 
+          -- (orig,new)
 					{ 12, 7 } 
 				},
 				trans_col=15,
@@ -315,9 +281,7 @@ rooms = {
 				name = "window",
 				class = class_openable,
 				state = state_closed,
-				--use_dir = face_back,
 
-				-- todo: make this calculated, by closed walkable pos!
 				use_pos = { x = 5 *8, y = (7 *8)+1},
 
 				x = 4*8, -- (*8 to use map cell pos)
@@ -363,7 +327,6 @@ rooms = {
 								end,
 								-- override for cutscene
 								function()
-									--d("override!")
 									change_room(rooms.first_room)
 									put_actor_at(actors.purp_tentacle, 105, 44, rooms.first_room)
 									stop_talking()
@@ -451,11 +414,9 @@ rooms = {
 		map_x1 = 47, 	-- map coordinates to draw to (x,y)
 		map_y1 = 15,
 		enter = function(me)
-			-- =========================================
 			-- initialise game in first room entry...
-			-- =========================================
 			if not me.done_intro then
-				-- Don't do this again
+				-- don't do this again
 				me.done_intro = true
 				-- set which actor the player controls by default
 				selected_actor = actors.main_actor
@@ -517,13 +478,12 @@ rooms = {
 				flip_x = true, -- used for flipping the sprite
 				w = 1,	-- relates to spr or map cel, depending on above
 				h = 3,  --
-				--use_pos = pos_infront,
 				use_dir = face_back,
 				verbs = {
 					walkto = function(me)
 						if state_of(me) == state_open then
 							-- go to new room!
-							come_out_door(rooms.first_room.objects.front_door) --, first_room)
+							come_out_door(rooms.first_room.objects.front_door)
 						else
 							say_line("the door is closed")
 						end
@@ -541,9 +501,7 @@ rooms = {
 
 }
 
--- ================================================================
 -- actor definitions
--- ================================================================
 actors = {
 	-- initialize the player's actor object
 	main_actor = { 		
@@ -556,7 +514,6 @@ actors = {
 		idle = { 1, 3, 5, 3},	
 		talk = { 6, 22, 21, 22},
 		walk_anim = { 2, 3, 4, 3},
-		--flip = false, -- used for flipping the sprite (left/right dir)
 		col = 12,				-- speech text colour
 		trans_col = 11,	-- transparency col in sprites
 		speed = 0.6,  	-- walking speed
@@ -636,16 +593,12 @@ actors = {
 	}
 }
 
--- ================================================================
 -- script overloads
--- ================================================================
 
 -- this script is execute once on game startup
 function startup_script()	
 	-- set which room to start the game in 
 	-- (e.g. could be a "pseudo" room for title screen!)
-	
-	--change_room(rooms.first_room, 1) -- iris fade	
 	change_room(rooms.outside_room, 1) -- iris fade
 end
 
@@ -770,1784 +723,171 @@ end
 
 
 
--- ################################################################
+
 -- scumm-8 public api functions
--- ================================================================
+-- 
 -- (you should not need to modify anything below here!)
--- ################################################################
 
-function camera_at(val)
-	-- check params for obj/actor
-	if type(val) == "table" then
-		val = val.x
-	end
-	-- keep camera within "room" bounds
-	cam_x = mid(0, val-64, (room_curr.map_w*8)-screenwidth-1 )
-	-- clear other cam values
-	cam_pan_to_x = nil
-	cam_following_actor = nil
-end
 
-function camera_follow(actor)
-	-- set target
-	--d("setting cam follow to:"..type(actor))
-	cam_following_actor = actor
-	-- clear other cam values
-	cam_pan_to_x = nil
+function camera_at(bv) if type(bv)=="table"then
+bv=bv.x end bw=mid(0,bv-64,(room_curr.bx*8)-by-1) bz=nil ca=nil end function camera_follow(cb) ca=cb bz=nil cc=function() while ca do bw=mid(0,ca.x-64,(room_curr.bx*8)-by-1) yield() end end start_script(cc,true) end function camera_pan_to(bv) if type(bv)=="table"then
+x=bv.x end bz=x ca=nil cc=function() while(true) do cd=bw+flr(by/2)+1 if cd==bz then
+bz=nil return elseif bz>cd then bw+=0.5 else bw-=0.5 end bw=mid(0,bw,(room_curr.bx*8)-by-1) yield() end end start_script(cc,true) end function wait_for_camera() while script_running(cc) do yield() end end function cutscene(ce,cf,cg) ch={ce=ce,ci=cocreate(cf),cj=cg,ck=room_curr,cl=selected_actor,cm=ca} add(cn,ch) co=ch break_time() end function dialog_add(msg) if not cp then cp={cq={},cr=false} end
+cs=ct(msg,32) cu=cv(cs) cw={num=#cp.cq+1,msg=msg,cs=cs,cx=cu} add(cp.cq,cw) end function dialog_start(col,cy) cp.col=col cp.cy=cy cp.cr=true selected_sentence=nil end function dialog_hide() cp.cr=false end function dialog_clear() cp.cq={} selected_sentence=nil end function dialog_end() cp=nil end function get_use_pos(bn) cz=bn.use_pos if type(cz)=="table"then
+x=cz.x-bw y=cz.y-da elseif not cz or cz==pos_infront then x=bn.x+((bn.w*8)/2)-bw-4 y=bn.y+(bn.h*8)+2 elseif cz==pos_left then if bn.db then
+x=bn.x-bw-(bn.w*8+4) y=bn.y+1 else x=bn.x-bw-2 y=bn.y+((bn.h*8)-2) end elseif cz==pos_right then x=bn.x+(bn.w*8)-bw y=bn.y+((bn.h*8)-2) end return{x=x,y=y} end function do_anim(cb,dc,dd) if dc==anim_face then
+if type(dd)=="table"then
+de=atan2(cb.x-dd.x,dd.y-cb.y) df=93*(3.1415/180) de=df-de dg=de*(1130.938/3.1415) dg=dg%360 if(dg<0) then dg+=360 end
+dd=4-flr(dg/90) end while cb.face_dir!=dd do if cb.face_dir<dd then
+cb.face_dir+=1 else cb.face_dir-=1 end cb.flip=(cb.face_dir==face_left) break_time(10) end end end function open_door(dh,di) if state_of(dh)==state_open then
+say_line("it's already open") else set_state(dh,state_open) if di then set_state(di,state_open) end
+end end function close_door(dh,di) if state_of(dh)==state_closed then
+say_line("it's already closed") else set_state(dh,state_closed) if di then set_state(di,state_closed) end
+end end function come_out_door(dj,dk) dl=dj.in_room bw=0 change_room(dl,dk) dm=get_use_pos(dj) put_actor_at(selected_actor,dm.x,dm.y,dl) if dj.use_dir then
+dn=dj.use_dir+2 if dn>4 then
+dn-=4 end else dn=1 end selected_actor.face_dir=dn end function fades(dp,r) if r==1 then
+dq=0 else dq=50 end while true do dq+=r*2 if dq>50
+or dq<0 then return end if dp==1 then
+dr=min(dq,32) end yield() end end function change_room(dl,dp) if dp and room_curr then
+fades(dp,1) end if room_curr and room_curr.exit then
+room_curr.exit(room_curr) end ds={} dt() room_curr=dl stop_talking() if dp then
+start_script(function() fades(dp,-1) end,true) else dr=0 end if room_curr.enter then
+room_curr.enter(room_curr) end end function valid_verb(br,du) if not du then return false end
+if not du.verbs then return false end
+if type(br)=="table"then
+if du.verbs[br[1]] then return true end
+else if du.verbs[br] then return true end
+end return false end function pickup_obj(dv) bn=find_object(dv) if bn
+then add(selected_actor.dw,bn) bn.owner=selected_actor del(bn.in_room.objects,bn) end end function owner_of(dv) bn=find_object(dv) if bn then
+return bn.owner end end function state_of(dv,state) bn=find_object(dv) if bn then
+return bn.state end end function set_state(dv,state) bn=find_object(dv) if bn then
+bn.state=state end end function find_object(name) if type(name)=="table"then return name end
+for dx,bn in pairs(room_curr.objects) do if bn.name==name then return bn end
+end end function start_script(dy,dz,ea,bd) local ci=cocreate(dy) if dz then
+add(eb,{dy,ci,ea,bd}) else add(ds,{dy,ci,ea,bd}) end end function script_running(dy) for dx,ec in pairs(ds) do if(ec[1]==dy) then
+return ec end end for dx,ec in pairs(eb) do if(ec[1]==dy) then
+return ec end end return false end function stop_script(dy) ec=script_running(dy) if ec then
+del(ds,ec) del(eb,ec) end end function break_time(ed) ed=ed or 1 for x=1,ed do yield() end end function wait_for_message() while ee!=nil do yield() end end function say_line(cb,msg) if type(cb)=="string"then
+msg=cb cb=selected_actor end ef=cb.y-(cb.h)*8+4 eg=cb print_line(msg,cb.x,ef,cb.col,1) end function stop_talking() ee=nil eg=nil end function print_line(msg,x,y,col,eh) local col=col or 7 local eh=eh or 0 local cs={} local ei=""local ej=""cu=0 ek=min(x-bw,by-(x-bw)) el=max(flr(ek/2),16) ej=""for em=1,#msg do ei=sub(msg,em,em) if ei==";"then
+ej=sub(msg,em+1) msg=sub(msg,1,em-1) break end end cs=ct(msg,el,true) cu=cv(cs) if eh==1 then
+en=x-bw-((cu*4)/2) end en=max(2,en) ef=max(18,y) en=min(en,by-(cu*4)-1) ee={eo=cs,x=en,y=ef,col=col,eh=eh,ep=(#msg)*8,cx=cu} if(#ej>0) then
+eq=eg wait_for_message() eg=eq print_line(ej,x,y,col,eh) end end function put_actor_at(cb,x,y,er) if er then cb.in_room=er end
+cb.x=x cb.y=y end function walk_to(cb,x,y) x=x+bw es=et(cb) eu=flr(x/8)+room_curr.map_x ev=flr(y/8)+room_curr.map_y ew={eu,ev} ex=ey(es,ew) ez=et({x=x,y=y}) if fa(ez[1],ez[2]) then
+add(ex,ez) end for fb in all(ex) do fc=(fb[1]-room_curr.map_x)*8+4 fd=(fb[2]-room_curr.map_y)*8+4 local fe=sqrt((fc-cb.x)^2+(fd-cb.y)^2) local ff=cb.speed*(fc-cb.x)/fe local fg=cb.speed*(fd-cb.y)/fe if fe>1 then
+cb.fh=1 cb.flip=(ff<0) cb.face_dir=face_right if(cb.flip) then cb.face_dir=face_left end
+for em=0,fe/cb.speed do cb.x=cb.x+ff cb.y=cb.y+fg yield() end end end cb.fh=2 end by=127 fi=127 da=16 bw=0 bz=nil cc=nil fj=by/2 fk=fi/2 fl=0 fm={7,12,13,13,12,7} fn=1 fo={{spr=16,x=75,y=da+60},{spr=48,x=75,y=da+72}} fp=0 fq=0 fr=false room_curr=nil fs=nil ft=nil fu=nil fv=""fw=false ee=nil cp=nil co=nil eg=nil dr=0 eb={} ds={} cn={} fx={} function _init() if enable_mouse then poke(0x5f2d,1) end
+fy() start_script(startup_script,true) end function _update60() fz() end function _draw() ga() end function fz() if selected_actor and selected_actor.ci and not coresume(selected_actor.ci) then
+selected_actor.ci=nil end gb(eb) if co then
+if co.ci and not coresume(co.ci) then
+if(room_curr!=co.ck) then change_room(co.ck) end
+selected_actor=co.cl camera_follow(co.cm) del(cn,co) co=nil if#cn>0 then
+co=cn[#cn] end end else gb(ds) end gc() gd() end function ga() rectfill(0,0,by,fi,0) camera(bw,0) clip(0+dr,da+dr,by+1-dr*2,64-dr*2) ge() camera(0,0) clip() if show_perfinfo then
+print("cpu: "..flr(100*stat(1)).."%",0,da-16,8) print("mem: "..flr(stat(0)/1024*100).."%",0,da-8,8) end if show_debuginfo then
+print("x: "..fj.." y:"..fk-da,80,da-8,8) end gf() if cp and cp.cr then
+gg() gh() return end if gi==co then
+else gi=co return end if not co then
+gj() end if(not co
+or not has_flag(co.ce,cut_noverbs)) and(gi==co) then gk() else end gi=co if not co then
+gh() end end function gc() if co then
+if btnp(4) and btnp(5) and co.cj then
+co.ci=cocreate(co.cj) co.cj=nil return end return end if btn(0) then fj-=1 end
+if btn(1) then fj+=1 end
+if btn(2) then fk-=1 end
+if btn(3) then fk+=1 end
+if btnp(4) then gl(1) end
+if btnp(5) then gl(2) end
+if enable_mouse then
+if stat(32)-1!=fp then fj=stat(32)-1 end
+if stat(33)-1!=fq then fk=stat(33)-1 end
+if stat(34)>0 then
+if not fr then
+gl(stat(34)) fr=true end else fr=false end fp=stat(32)-1 fq=stat(33)-1 end fj=max(fj,0) fj=min(fj,127) fk=max(fk,0) fk=min(fk,127) end function gl(gm) local gn=fs if cp and cp.cr then
+if go then
+selected_sentence=go end return end if gp then
+fs=get_verb(gp) elseif gq then if gm==1 then
+if(fs[2]=="use"or fs[2]=="give")
+and ft then fu=gq else ft=gq end elseif gr then fs=get_verb(gr) ft=gq gs(ft) gj() end elseif gt then if gt==fo[1] then
+if selected_actor.gu>0 then
+selected_actor.gu-=1 end else if selected_actor.gu+2<flr(#selected_actor.dw/4) then
+selected_actor.gu+=1 end end return end if(ft!=nil) then
+if fs[2]=="use"or fs[2]=="give"then
+if fu then
+else return end end fw=true selected_actor.ci=cocreate(function(cb,bn,br,bd) if not bn.owner then
+gv=get_use_pos(bn) walk_to(selected_actor,gv.x,gv.y) if selected_actor.fh!=2 then return end
+use_dir=bn if bn.use_dir and br!=verb_default then use_dir=bn.use_dir end
+do_anim(selected_actor,anim_face,use_dir) end if valid_verb(br,bn) then
+start_script(bn.verbs[br[1]],false,bn,bd) else unsupported_action(br[2],bn,bd) end dt() end) coresume(selected_actor.ci,selected_actor,ft,fs,fu) elseif(fk>da and fk<da+64) then fw=true selected_actor.ci=cocreate(function(x,y) walk_to(selected_actor,x,y) dt() end) coresume(selected_actor.ci,fj,fk-da) end end function gd() gp=nil gr=nil gq=nil go=nil gt=nil if cp and cp.cr then
+for bu in all(cp.cq) do if gw(bu) then
+go=bu end end return end gx() for dx,bn in pairs(room_curr.objects) do if(not bn.class
+or(bn.class and bn.class!=class_untouchable)) and(not bn.dependent_on or find_object(bn.dependent_on).state==bn.dependent_on_state) then gy(bn,bn.w*8,bn.h*8,bw,gz) else bn.ha=nil end if gw(bn) then
+gq=bn end hb(bn) end for dx,cb in pairs(actors) do if cb.in_room==room_curr then
+gy(cb,cb.w*8,cb.h*8,bw,gz) hb(cb) if gw(cb)
+and cb!=selected_actor then gq=cb end end end for bp in all(verbs) do if gw(bp) then
+gp=bp end end for hc in all(fo) do if gw(hc) then
+gt=hc end end for dx,bn in pairs(selected_actor.dw) do if gw(bn) then
+gq=bn if fs[2]=="pickup"and gq.owner then
+fs=nil end end if bn.owner!=selected_actor then
+del(selected_actor.dw,bn) end end if fs==nil then
+fs=get_verb(verb_default) end if gq then
+gr=find_default_verb(gq) end end function gx() fx={} for x=1,64 do fx[x]={} end end function hb(bn) ef=-1 if bn.hd then
+ef=bn.y else ef=bn.y+(bn.h*8) end he=flr(ef-da) if bn.elevation then he+=bn.elevation end
+add(fx[he],bn) end function ge() hf(room_curr) map(room_curr.map_x,room_curr.map_y,0,da,room_curr.bx,room_curr.hg) pal() for hh=1,64 do he=fx[hh] for bn in all(he) do if not has_flag(bn.class,class_actor) then
+if(bn.states)
+and bn.states[bn.state] and(bn.states[bn.state]>0) and(not bn.dependent_on or find_object(bn.dependent_on).state==bn.dependent_on_state) and not bn.owner then hi(bn) end else if(bn.in_room==room_curr) then
+hj(bn) end end hk(bn) end end end function hf(bn) for hl in all(bn.col_replace) do pal(hl[1],hl[2]) end end function hi(bn) hf(bn) hm=1 if bn.repeat_x then hm=bn.repeat_x end
+for h=0,hm-1 do hn(bn.states[bn.state],bn.x+(h*(bn.w*8)),bn.y,bn.w,bn.h,bn.trans_col,bn.flip_x) end pal() end function hj(cb) if cb.fh==1
+and cb.walk_anim then cb.ho+=1 if cb.ho>5 then
+cb.ho=1 cb.hp+=1 if cb.hp>#cb.walk_anim then cb.hp=1 end
+end hq=cb.walk_anim[cb.hp] else hq=cb.idle[cb.face_dir] end hf(cb) hn(hq,cb.db,cb.hd,cb.w,cb.h,cb.trans_col,cb.flip,false) if eg
+and eg==cb then if cb.hr<7 then
+hq=cb.talk[cb.face_dir] hn(hq,cb.db,cb.hd+8,1,1,cb.trans_col,cb.flip,false) end cb.hr+=1 if cb.hr>14 then cb.hr=1 end
+end pal() end function gj() hs=""ht=12 if not fw then
+if fs then
+hs=fs[3] end if ft then
+hs=hs.." "..ft.name if fs[2]=="use"then
+hs=hs.." with"elseif fs[2]=="give"then hs=hs.." to"end end if fu then
+hs=hs.." "..fu.name elseif gq and gq.name!=""and(not ft or(ft!=gq)) then hs=hs.." "..gq.name end fv=hs else hs=fv ht=7 end print(hu(hs),hv(hs),da+66,ht) end function gf() if ee then
+hw=0 for hx in all(ee.eo) do hy=0 if ee.eh==1 then
+hy=((ee.cx*4)-(#hx*4))/2 end hz(hx,ee.x+hy,ee.y+hw,ee.col) hw+=6 end ee.ep-=1 if(ee.ep<=0) then
+stop_talking() end end end function gk() en=0 ef=75 ia=0 for bp in all(verbs) do ib=verb_maincol if gr
+and(bp==gr) then ib=verb_defcol end if bp==gp then ib=verb_hovcol end
+bq=get_verb(bp) print(bq[3],en,ef+da+1,verb_shadcol) print(bq[3],en,ef+da,ib) bp.x=en bp.y=ef gy(bp,#bq[3]*4,5,0,0) hk(bp) if#bq[3]>ia then ia=#bq[3] end
+ef=ef+8 if ef>=95 then
+ef=75 en=en+(ia+1.0)*4 ia=0 end end en=86 ef=76 ic=selected_actor.gu*4 id=min(ic+8,#selected_actor.dw) for ie=1,8 do rectfill(en-1,da+ef-1,en+8,da+ef+8,1) bn=selected_actor.dw[ic+ie] if bn then
+bn.x=en bn.y=ef hi(bn) gy(bn,bn.w*8,bn.h*8,0,0) hk(bn) end en+=11 if en>=125 then
+ef+=12 en=86 end ie+=1 end for em=1,2 do ig=fo[em] if gt==ig then pal(verb_maincol,7) end
+hn(ig.spr,ig.x,ig.y,1,1,0) gy(ig,8,7,0,0) hk(ig) pal() end end function gg() en=0 ef=70 for bu in all(cp.cq) do bu.x=en bu.y=ef gy(bu,bu.cx*4,#bu.cs*5,0,0) ib=cp.col if bu==go then ib=cp.cy end
+for hx in all(bu.cs) do print(hu(hx),en,ef+da,ib) ef+=5 end hk(bu) ef+=2 end end function gh() col=fm[fn] pal(7,col) spr(32,fj-4,fk-3,1,1,0) pal() fl+=1 if fl>7 then
+fl=1 fn+=1 if(fn>#fm) then fn=1 end
+end end function hn(ih,x,y,w,h,ii,flip_x,ij) palt(0,false) palt(ii,true) spr(ih,x,da+y,w,h,flip_x,ij) pal() end function fy() for ik,er in pairs(rooms) do if er.map_x1 then
+er.bx=er.map_x1-er.map_x+1 er.hg=er.map_y1-er.map_y+1 else er.bx=16 er.hg=8 end for il,bn in pairs(er.objects) do bn.in_room=er end end for im,cb in pairs(actors) do cb.fh=2 cb.ho=1 cb.hr=1 cb.hp=1 cb.dw={} cb.gu=0 end end function hk(bn) if show_collision and bn.ha then
+rect(bn.ha.x,bn.ha.y,bn.ha.io,bn.ha.ip,8) end end function gb(scripts) for ec in all(scripts) do if ec[2] and not coresume(ec[2],ec[3],ec[4]) then
+del(scripts,ec) ec=nil end end end function iq(x,y) eu=flr(x/8)+room_curr.map_x ev=flr(y/8)+room_curr.map_y ir=fa(eu,ev) return ir end function et(bn) eu=flr(bn.x/8)+room_curr.map_x ev=flr(bn.y/8)+room_curr.map_y return{eu,ev} end function fa(eu,ev) is=mget(eu,ev) ir=fget(is,0) return ir end function gs(bn) it={} for dx,bp in pairs(bn) do add(it,dx) end return it end function get_verb(bn) br={} it=gs(bn[1]) add(br,it[1]) add(br,bn[1][it[1]]) add(br,bn.text) return br end function ct(msg,el,iu) local cs={} local iv=""local iw=""local ei=""local ix=function(iy) if#iw+#iv>iy then
+add(cs,iv) iv=""end iv=iv..iw iw=""end for em=1,#msg do ei=sub(msg,em,em) iw=iw..ei if(ei==" ")
+or(#iw>el-1) then ix(el) elseif#iw>el-1 then iw=iw.."-"ix(el) elseif ei==","and iu then iv=iv..sub(iw,1,#iw-1) iw=""ix(0) end end ix(el) if iv!=""then
+add(cs,iv) end return cs end function cv(cs) cu=0 for hx in all(cs) do if#hx>cu then cu=#hx end
+end return cu end function has_flag(bn,iz) if band(bn,iz)!=0 then return true end
+return false end function dt() fs=get_verb(verb_default) ft=nil fu=nil n=nil fw=false fv=""end function gy(bn,w,h,ja,jb) x=bn.x y=bn.y if has_flag(bn.class,class_actor) then
+bn.db=bn.x-(bn.w*8)/2 bn.hd=bn.y-(bn.h*8)+1 x=bn.db y=bn.hd end bn.ha={x=x,y=y+da,io=x+w-1,ip=y+h+da-1,ja=ja,jb=jb} end function ey(jc,jd) je={} jf(je,jc,0) jg={} jg[jh(jc)]=nil ji={} ji[jh(jc)]=0 while#je>0 and#je<1000 do local s=je[#je] del(je,je[#je]) jj=s[1] if jh(jj)==jh(jd) then
+break end local jk={} for x=-1,1 do for y=-1,1 do if x==0 and y==0 then
+else jl=jj[1]+x jm=jj[2]+y if abs(x)!=abs(y) then jn=1 else jn=1.4 end
+if jl>=room_curr.map_x and jl<=room_curr.map_x+room_curr.bx
+and jm>=room_curr.map_y and jm<=room_curr.map_y+room_curr.hg and fa(jl,jm) and((abs(x)!=abs(y)) or fa(jl,jj[2]) or fa(jl-x,jm)) then add(jk,{jl,jm,jn}) end end end end for jo in all(jk) do local jp=jh(jo) local jq=ji[jh(jj)]+jo[3] if(ji[jp]==nil) or(jq<ji[jp]) then
+ji[jp]=jq local jr=jq+max(abs(jd[1]-jo[1]),abs(jd[2]-jo[2])) jf(je,jo,jr) jg[jp]=jj end end end ex={} jj=jg[jh(jd)] if jj then
+local js=jh(jj) local jt=jh(jc) while js!=jt do add(ex,jj) jj=jg[js] js=jh(jj) end for em=1,#ex/2 do local ju=ex[em] local jv=#ex-(em-1) ex[em]=ex[jv] ex[jv]=ju end end return ex end function jf(jw,bv,fb) if#jw>=1 then
+add(jw,{}) for em=(#jw),2,-1 do local jo=jw[em-1] if fb<jo[2] then
+jw[em]={bv,fb} return else jw[em]=jo end end jw[1]={bv,fb} else add(jw,{bv,fb}) end end function jh(jx) return((jx[1]+1)*16)+jx[2] end function hz(jy,x,y,jz,ka) local jz=jz or 7 local ka=ka or 0 jy=hu(jy) for kb=-1,1 do for kc=-1,1 do print(jy,x+kb,y+kc,ka) end end print(jy,x,y,jz) end function hv(bu) return(by/2)-flr((#bu*4)/2) end function kd(bu) return(fi/2)-flr(5/2) end function gw(bn) if not bn.ha then return false end
+ha=bn.ha if(fj+ha.ja>ha.io or fj+ha.ja<ha.x)
+or(fk>ha.ip or fk<ha.y) then return false else return true end end function hu(bu) local a=""local hx,hl,jw=false,false for em=1,#bu do local hc=sub(bu,em,em) if hc=="^"then
+if(hl) then a=a..hc end
+hl=not hl elseif hc=="~"then if(jw) then a=a..hc end
+jw,hx=not jw,not hx else if hl==hx and hc>="a"and hc<="z"then
+for ke=1,26 do if hc==sub("abcdefghijklmnopqrstuvwxyz",ke,ke) then
+hc=sub("\65\66\67\68\69\70\71\72\73\74\75\76\77\78\79\80\81\82\83\84\85\86\87\88\89\90\91\92",ke,ke) break end end end a=a..hc hl,jw=false,false end end return a end
 
-	cam_script = function()
-		-- keep the camera following actor
-		-- (until further notice)
-		while cam_following_actor do
-			-- keep camera within "room" bounds
-			cam_x = mid(0, cam_following_actor.x - 64, (room_curr.map_w*8)-screenwidth-1 )
-			yield()
-		end
-	end
-	start_script(cam_script, true) -- bg script
-end
 
 
-function camera_pan_to(val)
-	-- check params for obj/actor
-	if type(val) == "table" then
-		x = val.x
-	end
-	-- set target
-	cam_pan_to_x = x
-	-- clear other cam values
-	cam_following_actor = nil
 
-	cam_script = function()
-		-- update the camera pan until reaches dest
-		while (true) do
-			center_view = cam_x + flr(screenwidth/2) +1
-			if center_view == cam_pan_to_x then
-				-- pan complete
-				cam_pan_to_x = nil
-				return
-			elseif cam_pan_to_x > center_view then
-		  	cam_x += 0.5
-			else
-				cam_x -= 0.5
-			end
-			-- keep camera within "room" bounds
-			cam_x = mid(0, cam_x, (room_curr.map_w*8)-screenwidth-1 )
-			yield()
-		end
-	end
-
-	start_script(cam_script, true) -- bg script
-end
-
-
-function wait_for_camera()
-	while script_running(cam_script) do
-		yield()
-	end
-end
-
-
-function cutscene(flags, func_cutscene, func_override)
-	-- decrement the cursor level
-	--cursor_lvl = cursor_lvl - 1
-			
-	cut = {
-		flags = flags,
-		thread = cocreate(func_cutscene),
-		override = func_override,
-		paused_room = room_curr,
-		paused_actor = selected_actor,
-		paused_cam_following = cam_following_actor
-	}
-	add(cutscenes, cut)
-
-	-- set as active cutscene
-	cutscene_curr = cut
-
-	-- yield for system catch-up
-	break_time()
-end
-
-function dialog_add(msg)
-	if not dialog_curr then dialog_curr={ sentences={}, visible=false} end
-	-- break msg into lines (if necc.)
-	lines = create_text_lines(msg, 32)
-	-- find longest line
-	longest_line = longest_line_size(lines)
-	sentence={
-		num = #dialog_curr.sentences+1,
-		msg = msg,
-		lines = lines,
-		char_width = longest_line
-	}
-	add(dialog_curr.sentences, sentence)
-end
-
-function dialog_start(col, hlcol)
-	dialog_curr.col = col
-	dialog_curr.hlcol = hlcol
-	dialog_curr.visible = true
-	selected_sentence = nil
-end
-
-function dialog_hide()
-	dialog_curr.visible = false
-end
-
-function dialog_clear()
-	dialog_curr.sentences = {}
-	selected_sentence = nil
-end
-
-function dialog_end()
-	dialog_curr=nil
-end
-
-
-function get_use_pos(obj)
-	obj_use_pos = obj.use_pos
-
-	-- first check for specific pos
-	if type(obj_use_pos) == "table" then
-		x = obj_use_pos.x-cam_x
-		y = obj_use_pos.y-stage_top
-
-	-- determine use pos
-	elseif not obj_use_pos or
-		obj_use_pos == pos_infront then
-		x = obj.x + ((obj.w*8)/2) -cam_x -4
-		y = obj.y + (obj.h*8) +2
-
-	elseif obj_use_pos == pos_left then
-		-- diff calc for actors
-		if obj.offset_x then
-			x = obj.x -cam_x - (obj.w*8 +4)
-			y = obj.y + 1
-		else
-			-- object pos
-			x = obj.x -cam_x  -2
-			y = obj.y + ((obj.h*8) -2)
-		end
-
-	elseif obj_use_pos == pos_right then
-		x = obj.x + (obj.w*8)-cam_x
-		y = obj.y + ((obj.h*8) -2)
-	end
-	
-	return {x=x,y=y}
-end
-
-
-function do_anim(actor, cmd_type, cmd_value)
-
-	-- animate turn to face (object/actor or explicit direction)
-	if cmd_type == anim_face then
-		
-		-- check if cmd_value is an actor/object, rather than explicit face_dir
-		if type(cmd_value) == "table" then
-			-- need to calculate face_dir from positions
-			angle_rad = atan2(actor.x  - cmd_value.x , cmd_value.y - actor.y)
-			-- calc player's angle offset in this
-			plr_angle = 93 * (3.1415/180)
-			-- adjust for player's angle
-			angle_rad = plr_angle - angle_rad
-
-			-- convert radians to degrees
-			-- (note: everyone says should be: rad * (180/pi), but
-			--        that only seems to give me degrees 0..57? so...)
-			degrees = angle_rad * (1130.938/3.1415)
-
-			-- angle wrap for circle
-			degrees = degrees % 360
-			if (degrees < 0) then degrees += 360 end
-
-			-- set final target face direction to obj/actor
-			cmd_value = 4 - flr(degrees/90)
-		end
-
-		while actor.face_dir != cmd_value do
-			-- turn to target face_dir
-			if actor.face_dir < cmd_value then
-				actor.face_dir += 1
-			else 
-				actor.face_dir -= 1
-			end
-			-- is target dir left? flip?
-			actor.flip = (actor.face_dir  == face_left)
-			break_time(10)
-		end
-	end
-end
-
--- open one (or more) doors
-function open_door(door_obj1, door_obj2)
-	if state_of(door_obj1) == state_open then
-		say_line("it's already open")
-	else
-		set_state(door_obj1, state_open)
-		if door_obj2 then set_state(door_obj2, state_open) end
-	end
-end
-
--- close one (or more) doors
-function close_door(door_obj1, door_obj2)
-	if state_of(door_obj1) == state_closed then
-		say_line("it's already closed")
-	else
-		set_state(door_obj1, state_closed)
-		if door_obj2 then set_state(door_obj2, state_closed) end
-	end
-end
-
-function come_out_door(door_obj, fade_effect)
-	
-	new_room = door_obj.in_room
-
-	-- reset camera pos in new room
-	-- (if camera following, then this will get re-applied)
-	cam_x = 0
-
-	-- switch to new room and...
-	change_room(new_room, fade_effect)
-	-- ...auto-position actor at door_obj in new room...
-	pos = get_use_pos(door_obj)
-	put_actor_at(selected_actor, pos.x, pos.y, new_room)
-
-	-- ...in opposite use direction!
-	if door_obj.use_dir then
-		opp_dir = door_obj.use_dir + 2
-		if opp_dir > 4 then
-			opp_dir -= 4
-		end
-	else
-	 opp_dir = 1 -- front
-	end
-	selected_actor.face_dir = opp_dir
-	--do_anim(selected_actor, anim_face, opp_dir)
-end
-
-function fades(fade, dir) -- 1=down, -1=up
-	if dir == 1 then
-		fade_amount = 0
-	else
-		fade_amount = 50
-	end
-
-	while true do
-		fade_amount += dir*2
-
-		if fade_amount > 50
-		 or fade_amount < 0 then
-			return
-		end
-
-		-- iris down/up
-		if fade == 1 then
-			fade_iris = min(fade_amount, 32)
-		end
-
-		yield()
-	end
-end
-
-function change_room(new_room, fade)
-
-	-- fade down existing room (or skip if first room)
-	if fade and room_curr then
-		fades(fade, 1)
-	end
-
-	-- switch to new room
-	-- execute the exit() script of old room
-	if room_curr and room_curr.exit then
-		-- run script directly, so wait to finish
-		room_curr.exit(room_curr)
-	end
-	
-	-- stop all active (local) scripts
-	local_scripts = {}
-
-	-- clear current command
-	clear_curr_cmd()
-	
-	-- actually change rooms now
-	room_curr = new_room
-
-	-- stop everyone talking & remove displayed text
-	stop_talking()
-
-	-- fade up again?
-	-- (use "thread" so that room.enter code is able to 
-	--  reposition camera before fade-up, if needed)
-	if fade then		
-		start_script( function() 
-				fades(fade, -1) 
-		end, true)
-	else
-		-- no fade - reset any existing fade
-		fade_iris = 0
-	end
-
-	-- execute the enter() script of new room
-	if room_curr.enter then
-		-- run script directly
-		room_curr.enter(room_curr)
-	end
-end
-
-function valid_verb(verb, object)
-	-- check params
-	if not object then return false end
-	if not object.verbs then return false end
-	-- look for verb
-	if type(verb) == "table" then
-		if object.verbs[verb[1]] then return true end
-	else
-		if object.verbs[verb] then return true end
-	end
-	-- must not be valid if reached here
-	return false
-end
-
-function pickup_obj(objname)
-	obj = find_object(objname)
-	if obj
-	 --and not obj.owner 
-	 then
-		-- assume selected_actor picked-up at this point
-		add(selected_actor.inventory, obj)
-		obj.owner = selected_actor
-		-- remove it from room
-		del(obj.in_room.objects,obj)
-	end
-end
-
-function owner_of(objname)
-	obj = find_object(objname)
-	if obj then
-		return obj.owner
-	end
-end
-
-function state_of(objname, state)
-	obj = find_object(objname)
-	if obj then
-		return obj.state
-	end
-end
-
-function set_state(objname, state)
-	obj = find_object(objname)
-	if obj then
-		obj.state = state
-	end
-end
-
--- find object by ref or name
-function find_object(name)
-	-- if object passed, just return object!
-	if type(name) == "table" then return name end
-	-- else look for object by unique name
-	for k,obj in pairs(room_curr.objects) do
-		if obj.name == name then return obj end
-	end
-end
-
-function start_script(func, bg, noun1, noun2)
-	-- create new thread for script and add to list of local_scripts (or background scripts)
-	local thread = cocreate(func)
-	-- background or local?
-	if bg then
-		add(global_scripts, {func, thread, noun1, noun2} )
-	else
-		add(local_scripts, {func, thread, noun1, noun2} )
-	end
-end
-
-
-function script_running(func)
-	-- try local first
-	for k,scr_obj in pairs(local_scripts) do
-		if (scr_obj[1] == func) then 
-			--d("found in local!")
-			return scr_obj
-		end
-	end
-	-- failing that, try global
-	for k,scr_obj in pairs(global_scripts) do
-		if (scr_obj[1] == func) then 
-			--d("found in global!")
-			return scr_obj
-		end
-	end
-	-- must not be running
-	return false
-end
-
-function stop_script(func)
-	-- find script and stop it running
-	scr_obj = script_running(func)
-	if scr_obj then
-		-- just delete from all scripts (don't bother checking!)
-		del(local_scripts, scr_obj)
-		del(global_scripts, scr_obj)
-	end
-end
-
-function break_time(jiffies)
-	jiffies = jiffies or 1
-	-- wait for cycles specified (min 1 cycle)
-	for x = 1, jiffies do
-		yield()
-	end
-end
-
-function wait_for_message()
-	while talking_curr != nil do
-		yield()
-	end
-end
-
--- uses actor's position and color
-function say_line(actor, msg)
-	-- check for missing actor
-	if type(actor) == "string" then
-		-- assume actor ommitted and default to current
-		msg = actor
-		actor = selected_actor
-	end
-
-	-- offset to display speech above actors (dist in px from their feet)
-	ypos = actor.y - (actor.h)*8 +4  --text_offset
-	-- trigger actor's talk anim
-	talking_actor = actor
-	-- call the base print_line to show actor line
-	print_line(msg, actor.x, ypos, actor.col, 1)
-end
-
--- stop everyone talking & remove displayed text
-function stop_talking()
-	talking_curr = nil 
-	talking_actor = nil
-end
-
-
-function print_line(msg, x, y, col, align)
-  -- punctuation...
-	--  > ":" new line, shown after text prior expires
-	--  > "," new line, shown immediately
-	-- note: an actor's talk animation is not activated as it is with say-line.
-
-	local col=col or 7 		-- default to white
-	local align=align or 0	-- default to no align
-
-	--d(msg)
-	-- default max width (unless hit a screen edge)
-	local lines = {}
-	local curchar = ""
-	local msg_left = "" --used for splitting messages with ";"
-	
-	longest_line=0
-	-- auto-wrap
-	-- calc max line width based on x-pos/available space
-	screen_space = min(x -cam_x, screenwidth - (x -cam_x))
-	-- (or no less than min length)
-	max_line_length = max(flr(screen_space/2), 16)
-
-	-- search for ";"'s
-	msg_left = ""
-	for i = 1, #msg do
-		curchar=sub(msg,i,i)
-		if curchar == ";" then -- msg break
-			--d("msg break!")
-			-- show msg up to this point
-			-- and process the rest as new message
-			
-			-- next message?
-			msg_left = sub(msg,i+1)
-			-- redefine curr msg
-			msg = sub(msg,1,i-1)
-			break
-		end
-	end
-
-	lines = create_text_lines(msg, max_line_length, true)
-
-	-- find longest line
-	longest_line = longest_line_size(lines)
-
-	-- center-align text block
-	if align == 1 then
-		xpos = x -cam_x - ((longest_line*4)/2)
-	end
-
-	-- screen bound check
-	xpos = max(2,xpos)	-- left
-	ypos = max(18,y)    -- top
-	xpos = min(xpos, screenwidth - (longest_line*4)-1) -- right
-
-	talking_curr = {
-		msg_lines = lines,
-		x = xpos,
-		y = ypos,
-		col = col,
-		align = align,
-		time_left = (#msg)*8,
-		char_width = longest_line
-	}
-
-	-- if message was split...
-	if (#msg_left > 0) then
-	  talking = talking_actor
-		wait_for_message()
-		talking_actor = talking
-		print_line(msg_left, x, y, col, align)
-	end
-end
-
-function put_actor_at(actor, x, y, room)
-	if room then actor.in_room = room end
-	actor.x = x
-	actor.y = y
-end
-
--- walk actor to position
-function walk_to(actor, x, y)
-		--offset for camera
-		x = x + cam_x
-
-		actor_cell_pos = getcellpos(actor)
-		celx = flr(x /8) + room_curr.map_x
-		cely = flr(y /8) + room_curr.map_y
-		target_cell_pos = { celx, cely }
-
-		-- use pathfinding!
-		path = find_path(actor_cell_pos, target_cell_pos)
-
-		-- finally, add our destination to list
-		final_cell = getcellpos({x=x, y=y})
-		if is_cell_walkable(final_cell[1], final_cell[2]) then
-			add(path, final_cell)
-		end
-
-		for p in all(path) do
-			px = (p[1]-room_curr.map_x)*8 + 4
-			py = (p[2]-room_curr.map_y)*8 + 4
-
-			local distance = sqrt((px - actor.x) ^ 2 + (py - actor.y) ^ 2)
-			local step_x = actor.speed * (px - actor.x) / distance
-			local step_y = actor.speed * (py - actor.y) / distance
-
-			-- only walk if we're not already there!
-			if distance > 1 then 
-				--walking
-				actor.moving = 1 
-				actor.flip = (step_x<0)
-				-- face dir (at end of walk)
-				-- todo: add walk front/back at some point
-				actor.face_dir = face_right
-				if (actor.flip) then actor.face_dir = face_left end
-
-				for i = 0, distance/actor.speed do
-					actor.x = actor.x + step_x
-					actor.y = actor.y + step_y
-					yield()
-				end
-			end
-		end
-		--d("reach dest")
-		actor.moving = 2 --arrived
-end
-
-
-
-
-
--- ================================================================
--- internal functions
--- ================================================================
-
--- global vars
-screenwidth = 127
-screenheight = 127
-stage_top = 16
-
--- offset to display speech above actors (dist in px from their feet)
---text_offset = (selected_actor.h-1)*8
-
-cam_x = 0
---cam_following_actor = selected_actor
-cam_pan_to_x = nil	-- target pos to pad camera to
-cam_script = nil	-- active camera logic script (pan-to, follow, etc.)
-
-cursor_x = screenwidth / 2
-cursor_y = screenheight / 2
---cursor_lvl = 1 	-- for cutscenes (<=0 - disable cursor)
-cursor_tmr = 0 	-- used to animate cursor col
-cursor_cols = {7,12,13,13,12,7}
-cursor_colpos = 1
-
-ui_arrows = {
-	{ spr = 16, x = 75, y = stage_top + 60 },
-	{ spr = 48, x = 75, y = stage_top + 72 }
-}
-
-
-last_mouse_x = 0
-last_mouse_y = 0
--- wait for button release before repeating action
-ismouseclicked = false
-
-room_curr = nil			-- contains the current room definition
-verb_curr = nil 		-- contains the active verb to be used (e.g. walk)
-noun1_curr = nil 		-- main/first object in command
-noun2_curr = nil 		-- holds whatever is used after the preposition (e.g. "with <noun2>")
-cmd_curr = "" 			-- contains last displayed or actioned command
-executing_cmd = false
-talking_curr = nil 	-- currently displayed speech {x,y,col,lines...}
-dialog_curr = nil   -- currently displayed dialog options to pick
-cutscene_curr = nil -- currently active cutscene
-talking_actor = nil -- currently talking actor
-fade_iris = 0			  -- depends on effect above
-
-global_scripts = {}	-- table of scripts that are at game-level (background)
-local_scripts = {}	-- table of scripts that are actively running
-cutscenes = {} 			-- table of scripts for the active cutscene(s)
-draw_zplanes = {}		-- table of tables for each of the (8) zplanes for drawing depth
-
--- game loop
-
-function _init()
-	-- use mouse input?
-	if enable_mouse then poke(0x5f2d, 1) end
-
-	-- init all the rooms/objects/actors
-	game_init()
-
-	-- run any startup script(s)
-  start_script(startup_script, true)
-end
-
-function _update60()  -- _update()
-	game_update()
-end
-
-function _draw()
-	game_draw()
-end
-
--- update functions
-
-function game_update()
-	-- process selected_actor threads/actions
-	if selected_actor and selected_actor.thread and not coresume(selected_actor.thread) then
-		selected_actor.thread = nil
-	end
-
-	-- global scripts (always updated - regardless of cutscene)
-	update_scripts(global_scripts)
-
-	-- update active cutscene (if any)
-	if cutscene_curr then
-		if cutscene_curr.thread and not coresume(cutscene_curr.thread) then
-			-- cutscene ended, restore prev state	
-			if (room_curr != cutscene_curr.paused_room) then change_room(cutscene_curr.paused_room) end
-			selected_actor = cutscene_curr.paused_actor
-			camera_follow(cutscene_curr.paused_cam_following)
-			-- now delete cutscene
-			del(cutscenes, cutscene_curr)
-			cutscene_curr = nil
-			-- any more cutscenes?
-			if #cutscenes > 0 then
-				cutscene_curr = cutscenes[#cutscenes]
-			end
-		end
-	else
-		-- no cutscene...
-		-- update all the active scripts
-		-- (will auto-remove those that have ended)
-	
-		-- local/room-level scripts
-		update_scripts(local_scripts)		
-	end
-
-	-- player/ui control
-	playercontrol()
-
-	-- check for collisions
-	checkcollisions()
-end
-
-
-function game_draw()
-	-- clear screen every frame?
-	rectfill(0, 0, screenwidth, screenheight, 0)
-
-	-- reposition camera
-	camera(cam_x, 0)
-
-	-- clip room bounds (also used for "iris" transition)
-	clip(
-		0 +fade_iris, 
-		stage_top +fade_iris, 
-		screenwidth+1 -fade_iris*2, 
-		64 -fade_iris*2)
-
-	-- draw room (bg + objects + actors)
-	room_draw()
-
-	-- reset camera for "static" content (UI, etc.)
-	camera(0,0)
-	-- reset clip bounds
-	clip()
-
-	if show_perfinfo then 
-		print("cpu: "..flr(100*stat(1)).."%", 0, stage_top - 16, 8) 
-		print("mem: "..flr(stat(0)/1024*100).."%", 0, stage_top - 8, 8)
-	end
-	if show_debuginfo then 
-		print("x: "..cursor_x.." y:"..cursor_y-stage_top, 80, stage_top - 8, 8) 
-	end
-
-	-- draw active text
-	talking_draw()
-
-	-- in dialog mode?
-	if dialog_curr and dialog_curr.visible then
-		-- draw dialog sentences?
-		dialog_draw()
-		cursor_draw()
-		-- skip rest
-		return
-	end
-
- -- --------------------------------------------------------------
- -- hack:
- -- skip draw if just exited a cutscene
- -- as could be going straight into a dialog
- -- (would prefer a better way than this, but couldn't find one!)
- -- --------------------------------------------------------------
-	if cutscene_curr_lastval == cutscene_curr then
-		--d("cut_same")
-	else
-		--d("cut_diff")
-		cutscene_curr_lastval = cutscene_curr
-		return
-	end
-	
-
-	-- draw current command (verb/object)
-	if not cutscene_curr then
-		command_draw()
-	end
-
-	-- draw ui and inventory
-	if (not cutscene_curr
-		or not has_flag(cutscene_curr.flags, cut_noverbs))
-		-- and not just left a cutscene
-		and (cutscene_curr_lastval == cutscene_curr) then
-		ui_draw()
-	else
-		--d("ui skipped")
-	end
-
-	-- hack: fix for display issue (see above hack info)
-	cutscene_curr_lastval = cutscene_curr
-
-	--if cursor_lvl == 0 then
-	if not cutscene_curr then
-		cursor_draw()
-	end
-end
-
-
--- handle button inputs
-function playercontrol()	
-
-	-- check for cutscene "skip/override" (if available)
-	if cutscene_curr then
-		if btnp(4) and btnp(5) and cutscene_curr.override then 
-			-- skip cutscene!
-			cutscene_curr.thread = cocreate(cutscene_curr.override)
-			cutscene_curr.override = nil
-			--if (enable_mouse) then ismouseclicked = true end
-			return
-		end
-		-- either way - don't allow other user actions!
-		return
-	end
-
-	-- 
-	if btn(0) then cursor_x -= 1 end
-	if btn(1) then cursor_x += 1 end
-	if btn(2) then cursor_y -= 1 end
-	if btn(3) then cursor_y += 1 end
-
-	if btnp(4) then input_button_pressed(1) end
-	if btnp(5) then input_button_pressed(2) end
-
-	-- only update position if mouse moved
-	if enable_mouse then	
-		if stat(32)-1 != last_mouse_x then cursor_x = stat(32)-1 end	-- mouse xpos
-		if stat(33)-1 != last_mouse_y then cursor_y = stat(33)-1 end  -- mouse ypos
-		-- don't repeat action if same press/click
-		if stat(34) > 0 then
-			if not ismouseclicked then
-				input_button_pressed(stat(34))
-				ismouseclicked = true
-			end
-		else
-			ismouseclicked = false
-		end
-		-- store for comparison next cycle
-		last_mouse_x = stat(32)-1
-		last_mouse_y = stat(33)-1
-	end
-
-	-- keep cursor within screen
-	cursor_x = max(cursor_x, 0)
-	cursor_x = min(cursor_x, 127)
-	cursor_y = max(cursor_y, 0)
-	cursor_y = min(cursor_y, 127)
-end
-
--- 1 = z/lmb, 2 = x/rmb, (4=middle)
-function input_button_pressed(button_index)	
-
-	local verb_in = verb_curr
-
-	-- check for sentence selection
-	if dialog_curr and dialog_curr.visible then
-		if hover_curr_sentence then
-			selected_sentence = hover_curr_sentence
-			--sentence_curr = hover_curr_sentence
-		end
-		-- skip remaining
-		return
-	end
-
-
-	if hover_curr_verb then
-		verb_curr = get_verb(hover_curr_verb)
-		--d("verb = "..verb_curr[2])
-
-	elseif hover_curr_object then
-		-- if valid obj, complete command
-		-- else, abort command (clear verb, etc.)
-		if button_index == 1 then
-			if (verb_curr[2] == "use" or verb_curr[2] == "give") 
-			 and noun1_curr then
-				noun2_curr = hover_curr_object
-				--d("noun2_curr = "..noun2_curr.name)					
-			else
-				noun1_curr = hover_curr_object						
-				--d("noun1_curr = "..noun1_curr.name)
-			end
-
-		elseif hover_curr_default_verb then
-			-- perform default verb action (if present)
-			verb_curr = get_verb(hover_curr_default_verb)
-			noun1_curr = hover_curr_object
-			get_keys(noun1_curr)
-			-- force repaint of command (to reflect default verb)
-			command_draw()
-		end
-
-	-- ui arrow clicked
-	elseif hover_curr_arrow then
-		-- up arrow
-		if hover_curr_arrow == ui_arrows[1] then 
-			if selected_actor.inv_pos > 0 then
-				selected_actor.inv_pos -= 1
-			end
-		else  -- down arrow
-			if selected_actor.inv_pos + 2 < flr(#selected_actor.inventory/4) then
-				selected_actor.inv_pos += 1
-			end
-		end
-		return
-	--else
-		-- what else could there be? actors!?
-	end
-
-	-- attempt to use verb on object
-	if (noun1_curr != nil) then
-		-- are we starting a 'use' command?
-		if verb_curr[2] == "use" or verb_curr[2] == "give" then
-			if noun2_curr then
-				-- 'use' part 2
-			else
-				-- 'use' part 1 (e.g. "use hammer")
-				-- wait for noun2 to be set
-				return
-			end
-		end
-
-		-- execute verb script
-		executing_cmd = true
-		selected_actor.thread = cocreate(function(actor, obj, verb, noun2)
-			if not obj.owner then
-				-- walk to use pos and face dir
-				--todo: find nearest usepos if none set?
-				dest_pos = get_use_pos(obj)
-				walk_to(selected_actor, dest_pos.x, dest_pos.y)
-				-- abort if walk was interrupted
-				if selected_actor.moving != 2 then return end
-				-- face object/actor by default
-				use_dir = obj
-				-- unless a diff dir specified
-				if obj.use_dir and verb != verb_default then use_dir = obj.use_dir end
-				-- turn to use dir
-				do_anim(selected_actor, anim_face, use_dir)
-			end
-			-- does current object support active verb?
-			if valid_verb(verb,obj) then
-				-- finally, execute verb script
-				start_script(obj.verbs[verb[1]], false, obj, noun2)
-			else
-				-- e.g. "i don't think that will work"
-				unsupported_action(verb[2], obj, noun2)
-			end
-			-- clear current command
-			clear_curr_cmd()
-		end)
-		coresume(selected_actor.thread, selected_actor, noun1_curr, verb_curr, noun2_curr)
-	elseif (cursor_y > stage_top and cursor_y < stage_top+64) then
-		-- in map area
-		executing_cmd = true
-		-- attempt to walk to target
-		selected_actor.thread = cocreate(function(x,y)
-			walk_to(selected_actor, x, y)
-			-- clear current command
-			clear_curr_cmd()
-		end)
-		coresume(selected_actor.thread, cursor_x, cursor_y - stage_top)
-	end
-end
-
--- collision detection
-function checkcollisions()
-	-- reset hover collisions
-	hover_curr_verb = nil
-	hover_curr_default_verb = nil
-	hover_curr_object = nil
-	hover_curr_sentence = nil
-	hover_curr_arrow = nil
-
-	-- are we in dialog mode?
-	if dialog_curr and dialog_curr.visible then
-		for s in all(dialog_curr.sentences) do
-			if iscursorcolliding(s) then
-				hover_curr_sentence = s
-			end
-		end
-		-- skip remaining collisions
-		return
-	end
-
-	-- reset zplane info
-	reset_zplanes()
-
-	-- check room/object collisions
-	for k,obj in pairs(room_curr.objects) do
-		-- capture bounds (even for "invisible", but not untouchable/dependent, objects)
-		if (not obj.class
-			 or (obj.class and obj.class != class_untouchable))
-			and (not obj.dependent_on 			-- object has a valid dependent state?
-			 or find_object(obj.dependent_on).state == obj.dependent_on_state) 
-		then
-			recalc_bounds(obj, obj.w*8, obj.h*8, cam_x, cam_y)
-		else
-			-- reset bounds
-			obj.bounds = nil
-		end
-
-		if iscursorcolliding(obj) then
-			hover_curr_object = obj
-		end
-		-- recalc z-plane
-		recalc_zplane(obj)
-	end
-
-	-- check actor collisions
-	for k,actor in pairs(actors) do
-		if actor.in_room == room_curr then
-			recalc_bounds(actor, actor.w*8, actor.h*8, cam_x, cam_y)
-			-- recalc z-plane
-			recalc_zplane(actor)
-			-- are we colliding (ignore self!)
-			if iscursorcolliding(actor)
-		 	 and actor != selected_actor then
-				hover_curr_object = actor
-			end
-		end
-	end
-
-	-- check ui/inventory collisions
-	for v in all(verbs) do
-		if iscursorcolliding(v) then
-			hover_curr_verb = v
-		end
-	end
-	for a in all(ui_arrows) do
-		if iscursorcolliding(a) then
-			hover_curr_arrow = a
-		end
-	end
-
-	-- check room/object collisions
-	for k,obj in pairs(selected_actor.inventory) do
-		if iscursorcolliding(obj) then
-			hover_curr_object = obj
-			-- pickup override for inventory objects
-			if verb_curr[2] == "pickup" and hover_curr_object.owner then
-				verb_curr = nil
-			end
-		end
-		-- check for disowned objects!
-		if obj.owner != selected_actor then 
-			del(selected_actor.inventory, obj)
-		end
-	end
-
-	-- default to walkto (if nothing set)
-	if verb_curr == nil then
-		verb_curr = get_verb(verb_default)
-	end
-
-	-- update "default" verb for hovered object (if any)
-	if hover_curr_object then
-		hover_curr_default_verb = find_default_verb(hover_curr_object)
-	end
-end
-
-
-function reset_zplanes()
-	draw_zplanes = {}
-	for x=1,64 do
-		draw_zplanes[x] = {}
-	end
-end
-
-function recalc_zplane(obj)
-	-- calculate the correct z-plane
-	-- based on x,y pos + elevation
-	ypos = -1
-	if obj.offset_y then
-		ypos = obj.y
-	else
-		ypos = obj.y + (obj.h*8)
-	end
-	zplane = flr(ypos - stage_top)
-
-	if obj.elevation then zplane += obj.elevation end
-
-	add(draw_zplanes[zplane],obj)
-end
-
-function room_draw()
-	-- draw current room
-
-	-- replace colors?
-	replace_colors(room_curr)
-	map(room_curr.map_x, room_curr.map_y, 0, stage_top, room_curr.map_w , room_curr.map_h)
-	--reset palette
-	pal() 
-	
-	-- ===============================================================
-	-- debug walkable areas
-	-- ===============================================================
-	-- if show_pathfinding then
-	-- 	actor_cell_pos = getcellpos(selected_actor)
-
-	-- 	celx = flr((cursor_x + cam_x) /8) + room_curr.map_x
-	-- 	cely = flr((cursor_y - stage_top)/8 ) + room_curr.map_y
-	-- 	target_cell_pos = { celx, cely }
-
-	-- 	path = find_path(actor_cell_pos, target_cell_pos)
-
-	-- 	-- finally, add our destination to list
-	-- 	click_cell = getcellpos({x=(cursor_x + cam_x), y=(cursor_y - stage_top)})
-	-- 	if is_cell_walkable(click_cell[1], click_cell[2]) then
-	-- 	--if (#path>0) then
-	-- 		add(path, click_cell)
-	-- 	end
-
-	-- 	for p in all(path) do
-	-- 		--d("  > "..p[1]..","..p[2])
-	-- 		rect(
-	-- 			(p[1]-room_curr.map_x)*8, 
-	-- 			stage_top+(p[2]-room_curr.map_y)*8, 
-	-- 			(p[1]-room_curr.map_x)*8+7, 
-	-- 			stage_top+(p[2]-room_curr.map_y)*8+7, 11)
-	-- 	end
-	-- end
-	-- ===============================================================
-
-	-- draw each zplane, from back to front
-	for z = 1,64 do
-		zplane = draw_zplanes[z]
-		-- draw all objs/actors in current zplane
-		for obj in all(zplane) do
-			-- object or actor?
-			if not has_flag(obj.class, class_actor) then
-				-- object
-				if (obj.states) 						-- object has a state?
-				 and obj.states[obj.state]
-				 and (obj.states[obj.state] > 0)
-				 and (not obj.dependent_on 			-- object has a valid dependent state?
-				 	or find_object(obj.dependent_on).state == obj.dependent_on_state)
-				 and not obj.owner   						-- object is not "owned"
-				then
-					-- something to draw
-					object_draw(obj)
-				end
-			else
-				-- actor
-				if (obj.in_room == room_curr) then
-					actor_draw(obj)
-				end
-			end
-			show_collision_box(obj)
-		end
-	end
-end
-
-function replace_colors(obj)
-	for c in all(obj.col_replace) do
-		pal(c[1], c[2])
-	end
-end
-
-
-function object_draw(obj)
-	-- replace colors?
-	replace_colors(obj)
-	-- allow for repeating
-	rx=1
-	if obj.repeat_x then rx = obj.repeat_x end
-	for h = 0, rx-1 do
-		-- draw object (in its state!)
-		sprdraw(obj.states[obj.state], obj.x+(h*(obj.w*8)), obj.y, obj.w, obj.h, obj.trans_col, obj.flip_x)
-	end
-	--reset palette
-	pal() 
-end
-
--- draw actor(s)
-function actor_draw(actor)
-
-	if actor.moving == 1
-	 and actor.walk_anim then
-		actor.tmr += 1
-		if actor.tmr > 5 then
-			actor.tmr = 1
-			actor.anim_pos += 1
-			if actor.anim_pos > #actor.walk_anim then actor.anim_pos=1 end
-		end
-		-- choose walk anim frame
-		sprnum = actor.walk_anim[actor.anim_pos]	
-	else
-		-- idle
-		sprnum = actor.idle[actor.face_dir]
-	end
-
-	-- replace colors?
-	replace_colors(actor)
-
-	sprdraw(sprnum, actor.offset_x, actor.offset_y, 
-		actor.w , actor.h, actor.trans_col, 
-		actor.flip, false)
-	
-	-- talking overlay
-	if talking_actor 
-	 and talking_actor == actor then
-			if actor.talk_tmr < 7  then
-				sprnum = actor.talk[actor.face_dir]
-				sprdraw(sprnum, actor.offset_x, actor.offset_y +8, 1, 1, 
-					actor.trans_col, actor.flip, false)
-			end
-			actor.talk_tmr += 1	
-			if actor.talk_tmr > 14 then actor.talk_tmr = 1 end
-	end
-
-	--reset palette
-	pal()
-
-	--pset(actor.x, actor.y+stage_top, 8)
-end
-
-function command_draw()
-	-- draw current command
-	command = ""
-	cmd_col = 12
-
-	if not executing_cmd then
-		if verb_curr then
-			command = verb_curr[3]
-		end
-		if noun1_curr then
-			command = command.." "..noun1_curr.name
-			if verb_curr[2] == "use" then
-				command = command.." with"
-			elseif verb_curr[2] == "give" then
-				command = command.." to"
-			end
-		end
-		if noun2_curr then
-			command = command.." "..noun2_curr.name
-		elseif hover_curr_object 
-		  and hover_curr_object.name != ""
-			-- don't show use object with itself!
-			and ( not noun1_curr or (noun1_curr != hover_curr_object) ) then
-			command = command.." "..hover_curr_object.name
-		end
-		cmd_curr = command
-	else
-		-- highlight active command
-		command = cmd_curr
-		cmd_col = 7
-	end
-
-	print(smallcaps(command), 
-		hcenter(command), 
-		stage_top + 66, cmd_col)
-end
-
-function talking_draw()
-	-- alignment 
-	--   0 = no align
-	--   1 = center 
-	if talking_curr then
-		line_offset_y = 0
-		for l in all(talking_curr.msg_lines) do
-			line_offset_x=0
-			-- center-align line
-			if talking_curr.align == 1 then
-				line_offset_x = ((talking_curr.char_width*4)-(#l*4))/2
-			end
-			outline_text(
-				l, 
-				talking_curr.x + line_offset_x, 
-				talking_curr.y + line_offset_y, 
-				talking_curr.col)
-			line_offset_y += 6
-		end
-		-- update message lifespan
-		talking_curr.time_left -= 1
-		-- remove text & reset actor's talk anim
-		if (talking_curr.time_left <=0) then 
-			stop_talking()
-		end
-	end
-end
-
--- draw ui and inventory
-function ui_draw()
-	-- draw verbs
-	xpos = 0
-	ypos = 75
-	col_len=0
-
-	for v in all(verbs) do
-		txtcol=verb_maincol
-
-		-- highlight default verb
-		if hover_curr_default_verb
-		  and (v == hover_curr_default_verb) then
-			txtcol = verb_defcol
-		end		
-		if v == hover_curr_verb then txtcol=verb_hovcol end
-
-		-- get verb info
-		vi = get_verb(v)
-		print(vi[3], xpos, ypos+stage_top+1, verb_shadcol)  -- shadow
-		print(vi[3], xpos, ypos+stage_top, txtcol)  -- main
-		
-		-- capture bounds
-		v.x = xpos
-		v.y = ypos
-		recalc_bounds(v, #vi[3]*4, 5, 0, 0)
-		show_collision_box(v)
-
-		-- auto-size column
-		if #vi[3] > col_len then col_len = #vi[3] end
-		ypos = ypos + 8
-
-		-- move to next column
-		if ypos >= 95 then
-			ypos = 75
-			xpos = xpos + (col_len + 1.0) * 4
-			col_len = 0
-		end
-	end
-
-	-- draw inventory
-	xpos = 86
-	ypos = 76
-	-- determine the inventory "window"
-	start_pos = selected_actor.inv_pos*4
-	end_pos = min(start_pos+8, #selected_actor.inventory)
-
-	for ipos = 1,8 do
-		-- draw inventory bg
-		rectfill(xpos-1, stage_top+ypos-1, xpos+8, stage_top+ypos+8, 1)
-
-		obj = selected_actor.inventory[start_pos+ipos]
-		if obj then
-			-- something to draw
-			obj.x = xpos
-			obj.y = ypos
-			-- draw object/sprite
-			object_draw(obj)
-			-- re-calculate bounds (as pos may have changed)
-			recalc_bounds(obj, obj.w*8, obj.h*8, 0, 0)
-			show_collision_box(obj)
-		end
-		xpos += 11
-
-		if xpos >= 125 then
-			ypos += 12
-			xpos=86
-		end
-		ipos += 1
-	end
-
-	-- draw arrows
-	for i = 1,2 do
-		arrow = ui_arrows[i]
-		if hover_curr_arrow == arrow then pal(verb_maincol,7) end
-		sprdraw(arrow.spr, arrow.x, arrow.y, 1, 1, 0)
-		-- capture bounds
-		recalc_bounds(arrow, 8, 7, 0, 0)
-		show_collision_box(arrow)
-		pal() --reset palette
-	end
-end
-
-function dialog_draw()
-	xpos = 0
-	ypos = 70
-	
-	for s in all(dialog_curr.sentences) do
-		-- capture bounds
-		s.x = xpos
-		s.y = ypos
-		recalc_bounds(s, s.char_width*4, #s.lines*5, 0, 0)
-
-		txtcol=dialog_curr.col
-		if s == hover_curr_sentence then txtcol=dialog_curr.hlcol end
-		
-		for l in all(s.lines) do
-				print(smallcaps(l), xpos, ypos+stage_top, txtcol)
-			ypos += 5
-		end
-
-		show_collision_box(s)
-
-		ypos += 2
-	end
-end
-
--- draw cursor
-function cursor_draw()
-	col = cursor_cols[cursor_colpos]
-	-- switch sprite color accordingly
-	pal(7,col)
-	spr(32, cursor_x-4, cursor_y-3, 1, 1, 0)
-	pal() --reset palette
-
-	cursor_tmr += 1
-	if cursor_tmr > 7 then
-		--reset timer
-		cursor_tmr = 1
-		-- move to next color?
-		cursor_colpos += 1
-		if (cursor_colpos > #cursor_cols) then cursor_colpos = 1 end
-	end
-end
-
-function sprdraw(n, x, y, w, h, transcol, flip_x, flip_y)
-	-- switch transparency
- 	palt(0, false)
- 	palt(transcol, true)
-	 -- draw sprite
-	spr(n, x, stage_top + y, w, h, flip_x, flip_y) --
-	-- restore default trans
-	pal()
-end
-
-
-
-
--- initialise all the rooms (e.g. add in parent links)
-function game_init()
-	for kr,room in pairs(rooms) do
-		-- init room
-		if room.map_x1 then
-			room.map_w = room.map_x1 - room.map_x + 1
-			room.map_h = room.map_y1 - room.map_y + 1
-		else
-			room.map_w = 16
-			room.map_h = 8
-		end
-		-- init objects (in room)
-		for ko,obj in pairs(room.objects) do
-			obj.in_room = room
-		end
-	end
-	-- init actors with defaults
-	for ka,actor in pairs(actors) do
-		actor.moving = 2 		-- 0=stopped, 1=walking, 2=arrived
-		actor.tmr = 1 		  -- internal timer for managing animation
-		actor.talk_tmr = 1
-		actor.anim_pos = 1 	-- used to track anim pos
-		actor.inventory = {
-			-- object1,
-			-- object2
-		}
-		actor.inv_pos = 0 	-- pointer to the row to start displaying from
-	end
-end
-
-function show_collision_box(obj)
-	if show_collision and obj.bounds then 
-		rect(obj.bounds.x, obj.bounds.y, obj.bounds.x1, obj.bounds.y1, 8) 
-	end	
-end
-
-function update_scripts(scripts)
-	for scr_obj in all(scripts) do
-		if scr_obj[2] and not coresume(scr_obj[2], scr_obj[3], scr_obj[4]) then
-			del(scripts, scr_obj)
-			scr_obj = nil
-		end
-	end
-end
-
--- returns whether room map cel at position is "walkable"
-function iswalkable(x, y)
-		celx = flr(x/8) + room_curr.map_x
-		cely = flr(y/8) + room_curr.map_y
-		walkable = is_cell_walkable(celx, cely)
-		return walkable
-end
-
-function getcellpos(obj)
-	celx = flr(obj.x/8) + room_curr.map_x
-	cely = flr(obj.y/8) + room_curr.map_y
-	return { celx, cely }
-end
-
-function is_cell_walkable(celx, cely)
-		spr_num = mget(celx, cely)
-		--d("spr:"..spr_num)
-		walkable = fget(spr_num,0)
-		return walkable
-end
-
-function get_keys(obj)
-	keys = {}
-	for k,v in pairs(obj) do
-		--d("k:"..k)
-		add(keys,k)
-	end
-	return keys
-end
-
-function get_verb(obj)
-	verb = {}
-	keys = get_keys(obj[1])
-	--[[
-	d("1:"..keys[1])
-	d("2:"..obj[1][ keys[1] ])
-	d("3:"..obj.text )
-	]]
-
-	add(verb, keys[1])						-- verb func
-	add(verb, obj[1][ keys[1] ])  -- verb ref name
-	add(verb, obj.text)						-- verb disp name
-
-	return verb
-end
-
-
--- auto-break message into lines
-function create_text_lines(msg, max_line_length, comma_is_newline)
-	local lines={}
-	local currline=""
-	local curword=""
-	local curchar=""
-	
-	local upt=function(max_length)
-		if #curword + #currline > max_length then
-			add(lines,currline)
-			currline=""
-		end
-		currline=currline..curword
-		curword=""
-	end
-
-	for i = 1, #msg do
-		curchar=sub(msg,i,i)
-		curword=curword..curchar
-		
-		if (curchar == " ")
-		 or (#curword > max_line_length-1) then
-			upt(max_line_length)
-		
-		elseif #curword>max_line_length-1 then
-			curword=curword.."-"
-			upt(max_line_length)
-
-		elseif curchar == "," and comma_is_newline then 
-			-- line break
-			currline=currline..sub(curword,1,#curword-1)
-			curword=""
-			upt(0)
-		end
-	end
-
-	upt(max_line_length)
-	if currline!="" then
-		add(lines,currline)
-	end
-
-	return lines
-end
-
--- find longest line
-function longest_line_size(lines)
-	longest_line = 0
-	for l in all(lines) do
-		if #l > longest_line then longest_line = #l end
-	end
-	return longest_line
-end
-
-function has_flag(obj, value)
-  if band(obj, value) != 0 then return true end
-  return false
-end
-
-function clear_curr_cmd()
-	-- reset all command values
-	verb_curr = get_verb(verb_default)
-	noun1_curr = nil
-	noun2_curr = nil
-	me = nil
-	executing_cmd = false
-	cmd_curr = ""
-end
-
-function recalc_bounds(obj, w, h, cam_off_x, cam_off_y)
-  x = obj.x
-	y = obj.y
-	-- offset for actors?
-	if has_flag(obj.class, class_actor) then
-		obj.offset_x = obj.x - (obj.w *8) /2
-		obj.offset_y = obj.y - (obj.h *8) +1		
-		x = obj.offset_x
-		y = obj.offset_y
-	end
-	obj.bounds = {
-		x = x,
-		y = y + stage_top,
-		x1 = x + w -1,
-		y1 = y + h + stage_top -1,
-		cam_off_x = cam_off_x,
-		cam_off_y = cam_off_y
-	}
-end
-
-
--- ================================================================
--- a* pathfinding functions 
--- ================================================================
-
-function find_path(start, goal)
- frontier = {}
- insert(frontier, start, 0)
- came_from = {}
- came_from[vectoindex(start)] = nil
- cost_so_far = {}
- cost_so_far[vectoindex(start)] = 0
-
- while #frontier > 0 and #frontier < 1000 do
- 	-- pop the last element off a table
-	local top = frontier[#frontier]
-	del(frontier,frontier[#frontier])
-	current = top[1]
-
-  if vectoindex(current) == vectoindex(goal) then
-   break
-  end
-
-  --local neighbours = getneighbours(current)
-	local neighbours = {}
-	for x = -1, 1 do
-		for y = -1, 1 do
-			if x == 0 and y == 0 then 
-				--continue 
-			else
-				chk_x = current[1] + x
-				chk_y = current[2] + y
-
-				-- diagonals cost more
-				if abs(x) != abs(y) then cost=1 else cost=1.4 end
-				
-				if chk_x >= room_curr.map_x and chk_x <= room_curr.map_x + room_curr.map_w 
-				and chk_y >= room_curr.map_y and chk_y <= room_curr.map_y + room_curr.map_h
-				and is_cell_walkable(chk_x, chk_y)
-				-- squeeze check for corners
-				and ((abs(x) != abs(y)) 
-						or is_cell_walkable(chk_x, current[2]) 
-						or is_cell_walkable(chk_x - x, chk_y)) 
-				then
-					-- add as valid neighbour
-					add( neighbours, {chk_x, chk_y, cost} )
-				end
-			end
-		end
-	end
-	-- --------------
-
-  for next in all(neighbours) do
-   local nextindex = vectoindex(next)
-   local new_cost = cost_so_far[vectoindex(current)] + next[3] -- add extra costs here
-
-   if (cost_so_far[nextindex] == nil) or (new_cost < cost_so_far[nextindex]) then
-    cost_so_far[nextindex] = new_cost
-
-		-- diagonal movement - assumes diag dist is 1, same as cardinals
-		local priority = new_cost +  max(abs(goal[1] - next[1]), abs(goal[2] - next[2]))
-
-    insert(frontier, next, priority)
-    came_from[nextindex] = current
-   end 
-  end
- end
-
- -- now find goal..
- path = {}
- current = came_from[vectoindex(goal)]
- if current then
-	local cindex = vectoindex(current)
-	local sindex = vectoindex(start)
-
-	while cindex != sindex do
-		add(path, current)
-		current = came_from[cindex]
-		cindex = vectoindex(current)
-	end
-
-	--reverse(path)
-	for i=1,#path/2 do
-		local temp = path[i]
-		local oppindex = #path-(i-1)
-		path[i] = path[oppindex]
-		path[oppindex] = temp
-
-	end
-	--printh("..done")
- end
-
- return path
-end
-
-
--- insert into table and sort by priority
-function insert(t, val, p)
- if #t >= 1 then
-  add(t, {})
-  for i=(#t),2,-1 do
-   local next = t[i-1]
-   if p < next[2] then
-    t[i] = {val, p}
-    return
-   else
-    t[i] = next
-   end
-  end
-  t[1] = {val, p}
- else
-  add(t, {val, p}) 
- end
-end
-
--- translate a 2d x,y coordinate to a 1d index and back again
-function vectoindex(vec)
-	return ((vec[1]+1) * 16) + vec[2]
-end
-
-
-
-
--- ================================================================
--- helper functions 
--- ================================================================
-
-function outline_text(str,x,y,c0,c1)
- local c0=c0 or 7
- local c1=c1 or 0
- str = smallcaps(str)
- for xx = -1, 1 do
-		for yy = -1, 1 do
-			print(str, x+xx, y+yy, c1)
-		end
- end
- print(str,x,y,c0)
-end
-
-function hcenter(s)
-	return (screenwidth / 2)-flr((#s*4)/2)
-end
-
-function vcenter(s)
-	return (screenheight /2)-flr(5/2)
-end
-
-
---- collision check
-function iscursorcolliding(obj)
-	-- check params
-	if not obj.bounds then return false end
-	bounds = obj.bounds
-	if (cursor_x + bounds.cam_off_x > bounds.x1 or cursor_x + bounds.cam_off_x < bounds.x) 
-	 or (cursor_y>bounds.y1 or cursor_y<bounds.y) then
-		return false
-	else
-		return true
-	end
-end
-
-function smallcaps(s)
-	local d=""
-	local l,c,t=false,false
-	for i=1,#s do
-		local a=sub(s,i,i)
-		if a=="^" then
-			if(c) then d=d..a end
-				c=not c
-			elseif a=="~" then
-				if(t) then d=d..a end
-				t,l=not t,not l
-			else 
-				if c==l and a>="a" and a<="z" then
-				for j=1,26 do
-					if a==sub("abcdefghijklmnopqrstuvwxyz",j,j) then
-						a=sub("\65\66\67\68\69\70\71\72\73\74\75\76\77\78\79\80\81\82\83\84\85\86\87\88\89\90\91\92",j,j)
-					break
-					end
-				end
-			end
-			d=d..a
-			c,t=false,false
-		end
-	end
-	return d
-end
 
 
 __gfx__
@@ -2711,44 +1051,44 @@ ffffffffffffffffffffffff9fef9fef70006000000600079fef9fef9fef9fef9fef9fef9fef9fef
 fffffffffffffffffffffffff9f9feee7000600000060007f9f9feeef9f9feeef9f9feeef9f9feeef9f9feeef9f9feeef9f9feeeffffffffffffffffffffffff
 ffffffffffffffffffffffff9f9f9eee70006000000600079f9f9eee9f9f9eee9f9f9eee9f9f9eee9f9f9eee9f9f9eee9f9f9eeeffffffffffffffffffffffff
 fffffffffffffffffffffffff9f9feee7000600000060007f9f9feeef9f9feeef9f9feeef9f9feeef9f9feeef9f9feeef9f9feeeffffffffffffffffffffffff
-ffffffffffffffffffffffff9f9f9fef77776000494449779f9f9fef9f9f9fef9f9f9fef9f9f9fef9f9f9fef9f9f9fef9f9f9fefffffffffffffffffffffffff
-ffffffff00000000fffffffff9e9f9f97006600494444497f9e9f9f9f9e9f9f9f9e9f9f9f9e9f9f9f9e9f9f9f9e9f9f9f9e9f9f9ffffffff00000000ffffffff
-ffffffff00000000ffffffff9eee9f9f70606004944000479eee9f9f9eee9f9f9eee9f9f9eee9f9f9eee9f9f9eee9f9f9eee9f9fffffffff00000000ffffffff
-ffffffff00000000fffffffffeeef9f970506000440fff07feeef9f9feeef9f9feeef9f9feeef9f9feeef9f9feeef9f9feeef9f9ffffffff00000000ffffffff
-ffffffff00000000ffffffff9fef9fef700060004f0f9f079fef9fef9fef9fef9fef9fef9fef9fef9fef9fef9fef9fef9fef9fefffff7fff00000000ffffffff
-ffffffff00000000fffffffff9f9feee700500000fff5f07f9f9feeef9f9feeef9f9feeef9f9feeef9f9feeef9f9feeef9f9feeeffff7fff00000000ffffffff
-ffffffff00000000ffffffff9f9f9eee705000040ffffff79f9f9eee9f9f9eee9f9f9eee9f9f9eee9f9f9eee9f9f9eee9f9f9eeeffff7fff00000000ffffffff
-ffffffff00000000fffffffff9f9feee750000000fffff47f9f9feeef9f9feeef9f9feeef9f9feeef9f9feeef9f9feeef9f9feeef777f77700000000ffffffff
-ffffffff00000000ffffffff9f9f9fef555555556fffff559f9f9fef9f9f9fef9f9f9fef9f9f9fef9f9f9fef9f9f9fef9f9f9fefffff7fff00000000ffffffff
-ffffffff00000000ffffffff999999999999999996fffd9999999999ffffffffffffffffffffffff999999999999999999999999ffff7fff00000000ffffffff
-ffffffff00000000ffffffff555555555555555555ff555555555555555555555555555555555555555555555555555555555555ffff7fff00000000ffffffff
-ffffffff00000000ffffffff444444444444444444dd4444444444440dd6dd6dd6dd6dd6d6dd6d50444444444444444444444444ffffffff00000000ffffffff
-ffffffff00000000ffffffffffff4fffffff4ffff1ccdfffffff4fff0dd6dd6dd6dd6dd6d6dd6d50ffff4fffffff4fffffff4fff22ffffff00000000ffffffff
-ffffffff00000000ffffffff444949444449494441ccd94444494944066666666666666666666650444949444449494444494940020fffff00000000ffffffff
-ffffffff00000000ffffffff444949444449494441ccd944444949440d6dd6dd6dd6dd6ddd6dd650444949444449494444494942302fffff00000000ffffffff
-ffffffff00000000ffffffff444949444449494441ccd944444949440d6dd6dd6dd6dd6ddd6dd65044494944444949444449494b33bfffff00000000ffffffff
-ffffffff00000000ffffffff444949444449494441ccd94444494944066666666666666666666650444949444449494444494942bb2fffff00000000ffffffff
-ffffffff00000000ffffffff444949444449494441ddd944444949440dd6dd600000000056dd6d50444949444449494444494942222fffff00000000ffffffff
-ffffffff00000000ffffffff444949444449494442ff1944444949440dd6dd650000000056dd6d50444949444449494444494942bb2fffff00000000ffffffff
-ffffffff00000000ffffffff444949444449494442fe19444449494406666665000000005666665044494944444949444449492b33b2ffff00000000ffffffff
-ffffffff00000000ffffffff444949444449494442111944444949440d6dd6d500a0a0005d6dd650444949444449494444494922bb22ffff00000000ffffffff
-ffffffff00000000ffffffff444949444449494442111944444949440d6dd6d500aaaa005d6dd6504449494444494944444949222222ffff00000000ffffffff
-ffffffff00000000ffffffff444949444449494442111944444949440666666500a9aa00566666504449494444494944444949222222ffff00000000ffffffff
-ffffffff00000000ffffffff999949999999499992111999999949990dd6dd6500a99a0056dd6d50999949999999499999994922bb22ffff00000000ffffffff
-ffffffff00000000ffffffff444444444444444442111444444444440dd6dd650044440056dd6d5044444444444444444444442b33b2ffff00000000ffffffff
-ffffffff00000000ffffff555555555555555555521115555555555555555555555555555555555555555555555555555555522b33b22fff00000000ffffffff
-ffffffff00000000ffff555555555555555555555211155555555555555555555555555555555555555555555555555555555222bb222fff00000000ffffffff
-ffffffff00000000ff55555555555555555555555cccc55555555555555555555555555555555555555555555555555555555222222225ff00000000ffffffff
-ffffffff5555555555555555555555555555555556777555555555555555555555555555555555555555555555555555555552222222255555555555ffffffff
-ffffffff555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555bbbbbbbb55555555555ffffffff
-ffffffff5555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555ffffffff
-ffffffff5555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555ffffffff
-ffffffff5555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555ffffffff
-ffffff55555555555557655555555555555555553333333333333333333333333333333333333333333333335555555555555555555555555555555555ffffff
-ffff555555555555555765555555555555553333333333333333333333333333333333333333333333333333333355555555555556666775555555555555ffff
-ff555555555555555bbbb775555555555533333333333333333333333333333333333333333333333333333333333355555555557555555755555555555555ff
-5555555555555555bbb7777855555555533333333333333333333333333333333333333333333333333333333333333555555555d776666d5555555555555555
-55555555555555555777778555555555533333333333333333333333333333333333333333333333333333333333333555555555567665055555555555555555
+ffffffffffffffffffffffff9f9f9fef77776000000677779f9f9fef9f9f9fef9f9f9fef9f9f9fef9f9f9fef9f9f9fef9f9f9fefffffffffffffffffffffffff
+ffffffff00000000fffffffff9e9f9f97006600000066007f9e9f9f9f9e9f9f9f9e9f9f9f9e9f9f9f9e9f9f9f9e9f9f9f9e9f9f9ffffffff00000000ffffffff
+ffffffff00000000ffffffff9eee9f9f70606000000606079eee9f9f9eee9f9f9eee9f9f9eee9f9f9eee9f9f9eee9f9f9eee9f9fffffffff00000000ffffffff
+ffffffff00000000fffffffffeeef9f97050600000060507feeef9f9feeef9f9feeef9f9feeef9f9feeef9f9feeef9f9feeef9f9ffffffff00000000ffffffff
+ffffffff00000000ffffffff9fef9fef70006000000600079fef9fef9fef9fef9fef9fef9fef9fef9fef9fef9fef9fef9fef9fefffffffff00000000ffffffff
+ffffffff00000000fffffffff9f9feee7005000000005007f9f9feeef9f9feeef9f9feeef9f9feeef9f9feeef9f9feeef9f9feeefff7ffff00000000ffffffff
+ffffffff00000000ffffffff9f9f9eee70500000000005079f9f9eee9f9f9eee9f9f9eee9f9f9eee9f9f9eee9f9f9eee9f9f9eeefff7ffff00000000ffffffff
+ffffffff00000000fffffffff9f9feee7500000000000077f9f9feeef9f9feeef9f9feeef9f9feeef9f9feeef9f9feeef9f9feeefff7ffff00000000ffffffff
+ffffffff00000000ffffffff9f9f9fef55555555555555559f9f9fef9f9f9fef9f9f9fef9f9f9fef9f9f9fef9f9f9fef9f9f9fef777f777f00000000ffffffff
+ffffffff00000000ffffffff99999999999999999999999994944499ffffffffffffffffffffffff999999999999999999999999fff7ffff00000000ffffffff
+ffffffff00000000ffffffff55555555555555555555555549444449555555555555555555555555555555555555555555555555fff7ffff00000000ffffffff
+ffffffff00000000ffffffff444444444444444444444444494400040dd6dd6dd6dd6dd6d6dd6d50444444444444444444444444fff7ffff00000000ffffffff
+ffffffff00000000ffffffffffff4fffffff4fffffff4fff0440ffff0dd6dd6dd6dd6dd6d6dd6d50ffff4fffffff4fffffff4fff22ffffff00000000ffffffff
+ffffffff00000000ffffffff44494944444949444449494404f0f9f4066666666666666666666650444949444449494444494940020fffff00000000ffffffff
+ffffffff00000000ffffffff44494944444949444449494400fff5f40d6dd6dd6dd6dd6ddd6dd650444949444449494444494942302fffff00000000ffffffff
+ffffffff00000000ffffffff44494944444949444449494440ffffff0d6dd6dd6dd6dd6ddd6dd65044494944444949444449494b33bfffff00000000ffffffff
+ffffffff00000000ffffffff44494944444949444449494440fffff4066666666666666666666650444949444449494444494942bb2fffff00000000ffffffff
+ffffffff00000000ffffffff44494944444949444449494446fffff40dd6dd600000000056dd6d50444949444449494444494942222fffff00000000ffffffff
+ffffffff00000000ffffffff444949444449494444494944446fffd40dd6dd650000000056dd6d50444949444449494444494942bb2fffff00000000ffffffff
+ffffffff00000000ffffffff444949444449494444494944444ff94406666665000000005666665044494944444949444449492b33b2ffff00000000ffffffff
+ffffffff00000000ffffffff444949444449494444494944444dd9440d6dd6d5000a0a005d6dd650444949444449494444494922bb22ffff00000000ffffffff
+ffffffff00000000ffffffff444949444449494444494944441ccd440d6dd6d500aaa0005d6dd6504449494444494944444949222222ffff00000000ffffffff
+ffffffff00000000ffffffff444949444449494444494944441ccd440666666500aa9a00566666504449494444494944444949222222ffff00000000ffffffff
+ffffffff00000000ffffffff999949999999499999994999991ccd990dd6dd6500a99a0056dd6d50999949999999499999994922bb22ffff00000000ffffffff
+ffffffff00000000ffffffff444444444444444444444444441ccd440dd6dd650044440056dd6d5044444444444444444444442b33b2ffff00000000ffffffff
+ffffffff00000000ffffff55555555555555555555555555551ccd5555555555555555555555555555555555555555555555522b33b22fff00000000ffffffff
+ffffffff00000000ffff5555555555555555555555555555551ddd55555555555555555555555555555555555555555555555222bb222fff00000000ffffffff
+ffffffff00000000ff555555555555555555555555555555552ff155555555555555555555555555555555555555555555555222222225ff00000000ffffffff
+ffffffff5555555555555555555555555555555555555555552fe1555555555555555555555555555555555555555555555552222222255555555555ffffffff
+ffffffff555555555555555555555555555555555555555555211155555555555555555555555555555555555555555555555bbbbbbbb55555555555ffffffff
+ffffffff5555555555555555555555555555555555555555552111555555555555555555555555555555555555555555555555555555555555555555ffffffff
+ffffffff5555555555555555555555555555555555555555552111555555555555555555555555555555555555555555555555555555555555555555ffffffff
+ffffffff5555555555555555555555555555555555555555552111555555555555555555555555555555555555555555555555555555555555555555ffffffff
+ffffff55555555555557655555555555555555553333333333211133333333333333333333333333333333335555555555555555555555555555555555ffffff
+ffff555555555555555765555555555555553333333333333321113333333333333333333333333333333333333355555555555556666775555555555555ffff
+ff555555555555555bbbb775555555555533333333333333332111333333333333333333333333333333333333333355555555557555555755555555555555ff
+5555555555555555bbb7777855555555533333333333333333cccc33333333333333333333333333333333333333333555555555d776666d5555555555555555
+55555555555555555777778555555555533333333333333333677733333333333333333333333333333333333333333555555555567665055555555555555555
 55555555555555555777888555555555553333333333333333333333333333333333333333333333333333333333335555555555567665055555555555555555
 55555555555555555550055555555555555533333333333333333333333333333333333333333333333333333333555555555555567665055555555555555555
 55555555555555555550055555555555555555553333333333333333333333333333333333333333333333335555555555555555557665555555555555555555
