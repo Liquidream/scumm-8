@@ -24,7 +24,10 @@ say_line("i think it's alive") else say_line("looks pretty ordinary") end elseif
 say_line("they don't seem to open") else say_line("it doesn't seem to open") end elseif br=="close"then if has_flag(bs.class,class_actor) then
 say_line(bu"they don't seem to close") else say_line("it doesn't seem to close") end elseif br=="push"or br=="pull"then if has_flag(bs.class,class_actor) then
 say_line("moving them would accomplish nothing") else say_line("it won't budge!") end elseif br=="talkto"then if has_flag(bs.class,class_actor) then
-say_line("erm... i don't think they want to talk") else say_line("i am not talking to that!") end else say_line("hmm. no.") end end function camera_at(bv) if type(bv)=="table"then
+say_line("erm... i don't think they want to talk") else say_line("i am not talking to that!") end else say_line("hmm. no.") end end 
+
+
+function camera_at(bv) if type(bv)=="table"then
 bv=bv.x end bw=mid(0,bv-64,(room_curr.bx*8)-by-1) bz=nil ca=nil end function camera_follow(cb) ca=cb bz=nil cc=function() while ca do bw=mid(0,ca.x-64,(room_curr.bx*8)-by-1) yield() end end start_script(cc,true) end function camera_pan_to(bv) if type(bv)=="table"then
 x=bv.x end bz=x ca=nil cc=function() while(true) do cd=bw+flr(by/2)+1 if cd==bz then
 bz=nil return elseif bz>cd then bw+=0.5 else bw-=0.5 end bw=mid(0,bw,(room_curr.bx*8)-by-1) yield() end end start_script(cc,true) end function wait_for_camera() while script_running(cc) do yield() end end function cutscene(ce,cf,cg) ch={ce=ce,ci=cocreate(cf),cj=cg,ck=room_curr,cl=selected_actor,cm=ca} add(cn,ch) co=ch break_time() end function dialog_add(msg) if not cp then cp={cq={},cr=false} end
@@ -178,7 +181,9 @@ if(hl) then a=a..hc end
 hl=not hl elseif hc=="~"then if(jw) then a=a..hc end
 jw,hx=not jw,not hx else if hl==hx and hc>="a"and hc<="z"then
 for ke=1,26 do if hc==sub("abcdefghijklmnopqrstuvwxyz",ke,ke) then
-hc=sub("ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\",ke,ke) break end end end a=a..hc hl,jw=false,false end end return a end
+hc=sub("\65\66\67\68\69\70\71\72\73\74\75\76\77\78\79\80\81\82\83\84\85\86\87\88\89\90\91\92",ke,ke) break end end end a=a..hc hl,jw=false,false end end return a end
+
+
 __gfx__
 00000000bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb0f5ff5f0000000000000000000000000000000000000000000000000000000000000000000000000
 00000000bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb4ffffff4000000000000000000000000000000000000000000000000000000000000000000000000

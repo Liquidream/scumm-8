@@ -2,18 +2,8 @@ pico-8 cartridge // http://www.pico-8.com
 version 10
 __lua__
 
--- scumm-8
+-- scumm-8 game template
 -- paul nicholas
-
--- ### luamin command
--- python c:\users\pauln\owncloud\dev\pico-8\picotool\p8tool luamin c:\users\pauln\owncloud\games\pico-8\carts\git_repos\scumm-8\scumm-8.p8
-
--- ### luamin fixes ###
---	"\65\66\67\68\69\70\71\72\73\74\75\76\77\78\79\80\81\82\83\84\85\86\87\88\89\90\91\92"
-
--- was  6439 tokens (b4 pathfinding)
--- then 6500 tokens (after pathfinding & token hunting)
--- then 6673 tokens (after adding transitions, camera pan/follow, turn-to-face, etc)
 
 
 -- debugging
@@ -22,13 +12,11 @@ show_collision = false
 --show_pathfinding = true
 show_perfinfo = false
 enable_mouse = true
-d = printh
 
 
 
 -- game verbs (used in room definitions and ui)
 verbs = {
-	--{verb = verb_ref_name}, text = display_name ....bounds{},x,y...
 	{ { open = "open" }, text = "open" },
 	{ { close = "close" }, text = "close" },
 	{ { give = "give" }, text = "give" },
@@ -51,9 +39,7 @@ verb_shadcol = 1   -- shadow (dk blue)
 verb_defcol = 10   -- default action (yellow)
 
 
--- ================================================================
 -- scumm-8 enums/constants
--- ================================================================
 
 -- object states
 state_closed = 1
@@ -64,20 +50,20 @@ state_gone = 1
 state_here = 2
 
 -- object classes (bitflags)
-class_untouchable = 1 -- will not register when the cursor moves over it. the object is invisible to the user.
-class_pickupable = 2  -- can be placed in actor inventory
-class_talkable = 4		-- can talk to actor/object
-class_giveable = 8		-- can be given to an actor/object
-class_openable = 16   -- can be opened/closed
-class_actor = 32      -- is an actor/person
+class_untouchable = 1 
+class_pickupable = 2  
+class_talkable = 4	
+class_giveable = 8	
+class_openable = 16  
+class_actor = 32   
 
-cut_noverbs = 1 		-- this removes the interface during the cut-scene.
-cut_hidecursor = 2  -- this turns off the cursor during the cut-scene.
-cut_no_follow = 4   -- this disables the follow-camera being reinstated after cut-scene.
+cut_noverbs = 1 	
+cut_hidecursor = 2  
+cut_no_follow = 4  
 
 -- actor constants
-face_front = 1	-- states for actor direction
-face_left = 2   -- (not sprite #'s)
+face_front = 1	
+face_left = 2 
 face_back = 3		
 face_right = 4
 --
@@ -88,12 +74,10 @@ pos_right = 4
 pos_inside = 5
 
 -- actor animations
-anim_face = 1	 -- face actor in a direction (show the turning stages of animation)
+anim_face = 1	
 
 
--- ================================================================
 -- room definitions
--- ================================================================
 rooms = {
 
 	first_room = {
@@ -107,8 +91,6 @@ rooms = {
 		enter = function(me)
 			-- animate fireplace
 			start_script(me.scripts.anim_fire, true) -- bg script
-
-			--start_script(me.scripts.watch_tentacle, true) -- bg script
 		end,
 		exit = function(me)
 			-- pause fireplace while not in room
@@ -139,25 +121,16 @@ rooms = {
 					dir *= -1
 				end				
 			end
-			-- ,watch_tentacle = function()
-			-- 	while true do
-			-- 		d("watching tentacle...")
-			-- 		do_anim(selected_actor, anim_face, actors.purp_tentacle)
-			-- 		break_time(10)
-			-- 	end
-			-- end
 		},
 		objects = {
 			fire = {
 				name = "fire",
-				state = 1, --"frame1",
+				state = 1,
 				x = 8 *8, -- (*8 to use map cell pos)
 				y = 4 *8,
 				states = {145, 146, 147},
 				w = 1,	-- relates to spr or map cel, depending on above
 				h = 1,  --
-				--use_dir = face_back,
-				--use_pos = pos_infront,
 
 				-- just as an example
 				dependent_on = "front door",	-- object is dependent on the state of another
@@ -196,8 +169,6 @@ rooms = {
 					143, -- state_closed
 					0   -- state_open
 				},
-				--flip_x = false, -- used for flipping the sprite
-				--flip_y = false,
 				w = 1,	-- relates to spr or map cel, depending on above
 				h = 4,  --
 				use_pos = pos_right,
@@ -231,7 +202,7 @@ rooms = {
 				verbs = {
 					walkto = function()
 						-- go to new room!
-						come_out_door(rooms.second_room.objects.kitchen_door_hall) --, second_room) -- ()
+						come_out_door(rooms.second_room.objects.kitchen_door_hall)
 					end
 				}
 			},
@@ -277,11 +248,6 @@ rooms = {
 							say_line("i might need this")
 						end
 					end
-					--[[use = function(me, noun2)
-						if (noun2.name == "window") then
-							set_state("window", state_open)
-						end
-					end]]
 				}
 			},
 			spinning_top = {
@@ -290,7 +256,8 @@ rooms = {
 				x = 2*8, -- (*8 to use map cell pos)
 				y = 6*8,
 				states = { 192, 193, 194 },
-				col_replace = { -- replace colors (orig,new)
+				col_replace = { 
+          -- (orig,new)
 					{ 12, 7 } 
 				},
 				trans_col=15,
@@ -315,9 +282,7 @@ rooms = {
 				name = "window",
 				class = class_openable,
 				state = state_closed,
-				--use_dir = face_back,
 
-				-- todo: make this calculated, by closed walkable pos!
 				use_pos = { x = 5 *8, y = (7 *8)+1},
 
 				x = 4*8, -- (*8 to use map cell pos)
@@ -363,7 +328,6 @@ rooms = {
 								end,
 								-- override for cutscene
 								function()
-									--d("override!")
 									change_room(rooms.first_room)
 									put_actor_at(actors.purp_tentacle, 105, 44, rooms.first_room)
 									stop_talking()
@@ -451,9 +415,7 @@ rooms = {
 		map_x1 = 47, 	-- map coordinates to draw to (x,y)
 		map_y1 = 15,
 		enter = function(me)
-			-- =========================================
 			-- initialise game in first room entry...
-			-- =========================================
 			if not me.done_intro then
 				-- Don't do this again
 				me.done_intro = true
@@ -517,13 +479,12 @@ rooms = {
 				flip_x = true, -- used for flipping the sprite
 				w = 1,	-- relates to spr or map cel, depending on above
 				h = 3,  --
-				--use_pos = pos_infront,
 				use_dir = face_back,
 				verbs = {
 					walkto = function(me)
 						if state_of(me) == state_open then
 							-- go to new room!
-							come_out_door(rooms.first_room.objects.front_door) --, first_room)
+							come_out_door(rooms.first_room.objects.front_door)
 						else
 							say_line("the door is closed")
 						end
@@ -541,9 +502,7 @@ rooms = {
 
 }
 
--- ================================================================
 -- actor definitions
--- ================================================================
 actors = {
 	-- initialize the player's actor object
 	main_actor = { 		
@@ -556,7 +515,6 @@ actors = {
 		idle = { 1, 3, 5, 3},	
 		talk = { 6, 22, 21, 22},
 		walk_anim = { 2, 3, 4, 3},
-		--flip = false, -- used for flipping the sprite (left/right dir)
 		col = 12,				-- speech text colour
 		trans_col = 11,	-- transparency col in sprites
 		speed = 0.6,  	-- walking speed
@@ -636,16 +594,12 @@ actors = {
 	}
 }
 
--- ================================================================
 -- script overloads
--- ================================================================
 
 -- this script is execute once on game startup
 function startup_script()	
 	-- set which room to start the game in 
 	-- (e.g. could be a "pseudo" room for title screen!)
-	
-	--change_room(rooms.first_room, 1) -- iris fade	
 	change_room(rooms.outside_room, 1) -- iris fade
 end
 
@@ -771,11 +725,9 @@ end
 
 
 
--- ################################################################
 -- scumm-8 public api functions
--- ================================================================
+-- 
 -- (you should not need to modify anything below here!)
--- ################################################################
 
 
 function camera_at(bv) if type(bv)=="table"then
