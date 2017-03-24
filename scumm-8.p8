@@ -49,14 +49,21 @@ verb_shadcol = 1   -- shadow (dk blue)
 verb_defcol = 10   -- default action (yellow)
 
 -- object states
-states = {
+state_closed = 1
+state_open = 2
+state_off = 1
+state_on = 2
+state_gone = 1
+state_here = 2
+
+--[[states = {
 	closed = 1,
 	off = 1,
 	gone = 1,
 	open = 2,
 	on = 2,
 	here = 2
-}
+}]]
 
 -- object classes (bitflags)
 class_untouchable = 1 -- will not register when the cursor moves over it. the object is invisible to the user.
@@ -157,7 +164,7 @@ rooms = {
 
 				-- just as an example
 				dependent_on = "front door",	-- object is dependent on the state of another
-				dependent_on_state = states.open,
+				dependent_on_state = state_open,
 
 				verbs = {
 					lookat = function()
@@ -184,13 +191,13 @@ rooms = {
 			front_door = {
 				name = "front door",
 				class = class_openable,
-				state = states.closed,
+				state = state_closed,
 				x = 1*8, -- (*8 to use map cell pos)
 				y = 2*8,
 				elevation = -10, -- force to always be bg
 				states = { -- states are spr values
-					143, -- states.closed
-					0   -- states.open
+					143, -- state_closed
+					0   -- state_open
 				},
 				--flip_x = false, -- used for flipping the sprite
 				--flip_y = false,
@@ -200,7 +207,7 @@ rooms = {
 				use_dir = face_left,
 				verbs = {
 					walkto = function(me)
-						if state_of(me) == states.open then
+						if state_of(me) == state_open then
 							-- go to new room!
 							come_out_door(rooms.outside_room.objects.front_door)
 						else
@@ -217,7 +224,7 @@ rooms = {
 			},
 			hall_door_kitchen = {
 				name = "kitchen",
-				state = states.open,
+				state = state_open,
 				x = 14 *8, -- (*8 to use map cell pos)
 				y = 2 *8,
 				w = 1,	-- relates to spr or map cel, depending on above
@@ -234,7 +241,7 @@ rooms = {
 			bucket = {
 				name = "bucket",
 				class = class_pickupable,
-				state = states.open,
+				state = state_open,
 				x = 13 *8, -- (*8 to use map cell pos)
 				y = 6 *8,
 				w = 1,	-- relates to spr or map cel, depending on above
@@ -266,7 +273,7 @@ rooms = {
 							break_time(30)
 							say_line(actors.purp_tentacle, "here ya go...")
 							wait_for_message()
-							me.state = states.closed
+							me.state = state_closed
 							me.name = "full bucket"
 							pickup_obj(me)
 						else
@@ -275,7 +282,7 @@ rooms = {
 					end
 					--[[use = function(me, noun2)
 						if (noun2.name == "window") then
-							set_state("window", states.open)
+							set_state("window", state_open)
 						end
 					end]]
 				}
@@ -310,7 +317,7 @@ rooms = {
 			window = {
 				name = "window",
 				class = class_openable,
-				state = states.closed,
+				state = state_closed,
 				--use_dir = face_back,
 
 				-- todo: make this calculated, by closed walkable pos!
@@ -332,7 +339,7 @@ rooms = {
 									me.done_cutscene = true
 									-- cutscene code
 									print_line("*bang*",40,20,8,1)
-									set_state(me, states.open)
+									set_state(me, state_open)
 									wait_for_message()
 									change_room(rooms.second_room, 1)
 									selected_actor = actors.purp_tentacle
@@ -391,7 +398,7 @@ rooms = {
 		objects = {
 			kitchen_door_hall = {
 				name = "hall",
-				state = states.open,
+				state = state_open,
 				x = 1 *8, -- (*8 to use map cell pos)
 				y = 2 *8,
 				w = 1,	-- relates to spr
@@ -408,7 +415,7 @@ rooms = {
 			back_door = {
 				name = "back door",
 				class = class_openable,
-				state = states.closed,
+				state = state_closed,
 				x = 22*8, -- (*8 to use map cell pos)
 				y = 2*8,
 				elevation = -10, -- force to always be bg
@@ -424,7 +431,7 @@ rooms = {
 				use_dir = face_right,
 				verbs = {
 					walkto = function(me)
-						if state_of(me) == states.open then
+						if state_of(me) == state_open then
 							-- go to new room!
 							come_out_door(rooms.first_room.objects.front_door) --, first_room)
 						else
@@ -503,7 +510,7 @@ rooms = {
 			front_door = {
 				name = "front door",
 				class = class_openable,
-				state = states.closed,
+				state = state_closed,
 				x = 19*8, -- (*8 to use map cell pos)
 				y = 1*8,
 				states = {
@@ -518,7 +525,7 @@ rooms = {
 				use_dir = face_back,
 				verbs = {
 					walkto = function(me)
-						if state_of(me) == states.open then
+						if state_of(me) == state_open then
 							-- go to new room!
 							come_out_door(rooms.first_room.objects.front_door) --, first_room)
 						else
@@ -651,7 +658,7 @@ function find_default_verb(obj)
 	if has_flag(obj.class, class_talkable) then
 		default_verb = "talkto"
 	elseif has_flag(obj.class, class_openable) then
-		if obj.state == states.closed then
+		if obj.state == state_closed then
 			default_verb = "open"
 		else
 			default_verb = "close"
@@ -1772,21 +1779,21 @@ end
 
 -- open one (or more) doors
 function open_door(door_obj1, door_obj2)
-	if state_of(door_obj1) == states.open then
+	if state_of(door_obj1) == state_open then
 		say_line("it's already open")
 	else
-		set_state(door_obj1, states.open)
-		if door_obj2 then set_state(door_obj2, states.open) end
+		set_state(door_obj1, state_open)
+		if door_obj2 then set_state(door_obj2, state_open) end
 	end
 end
 
 -- close one (or more) doors
 function close_door(door_obj1, door_obj2)
-	if state_of(door_obj1) == states.closed then
+	if state_of(door_obj1) == state_closed then
 		say_line("it's already closed")
 	else
-		set_state(door_obj1, states.closed)
-		if door_obj2 then set_state(door_obj2, states.closed) end
+		set_state(door_obj1, state_closed)
+		if door_obj2 then set_state(door_obj2, state_closed) end
 	end
 end
 
