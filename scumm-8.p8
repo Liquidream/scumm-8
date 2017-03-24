@@ -13,10 +13,8 @@ __lua__
 
 -- was  6439 tokens (b4 pathfinding)
 -- then 6500 tokens (after pathfinding & token hunting)
--- then 6673 rokens (after adding transitions, camera pan/follow, turn-to-face, etc)
+-- then 6673 tokens (after adding transitions, camera pan/follow, turn-to-face, etc)
 
--- new comment! :D
- Test commit
 
 -- debugging
 show_debuginfo = false
@@ -123,12 +121,19 @@ rooms = {
 				end
 			end,
 			spin_top = function()
+				dir=-1				
 				while true do	
-					for f=1,3 do
-						set_state("spinning top", f)
-						break_time(8)
-					end
-				end
+					for x=1,3 do					
+						for f=1,3 do
+							set_state("spinning top", f)
+							break_time(4)
+						end
+						-- move top
+						top = find_object("spinning top")
+						top.x -= dir						
+					end	
+					dir *= -1
+				end				
 			end
 			-- ,watch_tentacle = function()
 			-- 	while true do
