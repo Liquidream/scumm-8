@@ -12,13 +12,13 @@ __lua__
 
 -- was  6439 tokens (b4 pathfinding)
 -- then 6500 tokens (after pathfinding & token hunting)
-
+-- then 6673 rokens (after adding transitions, camera pan/follow, turn-to-face, etc)
 
 -- debugging
-show_debuginfo = true
+show_debuginfo = false
 show_collision = false
-show_pathfinding = true
-show_perfinfo = true
+--show_pathfinding = true
+show_perfinfo = false
 enable_mouse = true
 d = printh
 
@@ -146,8 +146,9 @@ rooms = {
 				--use_dir = face_back,
 				--use_pos = pos_infront,
 
+				-- just as an example
 				dependent_on = "front door",	-- object is dependent on the state of another
-				dependent_on_state = states.closed,
+				dependent_on_state = states.open,
 
 				verbs = {
 					lookat = function()
@@ -1011,10 +1012,10 @@ function input_button_pressed(button_index)
 			if (verb_curr[2] == "use" or verb_curr[2] == "give") 
 			 and noun1_curr then
 				noun2_curr = hover_curr_object
-				d("noun2_curr = "..noun2_curr.name)					
+				--d("noun2_curr = "..noun2_curr.name)					
 			else
 				noun1_curr = hover_curr_object						
-				d("noun1_curr = "..noun1_curr.name)
+				--d("noun1_curr = "..noun1_curr.name)
 			end
 
 		elseif hover_curr_default_verb then
@@ -1687,7 +1688,7 @@ end
 
 function get_use_pos(obj)
 	obj_use_pos = obj.use_pos
-	
+
 	-- first check for specific pos
 	if type(obj_use_pos) == "table" then
 		x = obj_use_pos.x-cam_x
@@ -1700,12 +1701,13 @@ function get_use_pos(obj)
 		y = obj.y + (obj.h*8) +2
 
 	elseif obj_use_pos == pos_left then
-		
-		if obj.offset_x then	-- diff calc for actors
-			x = obj.x -cam_x - (obj.w*8+4)
+		-- diff calc for actors
+		if obj.offset_x then
+			x = obj.x -cam_x - (obj.w*8 +4)
 			y = obj.y + 1
 		else
-			x = obj.x -cam_x
+			-- object pos
+			x = obj.x -cam_x  -2
 			y = obj.y + ((obj.h*8) -2)
 		end
 
@@ -1853,8 +1855,8 @@ function change_room(new_room, fade)
 	-- actually change rooms now
 	room_curr = new_room
 
-	-- stop everyone talking
-	say_line("")
+	-- stop everyone talking & remove displayed text
+	stop_talking()
 
 	-- fade up again?
 	-- (use "thread" so that room.enter code is able to 
@@ -1975,29 +1977,11 @@ function stop_script(func)
 		del(local_scripts, scr_obj)
 		del(global_scripts, scr_obj)
 	end
-	-- try local first
-	-- for k,scr_obj in pairs(local_scripts) do
-	-- 	if (scr_obj[1] == func) then 
-	-- 		--d("found!")
-	-- 		del(local_scripts, scr_obj)
-	-- 		--d("deleted!")
-	-- 		scr_obj = nil
-	-- 	end
-	-- end
-	-- -- failing that, try global
-	-- for k,scr_obj in pairs(global_scripts) do
-	-- 	if (scr_obj[1] == func) then 
-	-- 		--d("found!")
-	-- 		del(global_scripts, scr_obj)
-	-- 		--d("deleted!")
-	-- 		scr_obj = nil
-	-- 	end
-	-- end
 end
 
 function break_time(jiffies)
 	jiffies = jiffies or 1
-	-- draw object (depending on state!)
+	-- wait for cycles specified (min 1 cycle)
 	for x = 1, jiffies do
 		yield()
 	end
@@ -2018,13 +2002,6 @@ function say_line(actor, msg)
 		actor = selected_actor
 	end
 
-	-- check for "silence everyone"
-	if msg == "" then 
-		talking_actor = nil
-		talking_curr = nil
-		return
-	end
-
 	-- offset to display speech above actors (dist in px from their feet)
 	ypos = actor.y - (actor.h)*8 +4  --text_offset
 	-- trigger actor's talk anim
@@ -2033,31 +2010,27 @@ function say_line(actor, msg)
 	print_line(msg, actor.x, ypos, actor.col, 1)
 end
 
-
+-- stop everyone talking & remove displayed text
 function stop_talking()
 	talking_curr = nil 
-	talking_actor = nil 
-	--d("talking actor cleared") 
+	talking_actor = nil
 end
 
 
 function print_line(msg, x, y, col, align)
-	--d("print_line")
   -- punctuation...
 	--  > ":" new line, shown after text prior expires
 	--  > "," new line, shown immediately
+	-- note: an actor's talk animation is not activated as it is with say-line.
 
-	-- todo: an actor's talk animation is not activated as it is with say-line.
 	local col=col or 7 		-- default to white
 	local align=align or 0	-- default to no align
 
-	d(msg)
-	--d("align:"..align)
-	--d("x:"..x.." y:"..y)
+	--d(msg)
 	-- default max width (unless hit a screen edge)
-	local lines={}
-	local curchar=""
-	local msg_left="" --used for splitting messages with ";"
+	local lines = {}
+	local curchar = ""
+	local msg_left = "" --used for splitting messages with ";"
 	
 	longest_line=0
 	-- auto-wrap
@@ -2065,8 +2038,6 @@ function print_line(msg, x, y, col, align)
 	screen_space = min(x -cam_x, screenwidth - (x -cam_x))
 	-- (or no less than min length)
 	max_line_length = max(flr(screen_space/2), 16)
-
-	--d("screen_space:"..screen_space)
 
 	-- search for ";"'s
 	msg_left = ""
@@ -2079,7 +2050,6 @@ function print_line(msg, x, y, col, align)
 			
 			-- next message?
 			msg_left = sub(msg,i+1)
-			--d("msg_left:"..msg_left)
 			-- redefine curr msg
 			msg = sub(msg,1,i-1)
 			break
@@ -2128,22 +2098,15 @@ end
 
 -- walk actor to position
 function walk_to(actor, x, y)
-		-- d("walk_to")
-		-- d("x1:"..x)
-		-- d("cam_x:"..cam_x)
-
-	--offset for camera
+		--offset for camera
 		x = x + cam_x
 
 		actor_cell_pos = getcellpos(actor)
-		--d("act-cel x="..actor_cell_pos[1]..", y="..actor_cell_pos[2])
-
 		celx = flr(x /8) + room_curr.map_x
 		cely = flr(y /8) + room_curr.map_y
-		--d("cel x="..celx..", y="..cely)
-
 		target_cell_pos = { celx, cely }
 
+		-- use pathfinding!
 		path = find_path(actor_cell_pos, target_cell_pos)
 
 		-- finally, add our destination to list
@@ -2153,18 +2116,12 @@ function walk_to(actor, x, y)
 		end
 
 		for p in all(path) do
-			--d("  > "..p[1]..", "..p[2])
 			px = (p[1]-room_curr.map_x)*8 + 4
 			py = (p[2]-room_curr.map_y)*8 + 4
-			-- d("px:"..px)
-			-- d("py:"..py)
-			-- d("act "..actor.x..", "..actor.y)
 
 			local distance = sqrt((px - actor.x) ^ 2 + (py - actor.y) ^ 2)
 			local step_x = actor.speed * (px - actor.x) / distance
 			local step_y = actor.speed * (py - actor.y) / distance
-			-- d("sx:"..step_x)
-			-- d("sy:"..step_y)
 
 			-- only walk if we're not already there!
 			if distance > 1 then 
@@ -2172,6 +2129,7 @@ function walk_to(actor, x, y)
 				actor.moving = 1 
 				actor.flip = (step_x<0)
 				-- face dir (at end of walk)
+				-- todo: add walk front/back at some point
 				actor.face_dir = face_right
 				if (actor.flip) then actor.face_dir = face_left end
 
@@ -2209,7 +2167,7 @@ function game_init()
 	-- init actors with defaults
 	for ka,actor in pairs(actors) do
 		actor.moving = 2 		-- 0=stopped, 1=walking, 2=arrived
-		actor.tmr = 1 				-- internal timer for managing animation
+		actor.tmr = 1 		  -- internal timer for managing animation
 		actor.talk_tmr = 1
 		actor.anim_pos = 1 	-- used to track anim pos
 		actor.inventory = {
@@ -2218,26 +2176,6 @@ function game_init()
 		}
 		actor.inv_pos = 0 	-- pointer to the row to start displaying from
 	end
-
-	-- debug --------------
---[[	for i=1,16 do 
-		obj = {
-				name = "dummy"..i,
-				class = class_pickupable,
-				state = 1,
-				x = 1, -- (*8 to use map cell pos)
-				y = 1 - stage_top,
-				w = 1,	-- relates to spr or map cel, depending on above
-				h = 1,  --
-				states = { 
-					239+i
-					--255 
-				}
-			}
-		add(selected_actor.inventory, obj)
-		obj.owner = selected_actor
-	end]]
-
 end
 
 function show_collision_box(obj)
@@ -2247,11 +2185,8 @@ function show_collision_box(obj)
 end
 
 function update_scripts(scripts)
-	--d("update_scripts")
-	--d("count:"..#scripts)
 	for scr_obj in all(scripts) do
 		if scr_obj[2] and not coresume(scr_obj[2], scr_obj[3], scr_obj[4]) then
-			--d("script removed!######")
 			del(scripts, scr_obj)
 			scr_obj = nil
 		end
@@ -2278,7 +2213,6 @@ function is_cell_walkable(celx, cely)
 		walkable = fget(spr_num,0)
 		return walkable
 end
-
 
 function get_keys(obj)
 	keys = {}
@@ -2325,14 +2259,17 @@ function create_text_lines(msg, max_line_length, comma_is_newline)
 	for i = 1, #msg do
 		curchar=sub(msg,i,i)
 		curword=curword..curchar
+		
 		if (curchar == " ")
 		 or (#curword > max_line_length-1) then
 			upt(max_line_length)
+		
 		elseif #curword>max_line_length-1 then
 			curword=curword.."-"
 			upt(max_line_length)
-		elseif curchar == "," and comma_is_newline then -- line break
-			--d("line break!")
+
+		elseif curchar == "," and comma_is_newline then 
+			-- line break
 			currline=currline..sub(curword,1,#curword-1)
 			curword=""
 			upt(0)
@@ -2369,7 +2306,6 @@ function clear_curr_cmd()
 	me = nil
 	executing_cmd = false
 	cmd_curr = ""
-	--d("command wiped")
 end
 
 function recalc_bounds(obj, w, h, cam_off_x, cam_off_y)
@@ -2392,8 +2328,10 @@ function recalc_bounds(obj, w, h, cam_off_x, cam_off_y)
 	}
 end
 
--- a* functions ----------------------------------------------------
 
+
+
+-- a* pathfinding functions ----------------------------------------------------
 
 function find_path(start, goal)
  frontier = {}
@@ -2408,7 +2346,6 @@ function find_path(start, goal)
 	local top = frontier[#frontier]
 	del(frontier,frontier[#frontier])
 	current = top[1]
-  --current = popend(frontier)
 
   if vectoindex(current) == vectoindex(goal) then
    break
@@ -2459,7 +2396,7 @@ function find_path(start, goal)
   end
  end
 
- --printh("find goal..")
+ -- now find goal..
  path = {}
  current = came_from[vectoindex(goal)]
  if current then
@@ -2492,7 +2429,6 @@ function insert(t, val, p)
  if #t >= 1 then
   add(t, {})
   for i=(#t),2,-1 do
-   
    local next = t[i-1]
    if p < next[2] then
     t[i] = {val, p}
@@ -2513,15 +2449,15 @@ function vectoindex(vec)
 end
 
 
+
+
+
 -- library functions -----------------------------------------------
 
 function outline_text(str,x,y,c0,c1)
-
  local c0=c0 or 7
  local c1=c1 or 0
-
  str = smallcaps(str)
-
  for xx = -1, 1 do
 		for yy = -1, 1 do
 			print(str, x+xx, y+yy, c1)
@@ -2537,6 +2473,7 @@ end
 function vcenter(s)
 	return (screenheight /2)-flr(5/2)
 end
+
 
 --- collision check
 function iscursorcolliding(obj)
