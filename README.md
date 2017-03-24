@@ -33,6 +33,6 @@ Particularly the **SCUMM Tutorial **(1991), the example room from which was the 
 Some other great SCUMM resources I found along the way include the following:
 - [Ron Gilbert's post about "SCUMM Script"](http://www.pagetable.com/?p=614)
 - [ScummC - A Scumm Compiler (by Alban Bedel)](https://github.com/AlbanBedel/scummc)
- - (Particularly the OpenQuest example)
+  - (Particularly the OpenQuest example)
 - [Ron Gilbert - Maniac Mansion postmortem in 2011 (Video)](https://youtu.be/wNpjGvJwyL8)
 - [Ron Gilbert's post about "Puzzle Dependency Charts"](http://grumpygamer.com/puzzle_dependency_charts)
