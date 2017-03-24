@@ -25,6 +25,8 @@ Wow, really? You still here?! OK, once again. Think of SCUMM-8 as an even more r
 
 ## Planned Features
 - [ ] Game Save/Load
+- [ ] Adjustable Room Brightness Level
+- [ ] Screen-shake
 
 ## Current API Reference
 Please see the [SCUMM-8 Wiki](https://github.com/Liquidream/scumm-8/wiki) for the full API reference.
