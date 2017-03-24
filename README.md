@@ -26,6 +26,9 @@ Wow, really? You still here?! OK, once again. Think of SCUMM-8 as an even more r
 ## Planned Features
 - [ ] Game Save/Load
 
+## Current API Reference
+Please see the [SCUMM-8 Wiki](https://github.com/Liquidream/scumm-8/wiki) for the full API reference.
+
 ## Thanks & Useful Resources
 A big thanks to [Aric Wilmunder](http://www.wilmunder.com/Arics_World/Games.html) (ex-LucasArts developer) for sharing valuable SCUMM documentation. 
 Particularly the **SCUMM Tutorial **(1991), the example room from which was the first room I actually created in SCUMM-8 (minus the cool Sam & Max gfx, of course)
