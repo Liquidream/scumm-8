@@ -1952,7 +1952,7 @@ function find_object(name)
 end
 
 function start_script(func, bg, noun1, noun2)
-	-- create new thread for script and add to list of local_scripts
+	-- create new thread for script and add to list of local_scripts (or background scripts)
 	local thread = cocreate(func)
 	-- background or local?
 	if bg then
@@ -1964,8 +1964,6 @@ end
 
 
 function script_running(func)
-	-- find script and stop it running
-
 	-- try local first
 	for k,scr_obj in pairs(local_scripts) do
 		if (scr_obj[1] == func) then 
