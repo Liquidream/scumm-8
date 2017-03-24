@@ -24,6 +24,8 @@ show_perfinfo = false
 enable_mouse = true
 d = printh
 
+
+
 -- game verbs (used in room definitions and ui)
 verbs = {
 	--{verb = verb_ref_name}, text = display_name ....bounds{},x,y...
@@ -48,6 +50,11 @@ verb_hovcol = 7    -- hover color (white)
 verb_shadcol = 1   -- shadow (dk blue)
 verb_defcol = 10   -- default action (yellow)
 
+
+-- ================================================================
+-- scumm-8 enums/constants
+-- ================================================================
+
 -- object states
 state_closed = 1
 state_open = 2
@@ -55,15 +62,6 @@ state_off = 1
 state_on = 2
 state_gone = 1
 state_here = 2
-
---[[states = {
-	closed = 1,
-	off = 1,
-	gone = 1,
-	open = 2,
-	on = 2,
-	here = 2
-}]]
 
 -- object classes (bitflags)
 class_untouchable = 1 -- will not register when the cursor moves over it. the object is invisible to the user.
@@ -75,7 +73,7 @@ class_actor = 32      -- is an actor/person
 
 cut_noverbs = 1 		-- this removes the interface during the cut-scene.
 cut_hidecursor = 2  -- this turns off the cursor during the cut-scene.
---cut_no_follow = 4  -- this disables the follow-camera being reinstated
+cut_no_follow = 4   -- this disables the follow-camera being reinstated after cut-scene.
 
 -- actor constants
 face_front = 1	-- states for actor direction
@@ -91,12 +89,11 @@ pos_inside = 5
 
 -- actor animations
 anim_face = 1	 -- face actor in a direction (show the turning stages of animation)
---anim_turn = 2  -- show the turning stages of animation
 
 
--- #######################################################
+-- ================================================================
 -- room definitions
--- 
+-- ================================================================
 rooms = {
 
 	first_room = {
@@ -374,8 +371,7 @@ rooms = {
 								end
 							)
 						end
-						-- now face tentacle
-						-- (code here will not run, as room change nuked "local" code)
+						-- (code here will not run, as room change nuked "local" scripts)
 					end
 				}
 			}
@@ -408,7 +404,7 @@ rooms = {
 				verbs = {
 					walkto = function()
 						-- go to new room!
-						come_out_door(rooms.first_room.objects.hall_door_kitchen) --, first_room)
+						come_out_door(rooms.first_room.objects.hall_door_kitchen)
 					end
 				}
 			},
@@ -433,7 +429,7 @@ rooms = {
 					walkto = function(me)
 						if state_of(me) == state_open then
 							-- go to new room!
-							come_out_door(rooms.first_room.objects.front_door) --, first_room)
+							come_out_door(rooms.first_room.objects.front_door)
 						else
 							say_line("the door is closed")
 						end
@@ -543,14 +539,14 @@ rooms = {
 		},
 	}
 
-
 }
 
--- #######################################################
+-- ================================================================
 -- actor definitions
--- 
+-- ================================================================
 actors = {
-	main_actor = { 		-- initialize the actor object
+	-- initialize the player's actor object
+	main_actor = { 		
 		--name = "",
 		class = class_actor,
 		w = 1,
@@ -565,6 +561,7 @@ actors = {
 		trans_col = 11,	-- transparency col in sprites
 		speed = 0.6,  	-- walking speed
 	},
+
 	purp_tentacle = {
 		name = "purple tentacle",
 		class = class_talkable + class_actor,
@@ -640,11 +637,14 @@ actors = {
 	}
 }
 
+-- ================================================================
+-- script overloads
+-- ================================================================
 
 -- this script is execute once on game startup
 function startup_script()	
 	-- set which room to start the game in 
-	-- (could be a "pseudo" room for title screen!)
+	-- (e.g. could be a "pseudo" room for title screen!)
 	
 	--change_room(rooms.first_room, 1) -- iris fade	
 	change_room(rooms.outside_room, 1) -- iris fade
@@ -677,7 +677,6 @@ end
 
 -- actions to perform when object doesn't have an entry for verb
 function unsupported_action(verb, obj1, obj2)
-	--d("verb:"..verb.." , obj:"..obj1.name)
 
 	if verb == "walkto" then
 		return
@@ -749,829 +748,34 @@ function unsupported_action(verb, obj1, obj2)
 end 
 
 
+-- (end of customisable game content)
 
 
 
--- #######################################################
--- internal scumm-8 workings
--- 
 
 
--- global vars
-screenwidth = 127
-screenheight = 127
-stage_top = 16
 
--- offset to display speech above actors (dist in px from their feet)
---text_offset = (selected_actor.h-1)*8
 
-cam_x = 0
---cam_following_actor = selected_actor
-cam_pan_to_x = nil	-- target pos to pad camera to
-cam_script = nil	-- active camera logic script (pan-to, follow, etc.)
 
-cursor_x = screenwidth / 2
-cursor_y = screenheight / 2
---cursor_lvl = 1 	-- for cutscenes (<=0 - disable cursor)
-cursor_tmr = 0 	-- used to animate cursor col
-cursor_cols = {7,12,13,13,12,7}
-cursor_colpos = 1
 
-ui_arrows = {
-	{ spr = 16, x = 75, y = stage_top + 60 },
-	{ spr = 48, x = 75, y = stage_top + 72 }
-}
 
 
-last_mouse_x = 0
-last_mouse_y = 0
--- wait for button release before repeating action
-ismouseclicked = false
 
-room_curr = nil			-- contains the current room definition
-verb_curr = nil 		-- contains the active verb to be used (e.g. walk)
-noun1_curr = nil 		-- main/first object in command
-noun2_curr = nil 		-- holds whatever is used after the preposition (e.g. "with <noun2>")
-cmd_curr = "" 			-- contains last displayed or actioned command
-executing_cmd = false
-talking_curr = nil 	-- currently displayed speech {x,y,col,lines...}
-dialog_curr = nil   -- currently displayed dialog options to pick
-cutscene_curr = nil -- currently active cutscene
-talking_actor = nil -- currently talking actor
-fade_iris = 0			  -- depends on effect above
 
-global_scripts = {}	-- table of scripts that are at game-level (background)
-local_scripts = {}	-- table of scripts that are actively running
-cutscenes = {} 			-- table of scripts for the active cutscene(s)
-draw_zplanes = {}		-- table of tables for each of the (8) zplanes for drawing depth
 
--- game loop
 
-function _init()
-	-- use mouse input?
-	if enable_mouse then poke(0x5f2d, 1) end
 
-	-- init all the rooms/objects/actors
-	game_init()
 
-	-- run any startup script(s)
-  start_script(startup_script, true)
-end
 
-function _update60()  -- _update()
-	game_update()
-end
 
-function _draw()
-	game_draw()
-end
 
--- update functions
 
-function game_update()
-	-- process selected_actor threads/actions
-	if selected_actor and selected_actor.thread and not coresume(selected_actor.thread) then
-		selected_actor.thread = nil
-	end
 
-	-- global scripts (always updated - regardless of cutscene)
-	update_scripts(global_scripts)
-
-	-- update active cutscene (if any)
-	if cutscene_curr then
-		if cutscene_curr.thread and not coresume(cutscene_curr.thread) then
-			-- cutscene ended, restore prev state	
-			if (room_curr != cutscene_curr.paused_room) then change_room(cutscene_curr.paused_room) end
-			selected_actor = cutscene_curr.paused_actor
-			camera_follow(cutscene_curr.paused_cam_following)
-			-- now delete cutscene
-			del(cutscenes, cutscene_curr)
-			cutscene_curr = nil
-			-- any more cutscenes?
-			if #cutscenes > 0 then
-				cutscene_curr = cutscenes[#cutscenes]
-			end
-		end
-	else
-		-- no cutscene...
-		-- update all the active scripts
-		-- (will auto-remove those that have ended)
-	
-		-- local/room-level scripts
-		update_scripts(local_scripts)		
-	end
-
-	-- player/ui control
-	playercontrol()
-
-	-- check for collisions
-	checkcollisions()
-end
-
-
-function game_draw()
-	-- clear screen every frame?
-	rectfill(0, 0, screenwidth, screenheight, 0)
-
-	-- reposition camera
-	camera(cam_x, 0)
-
-	-- clip room bounds (also used for "iris" transition)
-	clip(
-		0 +fade_iris, 
-		stage_top +fade_iris, 
-		screenwidth+1 -fade_iris*2, 
-		64 -fade_iris*2)
-
-	-- draw room (bg + objects + actors)
-	room_draw()
-
-	-- reset camera for "static" content (UI, etc.)
-	camera(0,0)
-	-- reset clip bounds
-	clip()
-
-	if show_perfinfo then 
-		print("cpu: "..flr(100*stat(1)).."%", 0, stage_top - 16, 8) 
-		print("mem: "..flr(stat(0)/1024*100).."%", 0, stage_top - 8, 8)
-	end
-	if show_debuginfo then 
-		print("x: "..cursor_x.." y:"..cursor_y-stage_top, 80, stage_top - 8, 8) 
-	end
-
-	-- draw active text
-	talking_draw()
-
-	-- in dialog mode?
-	if dialog_curr and dialog_curr.visible then
-		-- draw dialog sentences?
-		dialog_draw()
-		cursor_draw()
-		-- skip rest
-		return
-	end
-
- -- --------------------------------------------------------------
- -- hack:
- -- skip draw if just exited a cutscene
- -- as could be going straight into a dialog
- -- (would prefer a better way than this, but couldn't find one!)
- -- --------------------------------------------------------------
-	if cutscene_curr_lastval == cutscene_curr then
-		--d("cut_same")
-	else
-		--d("cut_diff")
-		cutscene_curr_lastval = cutscene_curr
-		return
-	end
-	
-
-	-- draw current command (verb/object)
-	if not cutscene_curr then
-		command_draw()
-	end
-
-	-- draw ui and inventory
-	if (not cutscene_curr
-		or not has_flag(cutscene_curr.flags, cut_noverbs))
-		-- and not just left a cutscene
-		and (cutscene_curr_lastval == cutscene_curr) then
-		ui_draw()
-	else
-		--d("ui skipped")
-	end
-
-	-- hack: fix for display issue (see above hack info)
-	cutscene_curr_lastval = cutscene_curr
-
-	--if cursor_lvl == 0 then
-	if not cutscene_curr then
-		cursor_draw()
-	end
-end
-
-
--- handle button inputs
-function playercontrol()	
-
-	-- check for cutscene "skip/override" (if available)
-	if cutscene_curr then
-		if btnp(4) and btnp(5) and cutscene_curr.override then 
-			-- skip cutscene!
-			cutscene_curr.thread = cocreate(cutscene_curr.override)
-			cutscene_curr.override = nil
-			--if (enable_mouse) then ismouseclicked = true end
-			return
-		end
-		-- either way - don't allow other user actions!
-		return
-	end
-
-	-- 
-	if btn(0) then cursor_x -= 1 end
-	if btn(1) then cursor_x += 1 end
-	if btn(2) then cursor_y -= 1 end
-	if btn(3) then cursor_y += 1 end
-
-	if btnp(4) then input_button_pressed(1) end
-	if btnp(5) then input_button_pressed(2) end
-
-	-- only update position if mouse moved
-	if enable_mouse then	
-		if stat(32)-1 != last_mouse_x then cursor_x = stat(32)-1 end	-- mouse xpos
-		if stat(33)-1 != last_mouse_y then cursor_y = stat(33)-1 end  -- mouse ypos
-		-- don't repeat action if same press/click
-		if stat(34) > 0 then
-			if not ismouseclicked then
-				input_button_pressed(stat(34))
-				ismouseclicked = true
-			end
-		else
-			ismouseclicked = false
-		end
-		-- store for comparison next cycle
-		last_mouse_x = stat(32)-1
-		last_mouse_y = stat(33)-1
-	end
-
-	-- keep cursor within screen
-	cursor_x = max(cursor_x, 0)
-	cursor_x = min(cursor_x, 127)
-	cursor_y = max(cursor_y, 0)
-	cursor_y = min(cursor_y, 127)
-end
-
--- 1 = z/lmb, 2 = x/rmb, (4=middle)
-function input_button_pressed(button_index)	
-
-	local verb_in = verb_curr
-
-	-- check for sentence selection
-	if dialog_curr and dialog_curr.visible then
-		if hover_curr_sentence then
-			dialog_curr.selection = hover_curr_sentence
-			--sentence_curr = hover_curr_sentence
-		end
-		-- skip remaining
-		return
-	end
-
-
-	if hover_curr_verb then
-		verb_curr = get_verb(hover_curr_verb)
-		--d("verb = "..verb_curr[2])
-
-	elseif hover_curr_object then
-		-- if valid obj, complete command
-		-- else, abort command (clear verb, etc.)
-		if button_index == 1 then
-			if (verb_curr[2] == "use" or verb_curr[2] == "give") 
-			 and noun1_curr then
-				noun2_curr = hover_curr_object
-				--d("noun2_curr = "..noun2_curr.name)					
-			else
-				noun1_curr = hover_curr_object						
-				--d("noun1_curr = "..noun1_curr.name)
-			end
-
-		elseif hover_curr_default_verb then
-			-- perform default verb action (if present)
-			verb_curr = get_verb(hover_curr_default_verb)
-			noun1_curr = hover_curr_object
-			get_keys(noun1_curr)
-			-- force repaint of command (to reflect default verb)
-			command_draw()
-		end
-
-	-- ui arrow clicked
-	elseif hover_curr_arrow then
-		-- up arrow
-		if hover_curr_arrow == ui_arrows[1] then 
-			if selected_actor.inv_pos > 0 then
-				selected_actor.inv_pos -= 1
-			end
-		else  -- down arrow
-			if selected_actor.inv_pos + 2 < flr(#selected_actor.inventory/4) then
-				selected_actor.inv_pos += 1
-			end
-		end
-		return
-	--else
-		-- what else could there be? actors!?
-	end
-
-	-- attempt to use verb on object
-	if (noun1_curr != nil) then
-		-- are we starting a 'use' command?
-		if verb_curr[2] == "use" or verb_curr[2] == "give" then
-			if noun2_curr then
-				-- 'use' part 2
-			else
-				-- 'use' part 1 (e.g. "use hammer")
-				-- wait for noun2 to be set
-				return
-			end
-		end
-
-		-- execute verb script
-		executing_cmd = true
-		selected_actor.thread = cocreate(function(actor, obj, verb, noun2)
-			if not obj.owner then
-				-- walk to use pos and face dir
-				--todo: find nearest usepos if none set?
-				dest_pos = get_use_pos(obj)
-				walk_to(selected_actor, dest_pos.x, dest_pos.y)
-				-- abort if walk was interrupted
-				if selected_actor.moving != 2 then return end
-				-- face object/actor by default
-				use_dir = obj
-				-- unless a diff dir specified
-				if obj.use_dir and verb != verb_default then use_dir = obj.use_dir end
-				-- turn to use dir
-				do_anim(selected_actor, anim_face, use_dir)
-			end
-			-- does current object support active verb?
-			if valid_verb(verb,obj) then
-				-- finally, execute verb script
-				start_script(obj.verbs[verb[1]], false, obj, noun2)
-			else
-				-- e.g. "i don't think that will work"
-				unsupported_action(verb[2], obj, noun2)
-			end
-			-- clear current command
-			clear_curr_cmd()
-		end)
-		coresume(selected_actor.thread, selected_actor, noun1_curr, verb_curr, noun2_curr)
-	elseif (cursor_y > stage_top and cursor_y < stage_top+64) then
-		-- in map area
-		executing_cmd = true
-		-- attempt to walk to target
-		selected_actor.thread = cocreate(function(x,y)
-			walk_to(selected_actor, x, y)
-			-- clear current command
-			clear_curr_cmd()
-		end)
-		coresume(selected_actor.thread, cursor_x, cursor_y - stage_top)
-	end
-	--d("--------------------------------")
-end
-
--- collision detection
-function checkcollisions()
-	-- reset hover collisions
-	hover_curr_verb = nil
-	hover_curr_default_verb = nil
-	hover_curr_object = nil
-	hover_curr_sentence = nil
-	hover_curr_arrow = nil
-
-	-- are we in dialog mode?
-	if dialog_curr and dialog_curr.visible then
-		for s in all(dialog_curr.sentences) do
-			if iscursorcolliding(s) then
-				hover_curr_sentence = s
-			end
-		end
-		-- skip remaining collisions
-		return
-	end
-
-	-- reset zplane info
-	reset_zplanes()
-
-	-- check room/object collisions
-	for k,obj in pairs(room_curr.objects) do
-		-- capture bounds (even for "invisible", but not untouchable/dependent, objects)
-		if (not obj.class
-			 or (obj.class and obj.class != class_untouchable))
-			and (not obj.dependent_on 			-- object has a valid dependent state?
-			 or find_object(obj.dependent_on).state == obj.dependent_on_state) 
-		then
-			recalc_bounds(obj, obj.w*8, obj.h*8, cam_x, cam_y)
-		else
-			-- reset bounds
-			obj.bounds = nil
-		end
-
-		if iscursorcolliding(obj) then
-			hover_curr_object = obj
-		end
-		-- recalc z-plane
-		recalc_zplane(obj)
-	end
-
-	-- check actor collisions
-	for k,actor in pairs(actors) do
-		if actor.in_room == room_curr then
-			recalc_bounds(actor, actor.w*8, actor.h*8, cam_x, cam_y)
-			-- recalc z-plane
-			recalc_zplane(actor)
-			-- are we colliding (ignore self!)
-			if iscursorcolliding(actor)
-		 	 and actor != selected_actor then
-				hover_curr_object = actor
-			end
-		end
-	end
-
-	-- check ui/inventory collisions
-	for v in all(verbs) do
-		if iscursorcolliding(v) then
-			hover_curr_verb = v
-		end
-	end
-	for a in all(ui_arrows) do
-		if iscursorcolliding(a) then
-			hover_curr_arrow = a
-		end
-	end
-
-	-- check room/object collisions
-	for k,obj in pairs(selected_actor.inventory) do
-		if iscursorcolliding(obj) then
-			hover_curr_object = obj
-			-- pickup override for inventory objects
-			if verb_curr[2] == "pickup" and hover_curr_object.owner then
-				verb_curr = nil
-			end
-		end
-		-- check for disowned objects!
-		if obj.owner != selected_actor then 
-			del(selected_actor.inventory, obj)
-		end
-	end
-
-	-- default to walkto (if nothing set)
-	if verb_curr == nil then
-		verb_curr = get_verb(verb_default)
-	end
-
-	-- update "default" verb for hovered object (if any)
-	if hover_curr_object then
-		hover_curr_default_verb = find_default_verb(hover_curr_object)
-	end
-end
-
-
-function reset_zplanes()
-	draw_zplanes = {}
-	for x=1,64 do
-		draw_zplanes[x] = {}
-	end
-end
-
-function recalc_zplane(obj)
-	-- calculate the correct z-plane
-	-- based on x,y pos + elevation
-	ypos = -1
-	if obj.offset_y then
-		ypos = obj.y
-	else
-		ypos = obj.y + (obj.h*8)
-	end
-	zplane = flr(ypos - stage_top)
-
-	if obj.elevation then zplane += obj.elevation end
-
-	add(draw_zplanes[zplane],obj)
-end
-
-function room_draw()
-	-- draw current room
-
-	-- replace colors?
-	replace_colors(room_curr)
-	map(room_curr.map_x, room_curr.map_y, 0, stage_top, room_curr.map_w , room_curr.map_h)
-	--reset palette
-	pal() 
-	
-	-- ===============================================================
-	-- debug walkable areas
-	-- ===============================================================
-	-- if show_pathfinding then
-	-- 	actor_cell_pos = getcellpos(selected_actor)
-
-	-- 	celx = flr((cursor_x + cam_x) /8) + room_curr.map_x
-	-- 	cely = flr((cursor_y - stage_top)/8 ) + room_curr.map_y
-	-- 	target_cell_pos = { celx, cely }
-
-	-- 	path = find_path(actor_cell_pos, target_cell_pos)
-
-	-- 	-- finally, add our destination to list
-	-- 	click_cell = getcellpos({x=(cursor_x + cam_x), y=(cursor_y - stage_top)})
-	-- 	if is_cell_walkable(click_cell[1], click_cell[2]) then
-	-- 	--if (#path>0) then
-	-- 		add(path, click_cell)
-	-- 	end
-
-	-- 	for p in all(path) do
-	-- 		--d("  > "..p[1]..","..p[2])
-	-- 		rect(
-	-- 			(p[1]-room_curr.map_x)*8, 
-	-- 			stage_top+(p[2]-room_curr.map_y)*8, 
-	-- 			(p[1]-room_curr.map_x)*8+7, 
-	-- 			stage_top+(p[2]-room_curr.map_y)*8+7, 11)
-	-- 	end
-	-- end
-	-- ===============================================================
-
-	-- draw each zplane, from back to front
-	for z = 1,64 do
-		zplane = draw_zplanes[z]
-		-- draw all objs/actors in current zplane
-		for obj in all(zplane) do
-			-- object or actor?
-			if not has_flag(obj.class, class_actor) then
-				-- object
-				if (obj.states) 						-- object has a state?
-				 and obj.states[obj.state]
-				 and (obj.states[obj.state] > 0)
-				 and (not obj.dependent_on 			-- object has a valid dependent state?
-				 	or find_object(obj.dependent_on).state == obj.dependent_on_state)
-				 and not obj.owner   						-- object is not "owned"
-				then
-					-- something to draw
-					object_draw(obj)
-				end
-			else
-				-- actor
-				if (obj.in_room == room_curr) then
-					actor_draw(obj)
-				end
-			end
-			show_collision_box(obj)
-		end
-	end
-end
-
-function replace_colors(obj)
-	for c in all(obj.col_replace) do
-		pal(c[1], c[2])
-	end
-end
-
-
-function object_draw(obj)
-	-- replace colors?
-	replace_colors(obj)
-	-- allow for repeating
-	rx=1
-	if obj.repeat_x then rx = obj.repeat_x end
-	for h = 0, rx-1 do
-		-- draw object (in its state!)
-		sprdraw(obj.states[obj.state], obj.x+(h*(obj.w*8)), obj.y, obj.w, obj.h, obj.trans_col, obj.flip_x)
-	end
-	--reset palette
-	pal() 
-end
-
--- draw actor(s)
-function actor_draw(actor)
-
-	if actor.moving == 1
-	 and actor.walk_anim then
-		actor.tmr += 1
-		if actor.tmr > 5 then
-			actor.tmr = 1
-			actor.anim_pos += 1
-			if actor.anim_pos > #actor.walk_anim then actor.anim_pos=1 end
-		end
-		-- choose walk anim frame
-		sprnum = actor.walk_anim[actor.anim_pos]	
-	else
-		-- idle
-		sprnum = actor.idle[actor.face_dir]
-	end
-
-	-- replace colors?
-	replace_colors(actor)
-
-	sprdraw(sprnum, actor.offset_x, actor.offset_y, 
-		actor.w , actor.h, actor.trans_col, 
-		actor.flip, false)
-	
-	-- talking overlay
-	if talking_actor 
-	 and talking_actor == actor then
-			if actor.talk_tmr < 7  then
-				sprnum = actor.talk[actor.face_dir]
-				sprdraw(sprnum, actor.offset_x, actor.offset_y +8, 1, 1, 
-					actor.trans_col, actor.flip, false)
-			end
-			actor.talk_tmr += 1	
-			if actor.talk_tmr > 14 then actor.talk_tmr = 1 end
-	end
-
-	--reset palette
-	pal()
-
-	--pset(actor.x, actor.y+stage_top, 8)
-end
-
-function command_draw()
-	-- draw current command
-	command = ""
-	cmd_col = 12
-
-	if not executing_cmd then
-		if verb_curr then
-			command = verb_curr[3]
-		end
-		if noun1_curr then
-			command = command.." "..noun1_curr.name
-			if verb_curr[2] == "use" then
-				command = command.." with"
-			elseif verb_curr[2] == "give" then
-				command = command.." to"
-			end
-		end
-		if noun2_curr then
-			command = command.." "..noun2_curr.name
-		elseif hover_curr_object 
-		  and hover_curr_object.name != ""
-			-- don't show use object with itself!
-			and ( not noun1_curr or (noun1_curr != hover_curr_object) ) then
-			command = command.." "..hover_curr_object.name
-		end
-		cmd_curr = command
-	else
-		-- highlight active command
-		command = cmd_curr
-		cmd_col = 7
-	end
-
-	print(smallcaps(command), 
-		hcenter(command), 
-		stage_top + 66, cmd_col)
-end
-
-function talking_draw()
-	-- alignment 
-	--   0 = no align
-	--   1 = center 
-	if talking_curr then
-		line_offset_y = 0
-		for l in all(talking_curr.msg_lines) do
-			line_offset_x=0
-			-- center-align line
-			if talking_curr.align == 1 then
-				line_offset_x = ((talking_curr.char_width*4)-(#l*4))/2
-			end
-			outline_text(
-				l, 
-				talking_curr.x + line_offset_x, 
-				talking_curr.y + line_offset_y, 
-				talking_curr.col)
-			line_offset_y += 6
-		end
-		-- update message lifespan
-		talking_curr.time_left -= 1
-		-- remove text & reset actor's talk anim
-		if (talking_curr.time_left <=0) then 
-			stop_talking()
-		end
-	end
-end
-
--- draw ui and inventory
-function ui_draw()
-	-- draw verbs
-	xpos = 0
-	ypos = 75
-	col_len=0
-
-	for v in all(verbs) do
-		txtcol=verb_maincol
-
-		-- highlight default verb
-		if hover_curr_default_verb
-		  and (v == hover_curr_default_verb) then
-			txtcol = verb_defcol
-		end		
-		if v == hover_curr_verb then txtcol=verb_hovcol end
-
-		-- get verb info
-		vi = get_verb(v)
-		print(vi[3], xpos, ypos+stage_top+1, verb_shadcol)  -- shadow
-		print(vi[3], xpos, ypos+stage_top, txtcol)  -- main
-		
-		-- capture bounds
-		v.x = xpos
-		v.y = ypos
-		recalc_bounds(v, #vi[3]*4, 5, 0, 0)
-		show_collision_box(v)
-
-		-- auto-size column
-		if #vi[3] > col_len then col_len = #vi[3] end
-		ypos = ypos + 8
-
-		-- move to next column
-		if ypos >= 95 then
-			ypos = 75
-			xpos = xpos + (col_len + 1.0) * 4
-			col_len = 0
-		end
-	end
-
-	-- draw inventory
-	xpos = 86
-	ypos = 76
-	-- determine the inventory "window"
-	start_pos = selected_actor.inv_pos*4
-	end_pos = min(start_pos+8, #selected_actor.inventory)
-
-	for ipos = 1,8 do
-		-- draw inventory bg
-		rectfill(xpos-1, stage_top+ypos-1, xpos+8, stage_top+ypos+8, 1)
-
-		obj = selected_actor.inventory[start_pos+ipos]
-		if obj then
-			-- something to draw
-			obj.x = xpos
-			obj.y = ypos
-			-- draw object/sprite
-			object_draw(obj)
-			-- re-calculate bounds (as pos may have changed)
-			recalc_bounds(obj, obj.w*8, obj.h*8, 0, 0)
-			show_collision_box(obj)
-		end
-		xpos += 11
-
-		if xpos >= 125 then
-			ypos += 12
-			xpos=86
-		end
-		ipos += 1
-	end
-
-	-- draw arrows
-	for i = 1,2 do
-		arrow = ui_arrows[i]
-		if hover_curr_arrow == arrow then pal(verb_maincol,7) end
-		sprdraw(arrow.spr, arrow.x, arrow.y, 1, 1, 0)
-		-- capture bounds
-		recalc_bounds(arrow, 8, 7, 0, 0)
-		show_collision_box(arrow)
-		pal() --reset palette
-	end
-end
-
-function dialog_draw()
-	xpos = 0
-	ypos = 70
-	
-	for s in all(dialog_curr.sentences) do
-		-- capture bounds
-		s.x = xpos
-		s.y = ypos
-		recalc_bounds(s, s.char_width*4, #s.lines*5, 0, 0)
-
-		txtcol=dialog_curr.col
-		if s == hover_curr_sentence then txtcol=dialog_curr.hlcol end
-		
-		for l in all(s.lines) do
-				print(smallcaps(l), xpos, ypos+stage_top, txtcol)
-			ypos += 5
-		end
-
-		show_collision_box(s)
-
-		ypos += 2
-	end
-end
-
--- draw cursor
-function cursor_draw()
-	col = cursor_cols[cursor_colpos]
-	-- switch sprite color accordingly
-	pal(7,col)
-	spr(32, cursor_x-4, cursor_y-3, 1, 1, 0)
-	pal() --reset palette
-
-	cursor_tmr += 1
-	if cursor_tmr > 7 then
-		--reset timer
-		cursor_tmr = 1
-		-- move to next color?
-		cursor_colpos += 1
-		if (cursor_colpos > #cursor_cols) then cursor_colpos = 1 end
-	end
-end
-
-function sprdraw(n, x, y, w, h, transcol, flip_x, flip_y)
-	-- switch transparency
- 	palt(0, false)
- 	palt(transcol, true)
-	 -- draw sprite
-	spr(n, x, stage_top + y, w, h, flip_x, flip_y) --
-	-- restore default trans
-	pal()
-end
-
-
-
--- scumm-8 core api functions -------------------------------------------
-
+-- ################################################################
+-- scumm-8 public api functions
+-- ================================================================
+-- (you should not need to modify anything below here!)
+-- ################################################################
 
 function camera_at(val)
 	-- check params for obj/actor
@@ -2160,7 +1364,824 @@ end
 
 
 
--- internal functions -----------------------------------------------
+
+
+-- ================================================================
+-- internal functions
+-- ================================================================
+
+-- global vars
+screenwidth = 127
+screenheight = 127
+stage_top = 16
+
+-- offset to display speech above actors (dist in px from their feet)
+--text_offset = (selected_actor.h-1)*8
+
+cam_x = 0
+--cam_following_actor = selected_actor
+cam_pan_to_x = nil	-- target pos to pad camera to
+cam_script = nil	-- active camera logic script (pan-to, follow, etc.)
+
+cursor_x = screenwidth / 2
+cursor_y = screenheight / 2
+--cursor_lvl = 1 	-- for cutscenes (<=0 - disable cursor)
+cursor_tmr = 0 	-- used to animate cursor col
+cursor_cols = {7,12,13,13,12,7}
+cursor_colpos = 1
+
+ui_arrows = {
+	{ spr = 16, x = 75, y = stage_top + 60 },
+	{ spr = 48, x = 75, y = stage_top + 72 }
+}
+
+
+last_mouse_x = 0
+last_mouse_y = 0
+-- wait for button release before repeating action
+ismouseclicked = false
+
+room_curr = nil			-- contains the current room definition
+verb_curr = nil 		-- contains the active verb to be used (e.g. walk)
+noun1_curr = nil 		-- main/first object in command
+noun2_curr = nil 		-- holds whatever is used after the preposition (e.g. "with <noun2>")
+cmd_curr = "" 			-- contains last displayed or actioned command
+executing_cmd = false
+talking_curr = nil 	-- currently displayed speech {x,y,col,lines...}
+dialog_curr = nil   -- currently displayed dialog options to pick
+cutscene_curr = nil -- currently active cutscene
+talking_actor = nil -- currently talking actor
+fade_iris = 0			  -- depends on effect above
+
+global_scripts = {}	-- table of scripts that are at game-level (background)
+local_scripts = {}	-- table of scripts that are actively running
+cutscenes = {} 			-- table of scripts for the active cutscene(s)
+draw_zplanes = {}		-- table of tables for each of the (8) zplanes for drawing depth
+
+-- game loop
+
+function _init()
+	-- use mouse input?
+	if enable_mouse then poke(0x5f2d, 1) end
+
+	-- init all the rooms/objects/actors
+	game_init()
+
+	-- run any startup script(s)
+  start_script(startup_script, true)
+end
+
+function _update60()  -- _update()
+	game_update()
+end
+
+function _draw()
+	game_draw()
+end
+
+-- update functions
+
+function game_update()
+	-- process selected_actor threads/actions
+	if selected_actor and selected_actor.thread and not coresume(selected_actor.thread) then
+		selected_actor.thread = nil
+	end
+
+	-- global scripts (always updated - regardless of cutscene)
+	update_scripts(global_scripts)
+
+	-- update active cutscene (if any)
+	if cutscene_curr then
+		if cutscene_curr.thread and not coresume(cutscene_curr.thread) then
+			-- cutscene ended, restore prev state	
+			if (room_curr != cutscene_curr.paused_room) then change_room(cutscene_curr.paused_room) end
+			selected_actor = cutscene_curr.paused_actor
+			camera_follow(cutscene_curr.paused_cam_following)
+			-- now delete cutscene
+			del(cutscenes, cutscene_curr)
+			cutscene_curr = nil
+			-- any more cutscenes?
+			if #cutscenes > 0 then
+				cutscene_curr = cutscenes[#cutscenes]
+			end
+		end
+	else
+		-- no cutscene...
+		-- update all the active scripts
+		-- (will auto-remove those that have ended)
+	
+		-- local/room-level scripts
+		update_scripts(local_scripts)		
+	end
+
+	-- player/ui control
+	playercontrol()
+
+	-- check for collisions
+	checkcollisions()
+end
+
+
+function game_draw()
+	-- clear screen every frame?
+	rectfill(0, 0, screenwidth, screenheight, 0)
+
+	-- reposition camera
+	camera(cam_x, 0)
+
+	-- clip room bounds (also used for "iris" transition)
+	clip(
+		0 +fade_iris, 
+		stage_top +fade_iris, 
+		screenwidth+1 -fade_iris*2, 
+		64 -fade_iris*2)
+
+	-- draw room (bg + objects + actors)
+	room_draw()
+
+	-- reset camera for "static" content (UI, etc.)
+	camera(0,0)
+	-- reset clip bounds
+	clip()
+
+	if show_perfinfo then 
+		print("cpu: "..flr(100*stat(1)).."%", 0, stage_top - 16, 8) 
+		print("mem: "..flr(stat(0)/1024*100).."%", 0, stage_top - 8, 8)
+	end
+	if show_debuginfo then 
+		print("x: "..cursor_x.." y:"..cursor_y-stage_top, 80, stage_top - 8, 8) 
+	end
+
+	-- draw active text
+	talking_draw()
+
+	-- in dialog mode?
+	if dialog_curr and dialog_curr.visible then
+		-- draw dialog sentences?
+		dialog_draw()
+		cursor_draw()
+		-- skip rest
+		return
+	end
+
+ -- --------------------------------------------------------------
+ -- hack:
+ -- skip draw if just exited a cutscene
+ -- as could be going straight into a dialog
+ -- (would prefer a better way than this, but couldn't find one!)
+ -- --------------------------------------------------------------
+	if cutscene_curr_lastval == cutscene_curr then
+		--d("cut_same")
+	else
+		--d("cut_diff")
+		cutscene_curr_lastval = cutscene_curr
+		return
+	end
+	
+
+	-- draw current command (verb/object)
+	if not cutscene_curr then
+		command_draw()
+	end
+
+	-- draw ui and inventory
+	if (not cutscene_curr
+		or not has_flag(cutscene_curr.flags, cut_noverbs))
+		-- and not just left a cutscene
+		and (cutscene_curr_lastval == cutscene_curr) then
+		ui_draw()
+	else
+		--d("ui skipped")
+	end
+
+	-- hack: fix for display issue (see above hack info)
+	cutscene_curr_lastval = cutscene_curr
+
+	--if cursor_lvl == 0 then
+	if not cutscene_curr then
+		cursor_draw()
+	end
+end
+
+
+-- handle button inputs
+function playercontrol()	
+
+	-- check for cutscene "skip/override" (if available)
+	if cutscene_curr then
+		if btnp(4) and btnp(5) and cutscene_curr.override then 
+			-- skip cutscene!
+			cutscene_curr.thread = cocreate(cutscene_curr.override)
+			cutscene_curr.override = nil
+			--if (enable_mouse) then ismouseclicked = true end
+			return
+		end
+		-- either way - don't allow other user actions!
+		return
+	end
+
+	-- 
+	if btn(0) then cursor_x -= 1 end
+	if btn(1) then cursor_x += 1 end
+	if btn(2) then cursor_y -= 1 end
+	if btn(3) then cursor_y += 1 end
+
+	if btnp(4) then input_button_pressed(1) end
+	if btnp(5) then input_button_pressed(2) end
+
+	-- only update position if mouse moved
+	if enable_mouse then	
+		if stat(32)-1 != last_mouse_x then cursor_x = stat(32)-1 end	-- mouse xpos
+		if stat(33)-1 != last_mouse_y then cursor_y = stat(33)-1 end  -- mouse ypos
+		-- don't repeat action if same press/click
+		if stat(34) > 0 then
+			if not ismouseclicked then
+				input_button_pressed(stat(34))
+				ismouseclicked = true
+			end
+		else
+			ismouseclicked = false
+		end
+		-- store for comparison next cycle
+		last_mouse_x = stat(32)-1
+		last_mouse_y = stat(33)-1
+	end
+
+	-- keep cursor within screen
+	cursor_x = max(cursor_x, 0)
+	cursor_x = min(cursor_x, 127)
+	cursor_y = max(cursor_y, 0)
+	cursor_y = min(cursor_y, 127)
+end
+
+-- 1 = z/lmb, 2 = x/rmb, (4=middle)
+function input_button_pressed(button_index)	
+
+	local verb_in = verb_curr
+
+	-- check for sentence selection
+	if dialog_curr and dialog_curr.visible then
+		if hover_curr_sentence then
+			dialog_curr.selection = hover_curr_sentence
+			--sentence_curr = hover_curr_sentence
+		end
+		-- skip remaining
+		return
+	end
+
+
+	if hover_curr_verb then
+		verb_curr = get_verb(hover_curr_verb)
+		--d("verb = "..verb_curr[2])
+
+	elseif hover_curr_object then
+		-- if valid obj, complete command
+		-- else, abort command (clear verb, etc.)
+		if button_index == 1 then
+			if (verb_curr[2] == "use" or verb_curr[2] == "give") 
+			 and noun1_curr then
+				noun2_curr = hover_curr_object
+				--d("noun2_curr = "..noun2_curr.name)					
+			else
+				noun1_curr = hover_curr_object						
+				--d("noun1_curr = "..noun1_curr.name)
+			end
+
+		elseif hover_curr_default_verb then
+			-- perform default verb action (if present)
+			verb_curr = get_verb(hover_curr_default_verb)
+			noun1_curr = hover_curr_object
+			get_keys(noun1_curr)
+			-- force repaint of command (to reflect default verb)
+			command_draw()
+		end
+
+	-- ui arrow clicked
+	elseif hover_curr_arrow then
+		-- up arrow
+		if hover_curr_arrow == ui_arrows[1] then 
+			if selected_actor.inv_pos > 0 then
+				selected_actor.inv_pos -= 1
+			end
+		else  -- down arrow
+			if selected_actor.inv_pos + 2 < flr(#selected_actor.inventory/4) then
+				selected_actor.inv_pos += 1
+			end
+		end
+		return
+	--else
+		-- what else could there be? actors!?
+	end
+
+	-- attempt to use verb on object
+	if (noun1_curr != nil) then
+		-- are we starting a 'use' command?
+		if verb_curr[2] == "use" or verb_curr[2] == "give" then
+			if noun2_curr then
+				-- 'use' part 2
+			else
+				-- 'use' part 1 (e.g. "use hammer")
+				-- wait for noun2 to be set
+				return
+			end
+		end
+
+		-- execute verb script
+		executing_cmd = true
+		selected_actor.thread = cocreate(function(actor, obj, verb, noun2)
+			if not obj.owner then
+				-- walk to use pos and face dir
+				--todo: find nearest usepos if none set?
+				dest_pos = get_use_pos(obj)
+				walk_to(selected_actor, dest_pos.x, dest_pos.y)
+				-- abort if walk was interrupted
+				if selected_actor.moving != 2 then return end
+				-- face object/actor by default
+				use_dir = obj
+				-- unless a diff dir specified
+				if obj.use_dir and verb != verb_default then use_dir = obj.use_dir end
+				-- turn to use dir
+				do_anim(selected_actor, anim_face, use_dir)
+			end
+			-- does current object support active verb?
+			if valid_verb(verb,obj) then
+				-- finally, execute verb script
+				start_script(obj.verbs[verb[1]], false, obj, noun2)
+			else
+				-- e.g. "i don't think that will work"
+				unsupported_action(verb[2], obj, noun2)
+			end
+			-- clear current command
+			clear_curr_cmd()
+		end)
+		coresume(selected_actor.thread, selected_actor, noun1_curr, verb_curr, noun2_curr)
+	elseif (cursor_y > stage_top and cursor_y < stage_top+64) then
+		-- in map area
+		executing_cmd = true
+		-- attempt to walk to target
+		selected_actor.thread = cocreate(function(x,y)
+			walk_to(selected_actor, x, y)
+			-- clear current command
+			clear_curr_cmd()
+		end)
+		coresume(selected_actor.thread, cursor_x, cursor_y - stage_top)
+	end
+end
+
+-- collision detection
+function checkcollisions()
+	-- reset hover collisions
+	hover_curr_verb = nil
+	hover_curr_default_verb = nil
+	hover_curr_object = nil
+	hover_curr_sentence = nil
+	hover_curr_arrow = nil
+
+	-- are we in dialog mode?
+	if dialog_curr and dialog_curr.visible then
+		for s in all(dialog_curr.sentences) do
+			if iscursorcolliding(s) then
+				hover_curr_sentence = s
+			end
+		end
+		-- skip remaining collisions
+		return
+	end
+
+	-- reset zplane info
+	reset_zplanes()
+
+	-- check room/object collisions
+	for k,obj in pairs(room_curr.objects) do
+		-- capture bounds (even for "invisible", but not untouchable/dependent, objects)
+		if (not obj.class
+			 or (obj.class and obj.class != class_untouchable))
+			and (not obj.dependent_on 			-- object has a valid dependent state?
+			 or find_object(obj.dependent_on).state == obj.dependent_on_state) 
+		then
+			recalc_bounds(obj, obj.w*8, obj.h*8, cam_x, cam_y)
+		else
+			-- reset bounds
+			obj.bounds = nil
+		end
+
+		if iscursorcolliding(obj) then
+			hover_curr_object = obj
+		end
+		-- recalc z-plane
+		recalc_zplane(obj)
+	end
+
+	-- check actor collisions
+	for k,actor in pairs(actors) do
+		if actor.in_room == room_curr then
+			recalc_bounds(actor, actor.w*8, actor.h*8, cam_x, cam_y)
+			-- recalc z-plane
+			recalc_zplane(actor)
+			-- are we colliding (ignore self!)
+			if iscursorcolliding(actor)
+		 	 and actor != selected_actor then
+				hover_curr_object = actor
+			end
+		end
+	end
+
+	-- check ui/inventory collisions
+	for v in all(verbs) do
+		if iscursorcolliding(v) then
+			hover_curr_verb = v
+		end
+	end
+	for a in all(ui_arrows) do
+		if iscursorcolliding(a) then
+			hover_curr_arrow = a
+		end
+	end
+
+	-- check room/object collisions
+	for k,obj in pairs(selected_actor.inventory) do
+		if iscursorcolliding(obj) then
+			hover_curr_object = obj
+			-- pickup override for inventory objects
+			if verb_curr[2] == "pickup" and hover_curr_object.owner then
+				verb_curr = nil
+			end
+		end
+		-- check for disowned objects!
+		if obj.owner != selected_actor then 
+			del(selected_actor.inventory, obj)
+		end
+	end
+
+	-- default to walkto (if nothing set)
+	if verb_curr == nil then
+		verb_curr = get_verb(verb_default)
+	end
+
+	-- update "default" verb for hovered object (if any)
+	if hover_curr_object then
+		hover_curr_default_verb = find_default_verb(hover_curr_object)
+	end
+end
+
+
+function reset_zplanes()
+	draw_zplanes = {}
+	for x=1,64 do
+		draw_zplanes[x] = {}
+	end
+end
+
+function recalc_zplane(obj)
+	-- calculate the correct z-plane
+	-- based on x,y pos + elevation
+	ypos = -1
+	if obj.offset_y then
+		ypos = obj.y
+	else
+		ypos = obj.y + (obj.h*8)
+	end
+	zplane = flr(ypos - stage_top)
+
+	if obj.elevation then zplane += obj.elevation end
+
+	add(draw_zplanes[zplane],obj)
+end
+
+function room_draw()
+	-- draw current room
+
+	-- replace colors?
+	replace_colors(room_curr)
+	map(room_curr.map_x, room_curr.map_y, 0, stage_top, room_curr.map_w , room_curr.map_h)
+	--reset palette
+	pal() 
+	
+	-- ===============================================================
+	-- debug walkable areas
+	-- ===============================================================
+	-- if show_pathfinding then
+	-- 	actor_cell_pos = getcellpos(selected_actor)
+
+	-- 	celx = flr((cursor_x + cam_x) /8) + room_curr.map_x
+	-- 	cely = flr((cursor_y - stage_top)/8 ) + room_curr.map_y
+	-- 	target_cell_pos = { celx, cely }
+
+	-- 	path = find_path(actor_cell_pos, target_cell_pos)
+
+	-- 	-- finally, add our destination to list
+	-- 	click_cell = getcellpos({x=(cursor_x + cam_x), y=(cursor_y - stage_top)})
+	-- 	if is_cell_walkable(click_cell[1], click_cell[2]) then
+	-- 	--if (#path>0) then
+	-- 		add(path, click_cell)
+	-- 	end
+
+	-- 	for p in all(path) do
+	-- 		--d("  > "..p[1]..","..p[2])
+	-- 		rect(
+	-- 			(p[1]-room_curr.map_x)*8, 
+	-- 			stage_top+(p[2]-room_curr.map_y)*8, 
+	-- 			(p[1]-room_curr.map_x)*8+7, 
+	-- 			stage_top+(p[2]-room_curr.map_y)*8+7, 11)
+	-- 	end
+	-- end
+	-- ===============================================================
+
+	-- draw each zplane, from back to front
+	for z = 1,64 do
+		zplane = draw_zplanes[z]
+		-- draw all objs/actors in current zplane
+		for obj in all(zplane) do
+			-- object or actor?
+			if not has_flag(obj.class, class_actor) then
+				-- object
+				if (obj.states) 						-- object has a state?
+				 and obj.states[obj.state]
+				 and (obj.states[obj.state] > 0)
+				 and (not obj.dependent_on 			-- object has a valid dependent state?
+				 	or find_object(obj.dependent_on).state == obj.dependent_on_state)
+				 and not obj.owner   						-- object is not "owned"
+				then
+					-- something to draw
+					object_draw(obj)
+				end
+			else
+				-- actor
+				if (obj.in_room == room_curr) then
+					actor_draw(obj)
+				end
+			end
+			show_collision_box(obj)
+		end
+	end
+end
+
+function replace_colors(obj)
+	for c in all(obj.col_replace) do
+		pal(c[1], c[2])
+	end
+end
+
+
+function object_draw(obj)
+	-- replace colors?
+	replace_colors(obj)
+	-- allow for repeating
+	rx=1
+	if obj.repeat_x then rx = obj.repeat_x end
+	for h = 0, rx-1 do
+		-- draw object (in its state!)
+		sprdraw(obj.states[obj.state], obj.x+(h*(obj.w*8)), obj.y, obj.w, obj.h, obj.trans_col, obj.flip_x)
+	end
+	--reset palette
+	pal() 
+end
+
+-- draw actor(s)
+function actor_draw(actor)
+
+	if actor.moving == 1
+	 and actor.walk_anim then
+		actor.tmr += 1
+		if actor.tmr > 5 then
+			actor.tmr = 1
+			actor.anim_pos += 1
+			if actor.anim_pos > #actor.walk_anim then actor.anim_pos=1 end
+		end
+		-- choose walk anim frame
+		sprnum = actor.walk_anim[actor.anim_pos]	
+	else
+		-- idle
+		sprnum = actor.idle[actor.face_dir]
+	end
+
+	-- replace colors?
+	replace_colors(actor)
+
+	sprdraw(sprnum, actor.offset_x, actor.offset_y, 
+		actor.w , actor.h, actor.trans_col, 
+		actor.flip, false)
+	
+	-- talking overlay
+	if talking_actor 
+	 and talking_actor == actor then
+			if actor.talk_tmr < 7  then
+				sprnum = actor.talk[actor.face_dir]
+				sprdraw(sprnum, actor.offset_x, actor.offset_y +8, 1, 1, 
+					actor.trans_col, actor.flip, false)
+			end
+			actor.talk_tmr += 1	
+			if actor.talk_tmr > 14 then actor.talk_tmr = 1 end
+	end
+
+	--reset palette
+	pal()
+
+	--pset(actor.x, actor.y+stage_top, 8)
+end
+
+function command_draw()
+	-- draw current command
+	command = ""
+	cmd_col = 12
+
+	if not executing_cmd then
+		if verb_curr then
+			command = verb_curr[3]
+		end
+		if noun1_curr then
+			command = command.." "..noun1_curr.name
+			if verb_curr[2] == "use" then
+				command = command.." with"
+			elseif verb_curr[2] == "give" then
+				command = command.." to"
+			end
+		end
+		if noun2_curr then
+			command = command.." "..noun2_curr.name
+		elseif hover_curr_object 
+		  and hover_curr_object.name != ""
+			-- don't show use object with itself!
+			and ( not noun1_curr or (noun1_curr != hover_curr_object) ) then
+			command = command.." "..hover_curr_object.name
+		end
+		cmd_curr = command
+	else
+		-- highlight active command
+		command = cmd_curr
+		cmd_col = 7
+	end
+
+	print(smallcaps(command), 
+		hcenter(command), 
+		stage_top + 66, cmd_col)
+end
+
+function talking_draw()
+	-- alignment 
+	--   0 = no align
+	--   1 = center 
+	if talking_curr then
+		line_offset_y = 0
+		for l in all(talking_curr.msg_lines) do
+			line_offset_x=0
+			-- center-align line
+			if talking_curr.align == 1 then
+				line_offset_x = ((talking_curr.char_width*4)-(#l*4))/2
+			end
+			outline_text(
+				l, 
+				talking_curr.x + line_offset_x, 
+				talking_curr.y + line_offset_y, 
+				talking_curr.col)
+			line_offset_y += 6
+		end
+		-- update message lifespan
+		talking_curr.time_left -= 1
+		-- remove text & reset actor's talk anim
+		if (talking_curr.time_left <=0) then 
+			stop_talking()
+		end
+	end
+end
+
+-- draw ui and inventory
+function ui_draw()
+	-- draw verbs
+	xpos = 0
+	ypos = 75
+	col_len=0
+
+	for v in all(verbs) do
+		txtcol=verb_maincol
+
+		-- highlight default verb
+		if hover_curr_default_verb
+		  and (v == hover_curr_default_verb) then
+			txtcol = verb_defcol
+		end		
+		if v == hover_curr_verb then txtcol=verb_hovcol end
+
+		-- get verb info
+		vi = get_verb(v)
+		print(vi[3], xpos, ypos+stage_top+1, verb_shadcol)  -- shadow
+		print(vi[3], xpos, ypos+stage_top, txtcol)  -- main
+		
+		-- capture bounds
+		v.x = xpos
+		v.y = ypos
+		recalc_bounds(v, #vi[3]*4, 5, 0, 0)
+		show_collision_box(v)
+
+		-- auto-size column
+		if #vi[3] > col_len then col_len = #vi[3] end
+		ypos = ypos + 8
+
+		-- move to next column
+		if ypos >= 95 then
+			ypos = 75
+			xpos = xpos + (col_len + 1.0) * 4
+			col_len = 0
+		end
+	end
+
+	-- draw inventory
+	xpos = 86
+	ypos = 76
+	-- determine the inventory "window"
+	start_pos = selected_actor.inv_pos*4
+	end_pos = min(start_pos+8, #selected_actor.inventory)
+
+	for ipos = 1,8 do
+		-- draw inventory bg
+		rectfill(xpos-1, stage_top+ypos-1, xpos+8, stage_top+ypos+8, 1)
+
+		obj = selected_actor.inventory[start_pos+ipos]
+		if obj then
+			-- something to draw
+			obj.x = xpos
+			obj.y = ypos
+			-- draw object/sprite
+			object_draw(obj)
+			-- re-calculate bounds (as pos may have changed)
+			recalc_bounds(obj, obj.w*8, obj.h*8, 0, 0)
+			show_collision_box(obj)
+		end
+		xpos += 11
+
+		if xpos >= 125 then
+			ypos += 12
+			xpos=86
+		end
+		ipos += 1
+	end
+
+	-- draw arrows
+	for i = 1,2 do
+		arrow = ui_arrows[i]
+		if hover_curr_arrow == arrow then pal(verb_maincol,7) end
+		sprdraw(arrow.spr, arrow.x, arrow.y, 1, 1, 0)
+		-- capture bounds
+		recalc_bounds(arrow, 8, 7, 0, 0)
+		show_collision_box(arrow)
+		pal() --reset palette
+	end
+end
+
+function dialog_draw()
+	xpos = 0
+	ypos = 70
+	
+	for s in all(dialog_curr.sentences) do
+		-- capture bounds
+		s.x = xpos
+		s.y = ypos
+		recalc_bounds(s, s.char_width*4, #s.lines*5, 0, 0)
+
+		txtcol=dialog_curr.col
+		if s == hover_curr_sentence then txtcol=dialog_curr.hlcol end
+		
+		for l in all(s.lines) do
+				print(smallcaps(l), xpos, ypos+stage_top, txtcol)
+			ypos += 5
+		end
+
+		show_collision_box(s)
+
+		ypos += 2
+	end
+end
+
+-- draw cursor
+function cursor_draw()
+	col = cursor_cols[cursor_colpos]
+	-- switch sprite color accordingly
+	pal(7,col)
+	spr(32, cursor_x-4, cursor_y-3, 1, 1, 0)
+	pal() --reset palette
+
+	cursor_tmr += 1
+	if cursor_tmr > 7 then
+		--reset timer
+		cursor_tmr = 1
+		-- move to next color?
+		cursor_colpos += 1
+		if (cursor_colpos > #cursor_cols) then cursor_colpos = 1 end
+	end
+end
+
+function sprdraw(n, x, y, w, h, transcol, flip_x, flip_y)
+	-- switch transparency
+ 	palt(0, false)
+ 	palt(transcol, true)
+	 -- draw sprite
+	spr(n, x, stage_top + y, w, h, flip_x, flip_y) --
+	-- restore default trans
+	pal()
+end
+
+
+
 
 -- initialise all the rooms (e.g. add in parent links)
 function game_init()
@@ -2343,9 +2364,9 @@ function recalc_bounds(obj, w, h, cam_off_x, cam_off_y)
 end
 
 
-
-
--- a* pathfinding functions ----------------------------------------------------
+-- ================================================================
+-- a* pathfinding functions 
+-- ================================================================
 
 function find_path(start, goal)
  frontier = {}
@@ -2465,8 +2486,9 @@ end
 
 
 
-
--- library functions -----------------------------------------------
+-- ================================================================
+-- helper functions 
+-- ================================================================
 
 function outline_text(str,x,y,c0,c1)
  local c0=c0 or 7
@@ -2659,6 +2681,135 @@ fff00ffffff00ffffff00fff00000000000000000000000000000000000000000000000000000000
 8a8aa8a88c8cc8c8828228288b8bb8b8898998988e8ee8e88d8dd8d8868668688181181885855858878778788f8ff8f883833838848448488d8dd8d880800808
 8aaaaaa88cccccc8822222288bbbbbb8899999988eeeeee88dddddd8866666688111111885555558877777788ffffff883333338844444488dddddd880000008
 88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+__label__
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+fffffffffffffffffffffffff9e9f9f9f9e9f9f9f9e9f9f9f9e9f9f9f9e9f9f9f9e9f9f9f9e9f9f9f9e9f9f9f9e9f9f9f9e9f9f9ffffffffffffffffffffffff
+ffffffffffffffffffffffff9eee9f9f9eee9f9f9eee9f9f9eee9f9f9eee9f9f9eee9f9f9eee9f9f9eee9f9f9eee9f9f9eee9f9fffffffffffffffffffffffff
+fffffffffffffffffffffffffeeef9f9feeef9f9feeef9f9feeef9f9feeef9f9feeef9f9feeef9f9feeef9f9feeef9f9feeef9f9ffffffffffffffffffffffff
+ffffffffffffffffffffffff9fef9fef9fef9fef9fef9fef9fef9fef9fef9fef9fef9fef9fef9fef9fef9fef9fef9fef9fef9fefffffffffffffffffffffffff
+fffffffffffffffffffffffff9f9feeef9f9feeef9f9feeef9f9feeef9f9feeef9f9feeef9f9feeef9f9feeef9f9feeef9f9feeeffffffffffffffffffffffff
+ffffffffffffffffffffffff9f9f9eee9f9f9eee9f9f9eee9f9f9eee9f9f9eee9f9f9eee9f9f9eee9f9f9eee9f9f9eee9f9f9eeeffffffffffffffffffffffff
+fffffffffffffffffffffffff9f9feeef9f9feeef9f9feeef9f9feeef9f9feeef9f9feeef9f9feeef9f9feeef9f9feeef9f9feeeffffffffffffffffffffffff
+ffffffffffffffffffffffff9f9f9fef9f9f9fef9f9f9fef9f9f9fef9f9f9fef9f9f9fef9f9f9fef9f9f9fef9f9f9fef9f9f9fefffffffffffffffffffffffff
+fffffffffffffffffffffffff9e9f9f97755555555555577f9e9f9f9f9e9f9f9f9e9f9f9f9e9f9f9f9e9f9f9f9e9f9f9f9e9f9f9ffffffffffffffffffffffff
+ffffffffffffffffffffffff9eee9f9f70700000000007079eee9f9f9eee9f9f9eee9f9f9eee9f9f9eee9f9f9eee9f9f9eee9f9fffffffffffffffffffffffff
+fffffffffffffffffffffffffeeef9f97007000000007007feeef9f9feeef9f9feeef9f9feeef9f9feeef9f9feeef9f9feeef9f9ffffffffffffffffffffffff
+ffffffffffffffffffffffff9fef9fef70006000000600079fef9fef9fef9fef9fef9fef9fef9fef9fef9fef9fef9fef9fef9fefffffffffffffffffffffffff
+fffffffffffffffffffffffff9f9feee7000600000060007f9f9feeef9f9feeef9f9feeef9f9feeef9f9feeef9f9feeef9f9feeeffffffffffffffffffffffff
+ffffffffffffffffffffffff9f9f9eee70006000000600079f9f9eee9f9f9eee9f9f9eee9f9f9eee9f9f9eee9f9f9eee9f9f9eeeffffffffffffffffffffffff
+fffffffffffffffffffffffff9f9feee7000600000060007f9f9feeef9f9feeef9f9feeef9f9feeef9f9feeef9f9feeef9f9feeeffffffffffffffffffffffff
+ffffffffffffffffffffffff9f9f9fef77776000494449779f9f9fef9f9f9fef9f9f9fef9f9f9fef9f9f9fef9f9f9fef9f9f9fefffffffffffffffffffffffff
+ffffffff00000000fffffffff9e9f9f97006600494444497f9e9f9f9f9e9f9f9f9e9f9f9f9e9f9f9f9e9f9f9f9e9f9f9f9e9f9f9ffffffff00000000ffffffff
+ffffffff00000000ffffffff9eee9f9f70606004944000479eee9f9f9eee9f9f9eee9f9f9eee9f9f9eee9f9f9eee9f9f9eee9f9fffffffff00000000ffffffff
+ffffffff00000000fffffffffeeef9f970506000440fff07feeef9f9feeef9f9feeef9f9feeef9f9feeef9f9feeef9f9feeef9f9ffffffff00000000ffffffff
+ffffffff00000000ffffffff9fef9fef700060004f0f9f079fef9fef9fef9fef9fef9fef9fef9fef9fef9fef9fef9fef9fef9fefffff7fff00000000ffffffff
+ffffffff00000000fffffffff9f9feee700500000fff5f07f9f9feeef9f9feeef9f9feeef9f9feeef9f9feeef9f9feeef9f9feeeffff7fff00000000ffffffff
+ffffffff00000000ffffffff9f9f9eee705000040ffffff79f9f9eee9f9f9eee9f9f9eee9f9f9eee9f9f9eee9f9f9eee9f9f9eeeffff7fff00000000ffffffff
+ffffffff00000000fffffffff9f9feee750000000fffff47f9f9feeef9f9feeef9f9feeef9f9feeef9f9feeef9f9feeef9f9feeef777f77700000000ffffffff
+ffffffff00000000ffffffff9f9f9fef555555556fffff559f9f9fef9f9f9fef9f9f9fef9f9f9fef9f9f9fef9f9f9fef9f9f9fefffff7fff00000000ffffffff
+ffffffff00000000ffffffff999999999999999996fffd9999999999ffffffffffffffffffffffff999999999999999999999999ffff7fff00000000ffffffff
+ffffffff00000000ffffffff555555555555555555ff555555555555555555555555555555555555555555555555555555555555ffff7fff00000000ffffffff
+ffffffff00000000ffffffff444444444444444444dd4444444444440dd6dd6dd6dd6dd6d6dd6d50444444444444444444444444ffffffff00000000ffffffff
+ffffffff00000000ffffffffffff4fffffff4ffff1ccdfffffff4fff0dd6dd6dd6dd6dd6d6dd6d50ffff4fffffff4fffffff4fff22ffffff00000000ffffffff
+ffffffff00000000ffffffff444949444449494441ccd94444494944066666666666666666666650444949444449494444494940020fffff00000000ffffffff
+ffffffff00000000ffffffff444949444449494441ccd944444949440d6dd6dd6dd6dd6ddd6dd650444949444449494444494942302fffff00000000ffffffff
+ffffffff00000000ffffffff444949444449494441ccd944444949440d6dd6dd6dd6dd6ddd6dd65044494944444949444449494b33bfffff00000000ffffffff
+ffffffff00000000ffffffff444949444449494441ccd94444494944066666666666666666666650444949444449494444494942bb2fffff00000000ffffffff
+ffffffff00000000ffffffff444949444449494441ddd944444949440dd6dd600000000056dd6d50444949444449494444494942222fffff00000000ffffffff
+ffffffff00000000ffffffff444949444449494442ff1944444949440dd6dd650000000056dd6d50444949444449494444494942bb2fffff00000000ffffffff
+ffffffff00000000ffffffff444949444449494442fe19444449494406666665000000005666665044494944444949444449492b33b2ffff00000000ffffffff
+ffffffff00000000ffffffff444949444449494442111944444949440d6dd6d500a0a0005d6dd650444949444449494444494922bb22ffff00000000ffffffff
+ffffffff00000000ffffffff444949444449494442111944444949440d6dd6d500aaaa005d6dd6504449494444494944444949222222ffff00000000ffffffff
+ffffffff00000000ffffffff444949444449494442111944444949440666666500a9aa00566666504449494444494944444949222222ffff00000000ffffffff
+ffffffff00000000ffffffff999949999999499992111999999949990dd6dd6500a99a0056dd6d50999949999999499999994922bb22ffff00000000ffffffff
+ffffffff00000000ffffffff444444444444444442111444444444440dd6dd650044440056dd6d5044444444444444444444442b33b2ffff00000000ffffffff
+ffffffff00000000ffffff555555555555555555521115555555555555555555555555555555555555555555555555555555522b33b22fff00000000ffffffff
+ffffffff00000000ffff555555555555555555555211155555555555555555555555555555555555555555555555555555555222bb222fff00000000ffffffff
+ffffffff00000000ff55555555555555555555555cccc55555555555555555555555555555555555555555555555555555555222222225ff00000000ffffffff
+ffffffff5555555555555555555555555555555556777555555555555555555555555555555555555555555555555555555552222222255555555555ffffffff
+ffffffff555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555bbbbbbbb55555555555ffffffff
+ffffffff5555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555ffffffff
+ffffffff5555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555ffffffff
+ffffffff5555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555ffffffff
+ffffff55555555555557655555555555555555553333333333333333333333333333333333333333333333335555555555555555555555555555555555ffffff
+ffff555555555555555765555555555555553333333333333333333333333333333333333333333333333333333355555555555556666775555555555555ffff
+ff555555555555555bbbb775555555555533333333333333333333333333333333333333333333333333333333333355555555557555555755555555555555ff
+5555555555555555bbb7777855555555533333333333333333333333333333333333333333333333333333333333333555555555d776666d5555555555555555
+55555555555555555777778555555555533333333333333333333333333333333333333333333333333333333333333555555555567665055555555555555555
+55555555555555555777888555555555553333333333333333333333333333333333333333333333333333333333335555555555567665055555555555555555
+55555555555555555550055555555555555533333333333333333333333333333333333333333333333333333333555555555555567665055555555555555555
+55555555555555555550055555555555555555553333333333333333333333333333333333333333333333335555555555555555557665555555555555555555
+55555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555
+55555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555
+55555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555
+55555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555
+55555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555
+55555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555
+55555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555
+55555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000c0c0ccc0c000c0c00000ccc00cc00000ccc0c0c0ccc0ccc0c000ccc00000ccc0ccc0cc00ccc0ccc0ccc0c000ccc00000000000000000000
+00000000000000000c0c0c0c0c000cc0000000c00c0c00000c0c0c0c0c0c0c0c0c000cc0000000c00cc00c0c00c00c0c0c000c000cc000000000000000000000
+00000000000000000ccc0ccc0c000c0c000000c00c0c00000ccc0c0c0cc00ccc0c000c00000000c00c000c0c00c00ccc0c000c000c0000000000000000000000
+00000000000000000ccc0c0c0ccc0c0c000000c00cc000000c0000cc0c0c0c000ccc0ccc000000c00ccc0c0c00c00c0c0ccc0ccc0ccc00000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0cc0ccc0ccc0cc0000000000ccc0ccc00cc0c0c00000c0c0ccc00000ccc0c0c00cc0c0c000000000000001111111111011111111110111111111101111111111
+c1c0c1c0c110c1c000000000c1c01c10c110c0c00000c0c0c1c00000c1c0c0c0c110c0c0000000cc000001111111111011111111110111111111101111111111
+c0c0ccc0cc00c0c000000000ccc00c00c000cc10ccc0c0c0ccc00000ccc0c0c0ccc0ccc000000c11c00001111111111011111111110111111111101111111111
+c0c0c110c100c0c000000000c1100c00c000c1c01110c0c0c1100000c110c0c011c0c1c00000c1001c0001111111111011111111110111111111101111111111
+cc10c000ccc0c0c000000000c000ccc01cc0c0c000001cc0c0000000c0001cc0cc10c0c0000ccc00ccc001111111111011111111110111111111101111111111
+11001000111010100000000010001110011010100000011010000000100001101100101000000c00c00001111111111011111111110111111111101111111111
+00000000000000000000000000000000000000000000000000000000000000000000000000000c00c00001111111111011111111110111111111101111111111
+00000000000000000000000000000000000000000000000000000000000000000000000000000cccc00001111111111011111111110111111111101111111111
+0cc0c0000cc00cc0ccc00000c0000cc00cc0c0c00000ccc0ccc00000ccc0c0c0c000c00000000111100001111111111011111111110111111111101111111111
+c110c000c1c0c110c1100000c000c1c0c1c0c0c00000c1c01c100000c1c0c0c0c000c00000000000000001111111111011111111110111111111101111111111
+c000c000c0c0ccc0cc000000c000c0c0c0c0cc10ccc0ccc00c000000ccc0c0c0c000c00000000000000000000000000000000000000000000000000000000000
+c000c000c0c011c0c1000000c000c0c0c0c0c1c01110c1c00c000000c110c0c0c000c00000000000000000000000000000000000000000000000000000000000
+1cc0ccc0cc10cc10ccc00000ccc0cc10cc10c0c00000c0c00c000000c0001cc0ccc0ccc000000000000001111111111011111111110111111111101111111111
+01101110110011001110000011101100110010100000101001000000100001101110111000000cccc00001111111111011111111110111111111101111111111
+00000000000000000000000000000000000000000000000000000000000000000000000000000c11c00001111111111011111111110111111111101111111111
+00000000000000000000000000000000000000000000000000000000000000000000000000000c00c00001111111111011111111110111111111101111111111
+0cc0ccc0c0c0ccc000000000aaa0aaa0a000a0a00000aaa00aa00000c0c00cc0ccc00000000ccc00ccc001111111111011111111110111111111101111111111
+c1101c10c0c0c110000000001a10a1a0a000a0a000001a10a1a00000c0c0c110c11000000001c1001c1001111111111011111111110111111111101111111111
+c0000c00c0c0cc00000000000a00aaa0a000aa10aaa00a00a0a00000c0c0ccc0cc00000000001c00c10001111111111011111111110111111111101111111111
+c0c00c00ccc0c100000000000a00a1a0a000a1a011100a00a0a00000c0c011c0c1000000000001cc100001111111111011111111110111111111101111111111
+ccc0ccc01c10ccc0000000000a00a0a0aaa0a0a000000a00aa1000001cc0cc10ccc0000000000011000001111111111011111111110111111111101111111111
+11101110010011100000000001001010111010100000010011000000011011001110000000000000000001111111111011111111110111111111101111111111
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 
 __gff__
 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001010100000000000000010000000000010101010100000000000100000000000101010101000000000000000000000001010101010000000000000000000000
