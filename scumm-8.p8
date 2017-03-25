@@ -100,7 +100,7 @@ rooms = {
 		enter = function(me)
 
 			-- todo: anything here?
-			selected_actor = actors.main_actor
+			--selected_actor = actors.main_actor
 		
 			if not me.done_intro then
 				-- don't do this again
@@ -117,7 +117,7 @@ rooms = {
 							wait_for_message()
 							print_line("(just look at it!)",90,20,8,1)
 							wait_for_message()
-
+--[[
 							-- part 2
 							printh("a")
 							change_room(rooms.second_room, 1)
@@ -152,7 +152,7 @@ rooms = {
 							
 							break_time(25)
 							change_room(rooms.title_room, 1)
-							camera_at(0)
+							camera_at(0)]]
 						
 							--break_time()
 							print_line("coming soon...;to a pico-8 near you!",64,45,8,1)
@@ -1618,7 +1618,7 @@ function game_update()
 	playercontrol()
 
 	-- check for collisions
-	checkcollisions()
+	check_collisions()
 end
 
 
@@ -1680,13 +1680,15 @@ function game_draw()
 	
 
 	-- draw current command (verb/object)
-	if not cutscene_curr then
+	if not cutscene_curr 
+	 and selected_actor then
 		command_draw()
 	end
 
-	-- draw ui and inventory
+	-- draw ui and inventory (only if actor selected to use it!)
 	if (not cutscene_curr
 		or not has_flag(cutscene_curr.flags, cut_noverbs))
+		and selected_actor
 		-- and not just left a cutscene
 		and (cutscene_curr_lastval == cutscene_curr) then
 		ui_draw()
@@ -1698,7 +1700,8 @@ function game_draw()
 	cutscene_curr_lastval = cutscene_curr
 
 	--if cursor_lvl == 0 then
-	if not cutscene_curr then
+	if not cutscene_curr 
+	 and selected_actor then
 		cursor_draw()
 	end
 end
@@ -1707,8 +1710,10 @@ end
 -- handle button inputs
 function playercontrol()	
 
-	-- check for cutscene "skip/override" (if available)
-	if cutscene_curr then
+	-- check for cutscene "skip/override"
+	-- (or that we have an actor to control!)
+	if cutscene_curr 
+	 or not selected_actor then
 		if btnp(4) and btnp(5) and cutscene_curr.override then 
 			-- skip cutscene!
 			cutscene_curr.thread = cocreate(cutscene_curr.override)
@@ -1869,7 +1874,7 @@ function input_button_pressed(button_index)
 end
 
 -- collision detection
-function checkcollisions()
+function check_collisions()
 	-- reset hover collisions
 	hover_curr_verb = nil
 	hover_curr_default_verb = nil
@@ -1926,41 +1931,43 @@ function checkcollisions()
 		end
 	end
 
-	-- check ui/inventory collisions
-	for v in all(verbs) do
-		if iscursorcolliding(v) then
-			hover_curr_verb = v
-		end
-	end
-	for a in all(ui_arrows) do
-		if iscursorcolliding(a) then
-			hover_curr_arrow = a
-		end
-	end
-
-	-- check room/object collisions
-	for k,obj in pairs(selected_actor.inventory) do
-		if iscursorcolliding(obj) then
-			hover_curr_object = obj
-			-- pickup override for inventory objects
-			if verb_curr[2] == "pickup" and hover_curr_object.owner then
-				verb_curr = nil
+	if selected_actor then
+		-- check ui/inventory collisions
+		for v in all(verbs) do
+			if iscursorcolliding(v) then
+				hover_curr_verb = v
 			end
 		end
-		-- check for disowned objects!
-		if obj.owner != selected_actor then 
-			del(selected_actor.inventory, obj)
+		for a in all(ui_arrows) do
+			if iscursorcolliding(a) then
+				hover_curr_arrow = a
+			end
 		end
-	end
 
-	-- default to walkto (if nothing set)
-	if verb_curr == nil then
-		verb_curr = get_verb(verb_default)
-	end
+		-- check room/object collisions
+		for k,obj in pairs(selected_actor.inventory) do
+			if iscursorcolliding(obj) then
+				hover_curr_object = obj
+				-- pickup override for inventory objects
+				if verb_curr[2] == "pickup" and hover_curr_object.owner then
+					verb_curr = nil
+				end
+			end
+			-- check for disowned objects!
+			if obj.owner != selected_actor then 
+				del(selected_actor.inventory, obj)
+			end
+		end
 
-	-- update "default" verb for hovered object (if any)
-	if hover_curr_object then
-		hover_curr_default_verb = find_default_verb(hover_curr_object)
+		-- default to walkto (if nothing set)
+		if verb_curr == nil then
+			verb_curr = get_verb(verb_default)
+		end
+
+		-- update "default" verb for hovered object (if any)
+		if hover_curr_object then
+			hover_curr_default_verb = find_default_verb(hover_curr_object)
+		end
 	end
 end
 
