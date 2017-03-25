@@ -71,7 +71,6 @@ class_openable = 16   -- can be opened/closed
 class_actor = 32      -- is an actor/person
 
 cut_noverbs = 1 		-- this removes the interface during the cut-scene.
-cut_hidecursor = 2  -- this turns off the cursor during the cut-scene.
 cut_no_follow = 4   -- this disables the follow-camera being reinstated after cut-scene.
 
 -- actor constants
@@ -102,93 +101,68 @@ rooms = {
 
 			-- todo: anything here?
 			selected_actor = actors.main_actor
-			printh("--1")
+		
 			if not me.done_intro then
-				printh("--2")
 				-- don't do this again
 				me.done_intro = true
-				
-				-- cutscene(cut_noverbs + cut_hidecursor, 
-				-- 	function()
+			
+					cutscene(cut_noverbs + cut_no_follow, 
+						function()
+							-- intro
+							break_time(50)
+							print_line("in a galaxy not far away...",64,45,8,1)
+							wait_for_message()
+							change_room(rooms.first_room, 1)
+							print_line("cozy fireplaces...",90,20,8,1)
+							wait_for_message()
+							print_line("(just look at it!)",90,20,8,1)
+							wait_for_message()
 
-						cutscene(cut_noverbs + cut_hidecursor + cut_no_follow, 
-							function()
-								
-								-- printh("1-------------------------")
-								break_time(50)
-								print_line("in a galaxy not far away...",64,45,8,1)
-								wait_for_message()
-								change_room(rooms.first_room, 1)
-								print_line("cozy fireplaces...",90,20,8,1)
-								wait_for_message()
-								print_line("(just look at it!)",90,20,8,1)
-								wait_for_message()
-
-								
-								-- printh("a")
-								-- change_room(rooms.second_room, 1)
-								-- print_line("strange looking aliens...",30,20,8,1)
-								
-								-- printh("b")
-
-								-- put_actor_at(actors.purp_tentacle, 130, actors.purp_tentacle.y, rooms.second_room)
-								-- walk_to(actors.purp_tentacle, 
-								-- 	actors.purp_tentacle.x-50, 
-								-- 	actors.purp_tentacle.y)
-
-								-- wait_for_message()
-								-- say_line(actors.purp_tentacle, "what did you call me?!")
-								-- wait_for_message()
-
-								
-								-- change_room(rooms.back_garden, 1)
-								-- print_line("and even swimming pools!",90,20,8,1)
-								
-								-- camera_at(200)
-								-- camera_pan_to(64)
-								-- wait_for_camera()
-
-								-- print_line("quack!",45,60,10,1)
-								-- wait_for_message()
-
-								-- part 4
-								change_room(rooms.outside_room, 1)
-								
-								-- break_time(25)
-
-								
+							-- part 2
+							printh("a")
+							change_room(rooms.second_room, 1)
+							print_line("strange looking aliens...",30,20,8,1)
 							
-								-- change_room(rooms.title_room, 1)
-								-- 	camera_at(0)
-							
-								-- --break_time()
-								-- print_line("coming soon...;to a pico-8 near you!",64,45,8,1)
-								-- wait_for_message()
-								-- fades(1,1)
-								-- break_time(1000)
-							end)
+							printh("b")
 
+							put_actor_at(actors.purp_tentacle, 130, actors.purp_tentacle.y, rooms.second_room)
+							walk_to(actors.purp_tentacle, 
+								actors.purp_tentacle.x-50, 
+								actors.purp_tentacle.y)
+
+							wait_for_message()
+							say_line(actors.purp_tentacle, "what did you call me?!")
+							wait_for_message()
+
+							-- part 3
+							change_room(rooms.back_garden, 1)
+							print_line("and even swimming pools!",90,20,8,1)
+							
+							camera_at(200)
+							camera_pan_to(64)
+							wait_for_camera()
+
+							print_line("quack!",45,60,10,1)
+							wait_for_message()
+
+							-- part 4
+							change_room(rooms.outside_room, 1)
+							
+							-- outro
+							
+							break_time(25)
+							change_room(rooms.title_room, 1)
+							camera_at(0)
 						
-
-						-- outro
-						-- cutscene(cut_noverbs + cut_hidecursor, 
-						-- 	function()
-						-- 		printh("2")
-								
-						-- 		camera_at(0)
-						-- 		--change_room(rooms.title_room, 1)
+							--break_time()
+							print_line("coming soon...;to a pico-8 near you!",64,45,8,1)
+							wait_for_message()
+							fades(1,1)
+							break_time(100)
 							
-						-- 		break_time()
-						-- 		print_line("coming soon to a pico-8 near you...",64,45,8,1)
-						-- 		wait_for_message()
-						-- 		fades(1,1)
-						-- 		break_time(1000)
-						-- 	end)
+						end) -- end cutscene
 
-					--end)  -- outer cutscene
-
-
-				end -- done intro
+				end -- if not done intro
 		end,
 		exit = function()
 			-- todo: anything here?
@@ -435,7 +409,7 @@ rooms = {
 				verbs = {
 					open = function(me)
 						if not me.done_cutscene then
-							cutscene(cut_noverbs + cut_hidecursor, 
+							cutscene(cut_noverbs, 
 								function()
 									me.done_cutscene = true
 									-- cutscene code
@@ -570,7 +544,7 @@ rooms = {
 				-- (setting now, will be re-instated after cutscene)
 				camera_follow(selected_actor)
 				-- do cutscene
-				cutscene(cut_noverbs + cut_hidecursor, 
+				cutscene(cut_noverbs, 
 					-- cutscene code (hides ui, etc.)
 					function()
 						camera_at(0)
