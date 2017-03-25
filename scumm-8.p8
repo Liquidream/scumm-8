@@ -1680,15 +1680,13 @@ function game_draw()
 	
 
 	-- draw current command (verb/object)
-	if not cutscene_curr 
-	 and selected_actor then
+	if not cutscene_curr then
 		command_draw()
 	end
 
 	-- draw ui and inventory (only if actor selected to use it!)
 	if (not cutscene_curr
 		or not has_flag(cutscene_curr.flags, cut_noverbs))
-		and selected_actor
 		-- and not just left a cutscene
 		and (cutscene_curr_lastval == cutscene_curr) then
 		ui_draw()
@@ -1700,8 +1698,7 @@ function game_draw()
 	cutscene_curr_lastval = cutscene_curr
 
 	--if cursor_lvl == 0 then
-	if not cutscene_curr 
-	 and selected_actor then
+	if not cutscene_curr then
 		cursor_draw()
 	end
 end
@@ -1712,8 +1709,7 @@ function playercontrol()
 
 	-- check for cutscene "skip/override"
 	-- (or that we have an actor to control!)
-	if cutscene_curr 
-	 or not selected_actor then
+	if cutscene_curr then
 		if btnp(4) and btnp(5) and cutscene_curr.override then 
 			-- skip cutscene!
 			cutscene_curr.thread = cocreate(cutscene_curr.override)
@@ -1763,6 +1759,11 @@ end
 function input_button_pressed(button_index)	
 
 	local verb_in = verb_curr
+
+	-- temp workaround if no actor selected at this point
+	if not selected_actor then 
+		return
+	end
 
 	-- check for sentence selection
 	if dialog_curr and dialog_curr.visible then
@@ -2232,46 +2233,48 @@ function ui_draw()
 		end
 	end
 
-	-- draw inventory
-	xpos = 86
-	ypos = 76
-	-- determine the inventory "window"
-	start_pos = selected_actor.inv_pos*4
-	end_pos = min(start_pos+8, #selected_actor.inventory)
+	if selected_actor then
+		-- draw inventory
+		xpos = 86
+		ypos = 76
+		-- determine the inventory "window"
+		start_pos = selected_actor.inv_pos*4
+		end_pos = min(start_pos+8, #selected_actor.inventory)
 
-	for ipos = 1,8 do
-		-- draw inventory bg
-		rectfill(xpos-1, stage_top+ypos-1, xpos+8, stage_top+ypos+8, 1)
+		for ipos = 1,8 do
+			-- draw inventory bg
+			rectfill(xpos-1, stage_top+ypos-1, xpos+8, stage_top+ypos+8, 1)
 
-		obj = selected_actor.inventory[start_pos+ipos]
-		if obj then
-			-- something to draw
-			obj.x = xpos
-			obj.y = ypos
-			-- draw object/sprite
-			object_draw(obj)
-			-- re-calculate bounds (as pos may have changed)
-			recalc_bounds(obj, obj.w*8, obj.h*8, 0, 0)
-			show_collision_box(obj)
+			obj = selected_actor.inventory[start_pos+ipos]
+			if obj then
+				-- something to draw
+				obj.x = xpos
+				obj.y = ypos
+				-- draw object/sprite
+				object_draw(obj)
+				-- re-calculate bounds (as pos may have changed)
+				recalc_bounds(obj, obj.w*8, obj.h*8, 0, 0)
+				show_collision_box(obj)
+			end
+			xpos += 11
+
+			if xpos >= 125 then
+				ypos += 12
+				xpos=86
+			end
+			ipos += 1
 		end
-		xpos += 11
 
-		if xpos >= 125 then
-			ypos += 12
-			xpos=86
+		-- draw arrows
+		for i = 1,2 do
+			arrow = ui_arrows[i]
+			if hover_curr_arrow == arrow then pal(verb_maincol,7) end
+			sprdraw(arrow.spr, arrow.x, arrow.y, 1, 1, 0)
+			-- capture bounds
+			recalc_bounds(arrow, 8, 7, 0, 0)
+			show_collision_box(arrow)
+			pal() --reset palette
 		end
-		ipos += 1
-	end
-
-	-- draw arrows
-	for i = 1,2 do
-		arrow = ui_arrows[i]
-		if hover_curr_arrow == arrow then pal(verb_maincol,7) end
-		sprdraw(arrow.spr, arrow.x, arrow.y, 1, 1, 0)
-		-- capture bounds
-		recalc_bounds(arrow, 8, 7, 0, 0)
-		show_collision_box(arrow)
-		pal() --reset palette
 	end
 end
 
