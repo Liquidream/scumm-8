@@ -108,8 +108,8 @@ rooms = {
 				-- don't do this again
 				me.done_intro = true
 				
-				cutscene(cut_noverbs + cut_hidecursor, 
-					function()
+				-- cutscene(cut_noverbs + cut_hidecursor, 
+				-- 	function()
 
 						cutscene(cut_noverbs + cut_hidecursor, 
 							function()
@@ -174,6 +174,8 @@ rooms = {
 								break_time(1000)
 							end)
 
+						
+
 						-- outro
 						-- cutscene(cut_noverbs + cut_hidecursor, 
 						-- 	function()
@@ -189,7 +191,9 @@ rooms = {
 						-- 		break_time(1000)
 						-- 	end)
 
-					end)
+					--end)  -- outer cutscene
+
+
 				end -- done intro
 		end,
 		exit = function()
@@ -469,6 +473,7 @@ rooms = {
 								end,
 								-- override for cutscene
 								function()
+									--if cutscene_curr.skipped then
 									--d("override!")
 									change_room(rooms.first_room)
 									put_actor_at(actors.purp_tentacle, 105, 44, rooms.first_room)
@@ -1006,8 +1011,8 @@ function cutscene(flags, func_cutscene, func_override)
 		flags = flags,
 		thread = cocreate(func_cutscene),
 		override = func_override,
-		paused_room = room_curr,
-		paused_actor = selected_actor,
+		-- paused_room = room_curr,
+		-- paused_actor = selected_actor,
 		paused_cam_following = cam_following_actor
 	}
 	add(cutscenes, cut)
@@ -1615,9 +1620,13 @@ function game_update()
 	if cutscene_curr then
 		if cutscene_curr.thread and not coresume(cutscene_curr.thread) then
 			-- cutscene ended, restore prev state	
-			if (room_curr != cutscene_curr.paused_room) then change_room(cutscene_curr.paused_room) end
-			selected_actor = cutscene_curr.paused_actor
-			camera_follow(cutscene_curr.paused_cam_following)
+			--if (room_curr != cutscene_curr.paused_room) then change_room(cutscene_curr.paused_room) end
+			--selected_actor = cutscene_curr.paused_actor
+			if not has_flag(cutscene_curr.flags, cut_no_follow) then
+				camera_follow(cutscene_curr.paused_cam_following)
+				-- assume to re-select prev actor
+				selected_actor = cutscene_curr.paused_cam_following
+			end
 			-- now delete cutscene
 			del(cutscenes, cutscene_curr)
 			cutscene_curr = nil
