@@ -117,7 +117,7 @@ rooms = {
 							wait_for_message()
 							print_line("(just look at it!)",90,20,8,1)
 							wait_for_message()
---[[
+
 							-- part 2
 							printh("a")
 							change_room(rooms.second_room, 1)
@@ -149,10 +149,9 @@ rooms = {
 							change_room(rooms.outside_room, 1)
 							
 							-- outro
-							
 							break_time(25)
 							change_room(rooms.title_room, 1)
-							camera_at(0)]]
+							camera_at(0)
 						
 							--break_time()
 							print_line("coming soon...;to a pico-8 near you!",64,45,8,1)
