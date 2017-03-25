@@ -111,7 +111,7 @@ rooms = {
 				-- cutscene(cut_noverbs + cut_hidecursor, 
 				-- 	function()
 
-						cutscene(cut_noverbs + cut_hidecursor, 
+						cutscene(cut_noverbs + cut_hidecursor + cut_no_follow, 
 							function()
 								
 								-- printh("1-------------------------")
@@ -125,53 +125,47 @@ rooms = {
 								wait_for_message()
 
 								
-								printh("a")
-								change_room(rooms.second_room, 1)
-								print_line("strange looking aliens...",30,20,8,1)
+								-- printh("a")
+								-- change_room(rooms.second_room, 1)
+								-- print_line("strange looking aliens...",30,20,8,1)
 								
-								printh("b")
+								-- printh("b")
 
-								put_actor_at(actors.purp_tentacle, 130, actors.purp_tentacle.y, rooms.second_room)
-								walk_to(actors.purp_tentacle, 
-									actors.purp_tentacle.x-50, 
-									actors.purp_tentacle.y)
+								-- put_actor_at(actors.purp_tentacle, 130, actors.purp_tentacle.y, rooms.second_room)
+								-- walk_to(actors.purp_tentacle, 
+								-- 	actors.purp_tentacle.x-50, 
+								-- 	actors.purp_tentacle.y)
 
-								wait_for_message()
-								say_line(actors.purp_tentacle, "what did you call me?!")
-								wait_for_message()
+								-- wait_for_message()
+								-- say_line(actors.purp_tentacle, "what did you call me?!")
+								-- wait_for_message()
 
 								
-								change_room(rooms.back_garden, 1)
-								print_line("and even swimming pools!",90,20,8,1)
+								-- change_room(rooms.back_garden, 1)
+								-- print_line("and even swimming pools!",90,20,8,1)
 								
-								camera_at(200)
-								camera_pan_to(64)
-								wait_for_camera()
+								-- camera_at(200)
+								-- camera_pan_to(64)
+								-- wait_for_camera()
 
-								print_line("quack!",45,60,10,1)
-								wait_for_message()
+								-- print_line("quack!",45,60,10,1)
+								-- wait_for_message()
 
 								-- part 4
 								change_room(rooms.outside_room, 1)
-								-- camera_at(0)
-								-- camera_pan_to(selected_actor)
-								-- wait_for_camera()
-								-- say_line("let's do this")
-								-- wait_for_message()
-
-								--fades(1,1)
-								break_time(25)
+								
+								-- break_time(25)
 
 								
 							
-								change_room(rooms.title_room, 1)
-									camera_at(0)
+								-- change_room(rooms.title_room, 1)
+								-- 	camera_at(0)
 							
-								--break_time()
-								print_line("coming soon...;to a pico-8 near you!",64,45,8,1)
-								wait_for_message()
-								fades(1,1)
-								break_time(1000)
+								-- --break_time()
+								-- print_line("coming soon...;to a pico-8 near you!",64,45,8,1)
+								-- wait_for_message()
+								-- fades(1,1)
+								-- break_time(1000)
 							end)
 
 						
@@ -1621,8 +1615,10 @@ function game_update()
 		if cutscene_curr.thread and not coresume(cutscene_curr.thread) then
 			-- cutscene ended, restore prev state	
 			--if (room_curr != cutscene_curr.paused_room) then change_room(cutscene_curr.paused_room) end
-			--selected_actor = cutscene_curr.paused_actor
-			if not has_flag(cutscene_curr.flags, cut_no_follow) then
+			
+			-- restore follow-cam if flag allows (and had a value!)
+			if not has_flag(cutscene_curr.flags, cut_no_follow) and
+			 cutscene_curr.paused_cam_following then
 				camera_follow(cutscene_curr.paused_cam_following)
 				-- assume to re-select prev actor
 				selected_actor = cutscene_curr.paused_cam_following
