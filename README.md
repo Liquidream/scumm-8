@@ -24,9 +24,10 @@ Wow, really? You still here?! OK, once again. Think of SCUMM-8 as an even more r
 - [x] Replace Color (to allow re-use of room/object gfx)
 
 ## Planned Features
-- [ ] Game Save/Load
 - [ ] Adjustable Room Brightness Level
 - [ ] Screen-shake
+- [ ] Proximity (between Actors/Objects)
+- [ ] Game Save/Load
 
 ## Getting Started
 Please see the [SCUMM-8 Wiki](https://github.com/Liquidream/scumm-8/wiki) for details on how to get started creating your own SCUMM-8 game, as well as the the full API reference.
