@@ -108,7 +108,7 @@ rooms = {
 			
 					cutscene(cut_noverbs + cut_no_follow, 
 						function()
---[[
+
 							-- intro
 							break_time(50)
 							print_line("in a galaxy not far away...",64,45,8,1)
@@ -134,17 +134,17 @@ rooms = {
 							camera_pan_to(0)
 							wait_for_camera()
 							print_line("quack!",45,60,10,1)
-]]
+
 							-- part 4
 							change_room(rooms.outside_room, 1)
 
-						--[[	-- outro
+							-- outro
 							--break_time(25)
 							change_room(rooms.title_room, 1)
 							
 							print_line("coming soon...:to a pico-8 near you!",64,45,8,1)
 							fades(1,1)	-- fade out
-							break_time(100)]]
+							break_time(100)
 							
 						end) -- end cutscene
 
@@ -878,14 +878,19 @@ end
 -- (you should not need to modify anything below here!)
 -- ################################################################
 
--- point center of camera at...
-function camera_at(val)
+function _center_camera(val)
 	-- check params for obj/actor
 	if type(val) == "table" then
 		val = val.x
 	end
 	-- keep camera within "room" bounds
-	cam_x = mid(0, val-64, (room_curr.map_w*8)-screenwidth-1 )
+	return mid(0, val-64, (room_curr.map_w*8)-screenwidth-1 )
+end
+
+
+function camera_at(val)
+	-- point center of camera at...
+	cam_x = _center_camera(val)
 	-- clear other cam values
 	cam_pan_to_x = nil
 	cam_following_actor = nil
@@ -903,7 +908,8 @@ function camera_follow(actor)
 		while cam_following_actor do
 			-- keep camera within "room" bounds
 			if cam_following_actor.in_room == room_curr then
-				cam_x = mid(0, cam_following_actor.x-64, (room_curr.map_w*8)-screenwidth-1 )
+				cam_x = _center_camera(cam_following_actor)
+				--cam_x = mid(0, cam_following_actor.x-64, (room_curr.map_w*8)-screenwidth-1 )
 			end
 			yield()
 		end
@@ -913,14 +919,14 @@ end
 
 
 function camera_pan_to(val)
-	-- check params for obj/actor
-	if type(val) == "table" then
-		val = val.x
-	end
+	-- -- check params for obj/actor
+	-- if type(val) == "table" then
+	-- 	val = val.x
+	-- end
 
 	-- set target, but keep camera within "room" bounds
-	cam_pan_to_x = mid(64, val, (room_curr.map_w*8)-(screenwidth/2) )
-	--cam_pan_to_x = val
+	cam_pan_to_x = _center_camera(val)
+	--cam_pan_to_x = mid(64, val, (room_curr.map_w*8)-(screenwidth/2) )
 
 	-- clear other cam values
 	cam_following_actor = nil
@@ -928,12 +934,13 @@ function camera_pan_to(val)
 	cam_script = function()
 		-- update the camera pan until reaches dest
 		while (true) do
-			center_view = cam_x + flr(screenwidth/2) +1
-			if center_view == cam_pan_to_x then
+			--center_view = cam_x 
+			--center_view = cam_x + flr(screenwidth/2) +1
+			if cam_x == cam_pan_to_x then
 				-- pan complete
 				cam_pan_to_x = nil
 				return
-			elseif cam_pan_to_x > center_view then
+			elseif cam_pan_to_x > cam_x then
 		  	cam_x += 0.5
 			else
 				cam_x -= 0.5
