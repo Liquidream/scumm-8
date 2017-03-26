@@ -108,11 +108,12 @@ rooms = {
 			
 					cutscene(cut_noverbs + cut_no_follow, 
 						function()
+--[[
 							-- intro
 							break_time(50)
 							print_line("in a galaxy not far away...",64,45,8,1)
 
---[[							change_room(rooms.first_room, 1)
+							change_room(rooms.first_room, 1)
 							print_line("cozy fireplaces...",90,20,8,1)
 							print_line("(just look at it!)",90,20,8,1)
 
@@ -125,16 +126,15 @@ rooms = {
 								actors.purp_tentacle.y)
 							wait_for_actor(actors.purp_tentacle)
 							say_line(actors.purp_tentacle, "what did you call me?!")
-]]
+
 							-- part 3
 							change_room(rooms.back_garden, 1)
 							print_line("and even swimming pools!",90,20,8,1,true)
 							camera_at(200)
-							break_time(150)
 							camera_pan_to(0)
 							wait_for_camera()
 							print_line("quack!",45,60,10,1)
-
+]]
 							-- part 4
 							change_room(rooms.outside_room, 1)
 
@@ -1046,7 +1046,6 @@ end
 
 
 function do_anim(actor, cmd_type, cmd_value)
-
 	-- animate turn to face (object/actor or explicit direction)
 	if cmd_type == anim_face then
 		
@@ -1151,7 +1150,11 @@ function fades(fade, dir) -- 1=down, -1=up
 	end
 end
 
+
 function change_room(new_room, fade)
+	-- stop any existing fade (shouldn't be any, but just in case!)
+	stop_script(fade_script)
+
 	-- fade down existing room (or skip if first room)
 	if fade and room_curr then
 		fades(fade, 1)
@@ -1184,10 +1187,12 @@ function change_room(new_room, fade)
 	-- fade up again?
 	-- (use "thread" so that room.enter code is able to 
 	--  reposition camera before fade-up, if needed)
-	if fade then		
-		start_script( function() 
+	if fade then
+		-- setup new fade up
+		fade_script =  function() 
 				fades(fade, -1) 
-		end, true)
+		end
+		start_script(fade_script, true)
 	else
 		-- no fade - reset any existing fade
 		fade_iris = 0
@@ -1813,17 +1818,21 @@ function input_button_pressed(button_index)
 		-- execute verb script
 		executing_cmd = true
 		selected_actor.thread = cocreate(function(actor, obj, verb, noun2)
-			if not obj.owner then
+			-- if obj not in inventory (or about to give/use it)...
+			if not obj.owner 
+			 or noun2 then
 				-- walk to use pos and face dir
+				-- determine which item we're walking to
+				walk_obj = noun2 or obj
 				--todo: find nearest usepos if none set?
-				dest_pos = get_use_pos(obj)
+				dest_pos = get_use_pos(walk_obj)
 				walk_to(selected_actor, dest_pos.x, dest_pos.y)
 				-- abort if walk was interrupted
 				if selected_actor.moving != 2 then return end
 				-- face object/actor by default
-				use_dir = obj
+				use_dir = walk_obj
 				-- unless a diff dir specified
-				if obj.use_dir and verb != verb_default then use_dir = obj.use_dir end
+				if walk_obj.use_dir then use_dir = walk_obj.use_dir d("overide usedir") end
 				-- turn to use dir
 				do_anim(selected_actor, anim_face, use_dir)
 			end
