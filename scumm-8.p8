@@ -111,41 +111,28 @@ rooms = {
 							-- intro
 							break_time(50)
 							print_line("in a galaxy not far away...",64,45,8,1)
-							--wait_for_message()
 							change_room(rooms.first_room, 1)
 							print_line("cozy fireplaces...",90,20,8,1)
-							--wait_for_message()
 							print_line("(just look at it!)",90,20,8,1)
-							--wait_for_message()
 
 							-- part 2
 							printh("a")
 							change_room(rooms.second_room, 1)
 							print_line("strange looking aliens...",30,20,8,1,true)
-							
-							printh("b")
-
 							put_actor_at(actors.purp_tentacle, 130, actors.purp_tentacle.y, rooms.second_room)
 							walk_to(actors.purp_tentacle, 
 								actors.purp_tentacle.x-30, 
 								actors.purp_tentacle.y)
-
-							--wait_for_message()
 							wait_for_actor(actors.purp_tentacle)
-
 							say_line(actors.purp_tentacle, "what did you call me?!")
-							--wait_for_message()
 
 							-- part 3
 							change_room(rooms.back_garden, 1)
 							print_line("and even swimming pools!",90,20,8,1,true)
-							
 							camera_at(200)
 							camera_pan_to(64)
 							wait_for_camera()
-
 							print_line("quack!",45,60,10,1)
-							--wait_for_message()
 
 							-- part 4
 							change_room(rooms.outside_room, 1)
@@ -154,11 +141,9 @@ rooms = {
 							break_time(25)
 							change_room(rooms.title_room, 1)
 							camera_at(0)
-						
-							--break_time()
-							print_line("coming soon...;to a pico-8 near you!",64,45,8,1)
-							--wait_for_message()
-							fades(1,1)
+							
+							print_line("coming soon...:to a pico-8 near you!",64,45,8,1)
+							fades(1,1)	-- fade out
 							break_time(100)
 							
 						end) -- end cutscene
@@ -1373,7 +1358,7 @@ end
 function print_line(msg, x, y, col, align, dont_wait_msg)
   -- punctuation...
 	--  > ":" new line, shown after text prior expires
-	--  > "," new line, shown immediately
+	--  > ";" new line, shown immediately
 	-- note: an actor's talk animation is not activated as it is with say-line.
 
 	local col=col or 7 		-- default to white
@@ -1396,7 +1381,7 @@ function print_line(msg, x, y, col, align, dont_wait_msg)
 	msg_left = ""
 	for i = 1, #msg do
 		curchar=sub(msg,i,i)
-		if curchar == ";" then -- msg break
+		if curchar == ":" then -- msg break
 			--d("msg break!")
 			-- show msg up to this point
 			-- and process the rest as new message
@@ -1409,7 +1394,7 @@ function print_line(msg, x, y, col, align, dont_wait_msg)
 		end
 	end
 
-	lines = create_text_lines(msg, max_line_length, true)
+	lines = create_text_lines(msg, max_line_length) --, true)
 
 	-- find longest line
 	longest_line = longest_line_size(lines)
@@ -2439,7 +2424,8 @@ end
 
 
 -- auto-break message into lines
-function create_text_lines(msg, max_line_length, comma_is_newline)
+function create_text_lines(msg, max_line_length) --, comma_is_newline)
+	--  > ";" new line, shown immediately
 	local lines={}
 	local currline=""
 	local curword=""
@@ -2466,7 +2452,7 @@ function create_text_lines(msg, max_line_length, comma_is_newline)
 			curword=curword.."-"
 			upt(max_line_length)
 
-		elseif curchar == "," and comma_is_newline then 
+		elseif curchar == ";" then 
 			-- line break
 			currline=currline..sub(curword,1,#curword-1)
 			curword=""
