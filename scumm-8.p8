@@ -127,10 +127,12 @@ rooms = {
 
 							put_actor_at(actors.purp_tentacle, 130, actors.purp_tentacle.y, rooms.second_room)
 							walk_to(actors.purp_tentacle, 
-								actors.purp_tentacle.x-50, 
+								actors.purp_tentacle.x-30, 
 								actors.purp_tentacle.y)
 
-							wait_for_message()
+							--wait_for_message()
+							wait_for_actor(actors.purp_tentacle)
+
 							say_line(actors.purp_tentacle, "what did you call me?!")
 							wait_for_message()
 
@@ -1495,7 +1497,13 @@ function walk_to(actor, x, y)
 		actor.moving = 2 --arrived
 end
 
-
+function wait_for_actor(actor)
+	actor = actor or selected_actor
+	-- wait for actor to stop moving/turning
+	while actor.moving != 2 do
+		yield()
+	end
+end
 
 
 
