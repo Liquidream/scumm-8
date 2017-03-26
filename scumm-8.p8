@@ -111,17 +111,17 @@ rooms = {
 							-- intro
 							break_time(50)
 							print_line("in a galaxy not far away...",64,45,8,1)
-							wait_for_message()
+							--wait_for_message()
 							change_room(rooms.first_room, 1)
 							print_line("cozy fireplaces...",90,20,8,1)
-							wait_for_message()
+							--wait_for_message()
 							print_line("(just look at it!)",90,20,8,1)
-							wait_for_message()
+							--wait_for_message()
 
 							-- part 2
 							printh("a")
 							change_room(rooms.second_room, 1)
-							print_line("strange looking aliens...",30,20,8,1)
+							print_line("strange looking aliens...",30,20,8,1,true)
 							
 							printh("b")
 
@@ -134,18 +134,18 @@ rooms = {
 							wait_for_actor(actors.purp_tentacle)
 
 							say_line(actors.purp_tentacle, "what did you call me?!")
-							wait_for_message()
+							--wait_for_message()
 
 							-- part 3
 							change_room(rooms.back_garden, 1)
-							print_line("and even swimming pools!",90,20,8,1)
+							print_line("and even swimming pools!",90,20,8,1,true)
 							
 							camera_at(200)
 							camera_pan_to(64)
 							wait_for_camera()
 
 							print_line("quack!",45,60,10,1)
-							wait_for_message()
+							--wait_for_message()
 
 							-- part 4
 							change_room(rooms.outside_room, 1)
@@ -157,7 +157,7 @@ rooms = {
 						
 							--break_time()
 							print_line("coming soon...;to a pico-8 near you!",64,45,8,1)
-							wait_for_message()
+							--wait_for_message()
 							fades(1,1)
 							break_time(100)
 							
@@ -245,19 +245,19 @@ rooms = {
 				verbs = {
 					lookat = function()
 						say_line("it's a nice, warm fire...")
-						wait_for_message()
+						--wait_for_message()
 						break_time(10)
 						do_anim(selected_actor, anim_face, face_front)
 						say_line("ouch! it's hot!;*stupid fire*")
-						wait_for_message()
+						--wait_for_message()
 					end,
 					talkto = function()
 						say_line("'hi fire...'")
-						wait_for_message()
+						--wait_for_message()
 						break_time(10)
 						do_anim(selected_actor, anim_face, face_front)
 						say_line("the fire didn't say hello back;burn!!")
-						wait_for_message()
+						--wait_for_message()
 					end,
 					pickup = function(me)
 						pickup_obj(me)
@@ -342,13 +342,13 @@ rooms = {
 					give = function(me, noun2)
 						if noun2 == actors.purp_tentacle then
 							say_line("can you fill this up for me?")
-							wait_for_message()
+							--wait_for_message()
 							say_line(actors.purp_tentacle, "sure")
-							wait_for_message()
+							--wait_for_message()
 							me.owner = actors.purp_tentacle
 							break_time(30)
 							say_line(actors.purp_tentacle, "here ya go...")
-							wait_for_message()
+							--wait_for_message()
 							me.state = state_closed
 							me.name = "full bucket"
 							pickup_obj(me)
@@ -416,16 +416,16 @@ rooms = {
 									-- cutscene code
 									print_line("*bang*",40,20,8,1)
 									set_state(me, state_open)
-									wait_for_message()
+									--wait_for_message()
 									change_room(rooms.second_room, 1)
 									selected_actor = actors.purp_tentacle
 									walk_to(selected_actor, 
 										selected_actor.x+10, 
 										selected_actor.y)
 									say_line("what was that?!")
-									wait_for_message()
+									--wait_for_message()
 									say_line("i'd better check...")
-									wait_for_message()
+									--wait_for_message()
 									walk_to(selected_actor, 
 										selected_actor.x-10, 
 										selected_actor.y)
@@ -438,7 +438,7 @@ rooms = {
 										selected_actor.y)
 									say_line("intruder!!!")
 									do_anim(actors.main_actor, anim_face, actors.purp_tentacle)
-									wait_for_message()
+									--wait_for_message()
 								end,
 								-- override for cutscene
 								function()
@@ -552,7 +552,7 @@ rooms = {
 						camera_pan_to(selected_actor)
 						wait_for_camera()
 						say_line("let's do this")
-						wait_for_message()
+						--wait_for_message()
 					end
 				)
 			end
@@ -701,7 +701,7 @@ actors = {
 					cutscene(cut_noverbs, function()
 						--do_anim(actors.purp_tentacle, anim_face, selected_actor)
 						say_line(me,"what do you want?")
-						wait_for_message()
+						--wait_for_message()
 					end)
 
 					-- dialog loop start
@@ -720,23 +720,23 @@ actors = {
 
 						cutscene(cut_noverbs, function()
 							say_line(selected_sentence.msg)
-							wait_for_message()
+							--wait_for_message()
 							
 							if selected_sentence.num == 1 then
 								say_line(me, "you are in paul's game")
-								wait_for_message()
+								--wait_for_message()
 
 							elseif selected_sentence.num == 2 then
 								say_line(me, "it's complicated...")
-								wait_for_message()
+								--wait_for_message()
 
 							elseif selected_sentence.num == 3 then
 								say_line(me, "a wood-chuck would chuck no amount of wood, coz a wood-chuck can't chuck wood!")
-								wait_for_message()
+								--wait_for_message()
 
 							elseif selected_sentence.num == 4 then
 								say_line(me, "ok bye!")
-								wait_for_message()
+								--wait_for_message()
 								dialog_end()
 								return
 							end
@@ -1347,7 +1347,7 @@ function wait_for_message()
 end
 
 -- uses actor's position and color
-function say_line(actor, msg)
+function say_line(actor, msg, dont_wait_msg)
 	-- check for missing actor
 	if type(actor) == "string" then
 		-- assume actor ommitted and default to current
@@ -1360,7 +1360,7 @@ function say_line(actor, msg)
 	-- trigger actor's talk anim
 	talking_actor = actor
 	-- call the base print_line to show actor line
-	print_line(msg, actor.x, ypos, actor.col, 1)
+	print_line(msg, actor.x, ypos, actor.col, 1, dont_wait_msg)
 end
 
 -- stop everyone talking & remove displayed text
@@ -1370,7 +1370,7 @@ function stop_talking()
 end
 
 
-function print_line(msg, x, y, col, align)
+function print_line(msg, x, y, col, align, dont_wait_msg)
   -- punctuation...
 	--  > ":" new line, shown after text prior expires
 	--  > "," new line, shown immediately
@@ -1440,6 +1440,12 @@ function print_line(msg, x, y, col, align)
 		wait_for_message()
 		talking_actor = talking
 		print_line(msg_left, x, y, col, align)
+	end
+
+
+	-- and wait for message?
+	if not dont_wait_msg then
+		wait_for_message()
 	end
 end
 
