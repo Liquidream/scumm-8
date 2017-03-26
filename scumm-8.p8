@@ -111,12 +111,12 @@ rooms = {
 							-- intro
 							break_time(50)
 							print_line("in a galaxy not far away...",64,45,8,1)
-							change_room(rooms.first_room, 1)
+
+--[[							change_room(rooms.first_room, 1)
 							print_line("cozy fireplaces...",90,20,8,1)
 							print_line("(just look at it!)",90,20,8,1)
 
 							-- part 2
-							printh("a")
 							change_room(rooms.second_room, 1)
 							print_line("strange looking aliens...",30,20,8,1,true)
 							put_actor_at(actors.purp_tentacle, 130, actors.purp_tentacle.y, rooms.second_room)
@@ -125,26 +125,26 @@ rooms = {
 								actors.purp_tentacle.y)
 							wait_for_actor(actors.purp_tentacle)
 							say_line(actors.purp_tentacle, "what did you call me?!")
-
+]]
 							-- part 3
 							change_room(rooms.back_garden, 1)
 							print_line("and even swimming pools!",90,20,8,1,true)
 							camera_at(200)
-							camera_pan_to(64)
+							break_time(150)
+							camera_pan_to(0)
 							wait_for_camera()
 							print_line("quack!",45,60,10,1)
 
 							-- part 4
 							change_room(rooms.outside_room, 1)
-							
-							-- outro
-							break_time(25)
+
+						--[[	-- outro
+							--break_time(25)
 							change_room(rooms.title_room, 1)
-							camera_at(0)
 							
 							print_line("coming soon...:to a pico-8 near you!",64,45,8,1)
 							fades(1,1)	-- fade out
-							break_time(100)
+							break_time(100)]]
 							
 						end) -- end cutscene
 
@@ -537,7 +537,6 @@ rooms = {
 						camera_pan_to(selected_actor)
 						wait_for_camera()
 						say_line("let's do this")
-						--wait_for_message()
 					end
 				)
 			end
@@ -879,6 +878,7 @@ end
 -- (you should not need to modify anything below here!)
 -- ################################################################
 
+-- point center of camera at...
 function camera_at(val)
 	-- check params for obj/actor
 	if type(val) == "table" then
@@ -893,7 +893,6 @@ end
 
 function camera_follow(actor)
 	-- set target
-	--d("setting cam follow to:"..type(actor))
 	cam_following_actor = actor
 	-- clear other cam values
 	cam_pan_to_x = nil
@@ -903,7 +902,9 @@ function camera_follow(actor)
 		-- (until further notice)
 		while cam_following_actor do
 			-- keep camera within "room" bounds
-			cam_x = mid(0, cam_following_actor.x - 64, (room_curr.map_w*8)-screenwidth-1 )
+			if cam_following_actor.in_room == room_curr then
+				cam_x = mid(0, cam_following_actor.x-64, (room_curr.map_w*8)-screenwidth-1 )
+			end
 			yield()
 		end
 	end
@@ -917,9 +918,9 @@ function camera_pan_to(val)
 		val = val.x
 	end
 
-	-- todo: set target (within bounds!)
-	cam_pan_to_x = val
-
+	-- set target, but keep camera within "room" bounds
+	cam_pan_to_x = mid(64, val, (room_curr.map_w*8)-(screenwidth/2) )
+	--cam_pan_to_x = val
 
 	-- clear other cam values
 	cam_following_actor = nil
@@ -927,10 +928,7 @@ function camera_pan_to(val)
 	cam_script = function()
 		-- update the camera pan until reaches dest
 		while (true) do
-			printh("panning...")
 			center_view = cam_x + flr(screenwidth/2) +1
-			printh("center_view: "..center_view)
-			printh("cam_pan_to_x: "..cam_pan_to_x)
 			if center_view == cam_pan_to_x then
 				-- pan complete
 				cam_pan_to_x = nil
@@ -940,8 +938,7 @@ function camera_pan_to(val)
 			else
 				cam_x -= 0.5
 			end
-			-- keep camera within "room" bounds
-			cam_x = mid(0, cam_x, (room_curr.map_w*8)-screenwidth-1 )
+			-- don't hog cpu
 			yield()
 		end
 	end
@@ -1110,12 +1107,7 @@ function close_door(door_obj1, door_obj2)
 end
 
 function come_out_door(door_obj, fade_effect)
-	
 	new_room = door_obj.in_room
-
-	-- reset camera pos in new room
-	-- (if camera following, then this will get re-applied)
-	cam_x = 0
 
 	-- switch to new room and...
 	change_room(new_room, fade_effect)
@@ -1133,7 +1125,6 @@ function come_out_door(door_obj, fade_effect)
 	 opp_dir = 1 -- front
 	end
 	selected_actor.face_dir = opp_dir
-	--do_anim(selected_actor, anim_face, opp_dir)
 end
 
 function fades(fade, dir) -- 1=down, -1=up
@@ -1161,41 +1152,34 @@ function fades(fade, dir) -- 1=down, -1=up
 end
 
 function change_room(new_room, fade)
-	printh(">1")
 	-- fade down existing room (or skip if first room)
 	if fade and room_curr then
 		fades(fade, 1)
 	end
-
-	printh(">2")
-
 	-- switch to new room
 	-- execute the exit() script of old room
 	if room_curr and room_curr.exit then
 		-- run script directly, so wait to finish
-		printh(">2a")
 		room_curr.exit(room_curr)
 	end
-	
-printh(">3")
 
 	-- stop all active (local) scripts
 	local_scripts = {}
 
 	-- clear current command
 	clear_curr_cmd()
-	
-
-
-	printh(">4")
 
 	-- actually change rooms now
 	room_curr = new_room
 
+	-- reset camera pos in new room (unless camera following)
+	if not cam_following_actor 
+	 or cam_following_actor.in_room != room_curr then
+		cam_x = 0
+	end
+
 	-- stop everyone talking & remove displayed text
 	stop_talking()
-
-	printh(">5")
 
 	-- fade up again?
 	-- (use "thread" so that room.enter code is able to 
@@ -1214,8 +1198,6 @@ printh(">3")
 		-- run script directly
 		room_curr.enter(room_curr)
 	end
-
-	printh(">3")
 end
 
 function valid_verb(verb, object)
@@ -1427,7 +1409,6 @@ function print_line(msg, x, y, col, align, dont_wait_msg)
 		print_line(msg_left, x, y, col, align)
 	end
 
-
 	-- and wait for message?
 	if not dont_wait_msg then
 		wait_for_message()
@@ -1509,7 +1490,6 @@ stage_top = 16
 
 -- offset to display speech above actors (dist in px from their feet)
 --text_offset = (selected_actor.h-1)*8
-
 cam_x = 0
 --cam_following_actor = selected_actor
 cam_pan_to_x = nil	-- target pos to pad camera to
@@ -2601,7 +2581,6 @@ function find_path(start, goal)
 		path[oppindex] = temp
 
 	end
-	--printh("..done")
  end
 
  return path
