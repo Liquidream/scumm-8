@@ -114,6 +114,7 @@ rooms = {
 							print_line("in a galaxy not far away...",64,45,8,1)
 
 							change_room(rooms.first_room, 1)
+							start_script(rooms.first_room.scripts.spin_top, true)
 							print_line("cozy fireplaces...",90,20,8,1)
 							print_line("(just look at it!)",90,20,8,1)
 
@@ -171,8 +172,6 @@ rooms = {
 		enter = function(me)
 			-- animate fireplace
 			start_script(me.scripts.anim_fire, true) -- bg script
-
-			start_script(me.scripts.spin_top, true)
 		end,
 		exit = function(me)
 			-- pause fireplace while not in room
@@ -198,7 +197,8 @@ rooms = {
 						end
 						-- move top
 						top = find_object("spinning top")
-						top.x -= dir						
+						top.x -= dir	
+						d(top.x)					
 					end	
 					dir *= -1
 				end				
@@ -233,7 +233,7 @@ rooms = {
 						--wait_for_message()
 						break_time(10)
 						do_anim(selected_actor, anim_face, face_front)
-						say_line("ouch! it's hot!;*stupid fire*")
+						say_line("ouch! it's hot!:*stupid fire*")
 						--wait_for_message()
 					end,
 					talkto = function()
@@ -241,7 +241,7 @@ rooms = {
 						--wait_for_message()
 						break_time(10)
 						do_anim(selected_actor, anim_face, face_front)
-						say_line("the fire didn't say hello back;burn!!")
+						say_line("the fire didn't say hello back:burn!!")
 						--wait_for_message()
 					end,
 					pickup = function(me)
@@ -399,8 +399,8 @@ rooms = {
 								function()
 									me.done_cutscene = true
 									-- cutscene code
-									print_line("*bang*",40,20,8,1)
 									set_state(me, state_open)
+									print_line("*bang*",40,20,8,1)
 									--wait_for_message()
 									change_room(rooms.second_room, 1)
 									selected_actor = actors.purp_tentacle
