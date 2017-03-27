@@ -44,7 +44,7 @@ verb_defcol = 10   -- default action (yellow)
 
 -- ================================================================
 -- scumm-8 enums/constants
--- ================================================================
+-- 
 
 -- object states
 state_closed = 1
@@ -83,7 +83,7 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 
 -- ================================================================
 -- room definitions
--- ================================================================
+-- 
 rooms = {
 
 	title_room = {
@@ -650,7 +650,7 @@ rooms = {
 
 -- ================================================================
 -- actor definitions
--- ================================================================
+-- 
 actors = {
 	-- initialize the player's actor object
 	main_actor = { 		
@@ -1946,10 +1946,14 @@ function check_collisions()
 			obj.bounds = nil
 		end
 
+
 		if iscursorcolliding(obj) then
 			-- if highest (or first) object in hover "stack" 
 			if not hover_curr_object
-			 or obj.z > hover_curr_object then
+			 or (not obj.z and not hover_curr_object.z)
+			 or	(obj.z and not hover_curr_object.z and obj.z > hover_curr_object.y) 
+			 or	(obj.z and hover_curr_object.z and obj.z > hover_curr_object.z) 
+			then
 				hover_curr_object = obj
 			end
 		end
@@ -2379,7 +2383,7 @@ function sprdraw(n, x, y, w, h, transcol, flip_x, flip_y)
 	-- restore default trans	
  	palt(transcol, false)
 	palt(0, true)
-	--pal() -- don't, affects lighting!
+	--pal() -- don't, affects lighting
 end
 
 
