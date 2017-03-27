@@ -165,11 +165,11 @@ rooms = {
 	first_room = {
 		map_x = 0,
 		map_y = 0,
-		col_replace = { 
-			{ 7, 15 }, 
-			-- { 4, 5 }, 
-			-- { 6, 8 } 
-		},
+		-- col_replace = { 
+		-- 	{ 7, 15 }, 
+		-- 	-- { 4, 5 }, 
+		-- 	-- { 6, 8 } 
+		-- },
 		enter = function(me)
 			-- animate fireplace
 			start_script(me.scripts.anim_fire, true) -- bg script
@@ -1504,9 +1504,9 @@ stage_top = 16
 --text_offset = (selected_actor.h-1)*8
 cam_x = 0
 --cam_following_actor = selected_actor
-cam_pan_to_x = nil	-- target pos to pad camera to
-cam_script = nil	-- active camera logic script (pan-to, follow, etc.)
-cam_shake_amount = 0
+cam_pan_to_x = nil	 -- target pos to pad camera to
+cam_script = nil		 -- active camera logic script (pan-to, follow, etc.)
+cam_shake_amount = 0 -- multiplier for shake (0=off)
 
 cursor_x = screenwidth / 2
 cursor_y = screenheight / 2
@@ -1638,8 +1638,10 @@ function game_draw()
 		screenwidth+1 -fade_iris*2, 
 		64 -fade_iris*2)
 
+	_fadepal(0.75)
 	-- draw room (bg + objects + actors)
 	room_draw()
+	pal()
 
 	-- reset camera for "static" content (ui, etc.)
 	camera(0,0)
@@ -2382,6 +2384,20 @@ function update_scripts(scripts)
 			scr_obj = nil
 		end
 	end
+end
+
+function _fadepal(perc)
+ local p=flr(mid(0,perc,1)*100)
+ dpal={0,1,1, 2,1,13,6,
+          4,4,9,3, 13,1,13,14}
+ for j=1,15 do
+  col = j
+  kmax=(p+(j*1.46))/22
+  for k=1,kmax do
+   col=dpal[col]
+  end
+  pal(j,col)
+ end
 end
 
 
