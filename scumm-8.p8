@@ -178,7 +178,7 @@ rooms = {
 			-- pause fireplace while not in room
 			stop_script(me.scripts.anim_fire)
 		end,
-		lighting = 0, -- state of lights in current room
+		lighting = 0.5, -- state of lights in current room
 		scripts = {	  -- scripts that are at room-level
 			anim_fire = function()
 				while true do
@@ -220,6 +220,7 @@ rooms = {
 				states = {145, 146, 147},
 				w = 1,	-- relates to spr or map cel, depending on above
 				h = 1,  --
+				lighting = 0,
 				--use_dir = face_back,
 				--use_pos = pos_infront,
 
@@ -1638,10 +1639,8 @@ function game_draw()
 		screenwidth+1 -fade_iris*2, 
 		64 -fade_iris*2)
 
-	_fadepal(0.75)
 	-- draw room (bg + objects + actors)
 	room_draw()
-	pal()
 
 	-- reset camera for "static" content (ui, etc.)
 	camera(0,0)
@@ -2015,7 +2014,7 @@ function room_draw()
 	
 	-- ===============================================================
 	-- debug walkable areas
-	-- ===============================================================
+	-- 
 	-- if show_pathfinding then
 	-- 	actor_cell_pos = getcellpos(selected_actor)
 
@@ -2041,7 +2040,7 @@ function room_draw()
 	-- 			stage_top+(p[2]-room_curr.map_y)*8+7, 11)
 	-- 	end
 	-- end
-	-- ===============================================================
+
 
 	-- draw each zplane, from back to front
 	for z = 1,64 do
@@ -2073,8 +2072,15 @@ function room_draw()
 end
 
 function replace_colors(obj)
+	-- replace colors (where defined)
 	for c in all(obj.col_replace) do
 		pal(c[1], c[2])
+	end
+	-- also apply brightness (default to room-level, if not set)
+	if obj.lighting then
+		_fadepal(obj.lighting)
+	elseif obj.in_room then
+		_fadepal(obj.in_room.lighting)
 	end
 end
 
