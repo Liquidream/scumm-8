@@ -178,7 +178,7 @@ rooms = {
 			-- pause fireplace while not in room
 			stop_script(me.scripts.anim_fire)
 		end,
-		lighting = 0.5, -- state of lights in current room
+		lighting = 0.5, -- lighting level current room
 		scripts = {	  -- scripts that are at room-level
 			anim_fire = function()
 				while true do
@@ -202,25 +202,18 @@ rooms = {
 					end	
 					dir *= -1
 				end				
-			end
-			-- ,watch_tentacle = function()
-			-- 	while true do
-			-- 		d("watching tentacle...")
-			-- 		do_anim(selected_actor, anim_face, actors.purp_tentacle)
-			-- 		break_time(10)
-			-- 	end
-			-- end
+			end		
 		},
 		objects = {
 			fire = {
 				name = "fire",
-				state = 1, --"frame1",
+				state = 1,
 				x = 8 *8, -- (*8 to use map cell pos)
 				y = 4 *8,
 				states = {145, 146, 147},
 				w = 1,	-- relates to spr or map cel, depending on above
 				h = 1,  --
-				lighting = 0,
+				lighting = 1, -- lighting level for object
 				--use_dir = face_back,
 				--use_pos = pos_infront,
 
@@ -2393,6 +2386,7 @@ function update_scripts(scripts)
 end
 
 function _fadepal(perc)
+ if perc then perc = 1-perc end
  local p=flr(mid(0,perc,1)*100)
  dpal={0,1,1, 2,1,13,6,
           4,4,9,3, 13,1,13,14}
