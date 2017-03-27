@@ -112,8 +112,8 @@ rooms = {
 							break_time(50)
 							print_line("in a galaxy not far away...",64,45,8,1)
 
-							shake(true)
 							change_room(rooms.first_room, 1)
+							shake(true)
 							start_script(rooms.first_room.scripts.spin_top, true)
 							print_line("cozy fireplaces...",90,20,8,1)
 							print_line("(just look at it!)",90,20,8,1)
@@ -882,8 +882,6 @@ function shake(enabled)
 	if enabled then
 		-- enable the camera shake
 		cam_shake_amount = 1
-	else
-		cam_shake_amount = 0.95
 	end
 	-- enable/disable shake, which will fade out
 	cam_shake = enabled
@@ -1508,10 +1506,7 @@ cam_x = 0
 --cam_following_actor = selected_actor
 cam_pan_to_x = nil	-- target pos to pad camera to
 cam_script = nil	-- active camera logic script (pan-to, follow, etc.)
-cam_shake = false
 cam_shake_amount = 0
-cam_shake_x = 0
-cam_shake_y = 0
 
 cursor_x = screenwidth / 2
 cursor_y = screenheight / 2
@@ -1618,13 +1613,13 @@ function game_update()
 	check_collisions()
 
 	-- update camera shake (if active)
-	cam_shake_x = 4-rnd(8)
- 	cam_shake_y = 4-rnd(8)
+	cam_shake_x = 1.5-rnd(3)
+ 	cam_shake_y = 1.5-rnd(3)
 	cam_shake_x *= cam_shake_amount
   cam_shake_y *= cam_shake_amount
 	if not cam_shake then
-		cam_shake_amount = cam_shake_amount * 0.95
- 		if (cam_shake_amount < 0.05) then cam_shake_amount = 0 end
+		cam_shake_amount *= 0.90
+ 		if cam_shake_amount < 0.05 then cam_shake_amount = 0 end
 	end
 end
 
