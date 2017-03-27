@@ -97,7 +97,7 @@ rooms = {
 			
 					cutscene(cut_noverbs + cut_no_follow, 
 						function()
---[[
+
 							-- intro
 							break_time(50)
 							print_line("in a galaxy not far away...",64,45,8,1)
@@ -126,7 +126,7 @@ rooms = {
 							camera_pan_to(0)
 							wait_for_camera()
 							print_line("quack!",45,60,10,1)
-]]
+
 							-- part 4
 							change_room(rooms.outside_room, 1)
 
@@ -168,7 +168,7 @@ rooms = {
 			-- pause fireplace while not in room
 			stop_script(me.scripts.anim_fire)
 		end,
-		lighting = 0.5, -- lighting level current room
+		lighting = 0.75, -- lighting level current room
 		scripts = {	  -- scripts that are at room-level
 			anim_fire = function()
 				while true do

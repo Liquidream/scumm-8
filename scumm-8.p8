@@ -107,7 +107,7 @@ rooms = {
 			
 					cutscene(cut_noverbs + cut_no_follow, 
 						function()
---[[
+
 							-- intro
 							break_time(50)
 							print_line("in a galaxy not far away...",64,45,8,1)
@@ -136,7 +136,7 @@ rooms = {
 							camera_pan_to(0)
 							wait_for_camera()
 							print_line("quack!",45,60,10,1)
-]]
+
 							-- part 4
 							change_room(rooms.outside_room, 1)
 --[[
