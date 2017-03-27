@@ -4,22 +4,14 @@ __lua__
 -- scumm-8
 -- paul nicholas
 
--- ### luamin command
--- python c:\users\pauln\owncloud\dev\pico-8\picotool\p8tool luamin c:\users\pauln\owncloud\games\pico-8\carts\git_repos\scumm-8\scumm-8.p8
-
 -- ### luamin fixes ###
 --	"\65\66\67\68\69\70\71\72\73\74\75\76\77\78\79\80\81\82\83\84\85\86\87\88\89\90\91\92"
-
--- was  6439 tokens (b4 pathfinding)
--- then 6500 tokens (after pathfinding & token hunting)
--- then 6673 tokens (after adding transitions, camera pan/follow, turn-to-face, etc)
-
 
 -- debugging
 show_debuginfo = false
 show_collision = false
 --show_pathfinding = true
-show_perfinfo = false
+show_perfinfo = true
 enable_mouse = true
 d = printh
 
@@ -250,7 +242,8 @@ rooms = {
 				state = state_closed,
 				x = 1*8, -- (*8 to use map cell pos)
 				y = 2*8,
-				elevation = -10, -- force to always be bg
+				z = 1, -- force to always be bg (0=bg layer)
+				--elevation = -10, -- force to always be bg
 				states = { -- states are spr values
 					143, -- state_closed
 					0   -- state_open
@@ -370,6 +363,18 @@ rooms = {
 					end
 				}
 			},
+			ztest = {
+				name = "ztest",
+				state = state_closed,
+				x = 4*8, -- (*8 to use map cell pos)
+				y = 1*8,
+				z = -1,
+				w = 1,	-- relates to spr or map cel, depending on above
+				h = 4,  --
+				states = {  -- states are spr values
+					1, -- closed
+				}
+			},
 			window = {
 				name = "window",
 				class = class_openable,
@@ -386,7 +391,7 @@ rooms = {
 				states = {  -- states are spr values
 					132, -- closed
 					134  -- open
-				},
+				},				
 				verbs = {
 					open = function(me)
 						if not me.done_cutscene then
@@ -474,7 +479,8 @@ rooms = {
 				state = state_closed,
 				x = 22*8, -- (*8 to use map cell pos)
 				y = 2*8,
-				elevation = -10, -- force to always be bg
+				z = 1, -- force to always be bg (0=bg layer)
+				--elevation = -10, -- force to always be bg
 				states = {
 					-- states are spr values
 					143, -- closed
@@ -1976,7 +1982,7 @@ end
 
 function reset_zplanes()
 	draw_zplanes = {}
-	for x=1,64 do
+	for x=-64,64 do
 		draw_zplanes[x] = {}
 	end
 end
@@ -1992,21 +1998,14 @@ function recalc_zplane(obj)
 	end
 	zplane = flr(ypos - stage_top)
 
-	if obj.elevation then zplane += obj.elevation end
+	if obj.z then zplane = obj.z end
+	--if obj.elevation then zplane += obj.elevation end
 
 	add(draw_zplanes[zplane],obj)
 end
 
 function room_draw()
-	-- draw current room
 
-	-- replace colors?
-	replace_colors(room_curr)
-	map(room_curr.map_x, room_curr.map_y, 0, stage_top, room_curr.map_w , room_curr.map_h)
-	--reset palette
-	pal() 
-	
-	-- ===============================================================
 	-- debug walkable areas
 	-- 
 	-- if show_pathfinding then
@@ -2037,31 +2036,42 @@ function room_draw()
 
 
 	-- draw each zplane, from back to front
-	for z = 1,64 do
-		zplane = draw_zplanes[z]
-		-- draw all objs/actors in current zplane
-		for obj in all(zplane) do
-			-- object or actor?
-			if not has_flag(obj.class, class_actor) then
-				-- object
-				if (obj.states) 						-- object has a state?
-				 and obj.states[obj.state]
-				 and (obj.states[obj.state] > 0)
-				 and (not obj.dependent_on 			-- object has a valid dependent state?
-				 	or find_object(obj.dependent_on).state == obj.dependent_on_state)
-				 and not obj.owner   						-- object is not "owned"
-				then
-					-- something to draw
-					object_draw(obj)
+	for z = -64,64 do
+
+		-- draw bg layer?
+		if z == 0 then			
+			-- replace colors?
+			replace_colors(room_curr)
+			map(room_curr.map_x, room_curr.map_y, 0, stage_top, room_curr.map_w , room_curr.map_h)
+			--reset palette
+			pal()		
+		else
+			-- draw other layers
+			zplane = draw_zplanes[z]
+			-- draw all objs/actors in current zplane
+			for obj in all(zplane) do
+				-- object or actor?
+				if not has_flag(obj.class, class_actor) then
+					-- object
+					if (obj.states) 						-- object has a state?
+					and obj.states[obj.state]
+					and (obj.states[obj.state] > 0)
+					and (not obj.dependent_on 			-- object has a valid dependent state?
+						or find_object(obj.dependent_on).state == obj.dependent_on_state)
+					and not obj.owner   						-- object is not "owned"
+					then
+						-- something to draw
+						object_draw(obj)
+					end
+				else
+					-- actor
+					if (obj.in_room == room_curr) then
+						actor_draw(obj)
+					end
 				end
-			else
-				-- actor
-				if (obj.in_room == room_curr) then
-					actor_draw(obj)
-				end
+				show_collision_box(obj)
 			end
-			show_collision_box(obj)
-		end
+		end		
 	end
 end
 
