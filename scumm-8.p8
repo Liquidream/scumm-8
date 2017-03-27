@@ -100,6 +100,10 @@ rooms = {
 					cutscene(cut_noverbs + cut_no_follow, 
 						function()
 
+							selected_actor = actors.main_actor
+							put_actor_at(selected_actor, 60, 50, rooms.first_room)
+							change_room(rooms.first_room, 1)
+
 	--[[						-- intro
 							break_time(50)
 							print_line("in a galaxy not far away...",64,45,8,1)
@@ -127,12 +131,12 @@ rooms = {
 							camera_at(200)
 							camera_pan_to(0)
 							wait_for_camera()
-							print_line("quack!",45,60,10,1)]]
+							print_line("quack!",45,60,10,1)
 
 							-- part 4
-							change_room(rooms.outside_room, 1)
+							--change_room(rooms.outside_room, 1)
 							
---[[
+
 							-- outro
 							--break_time(25)
 							change_room(rooms.title_room, 1)
@@ -1502,7 +1506,7 @@ function proximity(obj1, obj2)
 	if type(obj1) == "string" then
 		obj2 = find_object(obj2)
 	end
-	
+
 	-- calc dist between objects
 	if obj1.in_room == obj2.in_room then
 		local distance = sqrt((obj1.x - obj2.x) ^ 2 + (obj1.y - obj2.y) ^ 2)
@@ -1786,7 +1790,7 @@ function input_button_pressed(button_index)
 
 	local verb_in = verb_curr
 
-	-- temp workaround if no actor selected at this point
+	-- abort if no actor selected at this point
 	if not selected_actor then 
 		return
 	end
@@ -1845,8 +1849,9 @@ function input_button_pressed(button_index)
 		-- what else could there be? actors!?
 	end
 
-	-- attempt to use verb on object
-	if (noun1_curr != nil) then
+	-- attempt to use verb on object (if not already executing verb)
+	if noun1_curr != nil 
+	 and not executing_cmd then
 		-- are we starting a 'use' command?
 		if verb_curr[2] == "use" or verb_curr[2] == "give" then
 			if noun2_curr then
