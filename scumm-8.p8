@@ -99,8 +99,7 @@ rooms = {
 		map_y = 8,
 		enter = function(me)
 
-			-- todo: anything here?
-			--selected_actor = actors.main_actor
+			-- demo intro
 		
 			if not me.done_intro then
 				-- don't do this again
@@ -113,10 +112,12 @@ rooms = {
 							break_time(50)
 							print_line("in a galaxy not far away...",64,45,8,1)
 
+							shake(true)
 							change_room(rooms.first_room, 1)
 							start_script(rooms.first_room.scripts.spin_top, true)
 							print_line("cozy fireplaces...",90,20,8,1)
 							print_line("(just look at it!)",90,20,8,1)
+							shake(false)
 
 							-- part 2
 							change_room(rooms.second_room, 1)
@@ -197,8 +198,7 @@ rooms = {
 						end
 						-- move top
 						top = find_object("spinning top")
-						top.x -= dir	
-						d(top.x)					
+						top.x -= dir					
 					end	
 					dir *= -1
 				end				
@@ -878,13 +878,15 @@ end
 -- (you should not need to modify anything below here!)
 -- ################################################################
 
-function _center_camera(val)
-	-- check params for obj/actor
-	if type(val) == "table" then
-		val = val.x
+function shake(enabled)
+	if enabled then
+		-- enable the camera shake
+		cam_shake_amount = 1
+	else
+		cam_shake_amount = 0.95
 	end
-	-- keep camera within "room" bounds
-	return mid(0, val-64, (room_curr.map_w*8)-screenwidth-1 )
+	-- enable/disable shake, which will fade out
+	cam_shake = enabled
 end
 
 
@@ -1506,6 +1508,10 @@ cam_x = 0
 --cam_following_actor = selected_actor
 cam_pan_to_x = nil	-- target pos to pad camera to
 cam_script = nil	-- active camera logic script (pan-to, follow, etc.)
+cam_shake = false
+cam_shake_amount = 0
+cam_shake_x = 0
+cam_shake_y = 0
 
 cursor_x = screenwidth / 2
 cursor_y = screenheight / 2
@@ -1535,7 +1541,8 @@ talking_curr = nil 	-- currently displayed speech {x,y,col,lines...}
 dialog_curr = nil   -- currently displayed dialog options to pick
 cutscene_curr = nil -- currently active cutscene
 talking_actor = nil -- currently talking actor
-fade_iris = 0			  -- depends on effect above
+fade_iris = 0			  -- +ve number = amount to close iris by
+fade_colors = 0			-- +ve number = amount to fade colors by (up to 1)
 
 global_scripts = {}	-- table of scripts that are at game-level (background)
 local_scripts = {}	-- table of scripts that are actively running
@@ -1609,6 +1616,16 @@ function game_update()
 
 	-- check for collisions
 	check_collisions()
+
+	-- update camera shake (if active)
+	cam_shake_x = 4-rnd(8)
+ 	cam_shake_y = 4-rnd(8)
+	cam_shake_x *= cam_shake_amount
+  cam_shake_y *= cam_shake_amount
+	if not cam_shake then
+		cam_shake_amount = cam_shake_amount * 0.95
+ 		if (cam_shake_amount < 0.05) then cam_shake_amount = 0 end
+	end
 end
 
 
@@ -1616,8 +1633,8 @@ function game_draw()
 	-- clear screen every frame?
 	rectfill(0, 0, screenwidth, screenheight, 0)
 
-	-- reposition camera
-	camera(cam_x, 0)
+	-- reposition camera (account for shake, if active)
+	camera(cam_x+cam_shake_x, 0+cam_shake_y)
 
 	-- clip room bounds (also used for "iris" transition)
 	clip(
@@ -2371,6 +2388,18 @@ function update_scripts(scripts)
 		end
 	end
 end
+
+
+function _center_camera(val)
+	-- check params for obj/actor
+	if type(val) == "table" then
+		val = val.x
+	end
+	-- keep camera within "room" bounds
+	return mid(0, val-64, (room_curr.map_w*8)-screenwidth-1 )
+end
+
+
 
 -- returns whether room map cel at position is "walkable"
 function iswalkable(x, y)
