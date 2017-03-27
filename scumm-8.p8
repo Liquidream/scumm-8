@@ -1947,7 +1947,11 @@ function check_collisions()
 		end
 
 		if iscursorcolliding(obj) then
-			hover_curr_object = obj
+			-- if highest (or first) object in hover "stack" 
+			if not hover_curr_object
+			 or obj.z > hover_curr_object then
+				hover_curr_object = obj
+			end
 		end
 		-- recalc z-plane
 		recalc_zplane(obj)
