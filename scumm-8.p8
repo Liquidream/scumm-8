@@ -139,6 +139,7 @@ rooms = {
 
 							-- part 4
 							change_room(rooms.outside_room, 1)
+							
 --[[
 							-- outro
 							--break_time(25)
