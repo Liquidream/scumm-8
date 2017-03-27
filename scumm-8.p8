@@ -107,7 +107,7 @@ rooms = {
 			
 					cutscene(cut_noverbs + cut_no_follow, 
 						function()
-
+--[[
 							-- intro
 							break_time(50)
 							print_line("in a galaxy not far away...",64,45,8,1)
@@ -136,10 +136,10 @@ rooms = {
 							camera_pan_to(0)
 							wait_for_camera()
 							print_line("quack!",45,60,10,1)
-
+]]
 							-- part 4
 							change_room(rooms.outside_room, 1)
-
+--[[
 							-- outro
 							--break_time(25)
 							change_room(rooms.title_room, 1)
@@ -147,7 +147,7 @@ rooms = {
 							print_line("coming soon...:to a pico-8 near you!",64,45,8,1)
 							fades(1,1)	-- fade out
 							break_time(100)
-							
+							]]
 						end) -- end cutscene
 
 				end -- if not done intro
@@ -1845,8 +1845,8 @@ function input_button_pressed(button_index)
 				-- face object/actor by default
 				use_dir = walk_obj
 				-- unless a diff dir specified
-				if walk_obj.use_dir then use_dir = walk_obj.use_dir d("overide usedir") end
-				-- turn to use dir
+				if walk_obj.use_dir then use_dir = walk_obj.use_dir end
+				-- turn to use dir				
 				do_anim(selected_actor, anim_face, use_dir)
 			end
 			-- does current object support active verb?
@@ -2333,8 +2333,10 @@ function sprdraw(n, x, y, w, h, transcol, flip_x, flip_y)
  	palt(transcol, true)
 	 -- draw sprite
 	spr(n, x, stage_top + y, w, h, flip_x, flip_y) --
-	-- restore default trans
-	pal()
+	-- restore default trans	
+ 	palt(transcol, false)
+	palt(0, true)
+	--pal() -- don't, affects lighting!
 end
 
 
