@@ -100,7 +100,7 @@ rooms = {
 					cutscene(cut_noverbs + cut_no_follow, 
 						function()
 
-							-- intro
+	--[[						-- intro
 							break_time(50)
 							print_line("in a galaxy not far away...",64,45,8,1)
 
@@ -127,7 +127,7 @@ rooms = {
 							camera_at(200)
 							camera_pan_to(0)
 							wait_for_camera()
-							print_line("quack!",45,60,10,1)
+							print_line("quack!",45,60,10,1)]]
 
 							-- part 4
 							change_room(rooms.outside_room, 1)
@@ -158,20 +158,23 @@ rooms = {
 	first_room = {
 		map_x = 0,
 		map_y = 0,
-		-- col_replace = { 
+		col_replace = { 
 		-- 	{ 7, 15 }, 
 		-- 	-- { 4, 5 }, 
 		-- 	-- { 6, 8 } 
-		-- },
+		},
 		enter = function(me)
 			-- animate fireplace
 			start_script(me.scripts.anim_fire, true) -- bg script
+
+			start_script(me.scripts.tentacle_guard, true) -- bg script
+			
 		end,
 		exit = function(me)
 			-- pause fireplace while not in room
 			stop_script(me.scripts.anim_fire)
 		end,
-		lighting = 0.5, -- lighting level current room
+		lighting = 0.75, -- lighting level current room
 		scripts = {	  -- scripts that are at room-level
 			anim_fire = function()
 				while true do
@@ -195,7 +198,16 @@ rooms = {
 					end	
 					dir *= -1
 				end				
-			end		
+			end,
+			tentacle_guard = function()
+				while true do
+					d("tentacle guarding...")
+					if proximity(actors.main_actor, actors.purp_tentacle) < 30 then
+						say_line(actors.purp_tentacle, "halt!!!")
+					end
+					break_time(10)
+				end
+			end
 		},
 		objects = {
 			fire = {
@@ -248,8 +260,6 @@ rooms = {
 					143, -- state_closed
 					0   -- state_open
 				},
-				--flip_x = false, -- used for flipping the sprite
-				--flip_y = false,
 				w = 1,	-- relates to spr or map cel, depending on above
 				h = 4,  --
 				use_pos = pos_right,
@@ -339,15 +349,15 @@ rooms = {
 			spinning_top = {
 				name = "spinning top",
 				state = 1,
-				x = 2*8, -- (*8 to use map cell pos)
+				x = 2*8,
 				y = 6*8,
 				states = { 192, 193, 194 },
 				col_replace = { -- replace colors (orig,new)
 					{ 12, 7 } 
 				},
 				trans_col=15,
-				w = 1,	-- relates to spr or map cel, depending on above
-				h = 1,  --
+				w = 1,
+				h = 1,
 				verbs = {
 					push = function(me)
 						if script_running(room_curr.scripts.spin_top) then
@@ -366,29 +376,29 @@ rooms = {
 			ztest = {
 				name = "ztest",
 				state = state_closed,
-				x = 4*8, -- (*8 to use map cell pos)
+				x = 4*8,
 				y = 1*8,
 				z = -1,
-				w = 1,	-- relates to spr or map cel, depending on above
-				h = 4,  --
-				states = {  -- states are spr values
+				w = 1,
+				h = 4,
+				states = {
 					1, -- closed
-				}
+				},
+				trans_col = 11
 			},
 			window = {
 				name = "window",
 				class = class_openable,
 				state = state_closed,
-				--use_dir = face_back,
 
 				-- todo: make this calculated, by closed walkable pos!
 				use_pos = { x = 5 *8, y = (7 *8)+1},
 
-				x = 4*8, -- (*8 to use map cell pos)
+				x = 4*8, 
 				y = 1*8,
-				w = 2,	-- relates to spr or map cel, depending on above
+				w = 2,
 				h = 2,  --
-				states = {  -- states are spr values
+				states = { 
 					132, -- closed
 					134  -- open
 				},				
@@ -454,16 +464,16 @@ rooms = {
 		exit = function()
 			-- todo: anything here?
 		end,
-		scripts = {	  -- scripts that are at room-level
+		scripts = {
 		},
 		objects = {
 			kitchen_door_hall = {
 				name = "hall",
 				state = state_open,
-				x = 1 *8, -- (*8 to use map cell pos)
+				x = 1 *8, 
 				y = 2 *8,
-				w = 1,	-- relates to spr
-				h = 4,  --
+				w = 1,
+				h = 4,
 				use_pos = pos_right,
 				use_dir = face_left,
 				verbs = {
@@ -480,15 +490,13 @@ rooms = {
 				x = 22*8, -- (*8 to use map cell pos)
 				y = 2*8,
 				z = 1, -- force to always be bg (0=bg layer)
-				--elevation = -10, -- force to always be bg
 				states = {
-					-- states are spr values
 					143, -- closed
 					0   -- open
 				},
 				flip_x = true, -- used for flipping the sprite
-				w = 1,	-- relates to spr or map cel, depending on above
-				h = 4,  --
+				w = 1,	
+				h = 4, 
 				use_pos = pos_left,
 				use_dir = face_right,
 				verbs = {
@@ -514,7 +522,7 @@ rooms = {
 	outside_room = {
 		map_x = 16,
 		map_y = 8,
-		map_x1 = 47, 	-- map coordinates to draw to (x,y)
+		map_x1 = 47,
 		map_y1 = 15,
 		enter = function(me)
 			-- =========================================
@@ -545,43 +553,42 @@ rooms = {
 		exit = function(me)
 			-- todo: anything here?
 		end,
-		scripts = {	  -- scripts that are at room-level
+		scripts = {	
 		},
 		objects = {
 			rail_left = {
 				class = class_untouchable,
-				x = 10*8, -- (*8 to use map cell pos)
-				y = 3*8,
+				x = 10 *8,
+				y = 3 *8,
 				state = 1,
 				states = { 111 },
-				w = 1,	-- relates to spr or map cel, depending on above
-				h = 2,  --
+				w = 1,
+				h = 2, 
 				repeat_x = 8		-- repeat/tile the sprite in x dir
 			},
 			rail_right= {
 				class = class_untouchable,
-				x = 22*8, -- (*8 to use map cell pos)
-				y = 3*8,
+				x = 22 *8, -- (*8 to use map cell pos)
+				y = 3 *8,
 				state = 1,
 				states = { 111 },
-				w = 1,	-- relates to spr or map cel, depending on above
-				h = 2,  --
+				w = 1,
+				h = 2, 
 				repeat_x = 8		-- repeat/tile the sprite in x dir
 			},
 			front_door = {
 				name = "front door",
 				class = class_openable,
 				state = state_closed,
-				x = 19*8, -- (*8 to use map cell pos)
-				y = 1*8,
+				x = 19 *8,
+				y = 1 *8,
 				states = {
-					-- states are spr values
 					142, -- closed
 					0   -- open
 				},
-				flip_x = true, -- used for flipping the sprite
-				w = 1,	-- relates to spr or map cel, depending on above
-				h = 3,  --
+				flip_x = true,
+				w = 1,
+				h = 3,
 				--use_pos = pos_infront,
 				use_dir = face_back,
 				verbs = {
@@ -611,9 +618,6 @@ rooms = {
 		map_y1 = 7,
 		enter = function()
 			-- todo: anything here?
-			-- camera_at(200)
-			-- camera_pan_to(0)
-			-- wait_for_camera()
 		end,
 		exit = function()
 			-- todo: anything here?
@@ -1490,6 +1494,25 @@ function wait_for_actor(actor)
 	end
 end
 
+function proximity(obj1, obj2)
+	-- check for name params
+	if type(obj1) == "string" then
+		obj1 = find_object(obj1)
+	end
+	if type(obj1) == "string" then
+		obj2 = find_object(obj2)
+	end
+	
+	-- calc dist between objects
+	if obj1.in_room == obj2.in_room then
+		local distance = sqrt((obj1.x - obj2.x) ^ 2 + (obj1.y - obj2.y) ^ 2)
+		d("dist: "..distance)
+		return distance
+	else
+		-- not even in same room, so...
+		return 1000
+	end
+end
 
 
 -- ================================================================
