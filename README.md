@@ -22,10 +22,10 @@ Wow, really? You still here?! OK, once again. Think of SCUMM-8 as an even more r
 - [x] Game start-up script
 - [x] Object dependencies
 - [x] Replace Color (to allow re-use of room/object gfx)
+- [x] Adjustable Room Brightness Levels
+- [x] Screen "shake" effect
 
 ## Planned Features
-- [ ] Adjustable Room Brightness Level
-- [ ] Screen-shake
 - [ ] Proximity (between Actors/Objects)
 - [ ] Game Save/Load
 
