@@ -24,9 +24,9 @@ Wow, really? You still here?! OK, once again. Think of SCUMM-8 as an even more r
 - [x] Replace Color (to allow re-use of room/object gfx)
 - [x] Adjustable Room Brightness Levels
 - [x] Screen "shake" effect
+- [x] Proximity (between Actors/Objects)
 
 ## Planned Features
-- [ ] Proximity (between Actors/Objects)
 - [ ] Game Save/Load
 
 ## Getting Started
