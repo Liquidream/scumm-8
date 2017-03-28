@@ -14,7 +14,6 @@ enable_mouse = true
 d = printh
 
 
-
 -- game verbs (used in room definitions and ui)
 verbs = {
 	--{verb = verb_ref_name}, text = display_name ....bounds{},x,y...
@@ -99,44 +98,44 @@ rooms = {
 						function()
 
 							-- intro
-							break_time(50)
-							print_line("in a galaxy not far away...",64,45,8,1)
+							pause(50)
+							println("in a galaxy not far away...",64,45,8,1)
 
-							change_room(rooms.first_room, 1)
+							room(rooms.first_room, 1)
 							shake(true)
 							start_script(rooms.first_room.scripts.spin_top, true)
-							print_line("cozy fireplaces...",90,20,8,1)
-							print_line("(just look at it!)",90,20,8,1)
+							println("cozy fireplaces...",90,20,8,1)
+							println("(just look at it!)",90,20,8,1)
 							shake(false)
 
 							-- part 2
-							change_room(rooms.second_room, 1)
-							print_line("strange looking aliens...",30,20,8,1,false,true)
-							put_actor_at(actors.purp_tentacle, 130, actors.purp_tentacle.y, rooms.second_room)
-							walk_to(actors.purp_tentacle, 
-								actors.purp_tentacle.x-30, 
-								actors.purp_tentacle.y)
-							wait_for_actor(actors.purp_tentacle)
-							say_line(actors.purp_tentacle, "what did you call me?!")
+							room(rooms.second_room, 1)
+							println("strange looking aliens...",30,20,8,1,false,true)
+							put_actor_at(actors.purp, 130, actors.purp.y, rooms.second_room)
+							walk_to(actors.purp, 
+								actors.purp.x-30, 
+								actors.purp.y)
+							wait_for_actor(actors.purp)
+							say(actors.purp, "what did you call me?!")
 
 							-- part 3
-							change_room(rooms.back_garden, 1)
-							print_line("and even swimming pools!",90,20,8,1,false,true)
+							room(rooms.back_garden, 1)
+							println("and even swimming pools!",90,20,8,1,false,true)
 							camera_at(200)
 							camera_pan_to(0)
 							wait_for_camera()
-							print_line("quack!",45,60,10,1)
+							println("quack!",45,60,10,1)
 
 							-- part 4
-							change_room(rooms.outside_room, 1)
+							room(rooms.outside_room, 1)
 
 					--[[		-- outro
-							--break_time(25)
-							change_room(rooms.title_room, 1)
+							--pause(25)
+							room(rooms.title_room, 1)
 							
-							print_line("coming soon...:to a pico-8 near you!",64,45,8,1)
+							println("coming soon...:to a pico-8 near you!",64,45,8,1)
 							fades(1,1)	-- fade out
-							break_time(100)
+							pause(100)
 							]]
 						end) -- end cutscene
 
@@ -176,7 +175,7 @@ rooms = {
 				while true do
 					for f=1,3 do
 						set_state("fire", f)
-						break_time(8)
+						pause(8)
 					end
 				end
 			end,
@@ -186,7 +185,7 @@ rooms = {
 					for x=1,3 do					
 						for f=1,3 do
 							set_state("spinning top", f)
-							break_time(4)
+							pause(4)
 						end
 						-- move top
 						top = find_object("spinning top")
@@ -198,10 +197,10 @@ rooms = {
 			tentacle_guard = function()
 				while true do
 					d("tentacle guarding---...")
-					if proximity(actors.main_actor, actors.purp_tentacle) < 30 then
-						say_line(actors.purp_tentacle, "halt!!!", true)
+					if proximity(actors.main_actor, actors.purp) < 30 then
+						say(actors.purp, "halt!!!", true)
 					end
-					break_time(10)
+					pause(10)
 				end
 			end
 		},
@@ -224,16 +223,16 @@ rooms = {
 
 				verbs = {
 					lookat = function()
-						say_line("it's a nice, warm fire...")
-						break_time(10)
+						say("it's a nice, warm fire...")
+						pause(10)
 						do_anim(selected_actor, anim_face, face_front)
-						say_line("ouch! it's hot!:*stupid fire*")
+						say("ouch! it's hot!:*stupid fire*")
 					end,
 					talkto = function()
-						say_line("'hi fire...'")
-						break_time(10)
+						say("'hi fire...'")
+						pause(10)
 						do_anim(selected_actor, anim_face, face_front)
-						say_line("the fire didn't say hello back:burn!!")
+						say("the fire didn't say hello back:burn!!")
 					end,
 					pickup = function(me)
 						pickup_obj(me)
@@ -261,9 +260,9 @@ rooms = {
 					walkto = function(me)
 						if state_of(me) == state_open then
 							-- go to new room!
-							come_out_door(rooms.outside_room.objects.front_door)
+							exit(rooms.outside_room.objects.front_door)
 						else
-							say_line("the door is closed")
+							say("the door is closed")
 						end
 					end,
 					open = function(me)
@@ -286,7 +285,7 @@ rooms = {
 				verbs = {
 					walkto = function()
 						-- go to new room!
-						come_out_door(rooms.second_room.objects.kitchen_door_hall) --, second_room) -- ()
+						exit(rooms.second_room.objects.kitchen_door_hall) --, second_room) -- ()
 					end
 				}
 			},
@@ -307,26 +306,26 @@ rooms = {
 				verbs = {
 					lookat = function(me)
 						if owner_of(me) == selected_actor then
-							say_line("it is a bucket in my pocket")
+							say("it is a bucket in my pocket")
 						else
-							say_line("it is a bucket")
+							say("it is a bucket")
 						end
 					end,
 					pickup = function(me)
 						pickup_obj(me)
 					end,
 					give = function(me, noun2)
-						if noun2 == actors.purp_tentacle then
-							say_line("can you fill this up for me?")							
-							say_line(actors.purp_tentacle, "sure")							
-							me.owner = actors.purp_tentacle
-							break_time(30)
-							say_line(actors.purp_tentacle, "here ya go...")							
+						if noun2 == actors.purp then
+							say("can you fill this up for me?")							
+							say(actors.purp, "sure")							
+							me.owner = actors.purp
+							pause(30)
+							say(actors.purp, "here ya go...")							
 							me.state = state_closed
 							me.name = "full bucket"
 							pickup_obj(me)
 						else
-							say_line("i might need this")
+							say("i might need this")
 						end
 					end
 					--[[use = function(me, noun2)
@@ -388,35 +387,35 @@ rooms = {
 									me.done_cutscene = true
 									-- cutscene code
 									set_state(me, state_open)
-									print_line("*bang*",40,20,8,1)
-									change_room(rooms.second_room, 1)
-									selected_actor = actors.purp_tentacle
+									println("*bang*",40,20,8,1)
+									room(rooms.second_room, 1)
+									selected_actor = actors.purp
 									walk_to(selected_actor, 
 										selected_actor.x+10, 
 										selected_actor.y)
-									say_line("what was that?!")
-									say_line("i'd better check...")
+									say("what was that?!")
+									say("i'd better check...")
 									walk_to(selected_actor, 
 										selected_actor.x-10, 
 										selected_actor.y)
-									change_room(rooms.first_room, 1)
+									room(rooms.first_room, 1)
 									-- wait for a bit, then appear in room1
-									break_time(50)
+									pause(50)
 									put_actor_at(selected_actor, 115, 44, rooms.first_room)
 									walk_to(selected_actor, 
 										selected_actor.x-10, 
 										selected_actor.y)
-									say_line("intruder!!!")
-									do_anim(actors.main_actor, anim_face, actors.purp_tentacle)
+									say("intruder!!!")
+									do_anim(actors.main_actor, anim_face, actors.purp)
 								end,
 								-- override for cutscene
 								function()
 									--if cutscene_curr.skipped then
 									--d("override!")
-									change_room(rooms.first_room)
-									put_actor_at(actors.purp_tentacle, 105, 44, rooms.first_room)
+									room(rooms.first_room)
+									put_actor_at(actors.purp, 105, 44, rooms.first_room)
 									stop_talking()
-									do_anim(actors.main_actor, anim_face, actors.purp_tentacle)
+									do_anim(actors.main_actor, anim_face, actors.purp)
 								end
 							)
 						end
@@ -453,7 +452,7 @@ rooms = {
 				verbs = {
 					walkto = function()
 						-- go to new room!
-						come_out_door(rooms.first_room.objects.hall_door_kitchen)
+						exit(rooms.first_room.objects.hall_door_kitchen)
 					end
 				}
 			},
@@ -478,9 +477,9 @@ rooms = {
 					walkto = function(me)
 						if state_of(me) == state_open then
 							-- go to new room!
-							come_out_door(rooms.back_garden.objects.garden_door_kitchen)
+							exit(rooms.back_garden.objects.garden_door_kitchen)
 						else
-							say_line("the door is closed")
+							say("the door is closed")
 						end
 					end,
 					open = function(me)
@@ -520,7 +519,7 @@ rooms = {
 						camera_at(0)
 						camera_pan_to(selected_actor)
 						wait_for_camera()
-						say_line("let's do this")
+						say("let's do this")
 					end
 				)
 			end
@@ -571,9 +570,9 @@ rooms = {
 					walkto = function(me)
 						if state_of(me) == state_open then
 							-- go to new room!
-							come_out_door(rooms.first_room.objects.front_door) --, first_room)
+							exit(rooms.first_room.objects.front_door) --, first_room)
 						else
-							say_line("the door is closed")
+							say("the door is closed")
 						end
 					end,
 					open = function(me)
@@ -614,7 +613,7 @@ rooms = {
 				verbs = {
 					walkto = function()
 						-- go to new room!
-						come_out_door(rooms.second_room.objects.back_door)
+						exit(rooms.second_room.objects.back_door)
 					end
 				}
 			}
@@ -644,7 +643,7 @@ actors = {
 		speed = 0.6,  	-- walking speed
 	},
 
-	purp_tentacle = {
+	purp = {
 		name = "purple tentacle",
 		class = class_talkable + class_actor,
 		x = 127/2 - 24,
@@ -663,12 +662,12 @@ actors = {
 		in_room = rooms.second_room,
 		verbs = {
 				lookat = function()
-					say_line("it's a weird looking tentacle, thing!")
+					say("it's a weird looking tentacle, thing!")
 				end,
 				talkto = function(me)
 					cutscene(cut_noverbs, function()
-						--do_anim(actors.purp_tentacle, anim_face, selected_actor)
-						say_line(me,"what do you want?")
+						--do_anim(actors.purp, anim_face, selected_actor)
+						say(me,"what do you want?")
 					end)
 
 					-- dialog loop start
@@ -681,24 +680,24 @@ actors = {
 						dialog_start(selected_actor.col, 7)
 
 						-- wait for selection
-						while not selected_sentence do break_time() end
+						while not selected_sentence do pause() end
 						-- chosen options
 						dialog_hide()
 
 						cutscene(cut_noverbs, function()
-							say_line(selected_sentence.msg)
+							say(selected_sentence.msg)
 							
 							if selected_sentence.num == 1 then
-								say_line(me, "you are in paul's game")
+								say(me, "you are in paul's game")
 
 							elseif selected_sentence.num == 2 then
-								say_line(me, "it's complicated...")
+								say(me, "it's complicated...")
 
 							elseif selected_sentence.num == 3 then
-								say_line(me, "a wood-chuck would chuck no amount of wood, coz a wood-chuck can't chuck wood!")
+								say(me, "a wood-chuck would chuck no amount of wood, coz a wood-chuck can't chuck wood!")
 
 							elseif selected_sentence.num == 4 then
-								say_line(me, "ok bye!")
+								say(me, "ok bye!")
 								dialog_end()
 								return
 							end
@@ -722,9 +721,9 @@ function startup_script()
 	-- (e.g. could be a "pseudo" room for title screen!)
 	
 
-	change_room(rooms.title_room, 1) -- iris fade	
-	--change_room(rooms.first_room, 1) -- iris fade	
-	--change_room(rooms.outside_room, 1) -- iris fade
+	room(rooms.title_room, 1) -- iris fade	
+	--room(rooms.first_room, 1) -- iris fade	
+	--room(rooms.outside_room, 1) -- iris fade
 end
 
 -- logic used to determine a "default" verb to use
@@ -760,67 +759,67 @@ function unsupported_action(verb, obj1, obj2)
 
 	elseif verb == "pickup" then
 		if has_flag(obj1.class, class_actor) then
-			say_line("i don't need them")
+			say("i don't need them")
 		else
-			say_line("i don't need that")
+			say("i don't need that")
 		end
 
 	elseif verb == "use" then
 		if has_flag(obj1.class, class_actor) then
-			say_line("i can't just *use* someone")
+			say("i can't just *use* someone")
 		end
 		if obj2 then
 			if has_flag(obj2.class, class_actor) then
-				say_line("i can't use that on someone!")
+				say("i can't use that on someone!")
 			else
-				say_line("that doesn't work")
+				say("that doesn't work")
 			end
 		end
 
 	elseif verb == "give" then
 		if has_flag(obj1.class, class_actor) then
-			say_line("i don't think i should be giving this away")
+			say("i don't think i should be giving this away")
 		else
-			say_line("i can't do that")
+			say("i can't do that")
 		end
 
 	elseif verb == "lookat" then
 		if has_flag(obj1.class, class_actor) then
-			say_line("i think it's alive")
+			say("i think it's alive")
 		else
-			say_line("looks pretty ordinary")
+			say("looks pretty ordinary")
 		end
 
 	elseif verb == "open" then
 		if has_flag(obj1.class, class_actor) then
-			say_line("they don't seem to open")
+			say("they don't seem to open")
 		else
-			say_line("it doesn't seem to open")
+			say("it doesn't seem to open")
 		end
 
 	elseif verb == "close" then
 		if has_flag(obj1.class, class_actor) then
-			say_line(s"they don't seem to close")
+			say(s"they don't seem to close")
 		else
-			say_line("it doesn't seem to close")
+			say("it doesn't seem to close")
 		end
 
 	elseif verb == "push" or verb == "pull" then
 		if has_flag(obj1.class, class_actor) then
-			say_line("moving them would accomplish nothing")
+			say("moving them would accomplish nothing")
 		else
-			say_line("it won't budge!")
+			say("it won't budge!")
 		end
 
 	elseif verb == "talkto" then
 		if has_flag(obj1.class, class_actor) then
-			say_line("erm... i don't think they want to talk")
+			say("erm... i don't think they want to talk")
 		else
-			say_line("i am not talking to that!")
+			say("i am not talking to that!")
 		end
 
 	else
-		say_line("hmm. no.")
+		say("hmm. no.")
 	end
 end 
 
@@ -856,23 +855,23 @@ end
 function shake(cb) if cb then
 cc=1 end cd=cb end function camera_at(ce) cf=cg(ce) ch=nil ci=nil end function camera_follow(cj) ci=cj ch=nil ck=function() while ci do if ci.in_room==room_curr then
 cf=cg(ci) end yield() end end start_script(ck,true) end function camera_pan_to(ce) ch=cg(ce) ci=nil ck=function() while(true) do if cf==ch then
-ch=nil return elseif ch>cf then cf+=0.5 else cf-=0.5 end yield() end end start_script(ck,true) end function wait_for_camera() while script_running(ck) do yield() end end function cutscene(cl,cm,cn) co={cl=cl,cp=cocreate(cm),cq=cn,cr=ci} add(cs,co) ct=co break_time() end function dialog_add(msg) if not cu then cu={cv={},cw=false} end
+ch=nil return elseif ch>cf then cf+=0.5 else cf-=0.5 end yield() end end start_script(ck,true) end function wait_for_camera() while script_running(ck) do yield() end end function cutscene(cl,cm,cn) co={cl=cl,cp=cocreate(cm),cq=cn,cr=ci} add(cs,co) ct=co pause() end function dialog_add(msg) if not cu then cu={cv={},cw=false} end
 cx=cy(msg,32) cz=da(cx) db={num=#cu.cv+1,msg=msg,cx=cx,dc=cz} add(cu.cv,db) end function dialog_start(col,dd) cu.col=col cu.dd=dd cu.cw=true selected_sentence=nil end function dialog_hide() cu.cw=false end function dialog_clear() cu.cv={} selected_sentence=nil end function dialog_end() cu=nil end function get_use_pos(bt) de=bt.use_pos if type(de)=="table"then
 x=de.x-cf y=de.y-df elseif not de or de==pos_infront then x=bt.x+((bt.w*8)/2)-cf-4 y=bt.y+(bt.h*8)+2 elseif de==pos_left then if bt.dg then
 x=bt.x-cf-(bt.w*8+4) y=bt.y+1 else x=bt.x-cf-2 y=bt.y+((bt.h*8)-2) end elseif de==pos_right then x=bt.x+(bt.w*8)-cf y=bt.y+((bt.h*8)-2) end return{x=x,y=y} end function do_anim(cj,dh,di) if dh==anim_face then
 if type(di)=="table"then
 dj=atan2(cj.x-di.x,di.y-cj.y) dk=93*(3.1415/180) dj=dk-dj dl=dj*(1130.938/3.1415) dl=dl%360 if(dl<0) then dl+=360 end
 di=4-flr(dl/90) end while cj.face_dir!=di do if cj.face_dir<di then
-cj.face_dir+=1 else cj.face_dir-=1 end cj.flip=(cj.face_dir==face_left) break_time(10) end end end function open_door(dm,dn) if state_of(dm)==state_open then
-say_line("it's already open") else set_state(dm,state_open) if dn then set_state(dn,state_open) end
+cj.face_dir+=1 else cj.face_dir-=1 end cj.flip=(cj.face_dir==face_left) pause(10) end end end function open_door(dm,dn) if state_of(dm)==state_open then
+say("it's already open") else set_state(dm,state_open) if dn then set_state(dn,state_open) end
 end end function close_door(dm,dn) if state_of(dm)==state_closed then
-say_line("it's already closed") else set_state(dm,state_closed) if dn then set_state(dn,state_closed) end
-end end function come_out_door(dp,dq) dr=dp.in_room change_room(dr,dq) ds=get_use_pos(dp) put_actor_at(selected_actor,ds.x,ds.y,dr) if dp.use_dir then
+say("it's already closed") else set_state(dm,state_closed) if dn then set_state(dn,state_closed) end
+end end function exit(dp,dq) dr=dp.in_room room(dr,dq) ds=get_use_pos(dp) put_actor_at(selected_actor,ds.x,ds.y,dr) if dp.use_dir then
 dt=dp.use_dir+2 if dt>4 then
 dt-=4 end else dt=1 end selected_actor.face_dir=dt end function fades(du,v) if v==1 then
 dv=0 else dv=50 end while true do dv+=v*2 if dv>50
 or dv<0 then return end if du==1 then
-dw=min(dv,32) end yield() end end function change_room(dr,du) stop_script(dx) if du and room_curr then
+dw=min(dv,32) end yield() end end function room(dr,du) stop_script(dx) if du and room_curr then
 fades(du,1) end if room_curr and room_curr.exit then
 room_curr.exit(room_curr) end dy={} dz() room_curr=dr if not ci
 or ci.in_room!=room_curr then cf=0 end stop_talking() if du then
@@ -892,11 +891,11 @@ end end function start_script(ee,ef,eg,bj) local cp=cocreate(ee) if ef then
 add(eh,{ee,cp,eg,bj}) else add(dy,{ee,cp,eg,bj}) end end function script_running(ee) for ed,ei in pairs(dy) do if(ei[1]==ee) then
 return ei end end for ed,ei in pairs(eh) do if(ei[1]==ee) then
 return ei end end return false end function stop_script(ee) ei=script_running(ee) if ei then
-del(dy,ei) del(eh,ei) end end function break_time(ej) ej=ej or 1 for x=1,ej do yield() end end function wait_for_message() while ek!=nil do yield() end end function say_line(cj,msg,el,em) if type(cj)=="string"then
-msg=cj cj=selected_actor end en=cj.y-(cj.h)*8+4 eo=cj print_line(msg,cj.x,en,cj.col,1,el,em) end function stop_talking() ek=nil eo=nil end function print_line(msg,x,y,col,ep,el,em) local col=col or 7 local ep=ep or 0 local cx={} local eq=""local er=""cz=0 es=min(x-cf,et-(x-cf)) eu=max(flr(es/2),16) er=""for ev=1,#msg do eq=sub(msg,ev,ev) if eq==":"then
+del(dy,ei) del(eh,ei) end end function pause(ej) ej=ej or 1 for x=1,ej do yield() end end function wait_for_message() while ek!=nil do yield() end end function say(cj,msg,el,em) if type(cj)=="string"then
+msg=cj cj=selected_actor end en=cj.y-(cj.h)*8+4 eo=cj println(msg,cj.x,en,cj.col,1,el,em) end function stop_talking() ek=nil eo=nil end function println(msg,x,y,col,ep,el,em) local col=col or 7 local ep=ep or 0 local cx={} local eq=""local er=""cz=0 es=min(x-cf,et-(x-cf)) eu=max(flr(es/2),16) er=""for ev=1,#msg do eq=sub(msg,ev,ev) if eq==":"then
 er=sub(msg,ev+1) msg=sub(msg,1,ev-1) break end end cx=cy(msg,eu) cz=da(cx) if ep==1 then
 ew=x-cf-((cz*4)/2) end ew=max(2,ew) en=max(18,y) ew=min(ew,et-(cz*4)-1) ek={ex=cx,x=ew,y=en,col=col,ep=ep,ey=(#msg)*8,dc=cz,el=el} if(#er>0) then
-ez=eo wait_for_message() eo=ez print_line(er,x,y,col,ep,el) end if not em then
+ez=eo wait_for_message() eo=ez println(er,x,y,col,ep,el) end if not em then
 wait_for_message() end end function put_actor_at(cj,x,y,fa) if fa then cj.in_room=fa end
 cj.x=x cj.y=y end function walk_to(cj,x,y) x=x+cf fb=fc(cj) fd=flr(x/8)+room_curr.map_x fe=flr(y/8)+room_curr.map_y ff={fd,fe} fg=fh(fb,ff) fi=fc({x=x,y=y}) if fj(fi[1],fi[2]) then
 add(fg,fi) end for fk in all(fg) do fl=(fk[1]-room_curr.map_x)*8+4 fm=(fk[2]-room_curr.map_y)*8+4 local fn=sqrt((fl-cj.x)^2+(fm-cj.y)^2) local fo=cj.speed*(fl-cj.x)/fn local fp=cj.speed*(fm-cj.y)/fn if fn>1 then
