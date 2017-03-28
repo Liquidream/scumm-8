@@ -1394,8 +1394,6 @@ function print_line(msg, x, y, col, align, use_caps, dont_wait_msg)
 		char_width = longest_line,
 		use_caps = use_caps
 	}
-	if (use_caps) d("uc1")
-	if (talking_curr.use_caps) d("uc2")
 	-- if message was split...
 	if (#msg_left > 0) then
 	  talking = talking_actor
@@ -2202,7 +2200,6 @@ function talking_draw()
 			if talking_curr.align == 1 then
 				line_offset_x = ((talking_curr.char_width*4)-(#l*4))/2
 			end
-			if (talking_curr.use_caps) d("uc3")
 			outline_text(
 				l, 
 				talking_curr.x + line_offset_x, 
