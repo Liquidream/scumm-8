@@ -7,6 +7,11 @@ __lua__
 -- ### luamin fixes ###
 --	"\65\66\67\68\69\70\71\72\73\74\75\76\77\78\79\80\81\82\83\84\85\86\87\88\89\90\91\92"
 
+-- token counts:
+--   > 7027 (after fixing z-order hover, adding shake, lighting)
+
+
+
 -- debugging
 show_debuginfo = true
 show_collision = false
@@ -19,7 +24,7 @@ d = printh
 
 -- game verbs (used in room definitions and ui)
 verbs = {
-	--{verb = verb_ref_name}, text = display_name ....bounds{},x,y...
+	--{verb = verb_ref_name}, text = display_name
 	{ { open = "open" }, text = "open" },
 	{ { close = "close" }, text = "close" },
 	{ { give = "give" }, text = "give" },
@@ -47,12 +52,7 @@ verb_defcol = 10   -- default action (yellow)
 -- 
 
 -- object states
-state_closed = 1
-state_open = 2
-state_off = 1
-state_on = 2
-state_gone = 1
-state_here = 2
+state_closed, state_open, state_off, state_on, state_gone, state_here  = 1, 2, 1, 2, 1, 2
 
 -- object classes (bitflags)
 class_untouchable = 1 -- will not register when the cursor moves over it. the object is invisible to the user.
@@ -65,17 +65,10 @@ class_actor = 32      -- is an actor/person
 cut_noverbs = 1 		-- this removes the interface during the cut-scene.
 cut_no_follow = 4   -- this disables the follow-camera being reinstated after cut-scene.
 
--- actor constants
-face_front = 1	-- states for actor direction
-face_left = 2   -- (not sprite #'s)
-face_back = 3		
-face_right = 4
+-- actor constants - states for actor direction (not sprite #'s)
+face_front, face_left, face_back, face_right = 1, 2, 3, 4
 --
-pos_infront = 1 
-pos_behind = 3
-pos_left = 2
-pos_right = 4
-pos_inside = 5
+pos_infront, pos_behind, pos_left, pos_right, pos_inside = 1, 3, 2, 4, 5
 
 -- actor animations
 anim_face = 1	 -- face actor in a direction (show the turning stages of animation)
@@ -234,19 +227,15 @@ rooms = {
 				verbs = {
 					lookat = function()
 						say_line("it's a nice, warm fire...")
-						--wait_for_message()
 						break_time(10)
 						do_anim(selected_actor, anim_face, face_front)
 						say_line("ouch! it's hot!:*stupid fire*")
-						--wait_for_message()
 					end,
 					talkto = function()
 						say_line("'hi fire...'")
-						--wait_for_message()
 						break_time(10)
 						do_anim(selected_actor, anim_face, face_front)
 						say_line("the fire didn't say hello back:burn!!")
-						--wait_for_message()
 					end,
 					pickup = function(me)
 						pickup_obj(me)
@@ -330,13 +319,9 @@ rooms = {
 					give = function(me, noun2)
 						if noun2 == actors.purp_tentacle then
 							say_line("can you fill this up for me?")
-							--wait_for_message()
 							say_line(actors.purp_tentacle, "sure")
-							--wait_for_message()
 							me.owner = actors.purp_tentacle
-							break_time(30)
 							say_line(actors.purp_tentacle, "here ya go...")
-							--wait_for_message()
 							me.state = state_closed
 							me.name = "full bucket"
 							pickup_obj(me)
@@ -418,16 +403,13 @@ rooms = {
 									set_state(me, state_open)
 									me.z = -2
 									print_line("*bang*",40,20,8,1)
-									--wait_for_message()
 									change_room(rooms.second_room, 1)
 									selected_actor = actors.purp_tentacle
 									walk_to(selected_actor, 
 										selected_actor.x+10, 
 										selected_actor.y)
 									say_line("what was that?!")
-									--wait_for_message()
 									say_line("i'd better check...")
-									--wait_for_message()
 									walk_to(selected_actor, 
 										selected_actor.x-10, 
 										selected_actor.y)
@@ -440,7 +422,6 @@ rooms = {
 										selected_actor.y)
 									say_line("intruder!!!")
 									do_anim(actors.main_actor, anim_face, actors.purp_tentacle)
-									--wait_for_message()
 								end,
 								-- override for cutscene
 								function()
@@ -644,15 +625,15 @@ actors = {
 	purp_tentacle = {
 		name = "purple tentacle",
 		class = class_talkable + class_actor,
-		x = 127/2 - 24,
-		y = 127/2 -16,
+		x = 40,
+		y = 48,
 		w = 1,
 		h = 3,
 		face_dir = face_front,
 		-- sprites for idle (front, left, back, right) - right=flip
 		idle = { 30, 30, 30, 30 },
 		talk = { 47, 47, 47, 47 },
-		col = 11, --13,    		-- speech text colour
+		col = 11,    		-- speech text colour
 		trans_col = 15, -- transparency col in sprites
 		speed = 0.25,  	-- walking speed
 		use_pos = pos_left,
@@ -666,7 +647,6 @@ actors = {
 					cutscene(cut_noverbs, function()
 						--do_anim(actors.purp_tentacle, anim_face, selected_actor)
 						say_line(me,"what do you want?")
-						--wait_for_message()
 					end)
 
 					-- dialog loop start
@@ -685,23 +665,18 @@ actors = {
 
 						cutscene(cut_noverbs, function()
 							say_line(selected_sentence.msg)
-							--wait_for_message()
 							
 							if selected_sentence.num == 1 then
 								say_line(me, "you are in paul's game")
-								--wait_for_message()
 
 							elseif selected_sentence.num == 2 then
 								say_line(me, "it's complicated...")
-								--wait_for_message()
 
 							elseif selected_sentence.num == 3 then
 								say_line(me, "a wood-chuck would chuck no amount of wood, coz a wood-chuck can't chuck wood!")
-								--wait_for_message()
 
 							elseif selected_sentence.num == 4 then
 								say_line(me, "ok bye!")
-								--wait_for_message()
 								dialog_end()
 								return
 							end
@@ -729,6 +704,39 @@ function startup_script()
 	--change_room(rooms.first_room, 1) -- iris fade	
 	--change_room(rooms.outside_room, 1) -- iris fade
 end
+
+
+-- (end of customisable game content)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-- ################################################################
+-- scumm-8 public api functions
+-- ================================================================
+-- (you should not need to modify anything below here!)
+-- ################################################################
+
 
 -- logic used to determine a "default" verb to use
 -- (e.g. when you right-click an object)
@@ -763,101 +771,71 @@ function unsupported_action(verb, obj1, obj2)
 
 	elseif verb == "pickup" then
 		if has_flag(obj1.class, class_actor) then
-			say_line("i don't need them")
+			say_line"i don't need them"
 		else
-			say_line("i don't need that")
+			say_line"i don't need that"
 		end
 
 	elseif verb == "use" then
 		if has_flag(obj1.class, class_actor) then
-			say_line("i can't just *use* someone")
+			say_line"i can't just *use* someone"
 		end
 		if obj2 then
 			if has_flag(obj2.class, class_actor) then
-				say_line("i can't use that on someone!")
+				say_line"i can't use that on someone!"
 			else
-				say_line("that doesn't work")
+				say_line"that doesn't work"
 			end
 		end
 
 	elseif verb == "give" then
 		if has_flag(obj1.class, class_actor) then
-			say_line("i don't think i should be giving this away")
+			say_line"i don't think i should be giving this away"
 		else
-			say_line("i can't do that")
+			say_line"i can't do that"
 		end
 
 	elseif verb == "lookat" then
 		if has_flag(obj1.class, class_actor) then
-			say_line("i think it's alive")
+			say_line"i think it's alive"
 		else
-			say_line("looks pretty ordinary")
+			say_line"looks pretty ordinary"
 		end
 
 	elseif verb == "open" then
 		if has_flag(obj1.class, class_actor) then
-			say_line("they don't seem to open")
+			say_line"they don't seem to open"
 		else
-			say_line("it doesn't seem to open")
+			say_line"it doesn't seem to open"
 		end
 
 	elseif verb == "close" then
 		if has_flag(obj1.class, class_actor) then
-			say_line(s"they don't seem to close")
+			say_line"they don't seem to close"
 		else
-			say_line("it doesn't seem to close")
+			say_line"it doesn't seem to close"
 		end
 
 	elseif verb == "push" or verb == "pull" then
 		if has_flag(obj1.class, class_actor) then
-			say_line("moving them would accomplish nothing")
+			say_line"moving them would accomplish nothing"
 		else
-			say_line("it won't budge!")
+			say_line"it won't budge!"
 		end
 
 	elseif verb == "talkto" then
 		if has_flag(obj1.class, class_actor) then
-			say_line("erm... i don't think they want to talk")
+			say_line"erm... i don't think they want to talk"
 		else
-			say_line("i am not talking to that!")
+			say_line"i am not talking to that!"
 		end
 
 	else
-		say_line("hmm. no.")
+		say_line"hmm. no."
 	end
 end 
 
 
--- (end of customisable game content)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
--- ################################################################
--- scumm-8 public api functions
--- ================================================================
--- (you should not need to modify anything below here!)
--- ################################################################
 
 function shake(enabled)
 	if enabled then
@@ -890,7 +868,6 @@ function camera_follow(actor)
 			-- keep camera within "room" bounds
 			if cam_following_actor.in_room == room_curr then
 				cam_x = _center_camera(cam_following_actor)
-				--cam_x = mid(0, cam_following_actor.x-64, (room_curr.map_w*8)-screenwidth-1 )
 			end
 			yield()
 		end
@@ -900,14 +877,8 @@ end
 
 
 function camera_pan_to(val)
-	-- -- check params for obj/actor
-	-- if type(val) == "table" then
-	-- 	val = val.x
-	-- end
-
 	-- set target, but keep camera within "room" bounds
 	cam_pan_to_x = _center_camera(val)
-	--cam_pan_to_x = mid(64, val, (room_curr.map_w*8)-(screenwidth/2) )
 
 	-- clear other cam values
 	cam_following_actor = nil
@@ -915,8 +886,6 @@ function camera_pan_to(val)
 	cam_script = function()
 		-- update the camera pan until reaches dest
 		while (true) do
-			--center_view = cam_x 
-			--center_view = cam_x + flr(screenwidth/2) +1
 			if cam_x == cam_pan_to_x then
 				-- pan complete
 				cam_pan_to_x = nil
@@ -930,7 +899,6 @@ function camera_pan_to(val)
 			yield()
 		end
 	end
-
 	start_script(cam_script, true) -- bg script
 end
 
@@ -943,22 +911,15 @@ end
 
 
 function cutscene(flags, func_cutscene, func_override)
-	-- decrement the cursor level
-	--cursor_lvl = cursor_lvl - 1
-			
 	cut = {
 		flags = flags,
 		thread = cocreate(func_cutscene),
 		override = func_override,
-		-- paused_room = room_curr,
-		-- paused_actor = selected_actor,
 		paused_cam_following = cam_following_actor
 	}
 	add(cutscenes, cut)
-
 	-- set as active cutscene
 	cutscene_curr = cut
-
 	-- yield for system catch-up
 	break_time()
 end
@@ -1049,7 +1010,7 @@ function do_anim(actor, cmd_type, cmd_value)
 			-- convert radians to degrees
 			-- (note: everyone says should be: rad * (180/pi), but
 			--        that only seems to give me degrees 0..57? so...)
-			degrees = angle_rad * (1130.938/3.1415)
+			degrees = angle_rad * 360 --(1130.938/3.1415)
 
 			-- angle wrap for circle
 			degrees = degrees % 360
@@ -1067,7 +1028,7 @@ function do_anim(actor, cmd_type, cmd_value)
 				actor.face_dir -= 1
 			end
 			-- is target dir left? flip?
-			actor.flip = (actor.face_dir  == face_left)
+			actor.flip = (actor.face_dir == face_left)
 			break_time(10)
 		end
 	end
@@ -1076,7 +1037,7 @@ end
 -- open one (or more) doors
 function open_door(door_obj1, door_obj2)
 	if state_of(door_obj1) == state_open then
-		say_line("it's already open")
+		say_line"it's already open"
 	else
 		set_state(door_obj1, state_open)
 		if door_obj2 then set_state(door_obj2, state_open) end
@@ -1086,7 +1047,7 @@ end
 -- close one (or more) doors
 function close_door(door_obj1, door_obj2)
 	if state_of(door_obj1) == state_closed then
-		say_line("it's already closed")
+		say_line"it's already closed"
 	else
 		set_state(door_obj1, state_closed)
 		if door_obj2 then set_state(door_obj2, state_closed) end
@@ -1099,7 +1060,7 @@ function come_out_door(door_obj, fade_effect)
 	-- switch to new room and...
 	change_room(new_room, fade_effect)
 	-- ...auto-position actor at door_obj in new room...
-	pos = get_use_pos(door_obj)
+	local pos = get_use_pos(door_obj)
 	put_actor_at(selected_actor, pos.x, pos.y, new_room)
 
 	-- ...in opposite use direction!
@@ -1195,8 +1156,8 @@ end
 
 function valid_verb(verb, object)
 	-- check params
-	if not object then return false end
-	if not object.verbs then return false end
+	if not object 
+	 or not object.verbs then return false end
 	-- look for verb
 	if type(verb) == "table" then
 		if object.verbs[verb[1]] then return true end
@@ -1208,15 +1169,13 @@ function valid_verb(verb, object)
 end
 
 function pickup_obj(objname)
-	obj = find_object(objname)
-	if obj
-	 --and not obj.owner 
-	 then
+	local obj = find_object(objname)
+	if obj then
 		-- assume selected_actor picked-up at this point
 		add(selected_actor.inventory, obj)
 		obj.owner = selected_actor
 		-- remove it from room
-		del(obj.in_room.objects,obj)
+		del(obj.in_room.objects, obj)
 	end
 end
 
@@ -1245,6 +1204,9 @@ end
 function find_object(name)
 	-- if object passed, just return object!
 	if type(name) == "table" then return name end
+	
+	-- todo: allow find by obj id!!
+
 	-- else look for object by unique name
 	for k,obj in pairs(room_curr.objects) do
 		if obj.name == name then return obj end
@@ -1255,27 +1217,21 @@ function start_script(func, bg, noun1, noun2)
 	-- create new thread for script and add to list of local_scripts (or background scripts)
 	local thread = cocreate(func)
 	-- background or local?
+	local scripts = local_scripts
 	if bg then
-		add(global_scripts, {func, thread, noun1, noun2} )
-	else
-		add(local_scripts, {func, thread, noun1, noun2} )
+		scripts = global_scripts
 	end
+	add(scripts, {func, thread, noun1, noun2} )
 end
 
 
 function script_running(func)
-	-- try local first
-	for k,scr_obj in pairs(local_scripts) do
-		if (scr_obj[1] == func) then 
-			--d("found in local!")
-			return scr_obj
-		end
-	end
-	-- failing that, try global
-	for k,scr_obj in pairs(global_scripts) do
-		if (scr_obj[1] == func) then 
-			--d("found in global!")
-			return scr_obj
+	-- loop through both sets of scripts...
+	for s in all( { local_scripts, global_scripts } ) do
+		for k,scr_obj in pairs(s) do
+			if (scr_obj[1] == func) then
+				return scr_obj
+			end
 		end
 	end
 	-- must not be running
@@ -1325,8 +1281,7 @@ end
 
 -- stop everyone talking & remove displayed text
 function stop_talking()
-	talking_curr = nil 
-	talking_actor = nil
+	talking_curr, talking_actor = nil, nil
 end
 
 
