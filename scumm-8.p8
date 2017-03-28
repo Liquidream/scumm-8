@@ -101,6 +101,7 @@ rooms = {
 						function()
 
 							selected_actor = actors.main_actor
+							camera_follow(selected_actor)
 							put_actor_at(selected_actor, 60, 50, rooms.first_room)
 							change_room(rooms.first_room, 1)
 
@@ -380,7 +381,7 @@ rooms = {
 			ztest = {
 				name = "ztest",
 				state = state_closed,
-				x = 4*8,
+				x = 4.5*8,
 				y = 1*8,
 				z = -1,
 				w = 1,
@@ -400,6 +401,7 @@ rooms = {
 
 				x = 4*8, 
 				y = 1*8,
+				--z = -2,
 				w = 2,
 				h = 2,  --
 				states = { 
@@ -414,6 +416,7 @@ rooms = {
 									me.done_cutscene = true
 									-- cutscene code
 									set_state(me, state_open)
+									me.z = -2
 									print_line("*bang*",40,20,8,1)
 									--wait_for_message()
 									change_room(rooms.second_room, 1)
@@ -615,37 +618,6 @@ rooms = {
 		},
 	},
 
-	back_garden = {
-		map_x = 40 ,
-		map_y = 0,
-		map_x1 = 63, 	-- map coordinates to draw to (x,y)
-		map_y1 = 7,
-		enter = function()
-			-- todo: anything here?
-		end,
-		exit = function()
-			-- todo: anything here?
-		end,
-		scripts = {	  -- scripts that are at room-level
-		},
-		objects = {
-			garden_door_kitchen = {
-				name = "kitchen",
-				state = state_open,
-				x = 13 *8, -- (*8 to use map cell pos)
-				y = 1 *8,
-				w = 1,	-- relates to spr
-				h = 3,  --
-				verbs = {
-					walkto = function()
-						-- go to new room!
-						come_out_door(rooms.second_room.objects.back_door)
-					end
-				}
-			}
-		},
-	},
-
 }
 
 -- ================================================================
@@ -654,7 +626,7 @@ rooms = {
 actors = {
 	-- initialize the player's actor object
 	main_actor = { 		
-		--name = "",
+		name = "",
 		class = class_actor,
 		w = 1,
 		h = 4,
@@ -1510,7 +1482,6 @@ function proximity(obj1, obj2)
 	-- calc dist between objects
 	if obj1.in_room == obj2.in_room then
 		local distance = sqrt((obj1.x - obj2.x) ^ 2 + (obj1.y - obj2.y) ^ 2)
-		d("dist: "..distance)
 		return distance
 	else
 		-- not even in same room, so...
@@ -1608,13 +1579,12 @@ function game_update()
 	if cutscene_curr then
 		if cutscene_curr.thread and not coresume(cutscene_curr.thread) then
 			-- cutscene ended, restore prev state	
-			--if (room_curr != cutscene_curr.paused_room) then change_room(cutscene_curr.paused_room) end
-			
+						
 			-- restore follow-cam if flag allows (and had a value!)
 			if not has_flag(cutscene_curr.flags, cut_no_follow) and
 			 cutscene_curr.paused_cam_following then
 				camera_follow(cutscene_curr.paused_cam_following)
-				-- assume to re-select prev actor
+					-- assume to re-select prev actor
 				selected_actor = cutscene_curr.paused_cam_following
 			end
 			-- now delete cutscene
