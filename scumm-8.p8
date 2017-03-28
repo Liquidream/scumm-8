@@ -1922,10 +1922,7 @@ function check_collisions()
 		if iscursorcolliding(obj) then
 			-- if highest (or first) object in hover "stack"
 			if not hover_curr_object
-
-			randomly works - logic is not correct!
-			 --or (not obj.z and not hover_curr_object.z)
-			 or	(obj.z and not hover_curr_object.z and obj.z > hover_curr_object.y) 
+			 or	(not obj.z and hover_curr_object.z < 0) 
 			 or	(obj.z and hover_curr_object.z and obj.z > hover_curr_object.z) 
 			then
 				hover_curr_object = obj
