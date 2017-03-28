@@ -5,11 +5,16 @@ SCUMM-8 is a PICO-8 "demake" of the [SCUMM](https://en.wikipedia.org/wiki/SCUMM)
 ![SCUMM-8](https://github.com/Liquidream/scumm-8/raw/media/SCUMM-8%20Preview.gif)
 
 However, it is only (heavily) "inspired" by the SCUMM engine, not a true replica - for that you'll want good ol' [SCUMM-VM](https://en.wikipedia.org/wiki/ScummVM).
-#### *"Cool, so does that mean I can play those games in PICO-8?!"*
+> *"Cool, so does that mean I can play those games in PICO-8?!"*
+
 Er... no. SCUMM-8 cannot play the old games, just that it is intended to provide similar functionality within the (very limited) world of PICO-8.
-#### *"It don't work mate, waited forever and 'Monkey Island' never loaded!"*
+
+> *"It don't work mate, waited forever and 'Monkey Island' never loaded!"*
+
 Wow, really? You still here?! OK, once again. Think of SCUMM-8 as an even more retro "mini-me" version of the classic SCUMM engine. Most of the features are planned, but the experience will be... shall we say... "cut down".
-#### *"Got it. . . . so what about 'Day of the Tentacle' then?"*
+
+> *"Got it. . . . so what about 'Day of the Tentacle' then?"*
+
 \*sigh\* . . .  "Look behind you! It's a three-headed monkey!" . . . \*runs away\*
 
 ## Current Features
