@@ -8,7 +8,7 @@ __lua__
 --	"\65\66\67\68\69\70\71\72\73\74\75\76\77\78\79\80\81\82\83\84\85\86\87\88\89\90\91\92"
 
 -- debugging
-show_debuginfo = false
+show_debuginfo = true
 show_collision = false
 --show_pathfinding = true
 show_perfinfo = true
@@ -208,7 +208,7 @@ rooms = {
 				while true do
 					d("tentacle guarding...")
 					if proximity(actors.main_actor, actors.purp_tentacle) < 30 then
-						say_line(actors.purp_tentacle, "halt!!!")
+						say_line(actors.purp_tentacle, "halt!!!", true)
 					end
 					break_time(10)
 				end
@@ -1307,7 +1307,7 @@ function wait_for_message()
 end
 
 -- uses actor's position and color
-function say_line(actor, msg, dont_wait_msg)
+function say_line(actor, msg, use_caps, dont_wait_msg)
 	-- check for missing actor
 	if type(actor) == "string" then
 		-- assume actor ommitted and default to current
@@ -1320,7 +1320,7 @@ function say_line(actor, msg, dont_wait_msg)
 	-- trigger actor's talk anim
 	talking_actor = actor
 	-- call the base print_line to show actor line
-	print_line(msg, actor.x, ypos, actor.col, 1, dont_wait_msg)
+	print_line(msg, actor.x, ypos, actor.col, 1, use_caps, dont_wait_msg)
 end
 
 -- stop everyone talking & remove displayed text
@@ -1330,7 +1330,7 @@ function stop_talking()
 end
 
 
-function print_line(msg, x, y, col, align, dont_wait_msg)
+function print_line(msg, x, y, col, align, use_caps, dont_wait_msg)
   -- punctuation...
 	--  > ":" new line, shown after text prior expires
 	--  > ";" new line, shown immediately
@@ -1391,15 +1391,17 @@ function print_line(msg, x, y, col, align, dont_wait_msg)
 		col = col,
 		align = align,
 		time_left = (#msg)*8,
-		char_width = longest_line
+		char_width = longest_line,
+		use_caps = use_caps
 	}
-
+	if (use_caps) d("uc1")
+	if (talking_curr.use_caps) d("uc2")
 	-- if message was split...
 	if (#msg_left > 0) then
 	  talking = talking_actor
 		wait_for_message()
 		talking_actor = talking
-		print_line(msg_left, x, y, col, align)
+		print_line(msg_left, x, y, col, align, use_caps)
 	end
 
 	-- and wait for message?
@@ -1920,7 +1922,9 @@ function check_collisions()
 		if iscursorcolliding(obj) then
 			-- if highest (or first) object in hover "stack"
 			if not hover_curr_object
-			-- or (not obj.z and not hover_curr_object.z)
+
+			randomly works - logic is not correct!
+			 --or (not obj.z and not hover_curr_object.z)
 			 or	(obj.z and not hover_curr_object.z and obj.z > hover_curr_object.y) 
 			 or	(obj.z and hover_curr_object.z and obj.z > hover_curr_object.z) 
 			then
@@ -2201,11 +2205,14 @@ function talking_draw()
 			if talking_curr.align == 1 then
 				line_offset_x = ((talking_curr.char_width*4)-(#l*4))/2
 			end
+			if (talking_curr.use_caps) d("uc3")
 			outline_text(
 				l, 
 				talking_curr.x + line_offset_x, 
 				talking_curr.y + line_offset_y, 
-				talking_curr.col)
+				talking_curr.col,
+				0,
+				talking_curr.use_caps)
 			line_offset_y += 6
 		end
 		-- update message lifespan
@@ -2693,10 +2700,8 @@ end
 -- helper functions 
 -- ================================================================
 
-function outline_text(str,x,y,c0,c1)
- local c0=c0 or 7
- local c1=c1 or 0
- str = smallcaps(str)
+function outline_text(str,x,y,c0,c1,use_caps)
+ if not use_caps then str = smallcaps(str) end
  for xx = -1, 1 do
 		for yy = -1, 1 do
 			print(str, x+xx, y+yy, c1)
