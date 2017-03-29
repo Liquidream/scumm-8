@@ -158,6 +158,7 @@ rooms = {
 	first_room = {
 		map_x = 0,
 		map_y = 0,
+		bg_col = 12,
 		col_replace = { 
 		-- 	{ 7, 15 }, 
 		-- 	-- { 4, 5 }, 
@@ -201,7 +202,7 @@ rooms = {
 			end,
 			tentacle_guard = function()
 				while true do
-					d("tentacle guarding...")
+					--d("tentacle guarding...")
 					if proximity(actors.main_actor, actors.purp_tentacle) < 30 then
 						say_line(actors.purp_tentacle, "halt!!!", true)
 					end
@@ -1407,7 +1408,7 @@ end
 function walk_to(actor, x, y)
 		--offset for camera
 		local x += cam_x
-
+		
 		local actor_cell_pos = getcellpos(actor)
 		local celx = flr(x /8) + room_curr.map_x
 		local cely = flr(y /8) + room_curr.map_y
@@ -1597,7 +1598,7 @@ end
 
 
 function game_draw()
-	-- clear screen every frame?
+	-- clear screen every frame
 	rectfill(0, 0, 127, 127, 0)
 
 	-- reposition camera (account for shake, if active)
@@ -1613,9 +1614,8 @@ function game_draw()
 	-- draw room (bg + objects + actors)
 	room_draw()
 
-	-- reset camera for "static" content (ui, etc.)
+	-- reset camera and clip bounds for "static" content (ui, etc.)
 	camera(0,0)
-	-- reset clip bounds
 	clip()
 
 	if show_perfinfo then 
@@ -1626,11 +1626,12 @@ function game_draw()
 		print("x: "..cursor_x.." y:"..cursor_y-stage_top, 80, stage_top - 8, 8) 
 	end
 
-	-- draw active text
+	-- draw active/speech text
 	talking_draw()
 
 	-- in dialog mode?
-	if dialog_curr and dialog_curr.visible then
+	if dialog_curr 
+	 and dialog_curr.visible then
 		-- draw dialog sentences?
 		dialog_draw()
 		cursor_draw()
@@ -1671,7 +1672,6 @@ function game_draw()
 	-- hack: fix for display issue (see above hack info)
 	cutscene_curr_lastval = cutscene_curr
 
-	--if cursor_lvl == 0 then
 	if not cutscene_curr then
 		cursor_draw()
 	end
@@ -1984,6 +1984,10 @@ function recalc_zplane(obj)
 end
 
 function room_draw()
+
+	-- set room background col (or black by default)
+	rectfill(0, stage_top, 127, stage_top+64, room_curr.bg_col or 0)
+
 
 	-- debug walkable areas
 	-- 
