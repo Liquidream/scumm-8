@@ -4,7 +4,7 @@ __lua__
 -- scumm-8 game template
 -- paul nicholas
 
--- 6882 tokens (5206 is engine!) - leaving 1310 tokens "spare"
+-- 7004 tokens (5206 is engine!) - leaving 1188 tokens "spare"
 
 -- debugging
 show_debuginfo = false
