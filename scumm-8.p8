@@ -97,21 +97,23 @@ rooms = {
 							camera_follow(selected_actor)
 							put_actor_at(selected_actor, 60, 50, rooms.first_room)
 							change_room(rooms.first_room, 1)
+							
 
-	--[[						-- intro
+--[[
+							-- intro
 							break_time(50)
 							print_line("in a galaxy not far away...",64,45,8,1)
 
 							change_room(rooms.first_room, 1)
 							shake(true)
-							start_script(rooms.first_room.scripts.spin_top, true)
+							start_script(rooms.first_room.scripts.spin_top,false,true)
 							print_line("cozy fireplaces...",90,20,8,1)
 							print_line("(just look at it!)",90,20,8,1)
 							shake(false)
 
 							-- part 2
 							change_room(rooms.second_room, 1)
-							print_line("strange looking aliens...",30,20,8,1,true)
+							print_line("strange looking aliens...",30,20,8,1,false,true)
 							put_actor_at(actors.purp_tentacle, 130, actors.purp_tentacle.y, rooms.second_room)
 							walk_to(actors.purp_tentacle, 
 								actors.purp_tentacle.x-30, 
@@ -121,7 +123,7 @@ rooms = {
 
 							-- part 3
 							change_room(rooms.back_garden, 1)
-							print_line("and even swimming pools!",90,20,8,1,true)
+							print_line("and even swimming pools!",90,20,8,1,false,true)
 							camera_at(200)
 							camera_pan_to(0)
 							wait_for_camera()
@@ -598,6 +600,40 @@ rooms = {
 			},
 		},
 	},
+
+	-- back_garden = {
+	-- 	map_x = 40 ,
+	-- 	map_y = 0,
+	-- 	map_x1 = 63, 	-- map coordinates to draw to (x,y)
+	-- 	map_y1 = 7,
+	-- 	enter = function()
+	-- 		-- todo: anything here?
+	-- 		-- camera_at(200)
+	-- 		-- camera_pan_to(0)
+	-- 		-- wait_for_camera()
+	-- 	end,
+	-- 	exit = function()
+	-- 		-- todo: anything here?
+	-- 	end,
+	-- 	scripts = {	  -- scripts that are at room-level
+	-- 	},
+	-- 	objects = {
+	-- 		garden_door_kitchen = {
+	-- 			name = "kitchen",
+	-- 			state = state_open,
+	-- 			x = 13 *8, -- (*8 to use map cell pos)
+	-- 			y = 1 *8,
+	-- 			w = 1,	-- relates to spr
+	-- 			h = 3,  --
+	-- 			verbs = {
+	-- 				walkto = function()
+	-- 					-- go to new room!
+	-- 					come_out_door(rooms.second_room.objects.back_door)
+	-- 				end
+	-- 			}
+	-- 		}
+	-- 	},
+	-- },
 
 }
 
@@ -1296,38 +1332,37 @@ function print_line(msg, x, y, col, align, use_caps, dont_wait_msg)
 
 	--d(msg)
 	-- default max width (unless hit a screen edge)
-	local lines = {}
-	local curchar = ""
-	local msg_left = "" --used for splitting messages with ";"
+	--local lines = {}
+	--local curchar = ""
+	--local msg_left = "" --used for splitting messages with ";"
 	
-	longest_line=0
+	--longest_line=0
 	-- auto-wrap
 	-- calc max line width based on x-pos/available space
-	screen_space = min(x -cam_x, screenwidth - (x -cam_x))
+	local screen_space = min(x -cam_x, 127 - (x -cam_x))
 	-- (or no less than min length)
-	max_line_length = max(flr(screen_space/2), 16)
+	local max_line_length = max(flr(screen_space/2), 16)
 
 	-- search for ";"'s
-	msg_left = ""
+	local msg_left = ""
 	for i = 1, #msg do
-		curchar=sub(msg,i,i)
-		if curchar == ":" then -- msg break
-			--d("msg break!")
+		local curchar=sub(msg,i,i)
+		if curchar == ":" then
 			-- show msg up to this point
 			-- and process the rest as new message
 			
 			-- next message?
-			msg_left = sub(msg,i+1)
+			msg_left = sub(msg, i+1)
 			-- redefine curr msg
-			msg = sub(msg,1,i-1)
+			msg = sub(msg, 1, i-1)
 			break
 		end
 	end
 
-	lines = create_text_lines(msg, max_line_length) --, true)
+	local lines = create_text_lines(msg, max_line_length)
 
 	-- find longest line
-	longest_line = longest_line_size(lines)
+	local longest_line = longest_line_size(lines)
 
 	-- center-align text block
 	if align == 1 then
@@ -1335,9 +1370,9 @@ function print_line(msg, x, y, col, align, use_caps, dont_wait_msg)
 	end
 
 	-- screen bound check
-	xpos = max(2,xpos)	-- left
-	ypos = max(18,y)    -- top
-	xpos = min(xpos, screenwidth - (longest_line*4)-1) -- right
+	xpos = max(2, xpos)	 -- left
+	ypos = max(18, y)    -- top
+	xpos = min(xpos, 127 - (longest_line*4)-1) -- right
 
 	talking_curr = {
 		msg_lines = lines,
@@ -1365,32 +1400,31 @@ end
 
 function put_actor_at(actor, x, y, room)
 	if room then actor.in_room = room end
-	actor.x = x
-	actor.y = y
+	actor.x, actor.y = x, y
 end
 
 -- walk actor to position
 function walk_to(actor, x, y)
 		--offset for camera
-		x = x + cam_x
+		local x += cam_x
 
-		actor_cell_pos = getcellpos(actor)
-		celx = flr(x /8) + room_curr.map_x
-		cely = flr(y /8) + room_curr.map_y
-		target_cell_pos = { celx, cely }
+		local actor_cell_pos = getcellpos(actor)
+		local celx = flr(x /8) + room_curr.map_x
+		local cely = flr(y /8) + room_curr.map_y
+		local target_cell_pos = { celx, cely }
 
 		-- use pathfinding!
-		path = find_path(actor_cell_pos, target_cell_pos)
+		local path = find_path(actor_cell_pos, target_cell_pos)
 
 		-- finally, add our destination to list
-		final_cell = getcellpos({x=x, y=y})
+		local final_cell = getcellpos({x=x, y=y})
 		if is_cell_walkable(final_cell[1], final_cell[2]) then
 			add(path, final_cell)
 		end
 
 		for p in all(path) do
-			px = (p[1]-room_curr.map_x)*8 + 4
-			py = (p[2]-room_curr.map_y)*8 + 4
+			local px = (p[1]-room_curr.map_x)*8 + 4
+			local py = (p[2]-room_curr.map_y)*8 + 4
 
 			local distance = sqrt((px - actor.x) ^ 2 + (py - actor.y) ^ 2)
 			local step_x = actor.speed * (px - actor.x) / distance
@@ -1404,11 +1438,11 @@ function walk_to(actor, x, y)
 				-- face dir (at end of walk)
 				-- todo: add walk front/back at some point
 				actor.face_dir = face_right
-				if (actor.flip) then actor.face_dir = face_left end
+				if actor.flip then actor.face_dir = face_left end
 
 				for i = 0, distance/actor.speed do
-					actor.x = actor.x + step_x
-					actor.y = actor.y + step_y
+					actor.x += step_x
+					actor.y += step_y
 					yield()
 				end
 			end
@@ -1430,7 +1464,7 @@ function proximity(obj1, obj2)
 	if type(obj1) == "string" then
 		obj1 = find_object(obj1)
 	end
-	if type(obj1) == "string" then
+	if type(obj2) == "string" then
 		obj2 = find_object(obj2)
 	end
 
@@ -1447,38 +1481,19 @@ end
 
 -- ================================================================
 -- internal functions
--- ================================================================
+-- 
 
 -- global vars
-screenwidth = 127
-screenheight = 127
 stage_top = 16
+cam_x, cam_pan_to_x, cam_script, cam_shake_amount = 0, nil, nil, 0
 
--- offset to display speech above actors (dist in px from their feet)
---text_offset = (selected_actor.h-1)*8
-cam_x = 0
---cam_following_actor = selected_actor
-cam_pan_to_x = nil	 -- target pos to pad camera to
-cam_script = nil		 -- active camera logic script (pan-to, follow, etc.)
-cam_shake_amount = 0 -- multiplier for shake (0=off)
-
-cursor_x = screenwidth / 2
-cursor_y = screenheight / 2
---cursor_lvl = 1 	-- for cutscenes (<=0 - disable cursor)
-cursor_tmr = 0 	-- used to animate cursor col
+cursor_x, cursor_y, cursor_tmr, cursor_colpos = 63.5, 63.5, 0, 1
 cursor_cols = {7,12,13,13,12,7}
-cursor_colpos = 1
 
 ui_arrows = {
 	{ spr = 16, x = 75, y = stage_top + 60 },
 	{ spr = 48, x = 75, y = stage_top + 72 }
 }
-
-
-last_mouse_x = 0
-last_mouse_y = 0
--- wait for button release before repeating action
-ismouseclicked = false
 
 room_curr = nil			-- contains the current room definition
 verb_curr = nil 		-- contains the active verb to be used (e.g. walk)
@@ -1490,13 +1505,14 @@ talking_curr = nil 	-- currently displayed speech {x,y,col,lines...}
 dialog_curr = nil   -- currently displayed dialog options to pick
 cutscene_curr = nil -- currently active cutscene
 talking_actor = nil -- currently talking actor
-fade_iris = 0			  -- +ve number = amount to close iris by
-fade_colors = 0			-- +ve number = amount to fade colors by (up to 1)
 
 global_scripts = {}	-- table of scripts that are at game-level (background)
 local_scripts = {}	-- table of scripts that are actively running
 cutscenes = {} 			-- table of scripts for the active cutscene(s)
 draw_zplanes = {}		-- table of tables for each of the (8) zplanes for drawing depth
+
+fade_iris, fade_iris = 0, 0
+
 
 -- game loop
 
@@ -1519,11 +1535,13 @@ function _draw()
 	game_draw()
 end
 
+
 -- update functions
 
 function game_update()
 	-- process selected_actor threads/actions
-	if selected_actor and selected_actor.thread and not coresume(selected_actor.thread) then
+	if selected_actor and selected_actor.thread 
+	 and not coresume(selected_actor.thread) then
 		selected_actor.thread = nil
 	end
 
@@ -1532,12 +1550,14 @@ function game_update()
 
 	-- update active cutscene (if any)
 	if cutscene_curr then
-		if cutscene_curr.thread and not coresume(cutscene_curr.thread) then
+		if cutscene_curr.thread 
+		 and not coresume(cutscene_curr.thread) then
 			-- cutscene ended, restore prev state	
 						
 			-- restore follow-cam if flag allows (and had a value!)
-			if not has_flag(cutscene_curr.flags, cut_no_follow) and
-			 cutscene_curr.paused_cam_following then
+			if not has_flag(cutscene_curr.flags, cut_no_follow) 
+			 and cutscene_curr.paused_cam_following 
+			then
 				camera_follow(cutscene_curr.paused_cam_following)
 					-- assume to re-select prev actor
 				selected_actor = cutscene_curr.paused_cam_following
@@ -1566,8 +1586,7 @@ function game_update()
 	check_collisions()
 
 	-- update camera shake (if active)
-	cam_shake_x = 1.5-rnd(3)
- 	cam_shake_y = 1.5-rnd(3)
+	cam_shake_x, cam_shake_y = 1.5-rnd(3), 1.5-rnd(3)
 	cam_shake_x *= cam_shake_amount
   cam_shake_y *= cam_shake_amount
 	if not cam_shake then
@@ -1579,7 +1598,7 @@ end
 
 function game_draw()
 	-- clear screen every frame?
-	rectfill(0, 0, screenwidth, screenheight, 0)
+	rectfill(0, 0, 127, 127, 0)
 
 	-- reposition camera (account for shake, if active)
 	camera(cam_x+cam_shake_x, 0+cam_shake_y)
@@ -1588,7 +1607,7 @@ function game_draw()
 	clip(
 		0 +fade_iris, 
 		stage_top +fade_iris, 
-		screenwidth+1 -fade_iris*2, 
+		128 -fade_iris*2, 
 		64 -fade_iris*2)
 
 	-- draw room (bg + objects + actors)
@@ -2382,7 +2401,7 @@ function _center_camera(val)
 		val = val.x
 	end
 	-- keep camera within "room" bounds
-	return mid(0, val-64, (room_curr.map_w*8)-screenwidth-1 )
+	return mid(0, val-64, (room_curr.map_w*8) -128 )
 end
 
 
@@ -2660,11 +2679,11 @@ function outline_text(str,x,y,c0,c1,use_caps)
 end
 
 function hcenter(s)
-	return (screenwidth / 2)-flr((#s*4)/2)
+	return 63.5-flr((#s*4)/2)
 end
 
 function vcenter(s)
-	return (screenheight /2)-flr(5/2)
+	return 61 -- (screenheight /2)-flr(5/2)
 end
 
 
