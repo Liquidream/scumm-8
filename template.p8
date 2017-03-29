@@ -87,13 +87,13 @@ rooms = {
 					cutscene(cut_noverbs + cut_no_follow, 
 						function()
 
-							selected_actor = actors.main_actor
+			--[[				selected_actor = actors.main_actor
 							camera_follow(selected_actor)
 							put_actor_at(selected_actor, 60, 50, rooms.first_room)
 							change_room(rooms.first_room, 1)
-							
+							]]
 
---[[
+
 							-- intro
 							break_time(50)
 							print_line("in a galaxy not far away...",64,45,8,1)
@@ -134,7 +134,7 @@ rooms = {
 							print_line("coming soon...:to a pico-8 near you!",64,45,8,1)
 							fades(1,1)	-- fade out
 							break_time(100)
-							]]
+							
 						end) -- end cutscene
 
 				end -- if not done intro
