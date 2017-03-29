@@ -13,8 +13,8 @@ __lua__
 
 
 -- debugging
-show_debuginfo = true
-show_collision = false
+show_debuginfo = false
+show_collision = true
 --show_pathfinding = true
 show_perfinfo = true
 enable_mouse = true
@@ -775,6 +775,17 @@ end
 -- ################################################################
 
 
+
+function shake(enabled)
+	if enabled then
+		-- enable the camera shake
+		cam_shake_amount = 1
+	end
+	-- enable/disable shake, which will fade out
+	cam_shake = enabled
+end
+
+
 -- logic used to determine a "default" verb to use
 -- (e.g. when you right-click an object)
 function find_default_verb(obj)
@@ -872,16 +883,6 @@ function unsupported_action(verb, obj1, obj2)
 	end
 end 
 
-
-
-function shake(enabled)
-	if enabled then
-		-- enable the camera shake
-		cam_shake_amount = 1
-	end
-	-- enable/disable shake, which will fade out
-	cam_shake = enabled
-end
 
 
 function camera_at(val)
@@ -1407,7 +1408,7 @@ end
 -- walk actor to position
 function walk_to(actor, x, y)
 		--offset for camera
-		local x += cam_x
+		x += cam_x
 
 		local actor_cell_pos = getcellpos(actor)
 		local celx = flr(x /8) + room_curr.map_x
@@ -1496,12 +1497,42 @@ ui_arrows = {
 	{ spr = 48, x = 75, y = stage_top + 72 }
 }
 
-room_curr = nil			-- contains the current room definition
-verb_curr = nil 		-- contains the active verb to be used (e.g. walk)
-noun1_curr = nil 		-- main/first object in command
-noun2_curr = nil 		-- holds whatever is used after the preposition (e.g. "with <noun2>")
-cmd_curr = "" 			-- contains last displayed or actioned command
-executing_cmd = false
+
+function get_keys(obj)
+	local keys = {}
+	for k,v in pairs(obj) do
+		--d("k:"..k)
+		add(keys,k)
+	end
+	return keys
+end
+
+function get_verb(obj)
+	local verb = {}
+	local keys = get_keys(obj[1])
+--[[	d("1:"..keys[1])
+			d("2:"..obj[1][ keys[1] ])
+			d("3:"..obj.text ) ]]
+	add(verb, keys[1])						-- verb func
+	add(verb, obj[1][ keys[1] ])  -- verb ref name
+	add(verb, obj.text)						-- verb disp name
+	return verb
+end
+
+function clear_curr_cmd()
+	-- reset all command values
+	verb_curr = get_verb(verb_default)
+	noun1_curr, noun2_curr, me, executing_cmd, cmd_curr = nil, nil, nil, false, ""
+end
+
+clear_curr_cmd()
+-- room_curr  - contains the current room definition
+-- verb_curr  - contains the active verb to be used (e.g. walk)
+-- noun1_curr - main/first object in command
+-- noun2_curr - holds whatever is used after the preposition (e.g. "with <noun2>")
+-- cmd_curr   - contains last displayed or actioned command
+-- executing_cmd = false
+
 talking_curr = nil 	-- currently displayed speech {x,y,col,lines...}
 dialog_curr = nil   -- currently displayed dialog options to pick
 cutscene_curr = nil -- currently active cutscene
@@ -2355,8 +2386,11 @@ function game_init()
 end
 
 function show_collision_box(obj)
-	if show_collision and obj.bounds then 
-		rect(obj.bounds.x, obj.bounds.y, obj.bounds.x1, obj.bounds.y1, 8) 
+	local obj_bounds = obj.bounds
+	if show_collision 
+	 and obj_bounds 
+	then 
+		rect(obj_bounds.x, obj_bounds.y, obj_bounds.x1, obj_bounds.y1, 8) 
 	end	
 end
 
@@ -2372,7 +2406,7 @@ end
 function _fadepal(perc)
  if perc then perc = 1-perc end
  local p=flr(mid(0,perc,1)*100)
- dpal={0,1,1, 2,1,13,6,
+ local dpal={0,1,1, 2,1,13,6,
           4,4,9,3, 13,1,13,14}
  for j=1,15 do
   col = j
@@ -2397,49 +2431,24 @@ end
 
 
 -- returns whether room map cel at position is "walkable"
-function iswalkable(x, y)
-		celx = flr(x/8) + room_curr.map_x
-		cely = flr(y/8) + room_curr.map_y
-		walkable = is_cell_walkable(celx, cely)
-		return walkable
-end
+-- function iswalkable(x, y)
+-- 		-- celx = flr(x/8) + room_curr.map_x
+-- 		-- cely = flr(y/8) + room_curr.map_y
+-- 		-- walkable = is_cell_walkable(celx, cely)
+-- 		return walkable
+-- end
 
 function getcellpos(obj)
-	celx = flr(obj.x/8) + room_curr.map_x
-	cely = flr(obj.y/8) + room_curr.map_y
+	local celx = flr(obj.x/8) + room_curr.map_x
+	local cely = flr(obj.y/8) + room_curr.map_y
 	return { celx, cely }
 end
 
 function is_cell_walkable(celx, cely)
-		spr_num = mget(celx, cely)
+		local spr_num = mget(celx, cely)
 		--d("spr:"..spr_num)
-		walkable = fget(spr_num,0)
+		local walkable = fget(spr_num,0)
 		return walkable
-end
-
-function get_keys(obj)
-	keys = {}
-	for k,v in pairs(obj) do
-		--d("k:"..k)
-		add(keys,k)
-	end
-	return keys
-end
-
-function get_verb(obj)
-	verb = {}
-	keys = get_keys(obj[1])
-	--[[
-	d("1:"..keys[1])
-	d("2:"..obj[1][ keys[1] ])
-	d("3:"..obj.text )
-	]]
-
-	add(verb, keys[1])						-- verb func
-	add(verb, obj[1][ keys[1] ])  -- verb ref name
-	add(verb, obj.text)						-- verb disp name
-
-	return verb
 end
 
 
@@ -2502,23 +2511,14 @@ function has_flag(obj, value)
   return false
 end
 
-function clear_curr_cmd()
-	-- reset all command values
-	verb_curr = get_verb(verb_default)
-	noun1_curr = nil
-	noun2_curr = nil
-	me = nil
-	executing_cmd = false
-	cmd_curr = ""
-end
 
 function recalc_bounds(obj, w, h, cam_off_x, cam_off_y)
   x = obj.x
 	y = obj.y
 	-- offset for actors?
 	if has_flag(obj.class, class_actor) then
-		obj.offset_x = obj.x - (obj.w *8) /2
-		obj.offset_y = obj.y - (obj.h *8) +1		
+		obj.offset_x = x - (obj.w *8) /2
+		obj.offset_y = y - (obj.h *8) +1		
 		x = obj.offset_x
 		y = obj.offset_y
 	end
@@ -2538,11 +2538,9 @@ end
 -- ================================================================
 
 function find_path(start, goal)
- frontier = {}
+ local frontier, came_from, cost_so_far = {}, {}, {}
  insert(frontier, start, 0)
- came_from = {}
  came_from[vectoindex(start)] = nil
- cost_so_far = {}
  cost_so_far[vectoindex(start)] = 0
 
  while #frontier > 0 and #frontier < 1000 do
@@ -2562,17 +2560,17 @@ function find_path(start, goal)
 			if x == 0 and y == 0 then 
 				--continue 
 			else
-				chk_x = current[1] + x
-				chk_y = current[2] + y
+				local chk_x = current[1] + x
+				local chk_y = current[2] + y
 
 				-- diagonals cost more
 				if abs(x) != abs(y) then cost=1 else cost=1.4 end
 				
 				if chk_x >= room_curr.map_x and chk_x <= room_curr.map_x + room_curr.map_w 
-				and chk_y >= room_curr.map_y and chk_y <= room_curr.map_y + room_curr.map_h
-				and is_cell_walkable(chk_x, chk_y)
+				 and chk_y >= room_curr.map_y and chk_y <= room_curr.map_y + room_curr.map_h
+				 and is_cell_walkable(chk_x, chk_y)
 				-- squeeze check for corners
-				and ((abs(x) != abs(y)) 
+				 and ((abs(x) != abs(y)) 
 						or is_cell_walkable(chk_x, current[2]) 
 						or is_cell_walkable(chk_x - x, chk_y)) 
 				then
@@ -2588,12 +2586,12 @@ function find_path(start, goal)
    local nextindex = vectoindex(next)
    local new_cost = cost_so_far[vectoindex(current)] + next[3] -- add extra costs here
 
-   if (cost_so_far[nextindex] == nil) or (new_cost < cost_so_far[nextindex]) then
-    cost_so_far[nextindex] = new_cost
-
+   if (cost_so_far[nextindex] == nil) 
+	  or (new_cost < cost_so_far[nextindex]) 
+	 then
+	 	cost_so_far[nextindex] = new_cost
 		-- diagonal movement - assumes diag dist is 1, same as cardinals
 		local priority = new_cost +  max(abs(goal[1] - next[1]), abs(goal[2] - next[2]))
-
     insert(frontier, next, priority)
     came_from[nextindex] = current
    end 
@@ -2601,7 +2599,7 @@ function find_path(start, goal)
  end
 
  -- now find goal..
- path = {}
+ local path = {}
  current = came_from[vectoindex(goal)]
  if current then
 	local cindex = vectoindex(current)
@@ -2619,7 +2617,6 @@ function find_path(start, goal)
 		local oppindex = #path-(i-1)
 		path[i] = path[oppindex]
 		path[oppindex] = temp
-
 	end
  end
 
@@ -2683,7 +2680,7 @@ function iscursorcolliding(obj)
 	if not obj.bounds then return false end
 	bounds = obj.bounds
 	if (cursor_x + bounds.cam_off_x > bounds.x1 or cursor_x + bounds.cam_off_x < bounds.x) 
-	 or (cursor_y>bounds.y1 or cursor_y<bounds.y) then
+	 or (cursor_y > bounds.y1 or cursor_y < bounds.y) then
 		return false
 	else
 		return true
