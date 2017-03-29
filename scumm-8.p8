@@ -1408,7 +1408,7 @@ end
 function walk_to(actor, x, y)
 		--offset for camera
 		local x += cam_x
-		
+
 		local actor_cell_pos = getcellpos(actor)
 		local celx = flr(x /8) + room_curr.map_x
 		local cely = flr(y /8) + room_curr.map_y
@@ -1706,8 +1706,9 @@ function playercontrol()
 
 	-- only update position if mouse moved
 	if enable_mouse then	
-		if stat(32)-1 != last_mouse_x then cursor_x = stat(32)-1 end	-- mouse xpos
-		if stat(33)-1 != last_mouse_y then cursor_y = stat(33)-1 end  -- mouse ypos
+		mouse_x,mouse_y = stat(32)-1, stat(33)-1
+		if mouse_x != last_mouse_x then cursor_x = mouse_x end	-- mouse xpos
+		if mouse_y!= last_mouse_y then cursor_y = mouse_y end  -- mouse ypos
 		-- don't repeat action if same press/click
 		if stat(34) > 0 then
 			if not ismouseclicked then
@@ -1718,15 +1719,13 @@ function playercontrol()
 			ismouseclicked = false
 		end
 		-- store for comparison next cycle
-		last_mouse_x = stat(32)-1
-		last_mouse_y = stat(33)-1
+		last_mouse_x = mouse_x
+		last_mouse_y = mouse_y
 	end
 
 	-- keep cursor within screen
-	cursor_x = max(cursor_x, 0)
-	cursor_x = min(cursor_x, 127)
-	cursor_y = max(cursor_y, 0)
-	cursor_y = min(cursor_y, 127)
+	cursor_x = mid(0, cursor_x, 127)
+	cursor_y = mid(0, cursor_y, 127)
 end
 
 -- 1 = z/lmb, 2 = x/rmb, (4=middle)
@@ -1743,7 +1742,6 @@ function input_button_pressed(button_index)
 	if dialog_curr and dialog_curr.visible then
 		if hover_curr_sentence then
 			selected_sentence = hover_curr_sentence
-			--sentence_curr = hover_curr_sentence
 		end
 		-- skip remaining
 		return
@@ -1856,14 +1854,11 @@ end
 -- collision detection
 function check_collisions()
 	-- reset hover collisions
-	hover_curr_verb = nil
-	hover_curr_default_verb = nil
-	hover_curr_object = nil
-	hover_curr_sentence = nil
-	hover_curr_arrow = nil
-
+	hover_curr_verb, hover_curr_default_verb, hover_curr_object, hover_curr_sentence, hover_curr_arrow = nil, nil, nil, nil, nil
 	-- are we in dialog mode?
-	if dialog_curr and dialog_curr.visible then
+	if dialog_curr 
+	 and dialog_curr.visible 
+	then
 		for s in all(dialog_curr.sentences) do
 			if iscursorcolliding(s) then
 				hover_curr_sentence = s
@@ -1889,7 +1884,6 @@ function check_collisions()
 			-- reset bounds
 			obj.bounds = nil
 		end
-
 
 		if iscursorcolliding(obj) then
 			-- if highest (or first) object in hover "stack"
@@ -1961,7 +1955,7 @@ end
 
 function reset_zplanes()
 	draw_zplanes = {}
-	for x=-64,64 do
+	for x = -64, 64 do
 		draw_zplanes[x] = {}
 	end
 end
@@ -1978,7 +1972,6 @@ function recalc_zplane(obj)
 	zplane = flr(ypos - stage_top)
 
 	if obj.z then zplane = obj.z end
-	--if obj.elevation then zplane += obj.elevation end
 
 	add(draw_zplanes[zplane],obj)
 end
@@ -2037,18 +2030,18 @@ function room_draw()
 				if not has_flag(obj.class, class_actor) then
 					-- object
 					if (obj.states) 						-- object has a state?
-					and obj.states[obj.state]
-					and (obj.states[obj.state] > 0)
-					and (not obj.dependent_on 			-- object has a valid dependent state?
+					 and obj.states[obj.state]
+					 and (obj.states[obj.state] > 0)
+					 and (not obj.dependent_on 			-- object has a valid dependent state?
 						or find_object(obj.dependent_on).state == obj.dependent_on_state)
-					and not obj.owner   						-- object is not "owned"
+					 and not obj.owner   						-- object is not "owned"
 					then
 						-- something to draw
 						object_draw(obj)
 					end
 				else
 					-- actor
-					if (obj.in_room == room_curr) then
+					if obj.in_room == room_curr then
 						actor_draw(obj)
 					end
 				end
@@ -2090,7 +2083,8 @@ end
 function actor_draw(actor)
 
 	if actor.moving == 1
-	 and actor.walk_anim then
+	 and actor.walk_anim 
+	then
 		actor.tmr += 1
 		if actor.tmr > 5 then
 			actor.tmr = 1
@@ -2113,8 +2107,9 @@ function actor_draw(actor)
 	
 	-- talking overlay
 	if talking_actor 
-	 and talking_actor == actor then
-			if actor.talk_tmr < 7  then
+	 and talking_actor == actor 
+	then
+			if actor.talk_tmr < 7 then
 				sprnum = actor.talk[actor.face_dir]
 				sprdraw(sprnum, actor.offset_x, actor.offset_y +8, 1, 1, 
 					actor.trans_col, actor.flip, false)
@@ -2161,9 +2156,7 @@ function command_draw()
 		cmd_col = 7
 	end
 
-	print(smallcaps(command), 
-		hcenter(command), 
-		stage_top + 66, cmd_col)
+	print( smallcaps(command), hcenter(command), stage_top + 66, cmd_col )
 end
 
 function talking_draw()
@@ -2173,7 +2166,7 @@ function talking_draw()
 	if talking_curr then
 		line_offset_y = 0
 		for l in all(talking_curr.msg_lines) do
-			line_offset_x=0
+			line_offset_x = 0
 			-- center-align line
 			if talking_curr.align == 1 then
 				line_offset_x = ((talking_curr.char_width*4)-(#l*4))/2
@@ -2190,7 +2183,7 @@ function talking_draw()
 		-- update message lifespan
 		talking_curr.time_left -= 1
 		-- remove text & reset actor's talk anim
-		if (talking_curr.time_left <=0) then 
+		if talking_curr.time_left <= 0 then 
 			stop_talking()
 		end
 	end
@@ -2199,16 +2192,14 @@ end
 -- draw ui and inventory
 function ui_draw()
 	-- draw verbs
-	xpos = 0
-	ypos = 75
-	col_len=0
+	xpos, ypos, col_len = 0, 75, 0
 
 	for v in all(verbs) do
 		txtcol=verb_maincol
 
 		-- highlight default verb
 		if hover_curr_default_verb
-		  and (v == hover_curr_default_verb) then
+		  and v == hover_curr_default_verb then
 			txtcol = verb_defcol
 		end		
 		if v == hover_curr_verb then txtcol=verb_hovcol end
@@ -2226,20 +2217,19 @@ function ui_draw()
 
 		-- auto-size column
 		if #vi[3] > col_len then col_len = #vi[3] end
-		ypos = ypos + 8
+		ypos += 8
 
 		-- move to next column
 		if ypos >= 95 then
 			ypos = 75
-			xpos = xpos + (col_len + 1.0) * 4
+			xpos += (col_len + 1.0) * 4
 			col_len = 0
 		end
 	end
 
 	if selected_actor then
 		-- draw inventory
-		xpos = 86
-		ypos = 76
+		xpos, ypos = 86, 76
 		-- determine the inventory "window"
 		start_pos = selected_actor.inv_pos*4
 		end_pos = min(start_pos+8, #selected_actor.inventory)
@@ -2251,8 +2241,7 @@ function ui_draw()
 			obj = selected_actor.inventory[start_pos+ipos]
 			if obj then
 				-- something to draw
-				obj.x = xpos
-				obj.y = ypos
+				obj.x, obj.y = xpos, ypos
 				-- draw object/sprite
 				object_draw(obj)
 				-- re-calculate bounds (as pos may have changed)
@@ -2263,7 +2252,7 @@ function ui_draw()
 
 			if xpos >= 125 then
 				ypos += 12
-				xpos=86
+				xpos = 86
 			end
 			ipos += 1
 		end
@@ -2282,25 +2271,22 @@ function ui_draw()
 end
 
 function dialog_draw()
-	xpos = 0
-	ypos = 70
+	xpos, ypos = 0, 70
 	
 	for s in all(dialog_curr.sentences) do
 		-- capture bounds
-		s.x = xpos
-		s.y = ypos
+		s.x, s.y = xpos, ypos
 		recalc_bounds(s, s.char_width*4, #s.lines*5, 0, 0)
 
 		txtcol=dialog_curr.col
 		if s == hover_curr_sentence then txtcol=dialog_curr.hlcol end
 		
 		for l in all(s.lines) do
-				print(smallcaps(l), xpos, ypos+stage_top, txtcol)
+		  print(smallcaps(l), xpos, ypos+stage_top, txtcol)
 			ypos += 5
 		end
 
 		show_collision_box(s)
-
 		ypos += 2
 	end
 end
@@ -2332,7 +2318,7 @@ function sprdraw(n, x, y, w, h, transcol, flip_x, flip_y)
 	-- restore default trans	
  	palt(transcol, false)
 	palt(0, true)
-	--pal() -- don't, affects lighting
+	--pal() -- don't do, affects lighting!
 end
 
 
