@@ -107,14 +107,15 @@ rooms = {
 							shake(false)
 
 							-- part 2
+							local purp = actors.purp_tentacle
 							change_room(rooms.second_room, 1)
 							print_line("strange looking aliens...",30,20,8,1,false,true)
-							put_actor_at(actors.purp_tentacle, 130, actors.purp_tentacle.y, rooms.second_room)
-							walk_to(actors.purp_tentacle, 
-								actors.purp_tentacle.x-30, 
-								actors.purp_tentacle.y)
-							wait_for_actor(actors.purp_tentacle)
-							say_line(actors.purp_tentacle, "what did you call me?!")
+							put_actor_at(purp, 130, purp.y, rooms.second_room)
+							walk_to(purp, 
+								purp.x-30, 
+								purp.y)
+							wait_for_actor(purp)
+							say_line(purp, "what did you call me?!")
 
 							-- part 3
 							change_room(rooms.back_garden, 1)
