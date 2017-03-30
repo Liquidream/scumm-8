@@ -85,44 +85,81 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 -- object definitions
 -- 
 
-obj_kitchen_door_hall = {		
-	data = [[
-		name="hall"
-		x=8
-		y=16
-		w=1
-		h=4
-		state=2
-		use_pos=4
-		use_dir=2
-		states=143,0
-		flip_x = true
-	]],
-	class = class_openable,
-	verbs = {
-		walkto = function()
-			-- go to new room!
-			come_out_door(hall_door_kitchen)
-		end
+	obj_kitchen_door_hall = {		
+		data = [[
+			name="hall"
+			x=8
+			y=16
+			w=1
+			h=4
+			state=2
+			use_pos=4
+			use_dir=2
+			states=143,0
+			flip_x = true
+		]],
+		class = class_openable,
+		verbs = {
+			walkto = function()
+				-- go to new room!
+				come_out_door(hall_door_kitchen)
+			end
+		}
 	}
-}
+
+	obj_another = {		
+		data = [[
+			name="hall"
+			x=8
+			y=16
+			w=1
+			h=4
+			state=2
+			use_pos=4
+			use_dir=2
+			states=143,0
+			flip_x = true
+		]],
+		class = class_openable,
+		verbs = {
+			walkto = function()
+				-- go to new room!
+				come_out_door(hall_door_kitchen)
+			end
+		}
+	}
+
+
 
 -- 
 -- room definitions
 -- 
 
-second_room = {
-	map = "16,0,39,7",	
-	objects = {
-		obj_kitchen_door_hall
-	},
-	enter = function()
+	first_room = {
+		map = "16,0,39,7",	
+		objects = {
+			obj_kitchen_door_hall
+		},
+		enter = function()
+				-- todo: anything here?
+		end,
+		exit = function()
 			-- todo: anything here?
-	end,
-	exit = function()
-		-- todo: anything here?
-	end,
-}
+		end,
+	}
+
+	second_room = {
+		map = "16,0,39,7",	
+		objects = {
+			obj_kitchen_door_hall
+		},
+		enter = function()
+				-- todo: anything here?
+		end,
+		exit = function()
+			-- todo: anything here?
+		end,
+	}
 
 
 
