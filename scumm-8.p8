@@ -514,10 +514,11 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 	}
 
 	outside_room = {
-		map_x = 16,
-		map_y = 8,
-		map_x1 = 47,
-		map_y1 = 15,
+		map = {16,8,47,15},
+		-- map_x = 16,
+		-- map_y = 8,
+		-- map_x1 = 47,
+		-- map_y1 = 15,
 		enter = function(me)
 			-- =========================================
 			-- initialise game in first room entry...
