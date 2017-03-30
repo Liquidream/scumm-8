@@ -9,12 +9,12 @@ __lua__
 
 -- token counts:
 --   > 7027 (after fixing z-order hover, adding shake, lighting)
---   > 6873 (after token huting and adding room bg color)
-
+--   > 6873 (after token hunting and adding room bg color)
+--   > 6790 (after more token hunting) 
 
 -- debugging
 show_debuginfo = false
-show_collision = true
+show_collision = false
 --show_pathfinding = true
 show_perfinfo = true
 enable_mouse = true
@@ -1052,7 +1052,7 @@ function do_anim(actor, cmd_type, cmd_value)
 
 			-- angle wrap for circle
 			degrees = degrees % 360
-			if (degrees < 0) then degrees += 360 end
+			if degrees < 0 then degrees += 360 end
 
 			-- set final target face direction to obj/actor
 			cmd_value = 4 - flr(degrees/90)
@@ -1267,7 +1267,7 @@ function script_running(func)
 	-- loop through both sets of scripts...
 	for s in all( { local_scripts, global_scripts } ) do
 		for k,scr_obj in pairs(s) do
-			if (scr_obj[1] == func) then
+			if scr_obj[1] == func then
 				return scr_obj
 			end
 		end
@@ -1387,7 +1387,7 @@ function print_line(msg, x, y, col, align, use_caps, dont_wait_msg)
 		use_caps = use_caps
 	}
 	-- if message was split...
-	if (#msg_left > 0) then
+	if #msg_left > 0 then
 	  talking = talking_actor
 		wait_for_message()
 		talking_actor = talking
@@ -1838,13 +1838,13 @@ function input_button_pressed(button_index)
 
 		-- execute verb script
 		executing_cmd = true
-		selected_actor.thread = cocreate(function(actor, obj, verb, noun2)
+		selected_actor.thread = cocreate(function() --actor, obj, verb, noun2)
 			-- if obj not in inventory (or about to give/use it)...
-			if not obj.owner 
-			 or noun2 then
+			if not noun1_curr.owner 
+			 or noun2_curr then
 				-- walk to use pos and face dir
 				-- determine which item we're walking to
-				walk_obj = noun2 or obj
+				walk_obj = noun2_curr or noun1_curr
 				--todo: find nearest usepos if none set?
 				dest_pos = get_use_pos(walk_obj)
 				walk_to(selected_actor, dest_pos.x, dest_pos.y)
@@ -1858,27 +1858,28 @@ function input_button_pressed(button_index)
 				do_anim(selected_actor, anim_face, use_dir)
 			end
 			-- does current object support active verb?
-			if valid_verb(verb,obj) then
+			if valid_verb(verb_curr,noun1_curr) then
 				-- finally, execute verb script
-				start_script(obj.verbs[verb[1]], false, obj, noun2)
+				start_script(noun1_curr.verbs[verb_curr[1]], false, noun1_curr, noun2_curr)
 			else
 				-- e.g. "i don't think that will work"
-				unsupported_action(verb[2], obj, noun2)
+				unsupported_action(verb_curr[2], noun1_curr, noun2_curr)
 			end
 			-- clear current command
 			clear_curr_cmd()
 		end)
-		coresume(selected_actor.thread, selected_actor, noun1_curr, verb_curr, noun2_curr)
-	elseif (cursor_y > stage_top and cursor_y < stage_top+64) then
+		coresume(selected_actor.thread)--, selected_actor, noun1_curr, verb_curr, noun2_curr)
+	elseif cursor_y > stage_top and cursor_y < stage_top+64 then
 		-- in map area
 		executing_cmd = true
 		-- attempt to walk to target
-		selected_actor.thread = cocreate(function(x,y)
-			walk_to(selected_actor, x, y)
+		selected_actor.thread = cocreate(function() --(x,y)
+			walk_to(selected_actor, cursor_x, cursor_y - stage_top)
+			--walk_to(selected_actor, x, y)
 			-- clear current command
 			clear_curr_cmd()
 		end)
-		coresume(selected_actor.thread, cursor_x, cursor_y - stage_top)
+		coresume(selected_actor.thread) --, cursor_x, cursor_y - stage_top)
 	end
 end
 
@@ -2060,9 +2061,9 @@ function room_draw()
 				-- object or actor?
 				if not has_flag(obj.class, class_actor) then
 					-- object
-					if (obj.states) 						-- object has a state?
+					if obj.states	  -- object has a state?
 					 and obj.states[obj.state]
-					 and (obj.states[obj.state] > 0)
+					 and obj.states[obj.state] > 0
 					 and (not obj.dependent_on 			-- object has a valid dependent state?
 						or find_object(obj.dependent_on).state == obj.dependent_on_state)
 					 and not obj.owner   						-- object is not "owned"
@@ -2336,7 +2337,7 @@ function cursor_draw()
 		cursor_tmr = 1
 		-- move to next color?
 		cursor_colpos += 1
-		if (cursor_colpos > #cursor_cols) then cursor_colpos = 1 end
+		if cursor_colpos > #cursor_cols then cursor_colpos = 1 end
 	end
 end
 
@@ -2473,8 +2474,8 @@ function create_text_lines(msg, max_line_length) --, comma_is_newline)
 		curchar=sub(msg,i,i)
 		curword=curword..curchar
 		
-		if (curchar == " ")
-		 or (#curword > max_line_length-1) then
+		if curchar == " "
+		 or #curword > max_line_length-1 then
 			upt(max_line_length)
 		
 		elseif #curword>max_line_length-1 then
@@ -2586,8 +2587,8 @@ function find_path(start, goal)
    local nextindex = vectoindex(next)
    local new_cost = cost_so_far[vectoindex(current)] + next[3] -- add extra costs here
 
-   if (cost_so_far[nextindex] == nil) 
-	  or (new_cost < cost_so_far[nextindex]) 
+   if cost_so_far[nextindex] == nil
+	  or new_cost < cost_so_far[nextindex]
 	 then
 	 	cost_so_far[nextindex] = new_cost
 		-- diagonal movement - assumes diag dist is 1, same as cardinals
@@ -2693,10 +2694,10 @@ function smallcaps(s)
 	for i=1,#s do
 		local a=sub(s,i,i)
 		if a=="^" then
-			if(c) then d=d..a end
+			if c then d=d..a end
 				c=not c
 			elseif a=="~" then
-				if(t) then d=d..a end
+				if t then d=d..a end
 				t,l=not t,not l
 			else 
 				if c==l and a>="a" and a<="z" then
