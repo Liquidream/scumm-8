@@ -108,6 +108,7 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 	}
 
 	obj_another = {		
+		-- poss diff types (s_data, n_data, arr_data)?
 		data = [[
 			name="hall"
 			x=8
@@ -846,6 +847,13 @@ actors = {
 					while (true) do
 						-- build dialog options
 
+						dialog_set([[
+							where am i?
+							who are you?
+							how much wood would a wood-chuck chuck, if a wood-chuck could chuck wood?
+							nevermind
+						]])
+
 						-- dialog_set(
 						-- 	"where am i?	|who are you?		|how much wood would a wood-chuck chuck, if a wood-chuck could chuck wood? |nevermind"
 						-- )
@@ -857,10 +865,10 @@ actors = {
 						-- 	"nevermind"
 						-- })
 
-						dialog_add("where am i?")
-						dialog_add("who are you?")
-						dialog_add("how much wood would a wood-chuck chuck, if a wood-chuck could chuck wood?")
-						dialog_add("nevermind")
+						-- dialog_add("where am i?")
+						-- dialog_add("who are you?")
+						-- dialog_add("how much wood would a wood-chuck chuck, if a wood-chuck could chuck wood?")
+						-- dialog_add("nevermind")
 						dialog_start(selected_actor.col, 7)
 
 						-- wait for selection
