@@ -705,6 +705,18 @@ actors = {
 					-- dialog loop start
 					while (true) do
 						-- build dialog options
+
+						-- dialog_set(
+						-- 	"where am i?	|who are you?		|how much wood would a wood-chuck chuck, if a wood-chuck could chuck wood? |nevermind"
+						-- )
+
+						-- dialog_set({ 
+						-- 	"where am i?",
+						-- 	"who are you?",
+						-- 	"how much wood would a wood-chuck chuck, if a wood-chuck could chuck wood?",
+						-- 	"nevermind"
+						-- })
+
 						dialog_add("where am i?")
 						dialog_add("who are you?")
 						dialog_add("how much wood would a wood-chuck chuck, if a wood-chuck could chuck wood?")
