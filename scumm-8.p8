@@ -74,13 +74,75 @@ pos_infront, pos_behind, pos_left, pos_right, pos_inside = 1, 3, 2, 4, 5
 anim_face = 1	 -- face actor in a direction (show the turning stages of animation)
 
 
+
+
+-- #################################################
+-- ## new Idea! 
+-- ##################################################
+
+
+-- 
+-- object definitions
+-- 
+
+obj_kitchen_door_hall = {		
+	data = [[
+		name="hall"
+		x=8
+		y=16
+		w=1
+		h=4
+		state=2
+		use_pos=4
+		use_dir=2
+		states=143,0
+		flip_x = true
+	]],
+	class = class_openable,
+	verbs = {
+		walkto = function()
+			-- go to new room!
+			come_out_door(hall_door_kitchen)
+		end
+	}
+}
+
+-- 
+-- room definitions
+-- 
+
+second_room = {
+	map = "16,0,39,7",	
+	objects = {
+		obj_kitchen_door_hall
+	},
+	enter = function()
+			-- todo: anything here?
+	end,
+	exit = function()
+		-- todo: anything here?
+	end,
+}
+
+
+
+-- ##################################################
+-- ##################################################
+
+
+
+
+
+
 -- ================================================================
 -- room definitions
 -- 
 
+
 	title_room = {
-		map_x = 0,
-		map_y = 8,
+		map = "0,8",
+		-- map_x = 0,
+		-- map_y = 8,
 		enter = function(me)
 
 			-- demo intro
@@ -148,19 +210,20 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 		exit = function()
 			-- todo: anything here?
 		end,
-		scripts = {	  -- scripts that are at room-level
-		},
-		objects = {
+		-- scripts = {	  -- scripts that are at room-level
+		-- },
+		-- objects = {
 
-		},
+		-- },
 	}
 
 
 	second_room = {
-		map_x = 16,
-		map_y = 0,
-		map_x1 = 39, 	-- map coordinates to draw to (x,y)
-		map_y1 = 7,
+		map = "16,0,39,7",
+		-- map_x = 16,
+		-- map_y = 0,
+		-- map_x1 = 39, 	-- map coordinates to draw to (x,y)
+		-- map_y1 = 7,
 		enter = function()
 			-- todo: anything here?
 		end,
@@ -641,6 +704,46 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 	}
 
 
+--[[
+#############################################
+	1) Ideal is to have variables for each obj
+	2) How can I discover all objects if no parent?
+	2) 
+#############################################
+]]
+obj_kitchen_door_hall = {
+		
+	data = [[
+		name="hall"
+		x=8
+		y=16
+		w=1
+		h=4
+		in_room=first_room
+	]],
+	
+	-- data = "test",
+	-- in_room = first_room,
+	-- name = "hall",	
+	-- x = 1 *8, 
+	-- y = 2 *8,
+	-- w = 1,
+	-- h = 4,
+
+	state = state_open,
+	use_pos = pos_right,
+	use_dir = face_left,
+	verbs = {
+		walkto = function()
+			-- go to new room!
+			come_out_door(first_room.objects.hall_door_kitchen)
+		end
+	}
+}
+
+
+
+
 
 rooms = {
 	title_room,
@@ -649,7 +752,7 @@ rooms = {
 	outside_room,
 	back_garden,
 
-	todo: now do the same for objects?! 
+	--todo: now do the same for objects?! 
 	-- (if only could find a way to avoid manually adding to tables!)
 }
 
