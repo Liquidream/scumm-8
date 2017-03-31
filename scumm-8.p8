@@ -81,7 +81,7 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 	obj_fire = {		
 		-- poss diff types (s_data, n_data, arr_data)?
 		data = [[
-			name="fire"
+			name=fire
 			x=64
 			y=32
 			w=1
@@ -111,7 +111,7 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 
 	obj_front_door_inside = {		
 		data = [[
-			name = "front door"
+			name = front door
 			state = 1
 			x=8
 			y=16
@@ -144,7 +144,7 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 
 	obj_hall_door_kitchen = {		
 		data = [[
-			name = "kitchen"
+			name = kitchen
 			state = 2
 			x=112
 			y=16
@@ -163,7 +163,7 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 
 	obj_bucket = {		
 		data = [[
-			name = "bucket"
+			name = bucket
 			state = 2
 			x=104
 			y=48
@@ -202,7 +202,7 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 
 	obj_spinning_top = {		
 		data = [[
-			name="spinning top"
+			name=spinning top
 			state=1
 			x=16
 			y=48
@@ -230,7 +230,7 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 
 	obj_window = {		
 		data = [[
-			name="window"
+			name=window
 			state=1
 			x=32
 			y=8
@@ -292,7 +292,7 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 
 	obj_kitchen_door_hall = {		
 		data = [[
-			name = "hall"
+			name = hall
 			state=1
 			x=8
 			y=16
@@ -311,7 +311,7 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 
 	obj_back_door = {		
 		data = [[
-			name="back door""
+			name=back door
 			state=1
 			x=176
 			y=16
@@ -372,7 +372,7 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 
 	obj_front_door = {		
 		data = [[
-			name = "front door"
+			name = front door
 			state=1
 			x=152
 			y=8
@@ -403,7 +403,7 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 
 	obj_garden_door_kitchen = {		
 		data = [[
-			name="kitchen"
+			name=kitchen
 			state=2
 			x=104
 			y=8
@@ -557,7 +557,6 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 
 	first_room = {
 		data = [[
-			name = "first room"
 			map = [0,0]
 			lighting = 0.75
 		]],
@@ -2750,24 +2749,53 @@ end
 
 function split(s, delimiter)
 	local retval = {}
-	local curr_word = ""
+	local start_pos = 0
+	local last_char_pos = 0
+	--local curr_word = ""
+	d("delim:"..delimiter)
 	for i=1,#s do
+		d("i:"..i)
 		local curr_letter = sub(s,i,i)
+		d("curr_letter:"..curr_letter)
 		if curr_letter == delimiter then
-			--d("found: "..curr_word)
-			add(retval, curr_word)
-			i += 1
-			curr_word = ""
-		-- found a valid character?
+			d("found delimiter!")
+			d("added:"..sub(s,start_pos,last_char_pos))
+			add(retval, sub(s,start_pos,last_char_pos))
+			start_pos = 0
+			last_char_pos = 0
+
 		elseif curr_letter != " "
 		 and curr_letter != "\t" then
-			curr_word = curr_word..curr_letter
+			-- curr letter is useful
+			last_char_pos = i
+			if start_pos == 0 then start_pos = i end
 		end
 	end
 	-- add remaining content?
-	if #curr_word > 0 then add(retval, curr_word) end
+	if start_pos + last_char_pos > 0 then 	
+		add(retval, sub(s,start_pos,last_char_pos))
+	end
 	return retval
 end
+
+	-- 	if start_pos == 0 and 
+
+	-- 	if curr_letter == delimiter then
+	-- 		--d("found: "..curr_word)
+	-- 		add(retval, curr_word)
+	-- 		i += 1
+	-- 		curr_word = ""
+	-- 	-- found a valid character?
+	-- 	else
+	-- 	--if curr_letter != " "
+	-- 	-- and curr_letter != "\t" then
+	-- 		curr_word = curr_word..curr_letter
+	-- 	end
+	-- end
+	-- -- add remaining content?
+	-- if #curr_word > 0 then add(retval, curr_word) end
+	-- return retval
+--end
 
 function autotype(str_value)
 	local first_letter = sub(str_value,1,1)
@@ -2779,9 +2807,9 @@ function autotype(str_value)
 		retval = true
 	elseif str_value == "false" then
 		retval = false
-	elseif first_letter == "\"" then
-		-- string - so do nothing
-		retval = str_value
+	elseif is_num_char(first_letter) then
+		-- must be number
+		retval = str_value + 0
 	elseif first_letter == "[" then
 		d("array!")
 		-- array - so split it
@@ -2797,11 +2825,19 @@ function autotype(str_value)
 		end
 		retval = retarray
 		d("len:"..#retval)
-	else
-		-- must be number
-		retval = str_value + 0
+	else --if first_letter == "\"" then
+		-- string - so do nothing
+		retval = str_value
 	end
 	return retval
+end
+
+function is_num_char(c)
+	for d=1,10 do
+		if c==sub("0123456789",d,d) then
+			return true
+		end
+	end
 end
 
 function outline_text(str,x,y,c0,c1,use_caps)
