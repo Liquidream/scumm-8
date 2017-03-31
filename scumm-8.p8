@@ -322,6 +322,8 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 			flip_x=true
 		]],
 		class = class_openable,
+		use_pos = pos_left,
+		use_dir = face_right,
 		verbs = {
 			walkto = function(me)
 				if state_of(me) == state_open then
@@ -340,6 +342,7 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 		}
 	}
 
+-- ----
 
 	obj_rail_left = {		
 		data = [[
@@ -505,10 +508,33 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 			obj_rail_right,
 			obj_front_door
 		},
-		enter = function()
-				-- todo: anything here?
+		enter = function(me)
+			-- =========================================
+			-- initialise game in first room entry...
+			-- =========================================
+			if not me.done_intro then
+				-- don't do this again
+				me.done_intro = true
+				-- set which actor the player controls by default
+				selected_actor = actors.main_actor
+				-- init actor
+				put_actor_at(selected_actor, 144, 36, rooms.outside_room)
+				-- make camera follow player
+				-- (setting now, will be re-instated after cutscene)
+				camera_follow(selected_actor)
+				-- do cutscene
+				cutscene(cut_noverbs, 
+					-- cutscene code (hides ui, etc.)
+					function()
+						camera_at(0)
+						camera_pan_to(selected_actor)
+						wait_for_camera()
+						say_line("let's do this")
+					end
+				)
+			end
 		end,
-		exit = function()
+		exit = function(me)
 			-- todo: anything here?
 		end,
 	}
@@ -2502,8 +2528,8 @@ function find_path(start, goal)
 				-- diagonals cost more
 				if abs(x) != abs(y) then cost=1 else cost=1.4 end
 				
-				if chk_x >= room_curr.map[1] and chk_x <= room_curr.map[2] + room_curr.map[3] 
-				 and chk_y >= room_curr.map[1] and chk_y <= room_curr.map[2] + room_curr.map[4]
+				if chk_x >= room_curr.map[1] and chk_x <= room_curr.map[1] + room_curr.map[3] 
+				 and chk_y >= room_curr.map[2] and chk_y <= room_curr.map[2] + room_curr.map[4]
 				 and is_cell_walkable(chk_x, chk_y)
 				-- squeeze check for corners
 				 and ((abs(x) != abs(y)) 
