@@ -710,29 +710,12 @@ actors = {
 					-- dialog loop start
 					while (true) do
 						-- build dialog options
-
-						dialog_set([[
-							where am i?
-							who are you?
-							how much wood would a wood-chuck chuck, if a wood-chuck could chuck wood?
-							nevermind
-						]])
-
-						-- dialog_set(
-						-- 	"where am i?	|who are you?		|how much wood would a wood-chuck chuck, if a wood-chuck could chuck wood? |nevermind"
-						-- )
-
-						-- dialog_set({ 
-						-- 	"where am i?",
-						-- 	"who are you?",
-						-- 	"how much wood would a wood-chuck chuck, if a wood-chuck could chuck wood?",
-						-- 	"nevermind"
-						-- })
-
-						-- dialog_add("where am i?")
-						-- dialog_add("who are you?")
-						-- dialog_add("how much wood would a wood-chuck chuck, if a wood-chuck could chuck wood?")
-						-- dialog_add("nevermind")
+						dialog_set({ 
+							(me.asked_where and "where am i again?" or "where am i?"),
+							"who are you?",
+							"how much wood would a wood-chuck chuck, if a wood-chuck could chuck wood?",
+							"nevermind"
+						})
 						dialog_start(selected_actor.col, 7)
 
 						-- wait for selection
@@ -745,6 +728,7 @@ actors = {
 							
 							if selected_sentence.num == 1 then
 								say_line(me, "you are in paul's game")
+								me.asked_where = true
 
 							elseif selected_sentence.num == 2 then
 								say_line(me, "it's complicated...")
@@ -1006,6 +990,12 @@ function cutscene(flags, func_cutscene, func_override)
 	break_time()
 end
 
+function dialog_set(msg_table)
+	for msg in all(msg_table) do
+		dialog_add(msg)
+	end
+end
+
 function dialog_add(msg)
 	if not dialog_curr then dialog_curr={ sentences={}, visible=false} end
 	-- break msg into lines (if necc.)
@@ -1047,8 +1037,8 @@ function get_use_pos(obj)
 
 	-- first check for specific pos
 	if type(obj_use_pos) == "table" then
-		x = obj_use_pos.x-cam_x
-		y = obj_use_pos.y-stage_top
+		x = obj_use_pos[1]-cam_x
+		y = obj_use_pos[2]-stage_top
 
 	-- determine use pos
 	elseif not obj_use_pos or
@@ -2726,20 +2716,16 @@ end
 -- helper functions 
 -- 
 function explode_data(obj)
-	d("-----------------")
-	--d("obj.name:"..obj.name)
-	d(type(obj))
+	--d(type(obj))
 	local lines=split(obj.data, "\n")
-	d("#lines:"..#lines)
 	for l in all(lines) do
-		d("curr line = ["..l.."]")
+		--d("curr line = ["..l.."]")
 		local pairs=split(l, "=")
 		-- todo: check to see if value is an array?
 		-- now set actual values
-		d(" > #pairs:"..#pairs)
-		d(" > curr pair = ["..pairs[1].."]")
+		--d(" > curr pair = ["..pairs[1].."]")
 		if #pairs==2 then
-			d("pair1=["..pairs[1].."]  pair2=["..pairs[2].."]")
+			--d("pair1=["..pairs[1].."]  pair2=["..pairs[2].."]")
 			obj[pairs[1]] = autotype(pairs[2])
 		else
 			d("invalid data line")
@@ -2751,15 +2737,10 @@ function split(s, delimiter)
 	local retval = {}
 	local start_pos = 0
 	local last_char_pos = 0
-	--local curr_word = ""
-	d("delim:"..delimiter)
+
 	for i=1,#s do
-		d("i:"..i)
 		local curr_letter = sub(s,i,i)
-		d("curr_letter:"..curr_letter)
 		if curr_letter == delimiter then
-			d("found delimiter!")
-			d("added:"..sub(s,start_pos,last_char_pos))
 			add(retval, sub(s,start_pos,last_char_pos))
 			start_pos = 0
 			last_char_pos = 0
@@ -2801,8 +2782,6 @@ function autotype(str_value)
 	local first_letter = sub(str_value,1,1)
 	local retval = nil
 
-	d("str_value:"..str_value)
-
 	if str_value == "true" then
 		retval = true
 	elseif str_value == "false" then
@@ -2811,20 +2790,15 @@ function autotype(str_value)
 		-- must be number
 		retval = str_value + 0
 	elseif first_letter == "[" then
-		d("array!")
 		-- array - so split it
 		local temp = sub(str_value,2,#str_value-1)
-		d("temp:"..temp)
 		retval = split(temp, ",")
 		retarray = {}
 		for val in all(retval) do
-			
 			val = autotype(val)
-			d("    >>"..val)
 			add(retarray, val)
 		end
 		retval = retarray
-		d("len:"..#retval)
 	else --if first_letter == "\"" then
 		-- string - so do nothing
 		retval = str_value
