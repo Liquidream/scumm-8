@@ -47,7 +47,6 @@ verb_shadcol = 1   -- shadow (dk blue)
 verb_defcol = 10   -- default action (yellow)
 
 
--- ================================================================
 -- scumm-8 enums/constants
 -- 
 
@@ -302,37 +301,6 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 	-- }
 
 
-
-
-
-
-
-
-
-
-
-	-- obj_kitchen_door_hall = {		
-	-- 	data = [[
-	-- 		name="hall"
-	-- 		x=8
-	-- 		y=16
-	-- 		w=1
-	-- 		h=4
-	-- 		state=2
-	-- 		states=143,0
-	-- 		flip_x = true
-	-- 	]],
-	-- 	class = class_openable,
-	-- 	verbs = {
-	-- 		walkto = function()
-	-- 			-- go to new room!
-	-- 			come_out_door(hall_door_kitchen)
-	-- 		end
-	-- 	}
-	-- }
-
-
-
 -- 
 -- room definitions
 -- 
@@ -430,8 +398,7 @@ rooms = {
 
 
 
--- ================================================================
--- room definitions
+--  room definitions
 -- 
 
 
@@ -2182,7 +2149,9 @@ function room_draw()
 end
 
 function replace_colors(obj)
+	d("replace_colors()")
 	-- replace colors (where defined)
+	d("colreplace:"..#obj.col_replace)
 	for c in all(obj.col_replace) do
 		pal(c[1], c[2])
 	end
@@ -2459,8 +2428,6 @@ function game_init()
 	d("game_init()")
 	for room in all(rooms) do
 		explode_data(room)
-
-		d("[[[#####]]]]")
 		d("#map:"..#room.map)
 		if (#room.map < 4) then
 			room.map_w = 16
@@ -2819,6 +2786,15 @@ function autotype(str_value)
 		local temp = sub(str_value,2,#str_value-1)
 		d("temp:"..temp)
 		retval = split(temp, ",")
+		retarray = {}
+		for val in all(retval) do
+			
+			val = autotype(val)
+			d("    >>"..val)
+			add(retarray, val)
+		end
+		retval = retarray
+		d("len:"..#retval)
 	else
 		-- must be number
 		retval = str_value + 0
