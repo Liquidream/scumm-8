@@ -185,11 +185,11 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 				pickup_obj(me)
 			end,
 			give = function(me, noun2)
-				if noun2 == actors.purp_tentacle then
+				if noun2 == purp_tentacle then
 					say_line("can you fill this up for me?")
-					say_line(actors.purp_tentacle, "sure")
-					me.owner = actors.purp_tentacle
-					say_line(actors.purp_tentacle, "here ya go...")
+					say_line(purp_tentacle, "sure")
+					me.owner = purp_tentacle
+					say_line(purp_tentacle, "here ya go...")
 					me.state = state_closed
 					me.name = "full bucket"
 					pickup_obj(me)
@@ -251,7 +251,7 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 							me.z = -2
 							print_line("*bang*",40,20,8,1)
 							change_room(second_room, 1)
-							selected_actor = actors.purp_tentacle
+							selected_actor = purp_tentacle
 							walk_to(selected_actor, 
 								selected_actor.x+10, 
 								selected_actor.y)
@@ -268,16 +268,16 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 								selected_actor.x-10, 
 								selected_actor.y)
 							say_line("intruder!!!")
-							do_anim(actors.main_actor, anim_face, actors.purp_tentacle)
+							do_anim(main_actor, anim_face, purp_tentacle)
 						end,
 						-- override for cutscene
 						function()
 							--if cutscene_curr.skipped then
 							--d("override!")
 							change_room(first_room)
-							put_actor_at(actors.purp_tentacle, 105, 44, first_room)
+							put_actor_at(purp_tentacle, 105, 44, first_room)
 							stop_talking()
-							do_anim(actors.main_actor, anim_face, actors.purp_tentacle)
+							do_anim(main_actor, anim_face, purp_tentacle)
 						end
 					)
 				end
@@ -455,7 +455,7 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 					cutscene(cut_noverbs + cut_no_follow, 
 						function()
 
-			--[[				selected_actor = actors.main_actor
+			--[[				selected_actor = main_actor
 							camera_follow(selected_actor)
 							put_actor_at(selected_actor, 60, 50, rooms.first_room)
 							change_room(rooms.first_room, 1)
@@ -474,15 +474,14 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 							shake(false)
 
 							-- part 2
-							local purp = actors.purp_tentacle
 							change_room(second_room, 1)
 							print_line("strange looking aliens...",30,20,8,1,false,true)
-							put_actor_at(purp, 130, purp.y, second_room)
-							walk_to(purp, 
-								purp.x-30, 
-								purp.y)
-							wait_for_actor(purp)
-							say_line(purp, "what did you call me?!")
+							put_actor_at(purp_tentacle, 130, purp_tentacle.y, second_room)
+							walk_to(purp_tentacle, 
+								purp_tentacle.x-30, 
+								purp_tentacle.y)
+							wait_for_actor(purp_tentacle)
+							say_line(purp_tentacle, "what did you call me?!")
 
 							-- part 3
 							change_room(back_garden, 1)
@@ -531,7 +530,7 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 				-- don't do this again
 				me.done_intro = true
 				-- set which actor the player controls by default
-				selected_actor = actors.main_actor
+				selected_actor = main_actor
 				-- init actor
 				put_actor_at(selected_actor, 144, 36, outside_room)
 				-- make camera follow player
@@ -606,8 +605,8 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 			tentacle_guard = function()
 				while true do
 					--d("tentacle guarding...")
-					if proximity(actors.main_actor, actors.purp_tentacle) < 30 then
-						say_line(actors.purp_tentacle, "halt!!!", true)
+					if proximity(main_actor, purp_tentacle) < 30 then
+						say_line(purp_tentacle, "halt!!!", true)
 					end
 					break_time(10)
 				end
@@ -662,11 +661,10 @@ rooms = {
 -- ================================================================
 -- actor definitions
 -- 
-actors = {
+
 	-- initialize the player's actor object
 	main_actor = { 	
 		data = [[
-			name = 
 			w = 1
 			h = 4
 			idle = { 1, 3, 5, 3 }
@@ -680,7 +678,7 @@ actors = {
 		class = class_actor,
 		face_dir = face_front, 	-- default direction facing
 		-- sprites for idle (front, left, back, right) - right=flip
-	},
+	}
 
 	purp_tentacle = {
 		data = [[
@@ -706,7 +704,7 @@ actors = {
 				end,
 				talkto = function(me)
 					cutscene(cut_noverbs, function()
-						--do_anim(actors.purp_tentacle, anim_face, selected_actor)
+						--do_anim(purp_tentacle, anim_face, selected_actor)
 						say_line(me,"what do you want?")
 					end)
 
@@ -752,6 +750,10 @@ actors = {
 				end -- talkto
 			}
 	}
+
+actors = {
+	main_actor,
+	purp_tentacle
 }
 
 -- 
@@ -763,7 +765,7 @@ function startup_script()
 	-- set which room to start the game in 
 	-- (e.g. could be a "pseudo" room for title screen!)
 	
-	-- selected_actor = actors.main_actor
+	-- selected_actor = main_actor
 	-- camera_follow(selected_actor)
 	-- put_actor_at(selected_actor, 60, 50, outside_room)
 	
