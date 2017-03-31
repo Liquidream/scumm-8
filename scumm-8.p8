@@ -328,7 +328,7 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 			walkto = function(me)
 				if state_of(me) == state_open then
 					-- go to new room!
-					come_out_door(garden_door_kitchen)
+					come_out_door(obj_garden_door_kitchen)
 				else
 					say_line("the door is closed")
 				end
@@ -440,7 +440,7 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 
 	title_room = {
 		data = [[
-			map = [0,8]
+			map = [0,7]
 		]],
 		objects = {
 		},
@@ -782,9 +782,9 @@ function startup_script()
 	-- put_actor_at(selected_actor, 60, 50, outside_room)
 	
 
-	change_room(title_room, 1) -- iris fade	
+	--change_room(title_room, 1) -- iris fade	
 	--change_room(first_room, 1) -- iris fade	
-	--change_room(outside_room, 1) -- iris fade
+	change_room(outside_room, 1) -- iris fade
 end
 
 
@@ -2100,7 +2100,7 @@ function room_draw()
 			replace_colors(room_curr)
 			-- d("-----> map_x:"..room_curr.map[1])
 			-- d("-----> map_y:"..room_curr.map[2])
-			map(room_curr.map[1], room_curr.map[2], 0, stage_top, room_curr.map[3], room_curr.map[4])
+			map(room_curr.map[1], room_curr.map[2], 0, stage_top, room_curr.map_w, room_curr.map_h)
 			--map(room_curr.map_x, room_curr.map_y, 0, stage_top, room_curr.map_w , room_curr.map_h)
 			--reset palette
 			pal()		
@@ -2421,9 +2421,12 @@ function game_init()
 	for room in all(rooms) do
 		explode_data(room)
 		--d("#map:"..#room.map)
-		if (#room.map < 4) then
-			room.map[3] = 16
-			room.map[4] = 8
+		if (#room.map > 2) then
+			room.map_w = room.map[3] - room.map[1] + 1
+			room.map_h = room.map[4] - room.map[2] + 1
+		else
+			room.map_w = 16
+			room.map_h = 8
 		end
 
 		-- init objects (in room)
@@ -2494,7 +2497,7 @@ function _center_camera(val)
 		val = val.x
 	end
 	-- keep camera within "room" bounds
-	return mid(0, val-64, (room_curr.map[3]*8) -128 )
+	return mid(0, val-64, (room_curr.map_w*8) -128 )
 end
 
 
@@ -2635,8 +2638,8 @@ function find_path(start, goal)
 				-- diagonals cost more
 				if abs(x) != abs(y) then cost=1 else cost=1.4 end
 				
-				if chk_x >= room_curr.map[1] and chk_x <= room_curr.map[1] + room_curr.map[3] 
-				 and chk_y >= room_curr.map[2] and chk_y <= room_curr.map[2] + room_curr.map[4]
+				if chk_x >= room_curr.map[1] and chk_x <= room_curr.map[1] + room_curr.map_w
+				 and chk_y >= room_curr.map[2] and chk_y <= room_curr.map[2] + room_curr.map_h
 				 and is_cell_walkable(chk_x, chk_y)
 				-- squeeze check for corners
 				 and ((abs(x) != abs(y)) 
