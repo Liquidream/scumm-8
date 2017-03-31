@@ -164,6 +164,7 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 	obj_bucket = {		
 		data = [[
 			name = "bucket"
+			state = 2
 			x=104
 			y=48
 			w=1
@@ -235,7 +236,7 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 			y=8
 			w=2
 			h=2
-			states=
+			states=[132,134]
 			use_pos=[40,57]
 		]],
 		class = class_openable,
@@ -313,6 +314,7 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 		]],
 		objects = {
 			obj_fire,
+			obj_front_door,
 			obj_hall_door_kitchen,
 			obj_bucket,
 			obj_spinning_top,
@@ -2124,6 +2126,7 @@ function room_draw()
 			-- draw all objs/actors in current zplane
 			for obj in all(zplane) do
 				-- object or actor?
+				d("obj.name1:"..obj.name)
 				if not has_flag(obj.class, class_actor) then
 					-- object
 					if obj.states	  -- object has a state?
@@ -2149,11 +2152,12 @@ function room_draw()
 end
 
 function replace_colors(obj)
-	d("replace_colors()")
 	-- replace colors (where defined)
-	d("colreplace:"..#obj.col_replace)
-	for c in all(obj.col_replace) do
-		pal(c[1], c[2])
+	if obj.col_replace then
+		c = obj.col_replace
+		--for c in all(obj.col_replace) do
+			pal(c[1], c[2])
+		--end
 	end
 	-- also apply brightness (default to room-level, if not set)
 	if obj.lighting then
@@ -2165,6 +2169,7 @@ end
 
 
 function object_draw(obj)
+	d("obj.name:"..obj.name)
 	-- replace colors?
 	replace_colors(obj)
 	-- allow for repeating
@@ -2172,7 +2177,10 @@ function object_draw(obj)
 	if obj.repeat_x then rx = obj.repeat_x end
 	for h = 0, rx-1 do
 		-- draw object (in its state!)
+		d("obj.states1:"..type(obj.states))
+		d("obj.states2:"..#obj.states)		
 		sprdraw(obj.states[obj.state], obj.x+(h*(obj.w*8)), obj.y, obj.w, obj.h, obj.trans_col, obj.flip_x)
+		d(">>test")
 	end
 	--reset palette
 	pal() 
