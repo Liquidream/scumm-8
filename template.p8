@@ -6,7 +6,7 @@ __lua__
 
 -- 7004 tokens (5206 is engine!) - leaving 1188 tokens "spare"
 -- now 6979 tokens (1213 spare)
--- now 6846 tokens (after "packing" room/obj/actor data)
+-- now 6778 tokens (after "packing" room/obj/actor data)
 
 
 
@@ -85,7 +85,7 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 			w=1
 			h=1
 			state=1
-			states=[145,146,147]
+			states={145,146,147}
 			lighting = 1
 		]],
 		verbs = {
@@ -116,7 +116,7 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 			z=1
 			w=1
 			h=4
-			states=[143,0]
+			states={143,0}
 		]],
 		class = class_openable,
 		use_pos = pos_right,
@@ -167,7 +167,7 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 			y=48
 			w=1
 			h=1
-			states=[207,223]
+			states={207,223}
 			trans_col=15
 		]],
 		class = class_pickupable,
@@ -206,8 +206,8 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 			y=48
 			w=1
 			h=1
-			states=[192,193,194]
-			col_replace=[12,7]
+			states={192,193,194}
+			col_replace={12,7}
 			trans_col=15
 		]],
 		verbs = {
@@ -234,8 +234,8 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 			y=8
 			w=2
 			h=2
-			states=[132,134]
-			use_pos=[40,57]
+			states={132,134}
+			use_pos={40,57}
 		]],
 		class = class_openable,
 		verbs = {
@@ -316,7 +316,7 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 			z=1
 			w=1
 			h=4
-			states=[143,0]
+			states={143,0}
 			flip_x=true
 		]],
 		class = class_openable,
@@ -349,7 +349,7 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 			y=24
 			w=1
 			h=2
-			states=[111]
+			states={111}
 			repeat_x = 8
 		]],
 		class = class_untouchable
@@ -362,7 +362,7 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 			y=24
 			w=1
 			h=2
-			states=[111]
+			states={111}
 			repeat_x = 8
 		]],
 		class = class_untouchable
@@ -376,7 +376,7 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 			y=8
 			w=1
 			h=3
-			states=[142,0]
+			states={142,0}
 			flip_x = true
 		]],
 		class = class_openable,
@@ -424,7 +424,7 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 	-- 		y=
 	-- 		w=1
 	-- 		h=1
-	-- 		states=
+	-- 		states={}
 	-- 	]],
 	-- 	verbs = {
 			
@@ -438,7 +438,7 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 
 	title_room = {
 		data = [[
-			map = [0,8]
+			map = {0,8}
 		]],
 		objects = {
 		},
@@ -514,7 +514,7 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 
 	outside_room = {
 		data = [[
-			map = [16,8,47,15]
+			map = {16,8,47,15}
 		]],
 		objects = {
 			obj_rail_left,
@@ -555,7 +555,7 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 
 	first_room = {
 		data = [[
-			map = [0,0]
+			map = {0,0}
 			lighting = 0.75
 		]],
 		objects = {
@@ -615,7 +615,7 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 
 	second_room = {
 		data = [[
-			map = [16,0,39,7]
+			map = {16,0,39,7}
 		]],
 		objects = {
 			obj_kitchen_door_hall,
@@ -631,7 +631,7 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 
 	back_garden = {
 		data = [[
-			map = [40,0,63,7]
+			map = {40,0,63,7}
 		]],
 		objects = {
 			obj_garden_door_kitchen
@@ -662,36 +662,39 @@ rooms = {
 -- 
 actors = {
 	-- initialize the player's actor object
-	main_actor = { 		
-		name = "",
+	main_actor = { 	
+		data = [[
+			name = 
+			w = 1
+			h = 4
+			idle = { 1, 3, 5, 3 }
+			talk = { 6, 22, 21, 22 }
+			walk_anim = { 2, 3, 4, 3 }
+			col = 12
+			trans_col = 11
+			speed = 0.6
+		]],	
+		--name = "",
 		class = class_actor,
-		w = 1,
-		h = 4,
 		face_dir = face_front, 	-- default direction facing
 		-- sprites for idle (front, left, back, right) - right=flip
-		idle = { 1, 3, 5, 3},	
-		talk = { 6, 22, 21, 22},
-		walk_anim = { 2, 3, 4, 3},
-		--flip = false, -- used for flipping the sprite (left/right dir)
-		col = 12,				-- speech text colour
-		trans_col = 11,	-- transparency col in sprites
-		speed = 0.6,  	-- walking speed
 	},
 
 	purp_tentacle = {
-		name = "purple tentacle",
+		data = [[
+			name = purple tentacle
+			x = 40
+			y = 48
+			w = 1
+			h = 3
+			idle = { 30, 30, 30, 30 }
+			talk = { 47, 47, 47, 47 }
+			col = 11
+			trans_col = 15
+			speed = 0.25
+		]],
 		class = class_talkable + class_actor,
-		x = 40,
-		y = 48,
-		w = 1,
-		h = 3,
 		face_dir = face_front,
-		-- sprites for idle (front, left, back, right) - right=flip
-		idle = { 30, 30, 30, 30 },
-		talk = { 47, 47, 47, 47 },
-		col = 11,    		-- speech text colour
-		trans_col = 15, -- transparency col in sprites
-		speed = 0.25,  	-- walking speed
 		use_pos = pos_left,
 		--in_room = rooms.first_room,
 		in_room = second_room,
@@ -758,6 +761,11 @@ function startup_script()
 	-- set which room to start the game in 
 	-- (e.g. could be a "pseudo" room for title screen!)
 	
+	-- selected_actor = actors.main_actor
+	-- camera_follow(selected_actor)
+	-- put_actor_at(selected_actor, 60, 50, outside_room)
+	
+
 	--change_room(title_room, 1) -- iris fade	
 	--change_room(first_room, 1) -- iris fade	
 	change_room(outside_room, 1) -- iris fade
@@ -947,7 +955,7 @@ ih(ja.spr,ja.x,ja.y,1,1,0) hp(ja,8,7,0,0) ic(ja) pal() end end end function gs()
 for is in all(el.da) do print(ip(is),ez,er+di,iw) er+=5 end ic(el) er+=2 end end function gt() col=fy[fx] pal(7,col) spr(32,fu-4,fv-3,1,1,0) pal() fw+=1 if fw>7 then
 fw=1 fx+=1 if fx>#fy then fx=1 end
 end end function ih(jb,x,y,w,h,jc,flip_x,jd) palt(0,false) palt(jc,true) spr(jb,x,di+y,w,h,flip_x,jd) palt(jc,false) palt(0,true) end function gi() for fd in all(rooms) do je(fd) if(#fd.map>2) then
-fd.hy=fd.map[3]-fd.map[1]+1 fd.hz=fd.map[4]-fd.map[2]+1 else fd.hy=16 fd.hz=8 end for by in all(fd.objects) do je(by) by.in_room=fd end end for jf,cl in pairs(actors) do cl.ft=2 cl.ii=1 cl.il=1 cl.ij=1 cl.ef={} cl.hk=0 end end function ic(by) local jg=by.hr if show_collision
+fd.hy=fd.map[3]-fd.map[1]+1 fd.hz=fd.map[4]-fd.map[2]+1 else fd.hy=16 fd.hz=8 end for by in all(fd.objects) do je(by) by.in_room=fd end end for jf,cl in pairs(actors) do je(cl) cl.ft=2 cl.ii=1 cl.il=1 cl.ij=1 cl.ef={} cl.hk=0 end end function ic(by) local jg=by.hr if show_collision
 and jg then rect(jg.x,jg.y,jg.jh,jg.ji,8) end end function gl(scripts) for em in all(scripts) do if em[2] and not coresume(em[2],em[3],em[4]) then
 del(scripts,em) em=nil end end end function ie(jj) if jj then jj=1-jj end
 local fn=flr(mid(0,jj,1)*100) local jk={0,1,1,2,1,13,6,4,4,9,3,13,1,13,14} for jl=1,15 do col=jl jm=(fn+(jl*1.46))/22 for eg=1,jm do col=jk[col] end pal(jl,col) end end function ci(cg) if type(cg)=="table"then
@@ -970,7 +978,7 @@ by[pairs[1]]=ku(pairs[2]) else printh("invalid data line") end end end function 
 add(kw,sub(el,ix,kx)) ix=0 kx=0 elseif ky!=" "and ky!="\t"then kx=ex if ix==0 then ix=ex end
 end end if ix+kx>0 then
 add(kw,sub(el,ix,kx)) end return kw end function ku(kz) local la=sub(kz,1,1) local kw=nil if kz=="true"then
-kw=true elseif kz=="false"then kw=false elseif lb(la) then kw=kz+0 elseif la=="["then local kp=sub(kz,2,#kz-1) kw=kt(kp,",") lc={} for cg in all(kw) do cg=ku(cg) add(lc,cg) end kw=lc else kw=kz end return kw end function lb(id) for a=1,10 do if id==sub("0123456789",a,a) then
+kw=true elseif kz=="false"then kw=false elseif lb(la) then kw=kz+0 elseif la=="{"then local kp=sub(kz,2,#kz-1) kw=kt(kp,",") lc={} for cg in all(kw) do cg=ku(cg) add(lc,cg) end kw=lc else kw=kz end return kw end function lb(id) for a=1,10 do if id==sub("0123456789",a,a) then
 return true end end end function iu(ld,x,y,le,lf,ep) if not ep then ld=ip(ld) end
 for lg=-1,1 do for lh=-1,1 do print(ld,x+lg,y+lh,lf) end end print(ld,x,y,le) end function iq(el) return 63.5-flr((#el*4)/2) end function li(el) return 61 end function hn(by) if not by.hr then return false end
 hr=by.hr if(fu+hr.ju>hr.jh or fu+hr.ju<hr.x)
@@ -980,8 +988,6 @@ id=not id elseif ht=="~"then if kr then a=a..ht end
 kr,is=not kr,not is else if id==is and ht>="a"and ht<="z"then
 for jl=1,26 do if ht==sub("abcdefghijklmnopqrstuvwxyz",jl,jl) then
 ht=sub("\65\66\67\68\69\70\71\72\73\74\75\76\77\78\79\80\81\82\83\84\85\86\87\88\89\90\91\92",jl,jl) break end end end a=a..ht id,kr=false,false end end return a end
-
-
 
 
 

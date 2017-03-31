@@ -87,7 +87,7 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 			w=1
 			h=1
 			state=1
-			states=[145,146,147]
+			states={145,146,147}
 			lighting = 1
 		]],
 		verbs = {
@@ -118,7 +118,7 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 			z=1
 			w=1
 			h=4
-			states=[143,0]
+			states={143,0}
 		]],
 		class = class_openable,
 		use_pos = pos_right,
@@ -169,7 +169,7 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 			y=48
 			w=1
 			h=1
-			states=[207,223]
+			states={207,223}
 			trans_col=15
 		]],
 		class = class_pickupable,
@@ -208,8 +208,8 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 			y=48
 			w=1
 			h=1
-			states=[192,193,194]
-			col_replace=[12,7]
+			states={192,193,194}
+			col_replace={12,7}
 			trans_col=15
 		]],
 		verbs = {
@@ -236,8 +236,8 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 			y=8
 			w=2
 			h=2
-			states=[132,134]
-			use_pos=[40,57]
+			states={132,134}
+			use_pos={40,57}
 		]],
 		class = class_openable,
 		verbs = {
@@ -318,7 +318,7 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 			z=1
 			w=1
 			h=4
-			states=[143,0]
+			states={143,0}
 			flip_x=true
 		]],
 		class = class_openable,
@@ -351,7 +351,7 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 			y=24
 			w=1
 			h=2
-			states=[111]
+			states={111}
 			repeat_x = 8
 		]],
 		class = class_untouchable
@@ -364,7 +364,7 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 			y=24
 			w=1
 			h=2
-			states=[111]
+			states={111}
 			repeat_x = 8
 		]],
 		class = class_untouchable
@@ -378,7 +378,7 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 			y=8
 			w=1
 			h=3
-			states=[142,0]
+			states={142,0}
 			flip_x = true
 		]],
 		class = class_openable,
@@ -426,7 +426,7 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 	-- 		y=
 	-- 		w=1
 	-- 		h=1
-	-- 		states=
+	-- 		states={}
 	-- 	]],
 	-- 	verbs = {
 			
@@ -440,7 +440,7 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 
 	title_room = {
 		data = [[
-			map = [0,8]
+			map = {0,8}
 		]],
 		objects = {
 		},
@@ -516,7 +516,7 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 
 	outside_room = {
 		data = [[
-			map = [16,8,47,15]
+			map = {16,8,47,15}
 		]],
 		objects = {
 			obj_rail_left,
@@ -557,7 +557,7 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 
 	first_room = {
 		data = [[
-			map = [0,0]
+			map = {0,0}
 			lighting = 0.75
 		]],
 		objects = {
@@ -617,7 +617,7 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 
 	second_room = {
 		data = [[
-			map = [16,0,39,7]
+			map = {16,0,39,7}
 		]],
 		objects = {
 			obj_kitchen_door_hall,
@@ -633,7 +633,7 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 
 	back_garden = {
 		data = [[
-			map = [40,0,63,7]
+			map = {40,0,63,7}
 		]],
 		objects = {
 			obj_garden_door_kitchen
@@ -664,36 +664,39 @@ rooms = {
 -- 
 actors = {
 	-- initialize the player's actor object
-	main_actor = { 		
-		name = "",
+	main_actor = { 	
+		data = [[
+			name = 
+			w = 1
+			h = 4
+			idle = { 1, 3, 5, 3 }
+			talk = { 6, 22, 21, 22 }
+			walk_anim = { 2, 3, 4, 3 }
+			col = 12
+			trans_col = 11
+			speed = 0.6
+		]],	
+		--name = "",
 		class = class_actor,
-		w = 1,
-		h = 4,
 		face_dir = face_front, 	-- default direction facing
 		-- sprites for idle (front, left, back, right) - right=flip
-		idle = { 1, 3, 5, 3},	
-		talk = { 6, 22, 21, 22},
-		walk_anim = { 2, 3, 4, 3},
-		--flip = false, -- used for flipping the sprite (left/right dir)
-		col = 12,				-- speech text colour
-		trans_col = 11,	-- transparency col in sprites
-		speed = 0.6,  	-- walking speed
 	},
 
 	purp_tentacle = {
-		name = "purple tentacle",
+		data = [[
+			name = purple tentacle
+			x = 40
+			y = 48
+			w = 1
+			h = 3
+			idle = { 30, 30, 30, 30 }
+			talk = { 47, 47, 47, 47 }
+			col = 11
+			trans_col = 15
+			speed = 0.25
+		]],
 		class = class_talkable + class_actor,
-		x = 40,
-		y = 48,
-		w = 1,
-		h = 3,
 		face_dir = face_front,
-		-- sprites for idle (front, left, back, right) - right=flip
-		idle = { 30, 30, 30, 30 },
-		talk = { 47, 47, 47, 47 },
-		col = 11,    		-- speech text colour
-		trans_col = 15, -- transparency col in sprites
-		speed = 0.25,  	-- walking speed
 		use_pos = pos_left,
 		--in_room = rooms.first_room,
 		in_room = second_room,
@@ -2425,6 +2428,7 @@ function game_init()
 	end
 	-- init actors with defaults
 	for ka,actor in pairs(actors) do
+		explode_data(actor)
 		actor.moving = 2 		-- 0=stopped, 1=walking, 2=arrived
 		actor.tmr = 1 		  -- internal timer for managing animation
 		actor.talk_tmr = 1
@@ -2434,7 +2438,6 @@ function game_init()
 			-- object2
 		}
 		actor.inv_pos = 0 	-- pointer to the row to start displaying from
-
 	end
 end
 
@@ -2761,7 +2764,7 @@ function autotype(str_value)
 	elseif is_num_char(first_letter) then
 		-- must be number
 		retval = str_value + 0
-	elseif first_letter == "[" then
+	elseif first_letter == "{" then
 		-- array - so split it
 		local temp = sub(str_value,2,#str_value-1)
 		retval = split(temp, ",")
