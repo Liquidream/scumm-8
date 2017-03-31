@@ -711,7 +711,7 @@ actors = {
 					while (true) do
 						-- build dialog options
 						dialog_set({ 
-							(me.asked_where and "where am i again?" or "where am i?"),
+							(me.asked_where and "" or "where am i?"),
 							"who are you?",
 							"how much wood would a wood-chuck chuck, if a wood-chuck could chuck wood?",
 							"nevermind"
@@ -997,6 +997,8 @@ function dialog_set(msg_table)
 end
 
 function dialog_add(msg)
+	-- check params
+	if not msg or #msg == 0 then return end
 	if not dialog_curr then dialog_curr={ sentences={}, visible=false} end
 	-- break msg into lines (if necc.)
 	lines = create_text_lines(msg, 32)
