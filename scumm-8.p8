@@ -401,6 +401,22 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 		}
 	}
 
+	obj_garden_door_kitchen = {		
+		data = [[
+			name="kitchen"
+			state=2
+			x=104
+			y=8
+			w=1
+			h=3
+		]],
+		verbs = {
+			walkto = function()
+				-- go to new room!
+				come_out_door(obj_back_door)
+			end
+		}
+	}
 
 	-- obj_blank = {		
 	-- 	data = [[
@@ -421,6 +437,123 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 -- 
 -- room definitions
 -- 
+
+	title_room = {
+		data = [[
+			map = [0,8]
+		]],
+		objects = {
+		},
+		enter = function(me)
+
+			-- demo intro
+		
+			if not me.done_intro then
+				-- don't do this again
+				me.done_intro = true
+			
+					cutscene(cut_noverbs + cut_no_follow, 
+						function()
+
+			--[[				selected_actor = actors.main_actor
+							camera_follow(selected_actor)
+							put_actor_at(selected_actor, 60, 50, rooms.first_room)
+							change_room(rooms.first_room, 1)
+							]]
+
+
+							-- intro
+							break_time(50)
+							print_line("in a galaxy not far away...",64,45,8,1)
+
+							change_room(first_room, 1)
+							shake(true)
+							start_script(first_room.scripts.spin_top,false,true)
+							print_line("cozy fireplaces...",90,20,8,1)
+							print_line("(just look at it!)",90,20,8,1)
+							shake(false)
+
+							-- part 2
+							local purp = actors.purp_tentacle
+							change_room(second_room, 1)
+							print_line("strange looking aliens...",30,20,8,1,false,true)
+							put_actor_at(purp, 130, purp.y, second_room)
+							walk_to(purp, 
+								purp.x-30, 
+								purp.y)
+							wait_for_actor(purp)
+							say_line(purp, "what did you call me?!")
+
+							-- part 3
+							change_room(back_garden, 1)
+							print_line("and even swimming pools!",90,20,8,1,false,true)
+							camera_at(200)
+							camera_pan_to(0)
+							wait_for_camera()
+							print_line("quack!",45,60,10,1)
+
+							-- part 4
+							change_room(outside_room, 1)
+							
+
+							-- outro
+							--break_time(25)
+							change_room(title_room, 1)
+							
+							print_line("coming soon...:to a pico-8 near you!",64,45,8,1)
+							fades(1,1)	-- fade out
+							break_time(100)
+							
+						end) -- end cutscene
+
+				end -- if not done intro
+		end,
+		exit = function()
+			-- todo: anything here?
+		end,
+	}
+
+
+	outside_room = {
+		data = [[
+			map = [16,8,47,15]
+		]],
+		objects = {
+			obj_rail_left,
+			obj_rail_right,
+			obj_front_door
+		},
+		enter = function(me)
+			-- =========================================
+			-- initialise game in first room entry...
+			-- =========================================
+			if not me.done_intro then
+				-- don't do this again
+				me.done_intro = true
+				-- set which actor the player controls by default
+				selected_actor = actors.main_actor
+				-- init actor
+				put_actor_at(selected_actor, 144, 36, outside_room)
+				-- make camera follow player
+				-- (setting now, will be re-instated after cutscene)
+				camera_follow(selected_actor)
+				-- do cutscene
+				cutscene(cut_noverbs, 
+					-- cutscene code (hides ui, etc.)
+					function()
+						camera_at(0)
+						camera_pan_to(selected_actor)
+						wait_for_camera()
+						say_line("let's do this")
+					end
+				)
+			end
+		end,
+		exit = function(me)
+			-- todo: anything here?
+		end,
+	}
+
 
 	first_room = {
 		data = [[
@@ -499,55 +632,29 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 		end,
 	}
 
-	outside_room = {
+	back_garden = {
 		data = [[
-			map = [16,8,47,15]
+			map = [40,0,63,7]
 		]],
 		objects = {
-			obj_rail_left,
-			obj_rail_right,
-			obj_front_door
+			obj_garden_door_kitchen
 		},
-		enter = function(me)
-			-- =========================================
-			-- initialise game in first room entry...
-			-- =========================================
-			if not me.done_intro then
-				-- don't do this again
-				me.done_intro = true
-				-- set which actor the player controls by default
-				selected_actor = actors.main_actor
-				-- init actor
-				put_actor_at(selected_actor, 144, 36, rooms.outside_room)
-				-- make camera follow player
-				-- (setting now, will be re-instated after cutscene)
-				camera_follow(selected_actor)
-				-- do cutscene
-				cutscene(cut_noverbs, 
-					-- cutscene code (hides ui, etc.)
-					function()
-						camera_at(0)
-						camera_pan_to(selected_actor)
-						wait_for_camera()
-						say_line("let's do this")
-					end
-				)
-			end
+		enter = function()
+				-- todo: anything here?
 		end,
-		exit = function(me)
+		exit = function()
 			-- todo: anything here?
 		end,
 	}
 
 
 
-
 rooms = {
-	-- title_room,
+	title_room,
+	outside_room,
 	first_room,
 	second_room,
-	outside_room,
-	-- back_garden,
+	back_garden,
 }
 
 
@@ -670,14 +777,14 @@ function startup_script()
 	-- set which room to start the game in 
 	-- (e.g. could be a "pseudo" room for title screen!)
 	
-	selected_actor = actors.main_actor
-	camera_follow(selected_actor)
-	put_actor_at(selected_actor, 60, 50, outside_room)
+	-- selected_actor = actors.main_actor
+	-- camera_follow(selected_actor)
+	-- put_actor_at(selected_actor, 60, 50, outside_room)
 	
 
-	--change_room(title_room, 1) -- iris fade	
+	change_room(title_room, 1) -- iris fade	
 	--change_room(first_room, 1) -- iris fade	
-	change_room(outside_room, 1) -- iris fade
+	--change_room(outside_room, 1) -- iris fade
 end
 
 

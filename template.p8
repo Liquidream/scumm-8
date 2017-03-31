@@ -444,7 +444,7 @@ rooms = {
 		map_x = 16,
 		map_y = 0,
 		map_x1 = 39, 	-- map coordinates to draw to (x,y)
-		map_y1 = 7,
+		map_y1 = 8,
 		enter = function()
 			-- todo: anything here?
 		end,
