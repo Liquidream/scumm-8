@@ -88,7 +88,7 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 			w=1
 			h=1
 			state=1
-			states=145,146,147
+			states=[145,146,147]
 			lighting = 1
 		]],
 		verbs = {
@@ -119,7 +119,7 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 			z=1
 			w=1
 			h=4
-			states=143,0
+			states=[143,0]
 		]],
 		class = class_openable,
 		use_pos = pos_right,
@@ -169,7 +169,7 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 			y=48
 			w=1
 			h=1
-			states=207,223
+			states=[207,223]
 			trans_col=15
 		]],
 		class = class_pickupable,
@@ -208,8 +208,8 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 			y=48
 			w=1
 			h=1
-			states=192,193,194
-			col_replace=12,7
+			states=[192,193,194]
+			col_replace=[12,7]
 			trans_col=15
 		]],
 		verbs = {
@@ -237,7 +237,7 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 			w=2
 			h=2
 			states=
-			use_pos=40,57
+			use_pos=[40,57]
 		]],
 		class = class_openable,
 		verbs = {
@@ -340,16 +340,16 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 	first_room = {
 		data = [[
 			name = "first room"
-			map = 0,0
+			map = [0,0]
 			lighting = 0.75
 		]],
 		objects = {
-			-- fire,
-			-- hall_door_kitchen,
-			-- bucket,
-			-- spinning_top,
-			-- window,
-			-- ztest
+			obj_fire,
+			obj_hall_door_kitchen,
+			obj_bucket,
+			obj_spinning_top,
+			obj_window,
+			--obj_ztest
 		},
 		enter = function(me)
 			-- animate fireplace
@@ -399,12 +399,12 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 
 	second_room = {
 		data = [[
-			map = 16,0,39,7
+			map = [16,0,39,7]
 			lighting = 0.75
 		]],
 		objects = {
-			obj_kitchen_door_hall,
-			back_door
+			-- obj_kitchen_door_hall,
+			-- back_door
 		},
 		enter = function()
 				-- todo: anything here?
@@ -425,12 +425,6 @@ rooms = {
 	-- outside_room,
 	-- back_garden,
 }
-
-
-
--- ##################################################
--- ##################################################
-
 
 
 
@@ -835,8 +829,8 @@ function startup_script()
 	-- (e.g. could be a "pseudo" room for title screen!)
 	
 
-	change_room(title_room, 1) -- iris fade	
-	--change_room(rooms.first_room, 1) -- iris fade	
+	--change_room(title_room, 1) -- iris fade	
+	change_room(first_room, 1) -- iris fade	
 	--change_room(rooms.outside_room, 1) -- iris fade
 end
 
@@ -1237,6 +1231,7 @@ end
 
 
 function change_room(new_room, fade)
+	d("change_room()...")
 	-- stop any existing fade (shouldn't be any, but just in case!)
 	stop_script(fade_script)
 
@@ -1288,6 +1283,8 @@ function change_room(new_room, fade)
 		-- run script directly
 		room_curr.enter(room_curr)
 	end
+
+	d("exit change_room")
 end
 
 function valid_verb(verb, object)
@@ -2148,7 +2145,10 @@ function room_draw()
 		if z == 0 then			
 			-- replace colors?
 			replace_colors(room_curr)
-			map(room_curr.map_x, room_curr.map_y, 0, stage_top, room_curr.map_w , room_curr.map_h)
+			-- d("-----> map_x:"..room_curr.map[1])
+			-- d("-----> map_y:"..room_curr.map[2])
+			map(room_curr.map[1], room_curr.map[2], 0, stage_top, room_curr.map_w , room_curr.map_h)
+			--map(room_curr.map_x, room_curr.map_y, 0, stage_top, room_curr.map_w , room_curr.map_h)
 			--reset palette
 			pal()		
 		else
@@ -2457,37 +2457,23 @@ end
 -- initialise all the rooms (e.g. add in parent links)
 function game_init()
 	d("game_init()")
-	for kr,room in pairs(rooms) do
+	for room in all(rooms) do
 		explode_data(room)
-		-- init objects (in room)
-		for ko,obj in pairs(room.objects) do
-			explode_data(obj)
-			obj.in_room = room
-		end
-	end
-	-- init actors with defaults
-	for ka,actor in pairs(actors) do
-		actor.moving = 2 		-- 0=stopped, 1=walking, 2=arrived
-		actor.tmr = 1 		  -- internal timer for managing animation
-		actor.talk_tmr = 1
-		actor.anim_pos = 1 	-- used to track anim pos
-		actor.inventory = {
-			-- object1,
-			-- object2
-		}
-		actor.inv_pos = 0 	-- pointer to the row to start displaying from
-	end
-	--[[for kr,room in pairs(rooms) do
-		-- init room
-		if room.map_x1 then
-			room.map_w = room.map_x1 - room.map_x + 1
-			room.map_h = room.map_y1 - room.map_y + 1
-		else
+
+		d("[[[#####]]]]")
+		d("#map:"..#room.map)
+		if (#room.map < 4) then
 			room.map_w = 16
 			room.map_h = 8
 		end
+
 		-- init objects (in room)
-		for ko,obj in pairs(room.objects) do
+		d("objects:"..type(room.objects))
+		d("objects:"..#room.objects)
+		for obj in all(room.objects) do
+			d("obj....")
+			explode_data(obj)
+			d("#####")
 			obj.in_room = room
 		end
 	end
@@ -2502,7 +2488,11 @@ function game_init()
 			-- object2
 		}
 		actor.inv_pos = 0 	-- pointer to the row to start displaying from
-	end]]
+
+	end
+
+	d("end game init")
+	
 end
 
 function show_collision_box(obj)
@@ -2773,8 +2763,7 @@ end
 
 -- ================================================================
 -- helper functions 
--- ================================================================
-
+-- 
 function explode_data(obj)
 	d("-----------------")
 	--d("obj.name:"..obj.name)
@@ -2790,7 +2779,7 @@ function explode_data(obj)
 		d(" > curr pair = ["..pairs[1].."]")
 		if #pairs==2 then
 			d("pair1=["..pairs[1].."]  pair2=["..pairs[2].."]")
-			obj[pairs[1]] = pairs[2]
+			obj[pairs[1]] = autotype(pairs[2])
 		else
 			d("invalid data line")
 		end
@@ -2799,22 +2788,41 @@ end
 
 function split(s, delimiter)
 	local retval = {}
-	local lastpos = 1
-	d("#s:"..#s)
-	local i=1
-	while i < #s do
-	--for i=1,#s do
-		d(" > s[i]:"..sub(s,i,i))
-		if sub(s,i,i) == delimiter then
-			d("found: "..sub(s, lastpos, i-1))
-			add(retval, sub(s, lastpos, i-1))
+	local curr_word = ""
+	for i=1,#s do
+		local curr_letter = sub(s,i,i)
+		if curr_letter == delimiter then
+			--d("found: "..curr_word)
+			add(retval, curr_word)
 			i += 1
-			lastpos = i
+			curr_word = ""
+		-- found a valid character?
+		elseif curr_letter != " "
+		 and curr_letter != "\t" then
+			curr_word = curr_word..curr_letter
 		end
-		i+=1
 	end
-	-- add remaining content
-	add(retval, sub(s, lastpos, i-1))
+	-- add remaining content?
+	if #curr_word > 0 then add(retval, curr_word) end
+	return retval
+end
+
+function autotype(str_value)
+	local first_letter = sub(str_value,1,1)
+	local retval = nil
+	if first_letter == "\"" then
+		-- string - so do nothing
+		retval = str_value
+	elseif first_letter == "[" then
+		d("array!")
+		-- array - so split it
+		local temp = sub(str_value,2,#str_value-1)
+		d("temp:"..temp)
+		retval = split(temp, ",")
+	else
+		-- must be number
+		retval = str_value + 0
+	end
 	return retval
 end
 
