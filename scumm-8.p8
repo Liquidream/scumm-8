@@ -1003,7 +1003,6 @@ end
 
 function dialog_add(msg)
 	-- check params
-	if not msg or #msg == 0 then return end
 	if not dialog_curr then dialog_curr={ sentences={}, visible=false} end
 	-- break msg into lines (if necc.)
 	lines = create_text_lines(msg, 32)
@@ -2358,20 +2357,22 @@ function dialog_draw()
 	xpos, ypos = 0, 70
 	
 	for s in all(dialog_curr.sentences) do
-		-- capture bounds
-		s.x, s.y = xpos, ypos
-		recalc_bounds(s, s.char_width*4, #s.lines*5, 0, 0)
+		if s.char_width > 0 then
+			-- capture bounds
+			s.x, s.y = xpos, ypos
+			recalc_bounds(s, s.char_width*4, #s.lines*5, 0, 0)
 
-		txtcol=dialog_curr.col
-		if s == hover_curr_sentence then txtcol=dialog_curr.hlcol end
-		
-		for l in all(s.lines) do
-		  print(smallcaps(l), xpos, ypos+stage_top, txtcol)
-			ypos += 5
+			txtcol=dialog_curr.col
+			if s == hover_curr_sentence then txtcol=dialog_curr.hlcol end
+			
+			for l in all(s.lines) do
+				print(smallcaps(l), xpos, ypos+stage_top, txtcol)
+				ypos += 5
+			end
+
+			show_collision_box(s)
+			ypos += 2
 		end
-
-		show_collision_box(s)
-		ypos += 2
 	end
 end
 
