@@ -440,7 +440,7 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 
 	title_room = {
 		data = [[
-			map = [0,7]
+			map = [0,8]
 		]],
 		objects = {
 		},
@@ -1175,7 +1175,6 @@ end
 
 
 function change_room(new_room, fade)
-	d("change_room()...")
 	-- stop any existing fade (shouldn't be any, but just in case!)
 	stop_script(fade_script)
 
@@ -1227,8 +1226,6 @@ function change_room(new_room, fade)
 		-- run script directly
 		room_curr.enter(room_curr)
 	end
-
-	d("exit change_room")
 end
 
 function valid_verb(verb, object)
@@ -2408,10 +2405,10 @@ end
 
 -- initialise all the rooms (e.g. add in parent links)
 function game_init()
-	d("game_init()")
+
 	for room in all(rooms) do
 		explode_data(room)
-		--d("#map:"..#room.map)
+		
 		if (#room.map > 2) then
 			room.map_w = room.map[3] - room.map[1] + 1
 			room.map_h = room.map[4] - room.map[2] + 1
@@ -2421,12 +2418,8 @@ function game_init()
 		end
 
 		-- init objects (in room)
-		-- d("objects:"..type(room.objects))
-		-- d("objects:"..#room.objects)
 		for obj in all(room.objects) do
-			--d("obj....")
 			explode_data(obj)
-			--d("#####")
 			obj.in_room = room
 		end
 	end
@@ -2443,9 +2436,6 @@ function game_init()
 		actor.inv_pos = 0 	-- pointer to the row to start displaying from
 
 	end
-
-	d("end game init")
-	
 end
 
 function show_collision_box(obj)
@@ -2718,7 +2708,6 @@ end
 -- helper functions 
 -- 
 function explode_data(obj)
-	--d(type(obj))
 	local lines=split(obj.data, "\n")
 	for l in all(lines) do
 		--d("curr line = ["..l.."]")
@@ -2730,7 +2719,7 @@ function explode_data(obj)
 			--d("pair1=["..pairs[1].."]  pair2=["..pairs[2].."]")
 			obj[pairs[1]] = autotype(pairs[2])
 		else
-			d("invalid data line")
+			printh("invalid data line")
 		end
 	end
 end
@@ -2760,25 +2749,6 @@ function split(s, delimiter)
 	end
 	return retval
 end
-
-	-- 	if start_pos == 0 and 
-
-	-- 	if curr_letter == delimiter then
-	-- 		--d("found: "..curr_word)
-	-- 		add(retval, curr_word)
-	-- 		i += 1
-	-- 		curr_word = ""
-	-- 	-- found a valid character?
-	-- 	else
-	-- 	--if curr_letter != " "
-	-- 	-- and curr_letter != "\t" then
-	-- 		curr_word = curr_word..curr_letter
-	-- 	end
-	-- end
-	-- -- add remaining content?
-	-- if #curr_word > 0 then add(retval, curr_word) end
-	-- return retval
---end
 
 function autotype(str_value)
 	local first_letter = sub(str_value,1,1)
