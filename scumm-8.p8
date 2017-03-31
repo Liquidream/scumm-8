@@ -109,7 +109,7 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 		}
 	}
 
-	obj_front_door = {		
+	obj_front_door_inside = {		
 		data = [[
 			name = "front door"
 			state = 1
@@ -128,16 +128,16 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 				if state_of(me) == state_open then
 					-- go to new room!
 					--come_out_door(front_door)
-					come_out_door(obj_front_door)
+					come_out_door(obj_front_door_inside)
 				else
 					say_line("the door is closed")
 				end
 			end,
 			open = function(me)
-				open_door(me, obj_front_door)
+				open_door(me, obj_front_door_inside)
 			end,
 			close = function(me)
-				close_door(me, obj_front_door)
+				close_door(me, obj_front_door_inside)
 			end
 		}
 	}
@@ -156,7 +156,7 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 		verbs = {
 			walkto = function()
 				-- go to new room!
-				come_out_door(second_room.objects.kitchen_door_hall) --, second_room) -- ()
+				come_out_door(obj_kitchen_door_hall) --, second_room) -- ()
 			end
 		}
 	}
@@ -286,10 +286,62 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 		}
 	}
 
+-- 
+
+	obj_kitchen_door_hall = {		
+		data = [[
+			name = "hall"
+			state=1
+			x=8
+			y=16
+			w=1
+			h=4
+		]],
+		use_pos = pos_right,
+		use_dir = face_left,
+		verbs = {
+			walkto = function()
+				-- go to new room!
+				come_out_door(obj_hall_door_kitchen)
+			end
+		}
+	}
+
+	obj_back_door = {		
+		data = [[
+			name="back door""
+			state=1
+			x=176
+			y=16
+			z=1
+			w=1
+			h=4
+			states=[143,0]
+			flip_x=true
+		]],
+		class = class_openable,
+		verbs = {
+			walkto = function(me)
+				if state_of(me) == state_open then
+					-- go to new room!
+					come_out_door(garden_door_kitchen)
+				else
+					say_line("the door is closed")
+				end
+			end,
+			open = function(me)
+				open_door(me, obj_front_door_inside)
+			end,
+			close = function(me)
+				close_door(me, obj_front_door_inside)
+			end
+		}
+	}
 
 	-- obj_blank = {		
 	-- 	data = [[
 	-- 		name=
+	--		state=
 	-- 		x=
 	-- 		y=
 	-- 		w=1
@@ -314,7 +366,7 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 		]],
 		objects = {
 			obj_fire,
-			obj_front_door,
+			obj_front_door_inside,
 			obj_hall_door_kitchen,
 			obj_bucket,
 			obj_spinning_top,
@@ -370,11 +422,10 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 	second_room = {
 		data = [[
 			map = [16,0,39,7]
-			lighting = 0.75
 		]],
 		objects = {
-			-- obj_kitchen_door_hall,
-			-- back_door
+			obj_kitchen_door_hall,
+			obj_back_door
 		},
 		enter = function()
 				-- todo: anything here?
@@ -383,8 +434,6 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 			-- todo: anything here?
 		end,
 	}
-
-
 
 
 
@@ -398,287 +447,6 @@ rooms = {
 
 
 
-
-
---  room definitions
--- 
-
---[[
-	title_room = {
-		map = "0,8",
-		-- map_x = 0,
-		-- map_y = 8,
-		enter = function(me)
-
-			-- demo intro
-		
-			if not me.done_intro then
-				-- don't do this again
-				me.done_intro = true
-			
-					cutscene(cut_noverbs + cut_no_follow, 
-						function()
-
-							-- selected_actor = actors.main_actor
-							-- camera_follow(selected_actor)
-							-- put_actor_at(selected_actor, 60, 50, first_room)
-							-- change_room(first_room, 1)
-			
-
-
-							-- intro
-							break_time(50)
-							print_line("in a galaxy not far away...",64,45,8,1)
-
-							change_room(first_room, 1)
-							shake(true)
-							start_script(first_room.scripts.spin_top,false,true)
-							print_line("cozy fireplaces...",90,20,8,1)
-							print_line("(just look at it!)",90,20,8,1)
-							shake(false)
-
-							-- part 2
-							local purp = actors.purp_tentacle
-							change_room(second_room, 1)
-							print_line("strange looking aliens...",30,20,8,1,false,true)
-							put_actor_at(purp, 130, purp.y, second_room)
-							walk_to(purp, 
-								purp.x-30, 
-								purp.y)
-							wait_for_actor(purp)
-							say_line(purp, "what did you call me?!")
-
-							-- part 3
-							change_room(back_garden, 1)
-							print_line("and even swimming pools!",90,20,8,1,false,true)
-							camera_at(200)
-							camera_pan_to(0)
-							wait_for_camera()
-							print_line("quack!",45,60,10,1)
-
-							-- part 4
-							--change_room(rooms.outside_room, 1)
-							
-
-							-- outro
-							--break_time(25)
-							change_room(me, 1)
-							
-							print_line("coming soon...:to a pico-8 near you!",64,45,8,1)
-							fades(1,1)	-- fade out
-							break_time(100)
-							
-						end) -- end cutscene
-
-				end -- if not done intro
-		end,
-		exit = function()
-			-- todo: anything here?
-		end,
-		-- scripts = {	  -- scripts that are at room-level
-		-- },
-		-- objects = {
-
-		-- },
-	}
-
-
-	second_room = {
-		map = "16,0,39,7",
-		-- map_x = 16,
-		-- map_y = 0,
-		-- map_x1 = 39, 	-- map coordinates to draw to (x,y)
-		-- map_y1 = 7,
-		enter = function()
-			-- todo: anything here?
-		end,
-		exit = function()
-			-- todo: anything here?
-		end,
-		scripts = {
-		},
-		objects = {
-			kitchen_door_hall = {
-				name = "hall",
-				state = state_open,
-				x = 1 *8, 
-				y = 2 *8,
-				w = 1,
-				h = 4,
-				use_pos = pos_right,
-				use_dir = face_left,
-				verbs = {
-					walkto = function()
-						-- go to new room!
-						come_out_door(first_room.objects.hall_door_kitchen)
-					end
-				}
-			},
-			back_door = {
-				name = "back door",
-				class = class_openable,
-				state = state_closed,
-				x = 22*8, -- (*8 to use map cell pos)
-				y = 2*8,
-				z = 1, -- force to always be bg (0=bg layer)
-				states = {
-					143, -- closed
-					0   -- open
-				},
-				flip_x = true, -- used for flipping the sprite
-				w = 1,	
-				h = 4, 
-				use_pos = pos_left,
-				use_dir = face_right,
-				verbs = {
-					walkto = function(me)
-						if state_of(me) == state_open then
-							-- go to new room!
-							come_out_door(back_garden.objects.garden_door_kitchen)
-						else
-							say_line("the door is closed")
-						end
-					end,
-					open = function(me)
-						open_door(me, first_room.objects.front_door)
-					end,
-					close = function(me)
-						close_door(me, first_room.objects.front_door)
-					end
-				}
-			},
-		},
-	}
-	
-
-	outside_room = {
-		map = {16,8,47,15},
-		-- map_x = 16,
-		-- map_y = 8,
-		-- map_x1 = 47,
-		-- map_y1 = 15,
-		enter = function(me)
-			-- =========================================
-			-- initialise game in first room entry...
-			-- =========================================
-			if not me.done_intro then
-				-- don't do this again
-				me.done_intro = true
-				-- set which actor the player controls by default
-				selected_actor = actors.main_actor
-				-- init actor
-				put_actor_at(selected_actor, 144, 36, outside_room)
-				-- make camera follow player
-				-- (setting now, will be re-instated after cutscene)
-				camera_follow(selected_actor)
-				-- do cutscene
-				cutscene(cut_noverbs, 
-					-- cutscene code (hides ui, etc.)
-					function()
-						camera_at(0)
-						camera_pan_to(selected_actor)
-						wait_for_camera()
-						say_line("let's do this")
-					end
-				)
-			end
-		end,
-		exit = function(me)
-			-- todo: anything here?
-		end,
-		scripts = {	
-		},
-		objects = {
-			rail_left = {
-				class = class_untouchable,
-				x = 10 *8,
-				y = 3 *8,
-				state = 1,
-				states = { 111 },
-				w = 1,
-				h = 2, 
-				repeat_x = 8		-- repeat/tile the sprite in x dir
-			},
-			rail_right= {
-				class = class_untouchable,
-				x = 22 *8, -- (*8 to use map cell pos)
-				y = 3 *8,
-				state = 1,
-				states = { 111 },
-				w = 1,
-				h = 2, 
-				repeat_x = 8		-- repeat/tile the sprite in x dir
-			},
-			front_door = {
-				name = "front door",
-				class = class_openable,
-				state = state_closed,
-				x = 19 *8,
-				y = 1 *8,
-				states = {
-					142, -- closed
-					0   -- open
-				},
-				flip_x = true,
-				w = 1,
-				h = 3,
-				--use_pos = pos_infront,
-				use_dir = face_back,
-				verbs = {
-					walkto = function(me)
-						if state_of(me) == state_open then
-							-- go to new room!
-							come_out_door(first_room.objects.front_door) --, first_room)
-						else
-							say_line("the door is closed")
-						end
-					end,
-					open = function(me)
-						open_door(me, first_room.objects.front_door)
-					end,
-					close = function(me)
-						close_door(me, first_room.objects.front_door)
-					end
-				}
-			},
-		},
-	}
-
-	back_garden = {
-		map_x = 40 ,
-		map_y = 0,
-		map_x1 = 63, 	-- map coordinates to draw to (x,y)
-		map_y1 = 7,
-		enter = function()
-			-- todo: anything here?
-			-- camera_at(200)
-			-- camera_pan_to(0)
-			-- wait_for_camera()
-		end,
-		exit = function()
-			-- todo: anything here?
-		end,
-		scripts = {	  -- scripts that are at room-level
-		},
-		objects = {
-			garden_door_kitchen = {
-				name = "kitchen",
-				state = state_open,
-				x = 13 *8, -- (*8 to use map cell pos)
-				y = 1 *8,
-				w = 1,	-- relates to spr
-				h = 3,  --
-				verbs = {
-					walkto = function()
-						-- go to new room!
-						come_out_door(second_room.objects.back_door)
-					end
-				}
-			}
-		},
-	}
-
-]]
 
 -- ================================================================
 -- actor definitions
@@ -2120,7 +1888,7 @@ function room_draw()
 			replace_colors(room_curr)
 			-- d("-----> map_x:"..room_curr.map[1])
 			-- d("-----> map_y:"..room_curr.map[2])
-			map(room_curr.map[1], room_curr.map[2], 0, stage_top, room_curr.map_w , room_curr.map_h)
+			map(room_curr.map[1], room_curr.map[2], 0, stage_top, room_curr.map[3], room_curr.map[4])
 			--map(room_curr.map_x, room_curr.map_y, 0, stage_top, room_curr.map_w , room_curr.map_h)
 			--reset palette
 			pal()		
@@ -2442,8 +2210,8 @@ function game_init()
 		explode_data(room)
 		--d("#map:"..#room.map)
 		if (#room.map < 4) then
-			room.map_w = 16
-			room.map_h = 8
+			room.map[3] = 16
+			room.map[4] = 8
 		end
 
 		-- init objects (in room)
@@ -2514,7 +2282,7 @@ function _center_camera(val)
 		val = val.x
 	end
 	-- keep camera within "room" bounds
-	return mid(0, val-64, (room_curr.map_w*8) -128 )
+	return mid(0, val-64, (room_curr.map[3]*8) -128 )
 end
 
 
@@ -2655,8 +2423,8 @@ function find_path(start, goal)
 				-- diagonals cost more
 				if abs(x) != abs(y) then cost=1 else cost=1.4 end
 				
-				if chk_x >= room_curr.map[1] and chk_x <= room_curr.map[2] + room_curr.map_w 
-				 and chk_y >= room_curr.map[1] and chk_y <= room_curr.map[2] + room_curr.map_h
+				if chk_x >= room_curr.map[1] and chk_x <= room_curr.map[2] + room_curr.map[3] 
+				 and chk_y >= room_curr.map[1] and chk_y <= room_curr.map[2] + room_curr.map[4]
 				 and is_cell_walkable(chk_x, chk_y)
 				-- squeeze check for corners
 				 and ((abs(x) != abs(y)) 
@@ -2789,7 +2557,14 @@ end
 function autotype(str_value)
 	local first_letter = sub(str_value,1,1)
 	local retval = nil
-	if first_letter == "\"" then
+
+	d("str_value:"..str_value)
+
+	if str_value == "true" then
+		retval = true
+	elseif str_value == "false" then
+		retval = false
+	elseif first_letter == "\"" then
 		-- string - so do nothing
 		retval = str_value
 	elseif first_letter == "[" then
