@@ -335,7 +335,7 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 			anim_fire = function()
 				while true do
 					for f=1,3 do
-						set_state("fire", f)
+						set_state(obj_fire, f)
 						break_time(8)
 					end
 				end
@@ -345,12 +345,12 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 				while true do	
 					for x=1,3 do					
 						for f=1,3 do
-							set_state("spinning top", f)
+							set_state(obj_spinning_top, f)
 							break_time(4)
 						end
 						-- move top
-						top = find_object("spinning top")
-						top.x -= dir					
+						--top = find_object("spinning top")
+						obj_spinning_top.x -= dir					
 					end	
 					dir *= -1
 				end				
@@ -403,7 +403,7 @@ rooms = {
 --  room definitions
 -- 
 
-
+--[[
 	title_room = {
 		map = "0,8",
 		-- map_x = 0,
@@ -678,7 +678,7 @@ rooms = {
 		},
 	}
 
-
+]]
 
 -- ================================================================
 -- actor definitions
@@ -788,14 +788,18 @@ actors = {
 	}
 }
 
--- ================================================================
+-- 
 -- script overloads
--- ================================================================
+-- 
 
 -- this script is execute once on game startup
 function startup_script()	
 	-- set which room to start the game in 
 	-- (e.g. could be a "pseudo" room for title screen!)
+	
+	selected_actor = actors.main_actor
+	camera_follow(selected_actor)
+	put_actor_at(selected_actor, 60, 50, first_room)
 	
 
 	--change_room(title_room, 1) -- iris fade	
@@ -1475,8 +1479,8 @@ function walk_to(actor, x, y)
 		x += cam_x
 
 		local actor_cell_pos = getcellpos(actor)
-		local celx = flr(x /8) + room_curr.map_x
-		local cely = flr(y /8) + room_curr.map_y
+		local celx = flr(x /8) + room_curr.map[1] --map_x
+		local cely = flr(y /8) + room_curr.map[2] --map_y
 		local target_cell_pos = { celx, cely }
 
 		-- use pathfinding!
@@ -1489,8 +1493,8 @@ function walk_to(actor, x, y)
 		end
 
 		for p in all(path) do
-			local px = (p[1]-room_curr.map_x)*8 + 4
-			local py = (p[2]-room_curr.map_y)*8 + 4
+			local px = (p[1]-room_curr.map[1])*8 + 4
+			local py = (p[2]-room_curr.map[2])*8 + 4
 
 			local distance = sqrt((px - actor.x) ^ 2 + (py - actor.y) ^ 2)
 			local step_x = actor.speed * (px - actor.x) / distance
@@ -2126,7 +2130,7 @@ function room_draw()
 			-- draw all objs/actors in current zplane
 			for obj in all(zplane) do
 				-- object or actor?
-				d("obj.name1:"..obj.name)
+				--d("obj.name1:"..obj.name)
 				if not has_flag(obj.class, class_actor) then
 					-- object
 					if obj.states	  -- object has a state?
@@ -2169,7 +2173,7 @@ end
 
 
 function object_draw(obj)
-	d("obj.name:"..obj.name)
+	--d("obj.name:"..obj.name)
 	-- replace colors?
 	replace_colors(obj)
 	-- allow for repeating
@@ -2177,10 +2181,10 @@ function object_draw(obj)
 	if obj.repeat_x then rx = obj.repeat_x end
 	for h = 0, rx-1 do
 		-- draw object (in its state!)
-		d("obj.states1:"..type(obj.states))
-		d("obj.states2:"..#obj.states)		
+		-- d("obj.states1:"..type(obj.states))
+		-- d("obj.states2:"..#obj.states)		
 		sprdraw(obj.states[obj.state], obj.x+(h*(obj.w*8)), obj.y, obj.w, obj.h, obj.trans_col, obj.flip_x)
-		d(">>test")
+		--d(">>test")
 	end
 	--reset palette
 	pal() 
@@ -2436,19 +2440,19 @@ function game_init()
 	d("game_init()")
 	for room in all(rooms) do
 		explode_data(room)
-		d("#map:"..#room.map)
+		--d("#map:"..#room.map)
 		if (#room.map < 4) then
 			room.map_w = 16
 			room.map_h = 8
 		end
 
 		-- init objects (in room)
-		d("objects:"..type(room.objects))
-		d("objects:"..#room.objects)
+		-- d("objects:"..type(room.objects))
+		-- d("objects:"..#room.objects)
 		for obj in all(room.objects) do
-			d("obj....")
+			--d("obj....")
 			explode_data(obj)
-			d("#####")
+			--d("#####")
 			obj.in_room = room
 		end
 	end
@@ -2524,8 +2528,8 @@ end
 -- end
 
 function getcellpos(obj)
-	local celx = flr(obj.x/8) + room_curr.map_x
-	local cely = flr(obj.y/8) + room_curr.map_y
+	local celx = flr(obj.x/8) + room_curr.map[1] --map_x
+	local cely = flr(obj.y/8) + room_curr.map[2] --map_y
 	return { celx, cely }
 end
 
@@ -2651,8 +2655,8 @@ function find_path(start, goal)
 				-- diagonals cost more
 				if abs(x) != abs(y) then cost=1 else cost=1.4 end
 				
-				if chk_x >= room_curr.map_x and chk_x <= room_curr.map_x + room_curr.map_w 
-				 and chk_y >= room_curr.map_y and chk_y <= room_curr.map_y + room_curr.map_h
+				if chk_x >= room_curr.map[1] and chk_x <= room_curr.map[2] + room_curr.map_w 
+				 and chk_y >= room_curr.map[1] and chk_y <= room_curr.map[2] + room_curr.map_h
 				 and is_cell_walkable(chk_x, chk_y)
 				-- squeeze check for corners
 				 and ((abs(x) != abs(y)) 
