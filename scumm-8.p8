@@ -128,16 +128,16 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 				if state_of(me) == state_open then
 					-- go to new room!
 					--come_out_door(front_door)
-					come_out_door(obj_front_door_inside)
+					come_out_door(obj_front_door)
 				else
 					say_line("the door is closed")
 				end
 			end,
 			open = function(me)
-				open_door(me, obj_front_door_inside)
+				open_door(me, obj_front_door)
 			end,
 			close = function(me)
-				close_door(me, obj_front_door_inside)
+				close_door(me, obj_front_door)
 			end
 		}
 	}
@@ -286,6 +286,8 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 		}
 	}
 
+
+
 -- 
 
 	obj_kitchen_door_hall = {		
@@ -337,6 +339,65 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 			end
 		}
 	}
+
+
+	obj_rail_left = {		
+		data = [[
+			state=1
+			x=80
+			y=24
+			w=1
+			h=2
+			states=[111]
+			repeat_x = 8
+		]],
+		class = class_untouchable
+	}
+
+	obj_rail_right = {		
+		data = [[
+			state=1
+			x=176
+			y=24
+			w=1
+			h=2
+			states=[111]
+			repeat_x = 8
+		]],
+		class = class_untouchable
+	}
+
+	obj_front_door = {		
+		data = [[
+			name = "front door"
+			state=1
+			x=152
+			y=8
+			w=1
+			h=3
+			states=[142,0]
+			flip_x = true
+		]],
+		class = class_openable,
+		use_dir = face_back,
+		verbs = {
+			walkto = function(me)
+				if state_of(me) == state_open then
+					-- go to new room!
+					come_out_door(obj_front_door_inside)
+				else
+					say_line("the door is closed")
+				end
+			end,
+			open = function(me)
+				open_door(me, obj_front_door_inside)
+			end,
+			close = function(me)
+				close_door(me, obj_front_door_inside)
+			end
+		}
+	}
+
 
 	-- obj_blank = {		
 	-- 	data = [[
@@ -435,13 +496,31 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 		end,
 	}
 
+	outside_room = {
+		data = [[
+			map = [16,8,47,15]
+		]],
+		objects = {
+			obj_rail_left,
+			obj_rail_right,
+			obj_front_door
+		},
+		enter = function()
+				-- todo: anything here?
+		end,
+		exit = function()
+			-- todo: anything here?
+		end,
+	}
+
+
 
 
 rooms = {
 	-- title_room,
 	first_room,
 	second_room,
-	-- outside_room,
+	outside_room,
 	-- back_garden,
 }
 
@@ -567,12 +646,12 @@ function startup_script()
 	
 	selected_actor = actors.main_actor
 	camera_follow(selected_actor)
-	put_actor_at(selected_actor, 60, 50, first_room)
+	put_actor_at(selected_actor, 60, 50, outside_room)
 	
 
 	--change_room(title_room, 1) -- iris fade	
-	change_room(first_room, 1) -- iris fade	
-	--change_room(rooms.outside_room, 1) -- iris fade
+	--change_room(first_room, 1) -- iris fade	
+	change_room(outside_room, 1) -- iris fade
 end
 
 
