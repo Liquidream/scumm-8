@@ -128,16 +128,16 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 				if state_of(me) == state_open then
 					-- go to new room!
 					--come_out_door(front_door)
-					come_out_door(outside_room.objects.front_door)
+					come_out_door(obj_front_door)
 				else
 					say_line("the door is closed")
 				end
 			end,
 			open = function(me)
-				open_door(me, outside_room.objects.front_door)
+				open_door(me, obj_front_door)
 			end,
 			close = function(me)
-				close_door(me, outside_room.objects.front_door)
+				close_door(me, obj_front_door)
 			end
 		}
 	}
