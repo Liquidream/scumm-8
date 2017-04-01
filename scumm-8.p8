@@ -448,7 +448,7 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 		]],
 		z=-10,
 		dependent_on = obj_library_secret_panel,
-		dependent_on_state = 2
+		dependent_on_state = 2,
 		use_dir = face_back,
 		verbs = {
 			walkto = function(me)
@@ -461,32 +461,24 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 		}
 	}
 
-		obj_duck = {		
-			data = [[
-				name=rubber duck
-				state=1
-				states={142}
-				trans_col=12
-				w=1
-				h=1
-			]]
+	obj_duck = {		
+		data = [[
+			name=rubber duck
+			state=1
+			states={142}
+			trans_col=12
+			x=1
+			y=1
+			w=1
+			h=1
+		]],
+		class = class_pickupable,
+		verbs = {
+			pickup = function(me)
+				pickup_obj(me)
+			end,
+		}
 	}
-
-	-- obj_blank = {		
-	-- 	data = [[
-	-- 		name=
-	--		state=
-	-- 		x=
-	-- 		y=
-	-- 		w=1
-	-- 		h=1
-	-- 		states={}
-	-- 	]],
-	-- 	verbs = {
-			
-	-- 	}
-	-- }
-
 
 -- 
 -- room definitions
@@ -695,7 +687,8 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 		objects = {
 			obj_fire,
 			obj_library_door_secret,
-			obj_library_secret_panel
+			obj_library_secret_panel,
+			obj_duck
 		},
 		enter = function(me)
 			-- animate fireplace
@@ -2046,7 +2039,7 @@ function check_collisions()
 		if (not obj.class
 			 or (obj.class and obj.class != class_untouchable))
 			and (not obj.dependent_on 			-- object has a valid dependent state?
-			 or find_object(obj.dependent_on).state == obj.dependent_on_state) 
+			 or obj.dependent_on.state == obj.dependent_on_state) 
 		then
 			recalc_bounds(obj, obj.w*8, obj.h*8, cam_x, cam_y)
 		else
@@ -2221,7 +2214,7 @@ function room_draw()
 					 and obj.states[obj.state]
 					 and obj.states[obj.state] > 0
 					 and (not obj.dependent_on 			-- object has a valid dependent state?
-						or find_object(obj.dependent_on).state == obj.dependent_on_state)
+						or obj.dependent_on.state == obj.dependent_on_state)
 					 and not obj.owner   						-- object is not "owned"
 					then
 						-- something to draw
