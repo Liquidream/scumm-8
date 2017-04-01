@@ -768,9 +768,9 @@ function startup_script()
 	-- put_actor_at(selected_actor, 60, 50, outside_room)
 	
 
-	--change_room(title_room, 1) -- iris fade	
+	change_room(title_room, 1) -- iris fade	
 	--change_room(first_room, 1) -- iris fade	
-	change_room(outside_room, 1) -- iris fade
+	--change_room(outside_room, 1) -- iris fade
 end
 
 
