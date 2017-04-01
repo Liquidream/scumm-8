@@ -454,10 +454,35 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 			walkto = function(me)
 				if me.state == state_open then
 					-- go to new room!
-					fades(fade_iris,-1)
+					change_room(title_room)
 					--come_out_door(obj_front_door_inside)
 				end
 			end
+		}
+	}
+
+	obj_book = {		
+		data = [[
+			name=loose book
+			state=1
+			x=132
+			y=16
+			w=1
+			h=1
+			states={142}
+			use_pos={132,57}
+		]],
+		class = class_pickupable,
+		verbs = {
+			pull = function(me)
+				obj_library_secret_panel.lighting=0.75
+				break_time(30)
+				obj_library_secret_panel.state=2
+				while (obj_library_secret_panel.y > -16) do
+					obj_library_secret_panel.y -= 1
+					break_time(10)
+				end
+			end,
 		}
 	}
 
@@ -479,6 +504,7 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 			end,
 		}
 	}
+
 
 -- 
 -- room definitions
@@ -569,9 +595,9 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 			obj_front_door
 		},
 		enter = function(me)
-			-- =========================================
+			-- 
 			-- initialise game in first room entry...
-			-- =========================================
+			-- 
 			if not me.done_intro then
 				-- don't do this again
 				me.done_intro = true
@@ -688,7 +714,8 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 			obj_fire,
 			obj_library_door_secret,
 			obj_library_secret_panel,
-			obj_duck
+			obj_duck,
+			obj_book
 		},
 		enter = function(me)
 			-- animate fireplace
@@ -1656,13 +1683,6 @@ function clear_curr_cmd()
 end
 
 clear_curr_cmd()
--- room_curr  - contains the current room definition
--- verb_curr  - contains the active verb to be used (e.g. walk)
--- noun1_curr - main/first object in command
--- noun2_curr - holds whatever is used after the preposition (e.g. "with <noun2>")
--- cmd_curr   - contains last displayed or actioned command
--- executing_cmd = false
-
 talking_curr = nil 	-- currently displayed speech {x,y,col,lines...}
 dialog_curr = nil   -- currently displayed dialog options to pick
 cutscene_curr = nil -- currently active cutscene
@@ -2135,11 +2155,11 @@ function recalc_zplane(obj)
 	zplane = flr(ypos - stage_top)
 
 	if obj.z then 
-		if obj.name then d("obj2:"..obj.name) end
-		 d("obj2z:"..obj.z)
+		-- if obj.name then d("obj2:"..obj.name) end
+		--  d("obj2z:"..obj.z)
 		zplane = obj.z 
 	else
-		d("no!")
+		--d("no!")
 	end
 
 	add(draw_zplanes[zplane],obj)
@@ -2195,13 +2215,13 @@ function room_draw()
 			pal()		
 		else
 			-- draw other layers
-			d("z:"..z)
+		--	d("z:"..z)
 			zplane = draw_zplanes[z]
-			if zplane then
-				d("z count:"..#zplane)
-			else
-				d("z count: nil!")
-			end
+			-- if zplane then
+			-- 	d("z count:"..#zplane)
+			-- else
+			-- 	d("z count: nil!")
+			-- end
 			-- draw all objs/actors in current zplane
 			for obj in all(zplane) do
 				-- object or actor?
