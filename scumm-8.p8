@@ -16,7 +16,7 @@ __lua__
 show_debuginfo = false
 show_collision = false
 --show_pathfinding = true
-show_perfinfo = true
+show_perfinfo = false
 enable_mouse = true
 d = printh
 
@@ -89,7 +89,6 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 			state=1
 			states={81,82,83}
 			lighting = 1
-			z=-1
 		]],
 		dependent_on = obj_front_door_inside,
 		dependent_on_state = state_open,
@@ -452,11 +451,11 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 		use_dir = face_back,
 		verbs = {
 			walkto = function(me)
-				if me.state == state_open then
+				--if me.state == state_open then
 					-- go to new room!
 					change_room(title_room)
 					--come_out_door(obj_front_door_inside)
-				end
+				--end
 			end
 		}
 	}
@@ -465,23 +464,24 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 		data = [[
 			name=loose book
 			state=1
-			x=132
+			x=140
 			y=16
 			w=1
 			h=1
-			states={142}
-			use_pos={132,57}
+			use_pos={140,60}
 		]],
 		class = class_pickupable,
 		verbs = {
 			pull = function(me)
-				obj_library_secret_panel.lighting=0.75
-				break_time(30)
+				--obj_library_secret_panel.lighting=0.75
+				--break_time(30)
+				shake(true)
 				obj_library_secret_panel.state=2
-				while (obj_library_secret_panel.y > -16) do
+				while (obj_library_secret_panel.y > -8) do
 					obj_library_secret_panel.y -= 1
 					break_time(10)
 				end
+				shake(false)
 			end,
 		}
 	}
@@ -709,6 +709,7 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 	rm_library = {
 		data = [[
 			map = {16,8,39,15}
+			trans_col = 10
 		]],
 		objects = {
 			obj_fire,
@@ -2136,7 +2137,7 @@ end
 
 
 function reset_zplanes()
-	d("reset_zplanes()")
+--	d("reset_zplanes()")
 	draw_zplanes = {}
 	for x = -64, 64 do
 		draw_zplanes[x] = {}
@@ -2207,6 +2208,11 @@ function room_draw()
 		if z == 0 then			
 			-- replace colors?
 			replace_colors(room_curr)
+
+			if room_curr.trans_col then
+				palt(0, false)
+				palt(room_curr.trans_col, true)
+			end
 			-- d("-----> map_x:"..room_curr.map[1])
 			-- d("-----> map_y:"..room_curr.map[2])
 			map(room_curr.map[1], room_curr.map[2], 0, stage_top, room_curr.map_w, room_curr.map_h)
@@ -2217,17 +2223,13 @@ function room_draw()
 			-- draw other layers
 		--	d("z:"..z)
 			zplane = draw_zplanes[z]
-			-- if zplane then
-			-- 	d("z count:"..#zplane)
-			-- else
-			-- 	d("z count: nil!")
-			-- end
+		
 			-- draw all objs/actors in current zplane
 			for obj in all(zplane) do
 				-- object or actor?
-				if obj.name then
-					d("obj.name1:"..obj.name)
-				end
+				-- if obj.name then
+				-- 	d("obj.name1:"..obj.name)
+				-- end
 				if not has_flag(obj.class, class_actor) then
 					-- object
 					if obj.states	  -- object has a state?
