@@ -1976,7 +1976,9 @@ function input_button_pressed(button_index)
 		if verb_curr[2] == "use" or verb_curr[2] == "give" then
 			if noun2_curr then
 				-- 'use' part 2
-			elseif noun1_curr.use_with then
+			elseif noun1_curr.use_with 
+			 and noun1_curr.owner == selected_actor 
+			then
 				-- 'use' part 1 (e.g. "use hammer")
 				-- wait for noun2 to be set
 				return
