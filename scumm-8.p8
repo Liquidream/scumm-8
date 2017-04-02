@@ -517,17 +517,17 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 					cutscene(cut_noverbs + cut_no_follow, 
 						function()
 
-							-- intro
+--[[							-- intro
 							break_time(50)
 							print_line("in a galaxy not far away...",64,45,8,1)
-
+]]
 		--[[					change_room(first_room, 1)
 							shake(true)
 							start_script(first_room.scripts.spin_top,false,true)
 							print_line("cozy fireplaces...",90,20,8,1)
 							print_line("(just look at it!)",90,20,8,1)
 							shake(false)]]
-
+--[[
 							-- part 2
 							change_room(second_room, 1)
 							print_line("strange looking aliens...",30,20,8,1,false,true)
@@ -545,7 +545,7 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 							camera_pan_to(0)
 							wait_for_camera()
 							print_line("quack!",45,60,10,1)
-
+]]
 							-- part 4
 							change_room(outside_room, 1)
 							
@@ -1682,6 +1682,12 @@ fade_iris, fade_iris = 0, 0
 -- game loop
 
 function _init()
+
+	--reload()
+	reload(0,0,0x1000,"mario014.p8")
+	cstore(0,0,0x1000,"out.p8")
+
+
 	-- use mouse input?
 	if enable_mouse then poke(0x5f2d, 1) end
 
