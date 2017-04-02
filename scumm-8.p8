@@ -13,7 +13,7 @@ __lua__
 --   > 6790 (after more token hunting) 
 
 -- debugging
-show_debuginfo = false
+show_debuginfo = true
 show_collision = false
 --show_pathfinding = true
 show_perfinfo = false
@@ -472,13 +472,15 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 				say_line("this book sticks out")
 			end,
 			pull = function(me)
-				shake(true)
-				obj_library_secret_panel.state=2
-				while (obj_library_secret_panel.y > -8) do
-					obj_library_secret_panel.y -= 1
-					break_time(10)
+				if obj_library_secret_panel.state != 2 then
+					obj_library_secret_panel.state=2
+					shake(true)
+					while (obj_library_secret_panel.y > -8) do
+						obj_library_secret_panel.y -= 1
+						break_time(10)
+					end
+					shake(false)
 				end
-				shake(false)
 			end,
 		}
 	}
@@ -1767,8 +1769,8 @@ function game_update()
 
 	-- update camera shake (if active)
 	cam_shake_x, cam_shake_y = 1.5-rnd(3), 1.5-rnd(3)
-	cam_shake_x *= cam_shake_amount
-  cam_shake_y *= cam_shake_amount
+	cam_shake_x = flr(cam_shake_x * cam_shake_amount)
+  cam_shake_y = flr(cam_shake_y * cam_shake_amount)
 	if not cam_shake then
 		cam_shake_amount *= 0.90
  		if cam_shake_amount < 0.05 then cam_shake_amount = 0 end
@@ -1785,9 +1787,9 @@ function game_draw()
 
 	-- clip room bounds (also used for "iris" transition)
 	clip(
-		0 +fade_iris, 
-		stage_top +fade_iris, 
-		128 -fade_iris*2, 
+		0 +fade_iris -cam_shake_x, 
+		stage_top +fade_iris -cam_shake_y, 
+		128 -fade_iris*2 -cam_shake_x, 
 		64 -fade_iris*2)
 
 	-- draw room (bg + objects + actors)
@@ -1818,12 +1820,11 @@ function game_draw()
 		return
 	end
 
- -- --------------------------------------------------------------
  -- hack:
  -- skip draw if just exited a cutscene
  -- as could be going straight into a dialog
  -- (would prefer a better way than this, but couldn't find one!)
- -- --------------------------------------------------------------
+ --
 	if cutscene_curr_lastval == cutscene_curr then
 		--d("cut_same")
 	else
