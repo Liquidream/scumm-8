@@ -1683,16 +1683,15 @@ fade_iris, fade_iris = 0, 0
 
 function _init()
 
-	--reload()
- reload(0,0x3b00,0x800)
-	--reload(0,0x3200,0x1000)
-	
-	--reload(0,0,0x1000,"mario014.p8") -- gfx pg1&2
-	--cstore(0x3200,0,0x1000) -- sfx
-	
---	reload(0,0,0x800,"mario014.p8") -- gfx pg1
---	cstore(0x3b00,0,0x800) -- sfx
+	--reload(0,0,0x800,"mario014.p8") -- gfx pg1
+	--cstore(0x3b00,0,0x800) -- sfx (last 1/2)
+ 	--reload(0,0x3b00,0x800) -- gfx pg1 (from end of sfx)
 
+	
+	--reload(0,0x3200,0x1000) -- gfx pg1&2 (from sfx)
+	--reload(0,0,0x1000,"mario014.p8") -- gfx pg1&2
+	--reload(0,0,0x800,"mario014.p8") -- gfx pg1
+	--cstore(0x3200,0,0x1000) -- sfx (start)
 	--cstore(0,0,0x800,"out.p8")
 
 
