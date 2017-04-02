@@ -166,6 +166,7 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 			h=1
 			states={143,159}
 			trans_col=15
+			use_with=true
 		]],
 		class = class_pickupable,
 		verbs = {
@@ -191,6 +192,11 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 				else
 					say_line("i might need this")
 				end
+			end,
+			use = function(me, noun2)
+				if (noun2 == obj_window) then
+					obj_window.state = state_open
+				end
 			end
 		}
 	}
@@ -208,17 +214,13 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 			trans_col=15
 		]],
 		verbs = {
-			push = function(me)
+			use = function(me)
 				if script_running(room_curr.scripts.spin_top) then
 					stop_script(room_curr.scripts.spin_top)
 					me.state = 1
 				else
 					start_script(room_curr.scripts.spin_top)
 				end
-			end,
-			pull = function(me)
-				stop_script(room_curr.scripts.spin_top)
-				me.state = 1
 			end
 		}
 	}
@@ -693,7 +695,7 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 		data = [[
 			map = {16,8,39,15}
 			trans_col = 10
-			col_replace={7,6}
+			col_replace={7,4}
 		]],
 		objects = {
 			obj_fire,
@@ -1974,7 +1976,7 @@ function input_button_pressed(button_index)
 		if verb_curr[2] == "use" or verb_curr[2] == "give" then
 			if noun2_curr then
 				-- 'use' part 2
-			else
+			elseif noun1_curr.use_with then
 				-- 'use' part 1 (e.g. "use hammer")
 				-- wait for noun2 to be set
 				return
