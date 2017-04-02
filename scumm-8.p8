@@ -8,8 +8,6 @@ __lua__
 --	"\65\66\67\68\69\70\71\72\73\74\75\76\77\78\79\80\81\82\83\84\85\86\87\88\89\90\91\92"
 
 -- token counts:
---   > 7027 (after fixing z-order hover, adding shake, lighting)
---   > 6873 (after token hunting and adding room bg color)
 --   > 6790 (after more token hunting) 
 
 -- debugging
@@ -748,6 +746,7 @@ rooms = {
 	-- initialize the player's actor object
 	main_actor = { 	
 		data = [[
+			name = humanoid
 			w = 1
 			h = 4
 			idle = { 193, 197, 199, 197 }
@@ -763,6 +762,12 @@ rooms = {
 		class = class_actor,
 		face_dir = face_front, 	-- default direction facing
 		-- sprites for idle (front, left, back, right) - right=flip
+		verbs = {
+			use = function(me)
+				selected_actor = me
+				camera_follow(me)
+			end
+		}
 	}
 
 	purp_tentacle = {
@@ -832,7 +837,11 @@ rooms = {
 						dialog_clear()
 
 					end --dialog loop
-				end -- talkto
+				end, -- talkto
+				use = function(me)
+					selected_actor = me
+					camera_follow(me)
+				end
 			}
 	}
 
@@ -1005,6 +1014,8 @@ function camera_at(val)
 end
 
 function camera_follow(actor)
+	stop_script(cam_script) -- bg script
+
 	-- set target
 	cam_following_actor = actor
 	-- clear other cam values
@@ -1989,8 +2000,10 @@ function input_button_pressed(button_index)
 		executing_cmd = true
 		selected_actor.thread = cocreate(function() --actor, obj, verb, noun2)
 			-- if obj not in inventory (or about to give/use it)...
-			if not noun1_curr.owner 
-			 or noun2_curr then
+			if (not noun1_curr.owner 
+				   and not has_flag(noun1_curr.class, class_actor))
+			 or noun2_curr 
+			then
 				-- walk to use pos and face dir
 				-- determine which item we're walking to
 				walk_obj = noun2_curr or noun1_curr
@@ -2720,7 +2733,7 @@ end
 
 -- ================================================================
 -- a* pathfinding functions 
--- ================================================================
+--
 
 function find_path(start, goal)
  local frontier, came_from, cost_so_far = {}, {}, {}
@@ -2836,7 +2849,7 @@ end
 
 
 
--- ================================================================
+--
 -- helper functions 
 -- 
 function explode_data(obj)
