@@ -13,7 +13,7 @@ __lua__
 --   > 6790 (after more token hunting) 
 
 -- debugging
-show_debuginfo = true
+show_debuginfo = false
 show_collision = false
 --show_pathfinding = true
 show_perfinfo = false
@@ -127,12 +127,7 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 		use_dir = face_left,
 		verbs = {
 			walkto = function(me)
-				if me.state == state_open then
-					-- go to new room!
-					come_out_door(obj_front_door)
-				else
-					say_line("the door is closed")
-				end
+				come_out_door(me, obj_front_door)
 			end,
 			open = function(me)
 				open_door(me, obj_front_door)
@@ -155,9 +150,8 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 		use_pos = pos_left,
 		use_dir = face_right,
 		verbs = {
-			walkto = function()
-				-- go to new room!
-				come_out_door(obj_kitchen_door_hall) --, second_room) -- ()
+			walkto = function(me)
+				come_out_door(me, obj_kitchen_door_hall)
 			end
 		}
 	}
@@ -294,7 +288,7 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 	obj_kitchen_door_hall = {		
 		data = [[
 			name = hall
-			state=1
+			state=2
 			x=8
 			y=16
 			w=1
@@ -303,9 +297,8 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 		use_pos = pos_right,
 		use_dir = face_left,
 		verbs = {
-			walkto = function()
-				-- go to new room!
-				come_out_door(obj_hall_door_kitchen)
+			walkto = function(me)
+				come_out_door(me, obj_hall_door_kitchen)
 			end
 		}
 	}
@@ -319,7 +312,7 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 			z=1
 			w=1
 			h=4
-			states={78,0}
+			states={79,0}
 			flip_x=true
 		]],
 		class = class_openable,
@@ -327,18 +320,13 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 		use_dir = face_right,
 		verbs = {
 			walkto = function(me)
-				if me.state == state_open then
-					-- go to new room!
-					come_out_door(obj_garden_door_kitchen)
-				else
-					say_line("the door is closed")
-				end
+				come_out_door(me, obj_garden_door_kitchen)
 			end,
 			open = function(me)
-				open_door(me, obj_front_door_inside)
+				open_door(me, obj_garden_door_kitchen)
 			end,
 			close = function(me)
-				close_door(me, obj_front_door_inside)
+				close_door(me, obj_garden_door_kitchen)
 			end
 		}
 	}
@@ -386,12 +374,7 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 		use_dir = face_back,
 		verbs = {
 			walkto = function(me)
-				if me.state == state_open then
-					-- go to new room!
-					come_out_door(obj_front_door_inside)
-				else
-					say_line("the door is closed")
-				end
+				come_out_door(me, obj_front_door_inside)
 			end,
 			open = function(me)
 				open_door(me, obj_front_door_inside)
@@ -405,16 +388,24 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 	obj_garden_door_kitchen = {		
 		data = [[
 			name=kitchen
-			state=2
+			state=1
 			x=104
 			y=8
 			w=1
 			h=3
+			states={78,0}
 		]],
+		use_dir = face_back,
+		class = class_openable,
 		verbs = {
-			walkto = function()
-				-- go to new room!
-				come_out_door(obj_back_door)
+			walkto = function(me)
+				come_out_door(me, obj_back_door)
+			end,
+			open = function(me)
+				open_door(me, obj_back_door)
+			end,
+			close = function(me)
+				close_door(me, obj_back_door)
 			end
 		}
 	}
@@ -526,18 +517,16 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 					cutscene(cut_noverbs + cut_no_follow, 
 						function()
 
---[[
-
 							-- intro
 							break_time(50)
 							print_line("in a galaxy not far away...",64,45,8,1)
 
-							change_room(first_room, 1)
+		--[[					change_room(first_room, 1)
 							shake(true)
 							start_script(first_room.scripts.spin_top,false,true)
 							print_line("cozy fireplaces...",90,20,8,1)
 							print_line("(just look at it!)",90,20,8,1)
-							shake(false)
+							shake(false)]]
 
 							-- part 2
 							change_room(second_room, 1)
@@ -560,18 +549,14 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 							-- part 4
 							change_room(outside_room, 1)
 							
-
+--[[
 							-- outro
 							--break_time(25)
 							change_room(title_room, 1)
-						]]	
+						
 
-							print_line("coming soon...:to a pico-8 near you!",64,45,8,1)
-							print_line("until then, go & buy...",64,45,8,1)
-							print_line("thimbleweed park",64,45,12,1,true,false)
-							print_line("it's amazing:(tell ron I sent ya!)",64,45,8,1)
 							fades(1,1)	-- fade out
-							break_time(100)
+							break_time(100)]]
 							
 						end) -- end cutscene
 
@@ -862,18 +847,8 @@ actors = {
 function startup_script()	
 	-- set which room to start the game in 
 	-- (e.g. could be a "pseudo" room for title screen!)
-	
-	selected_actor = main_actor
-	camera_follow(selected_actor)
-	put_actor_at(selected_actor, 60, 50, rm_library)
-	pickup_obj(obj_bucket)
-	pickup_obj(obj_duck)
-	
 
-	--change_room(title_room, 1) -- iris fade	
-	--change_room(first_room, 1) -- iris fade	
-	--change_room(outside_room, 1) -- iris fade
-	change_room(rm_library, 1) -- iris fade
+	change_room(title_room, 1) -- iris fade
 end
 
 
@@ -1233,25 +1208,33 @@ function close_door(door_obj1, door_obj2)
 	end
 end
 
-function come_out_door(door_obj, fade_effect)
-	new_room = door_obj.in_room
+function come_out_door(from_door, to_door, fade_effect)
+	if from_door.state == state_open then
+		-- go to new room!
+		new_room = to_door.in_room
 
-	-- switch to new room and...
-	change_room(new_room, fade_effect)
-	-- ...auto-position actor at door_obj in new room...
-	local pos = get_use_pos(door_obj)
-	put_actor_at(selected_actor, pos.x, pos.y, new_room)
+		-- switch to new room and...
+		change_room(new_room, fade_effect)
+		-- ...auto-position actor at to_door in new room...
+		local pos = get_use_pos(to_door)
+		put_actor_at(selected_actor, pos.x, pos.y, new_room)
 
-	-- ...in opposite use direction!
-	if door_obj.use_dir then
-		opp_dir = door_obj.use_dir + 2
-		if opp_dir > 4 then
-			opp_dir -= 4
+		-- ...in opposite use direction!
+		if to_door.use_dir then
+			opp_dir = to_door.use_dir + 2
+			if opp_dir > 4 then
+				opp_dir -= 4
+			end
+		else
+		opp_dir = 1 -- front
+		end
+		selected_actor.face_dir = opp_dir
+		if selected_actor.face_dir == 2 then 
+			selected_actor.flip = true 
 		end
 	else
-	 opp_dir = 1 -- front
+		say_line("the door is closed")
 	end
-	selected_actor.face_dir = opp_dir
 end
 
 function fades(fade, dir) -- 1=down, -1=up
@@ -1574,7 +1557,7 @@ function walk_to(actor, x, y)
 			local step_y = actor.speed * (py - actor.y) / distance
 
 			-- only walk if we're not already there!
-			if distance > 1 then 
+			if distance > 5 then 
 				--walking
 				actor.moving = 1 
 				actor.flip = (step_x<0)
