@@ -1,2 +1,4 @@
 .DS_Store
-scumm-8_fmt.p8
+*_fmt.p8
+*.pyxel
+*.png
