@@ -9,6 +9,8 @@ __lua__
 
 -- token counts:
 --   > 6790 (after more token hunting) 
+--   > 6832 (after adding "use" object/actor & fix shake crop)
+
 
 -- debugging
 show_debuginfo = false
@@ -51,16 +53,6 @@ verb_defcol = 10   -- default action (yellow)
 -- object states
 state_closed, state_open, state_off, state_on, state_gone, state_here  = 1, 2, 1, 2, 1, 2
 
--- object classes (bitflags)
-class_untouchable = 1 -- will not register when the cursor moves over it. the object is invisible to the user.
-class_pickupable = 2  -- can be placed in actor inventory
-class_talkable = 4		-- can talk to actor/object
-class_giveable = 8		-- can be given to an actor/object
-class_openable = 16   -- can be opened/closed
-class_actor = 32      -- is an actor/person
-
-cut_noverbs = 1 		-- this removes the interface during the cut-scene.
-cut_no_follow = 4   -- this disables the follow-camera being reinstated after cut-scene.
 
 -- actor constants - states for actor direction (not sprite #'s)
 face_front, face_left, face_back, face_right = 1, 2, 3, 4
@@ -73,7 +65,7 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 
 
 -- 
--- object definitions (new way!)
+-- object definitions
 -- 
 
 	obj_fire = {		
@@ -119,8 +111,9 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 			w=1
 			h=4
 			states={79,0}
+			classes = {class_openable}
 		]],
-		class = class_openable,
+		--class = class_openable,
 		use_pos = pos_right,
 		use_dir = face_left,
 		verbs = {
@@ -165,8 +158,9 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 			states={143,159}
 			trans_col=15
 			use_with=true
+			classes = {class_pickupable}
 		]],
-		class = class_pickupable,
+		--class = class_pickupable,
 		verbs = {
 			lookat = function(me)
 				if owner_of(me) == selected_actor then
@@ -233,12 +227,14 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 			h=2
 			states={68,70}
 			use_pos={40,57}
+			classes = {class_openable}
 		]],
-		class = class_openable,
+		--class = class_openable,
 		verbs = {
 			open = function(me)
 				if not me.done_cutscene then
-					cutscene(cut_noverbs, 
+					cutscene(
+						{"cut_noverbs"}, 
 						function()
 							me.done_cutscene = true
 							-- cutscene code
@@ -314,8 +310,9 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 			h=4
 			states={79,0}
 			flip_x=true
+			classes = {class_openable}
 		]],
-		class = class_openable,
+		--class = class_openable,
 		use_pos = pos_left,
 		use_dir = face_right,
 		verbs = {
@@ -342,8 +339,9 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 			h=2
 			states={47}
 			repeat_x = 8
+			classes = {class_untouchable}
 		]],
-		class = class_untouchable
+		--class = class_untouchable
 	}
 
 	obj_rail_right = {		
@@ -355,8 +353,9 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 			h=2
 			states={47}
 			repeat_x = 8
+			classes = {class_untouchable}
 		]],
-		class = class_untouchable
+		--class = class_untouchable
 	}
 
 	obj_front_door = {		
@@ -369,8 +368,9 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 			h=3
 			states={78,0}
 			flip_x = true
+			classes = {class_openable}
 		]],
-		class = class_openable,
+		--class = class_openable,
 		use_dir = face_back,
 		verbs = {
 			walkto = function(me)
@@ -394,9 +394,10 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 			w=1
 			h=3
 			states={78,0}
+			classes = {class_openable}
 		]],
 		use_dir = face_back,
-		class = class_openable,
+		--class = class_openable,
 		verbs = {
 			walkto = function(me)
 				come_out_door(me, obj_back_door)
@@ -419,8 +420,9 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 			w=1
 			h=3
 			states={80,80}
+			classes = {class_untouchable}
 		]],
-		class = class_untouchable,
+		--class = class_untouchable,
 		use_dir = face_back,
 		verbs = {
 		}
@@ -456,8 +458,9 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 			w=1
 			h=1
 			use_pos={140,60}
+			classes = {class_pickupable}
 		]],
-		class = class_pickupable,
+		--class = class_pickupable,
 		verbs = {
 			lookat = function(me)
 				say_line("this book sticks out")
@@ -486,8 +489,9 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 			y=1
 			w=1
 			h=1
+			classes = {class_pickupable}
 		]],
-		class = class_pickupable,
+		--class = class_pickupable,
 		verbs = {
 			pickup = function(me)
 				pickup_obj(me)
@@ -514,7 +518,8 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 				-- don't do this again
 				me.done_intro = true
 			
-					cutscene(cut_noverbs + cut_no_follow, 
+					cutscene(
+						{"cut_noverbs","cut_no_follow"}, 
 						function()
 
 --[[							-- intro
@@ -592,7 +597,8 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 				-- (setting now, will be re-instated after cutscene)
 				camera_follow(selected_actor)
 				-- do cutscene
-				cutscene(cut_noverbs, 
+				cutscene(
+					{"cut_noverbs"}, 
 					-- cutscene code (hides ui, etc.)
 					function()
 						camera_at(0)
@@ -757,9 +763,10 @@ rooms = {
 			col = 12
 			trans_col = 11
 			speed = 0.6
+			classes = {class_actor}
 		]],	
 		--name = "",
-		class = class_actor,
+		--class = class_actor,
 		face_dir = face_front, 	-- default direction facing
 		-- sprites for idle (front, left, back, right) - right=flip
 		verbs = {
@@ -782,8 +789,9 @@ rooms = {
 			col = 11
 			trans_col = 15
 			speed = 0.25
+			classes = {class_actor,class_talkable}
 		]],
-		class = class_talkable + class_actor,
+		--class = class_talkable + class_actor,
 		face_dir = face_front,
 		use_pos = pos_left,
 		--in_room = rooms.first_room,
@@ -793,10 +801,12 @@ rooms = {
 					say_line("it's a weird looking tentacle, thing!")
 				end,
 				talkto = function(me)
-					cutscene(cut_noverbs, function()
-						--do_anim(purp_tentacle, anim_face, selected_actor)
-						say_line(me,"what do you want?")
-					end)
+					cutscene(
+						{"cut_noverbs"}, 
+						function()
+							--do_anim(purp_tentacle, anim_face, selected_actor)
+							say_line(me,"what do you want?")
+						end)
 
 					-- dialog loop start
 					while (true) do
@@ -814,25 +824,27 @@ rooms = {
 						-- chosen options
 						dialog_hide()
 
-						cutscene(cut_noverbs, function()
-							say_line(selected_sentence.msg)
-							
-							if selected_sentence.num == 1 then
-								say_line(me, "you are in paul's game")
-								me.asked_where = true
+						cutscene(
+							{"cut_noverbs"}, 
+							function()
+								say_line(selected_sentence.msg)
+								
+								if selected_sentence.num == 1 then
+									say_line(me, "you are in paul's game")
+									me.asked_where = true
 
-							elseif selected_sentence.num == 2 then
-								say_line(me, "it's complicated...")
+								elseif selected_sentence.num == 2 then
+									say_line(me, "it's complicated...")
 
-							elseif selected_sentence.num == 3 then
-								say_line(me, "a wood-chuck would chuck no amount of wood, coz a wood-chuck can't chuck wood!")
+								elseif selected_sentence.num == 3 then
+									say_line(me, "a wood-chuck would chuck no amount of wood, coz a wood-chuck can't chuck wood!")
 
-							elseif selected_sentence.num == 4 then
-								say_line(me, "ok bye!")
-								dialog_end()
-								return
-							end
-						end)
+								elseif selected_sentence.num == 4 then
+									say_line(me, "ok bye!")
+									dialog_end()
+									return
+								end
+							end)
 
 						dialog_clear()
 
@@ -912,9 +924,9 @@ end
 function find_default_verb(obj)
   local default_verb = nil
 
-	if has_flag(obj.class, class_talkable) then
+	if has_flag(obj.classes, "class_talkable") then
 		default_verb = "talkto"
-	elseif has_flag(obj.class, class_openable) then
+	elseif has_flag(obj.classes, "class_openable") then
 		if obj.state == state_closed then
 			default_verb = "open"
 		else
@@ -935,22 +947,24 @@ end
 -- actions to perform when object doesn't have an entry for verb
 function unsupported_action(verb, obj1, obj2)
 
+	local is_actor = has_flag(obj1.classes, "class_actor") 
+
 	if verb == "walkto" then
 		return
 
 	elseif verb == "pickup" then
-		if has_flag(obj1.class, class_actor) then
+		if is_actor then
 			say_line"i don't need them"
 		else
 			say_line"i don't need that"
 		end
 
 	elseif verb == "use" then
-		if has_flag(obj1.class, class_actor) then
+		if is_actor then
 			say_line"i can't just *use* someone"
 		end
 		if obj2 then
-			if has_flag(obj2.class, class_actor) then
+			if has_flag(obj2.classes, class_actor) then
 				say_line"i can't use that on someone!"
 			else
 				say_line"that doesn't work"
@@ -958,42 +972,42 @@ function unsupported_action(verb, obj1, obj2)
 		end
 
 	elseif verb == "give" then
-		if has_flag(obj1.class, class_actor) then
+		if is_actor then
 			say_line"i don't think i should be giving this away"
 		else
 			say_line"i can't do that"
 		end
 
 	elseif verb == "lookat" then
-		if has_flag(obj1.class, class_actor) then
+		if is_actor then
 			say_line"i think it's alive"
 		else
 			say_line"looks pretty ordinary"
 		end
 
 	elseif verb == "open" then
-		if has_flag(obj1.class, class_actor) then
+		if is_actor then
 			say_line"they don't seem to open"
 		else
 			say_line"it doesn't seem to open"
 		end
 
 	elseif verb == "close" then
-		if has_flag(obj1.class, class_actor) then
+		if is_actor then
 			say_line"they don't seem to close"
 		else
 			say_line"it doesn't seem to close"
 		end
 
 	elseif verb == "push" or verb == "pull" then
-		if has_flag(obj1.class, class_actor) then
+		if is_actor then
 			say_line"moving them would accomplish nothing"
 		else
 			say_line"it won't budge!"
 		end
 
 	elseif verb == "talkto" then
-		if has_flag(obj1.class, class_actor) then
+		if is_actor then
 			say_line"erm... i don't think they want to talk"
 		else
 			say_line"i am not talking to that!"
@@ -1747,7 +1761,7 @@ function game_update()
 			-- cutscene ended, restore prev state	
 						
 			-- restore follow-cam if flag allows (and had a value!)
-			if not has_flag(cutscene_curr.flags, cut_no_follow) 
+			if not has_flag(cutscene_curr.flags, "cut_no_follow") 
 			 and cutscene_curr.paused_cam_following 
 			then
 				camera_follow(cutscene_curr.paused_cam_following)
@@ -1851,7 +1865,7 @@ function game_draw()
 
 	-- draw ui and inventory (only if actor selected to use it!)
 	if (not cutscene_curr
-		or not has_flag(cutscene_curr.flags, cut_noverbs))
+		or not has_flag(cutscene_curr.flags, "cut_noverbs"))
 		-- and not just left a cutscene
 		and (cutscene_curr_lastval == cutscene_curr) then
 		ui_draw()
@@ -2002,7 +2016,8 @@ function input_button_pressed(button_index)
 		selected_actor.thread = cocreate(function() --actor, obj, verb, noun2)
 			-- if obj not in inventory (or about to give/use it)...
 			if (not noun1_curr.owner 
-				   and not has_flag(noun1_curr.class, class_actor))
+				   and (not has_flag(noun1_curr.classes, "class_actor")
+							or verb_curr[2] != "use"))
 			 or noun2_curr 
 			then
 				-- walk to use pos and face dir
@@ -2069,8 +2084,8 @@ function check_collisions()
 	-- check room/object collisions
 	for obj in all(room_curr.objects) do
 		-- capture bounds (even for "invisible", but not untouchable/dependent, objects)
-		if (not obj.class
-			 or (obj.class and obj.class != class_untouchable))
+		if (not obj.classes
+			 or (obj.classes and not has_flag(obj.classes, "class_untouchable")))
 			and (not obj.dependent_on 			-- object has a valid dependent state?
 			 or obj.dependent_on.state == obj.dependent_on_state) 
 		then
@@ -2242,7 +2257,7 @@ function room_draw()
 				-- if obj.name then
 				-- 	d("obj.name1:"..obj.name)
 				-- end
-				if not has_flag(obj.class, class_actor) then
+				if not has_flag(obj.classes, "class_actor") then
 					-- object
 					if obj.states	  -- object has a state?
 					 and obj.states[obj.state]
@@ -2706,7 +2721,12 @@ function longest_line_size(lines)
 end
 
 function has_flag(obj, value)
-  if band(obj, value) != 0 then return true end
+	for f in all(obj) do
+	 if f == value then 
+	 	return true 
+	 end
+	end
+  --if band(obj, value) != 0 then return true end
   return false
 end
 
@@ -2715,7 +2735,7 @@ function recalc_bounds(obj, w, h, cam_off_x, cam_off_y)
   x = obj.x
 	y = obj.y
 	-- offset for actors?
-	if has_flag(obj.class, class_actor) then
+	if has_flag(obj.classes, "class_actor") then
 		obj.offset_x = x - (obj.w *8) /2
 		obj.offset_y = y - (obj.h *8) +1		
 		x = obj.offset_x
@@ -2732,7 +2752,7 @@ function recalc_bounds(obj, w, h, cam_off_x, cam_off_y)
 end
 
 
--- ================================================================
+-- 
 -- a* pathfinding functions 
 --
 
