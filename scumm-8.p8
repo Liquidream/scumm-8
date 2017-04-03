@@ -859,6 +859,7 @@ function startup_script()
 	-- set which room to start the game in 
 	-- (e.g. could be a "pseudo" room for title screen!)
 
+	--change_room(rm_library, 1) -- iris fade
 	change_room(title_room, 1) -- iris fade
 end
 
