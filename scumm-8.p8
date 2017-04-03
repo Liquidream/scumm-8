@@ -55,9 +55,9 @@ state_closed, state_open, state_off, state_on, state_gone, state_here  = 1, 2, 1
 
 
 -- actor constants - states for actor direction (not sprite #'s)
-face_front, face_left, face_back, face_right = 1, 2, 3, 4
+--face_front, face_left, face_back, face_right = 1, 2, 3, 4
 --
-pos_infront, pos_behind, pos_left, pos_right, pos_inside = 1, 3, 2, 4, 5
+--pos_infront, pos_behind, pos_left, pos_right, pos_inside = 1, 3, 2, 4, 5
 
 -- actor animations
 anim_face = 1	 -- face actor in a direction (show the turning stages of animation)
@@ -67,6 +67,24 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 -- 
 -- object definitions
 -- 
+
+
+#note idea = store state as string...
+[[
+	name=object1
+	state=face_front
+	face_front=81
+	face_left=82
+	face_back=83
+	face_right=84
+	lighting = 1
+]]
+
+
+
+
+
+
 
 	obj_fire = {		
 		-- poss diff types (s_data, n_data, arr_data)?
@@ -86,13 +104,13 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 			lookat = function()
 				say_line("it's a nice, warm fire...")
 				break_time(10)
-				do_anim(selected_actor, anim_face, face_front)
+				do_anim(selected_actor, anim_face, "face_front")
 				say_line("ouch! it's hot!:*stupid fire*")
 			end,
 			talkto = function()
 				say_line("'hi fire...'")
 				break_time(10)
-				do_anim(selected_actor, anim_face, face_front)
+				do_anim(selected_actor, anim_face, "face_front")
 				say_line("the fire didn't say hello back:burn!!")
 			end,
 			pickup = function(me)
@@ -112,10 +130,11 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 			h=4
 			states={79,0}
 			classes = {class_openable}
+			use_pos = pos_right
+			use_dir = face_left
 		]],
-		--class = class_openable,
-		use_pos = pos_right,
-		use_dir = face_left,
+		-- use_pos = pos_right,
+		-- use_dir = face_left,
 		verbs = {
 			walkto = function(me)
 				come_out_door(me, obj_front_door)
@@ -137,9 +156,11 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 			y=16
 			w=1
 			h=4
+			use_pos = pos_left
+			use_dir = face_right
 		]],
-		use_pos = pos_left,
-		use_dir = face_right,
+		-- use_pos = pos_left,
+		-- use_dir = face_right,
 		verbs = {
 			walkto = function(me)
 				come_out_door(me, obj_kitchen_door_hall)
@@ -289,9 +310,11 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 			y=16
 			w=1
 			h=4
+			use_pos = pos_right
+			use_dir = face_left
 		]],
-		use_pos = pos_right,
-		use_dir = face_left,
+		-- use_pos = pos_right,
+		-- use_dir = face_left,
 		verbs = {
 			walkto = function(me)
 				come_out_door(me, obj_hall_door_kitchen)
@@ -311,10 +334,11 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 			states={79,0}
 			flip_x=true
 			classes = {class_openable}
+			use_pos = pos_left
+			use_dir = face_right
 		]],
-		--class = class_openable,
-		use_pos = pos_left,
-		use_dir = face_right,
+		-- use_pos = pos_left,
+		-- use_dir = face_right,
 		verbs = {
 			walkto = function(me)
 				come_out_door(me, obj_garden_door_kitchen)
@@ -369,9 +393,9 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 			states={78,0}
 			flip_x = true
 			classes = {class_openable}
+			use_dir = face_back
 		]],
-		--class = class_openable,
-		use_dir = face_back,
+		--use_dir = face_back,
 		verbs = {
 			walkto = function(me)
 				come_out_door(me, obj_front_door_inside)
@@ -395,9 +419,9 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 			h=3
 			states={78,0}
 			classes = {class_openable}
+			use_dir = face_back
 		]],
-		use_dir = face_back,
-		--class = class_openable,
+		--use_dir = face_back,
 		verbs = {
 			walkto = function(me)
 				come_out_door(me, obj_back_door)
@@ -421,9 +445,9 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 			h=3
 			states={80,80}
 			classes = {class_untouchable}
+			use_dir = face_back
 		]],
-		--class = class_untouchable,
-		use_dir = face_back,
+		--use_dir = face_back,
 		verbs = {
 		}
 	}
@@ -438,10 +462,11 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 			w=1
 			h=3
 			states={77}
+			use_dir = face_back
 		]],
 		dependent_on = obj_library_secret_panel,
 		dependent_on_state = 2,
-		use_dir = face_back,
+		--use_dir = face_back,
 		verbs = {
 			walkto = function(me)
 				change_room(title_room, 1)
@@ -764,10 +789,9 @@ rooms = {
 			trans_col = 11
 			speed = 0.6
 			classes = {class_actor}
-		]],	
-		--name = "",
-		--class = class_actor,
-		face_dir = face_front, 	-- default direction facing
+			face_dir = face_front
+		]],
+		--face_dir = face_front, 	-- default direction facing
 		-- sprites for idle (front, left, back, right) - right=flip
 		verbs = {
 			use = function(me)
@@ -790,11 +814,11 @@ rooms = {
 			trans_col = 15
 			speed = 0.25
 			classes = {class_actor,class_talkable}
+			face_dir = face_front
+			use_pos = pos_left
 		]],
-		--class = class_talkable + class_actor,
-		face_dir = face_front,
-		use_pos = pos_left,
-		--in_room = rooms.first_room,
+		-- face_dir = face_front,
+		-- use_pos = pos_left,
 		in_room = second_room,
 		verbs = {
 				lookat = function()
@@ -1202,6 +1226,12 @@ function do_anim(actor, cmd_type, cmd_value)
 			cmd_value = 4 - flr(degrees/90)
 		end
 
+
+
+		dirs = { "face_front", "face_left", "face_back", "face_right" }
+
+#finish this!
+
 		while actor.face_dir != cmd_value do
 			-- turn to target face_dir
 			if actor.face_dir < cmd_value then
@@ -1210,7 +1240,7 @@ function do_anim(actor, cmd_type, cmd_value)
 				actor.face_dir -= 1
 			end
 			-- is target dir left? flip?
-			actor.flip = (actor.face_dir == face_left)
+			actor.flip = (actor.face_dir == "face_left")
 			break_time(10)
 		end
 	end
@@ -1247,7 +1277,10 @@ function come_out_door(from_door, to_door, fade_effect)
 		local pos = get_use_pos(to_door)
 		put_actor_at(selected_actor, pos.x, pos.y, new_room)
 
+
 		-- ...in opposite use direction!
+#finish this too!
+
 		if to_door.use_dir then
 			opp_dir = to_door.use_dir + 2
 			if opp_dir > 4 then
@@ -1596,18 +1629,18 @@ function walk_to(actor, x, y)
 					if step_y > 0 then
 						-- towards us
 						actor.walk_anim = actor.walk_anim_front
-						actor.face_dir = face_front
+						actor.face_dir = "face_front"
 					else
 						-- away
 						actor.walk_anim = actor.walk_anim_back
-						actor.face_dir = face_back
+						actor.face_dir = "face_back"
 					end
 				else
 					-- horizontal walk
 					actor.walk_anim = actor.walk_anim_side
 					-- face dir (at end of walk)
-					actor.face_dir = face_right
-					if actor.flip then actor.face_dir = face_left end
+					actor.face_dir = "face_right"
+					if actor.flip then actor.face_dir = "face_left" end
 				end
 
 				for i = 0, distance/actor.speed do
@@ -2332,7 +2365,10 @@ function actor_draw(actor)
 		-- choose walk anim frame
 		sprnum = actor.walk_anim[actor.anim_pos]	
 	else
+
 		-- idle
+#finish (need to tie up "str" with spr index somehow...)
+
 		sprnum = actor.idle[actor.face_dir]
 	end
 
