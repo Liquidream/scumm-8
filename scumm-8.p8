@@ -14,7 +14,7 @@ __lua__
 show_debuginfo = false
 show_collision = false
 --show_pathfinding = true
-show_perfinfo = false
+show_perfinfo = true
 enable_mouse = true
 d = printh
 
@@ -510,8 +510,7 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 		scripts = {
 			show_button = function()
 				while true do
-					d("show but"..time())
-					d("test:"..selected_actor.y )
+					--d("player:"..selected_actor.x)
 					obj_switch_tent.in_room = selected_actor.in_room
 					obj_switch_tent.x = cam_x+120
 					obj_switch_tent.y = 1
@@ -520,7 +519,8 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 			end
 		},
 		verbs = {
-			use = function(me)
+			lookat = function(me)
+				d("done!")
 				selected_actor = purp_tentacle
 				camera_follow(purp_tentacle)
 			end
@@ -1024,10 +1024,14 @@ function camera_follow(actor)
 		-- keep the camera following actor
 		-- (until further notice)
 		while cam_following_actor do
-			-- keep camera within "room" bounds
-			if cam_following_actor.in_room == room_curr then
-				cam_x = _center_camera(cam_following_actor)
+			-- make sure we stay in same room as actor
+			if cam_following_actor.in_room != room_curr then
+				change_room(cam_following_actor.in_room, 1)
 			end
+			-- keep camera within "room" bounds
+		--	if cam_following_actor.in_room == room_curr then
+				cam_x = _center_camera(cam_following_actor)
+		--	end
 			yield()
 		end
 	end
@@ -1226,11 +1230,11 @@ function come_out_door(from_door, to_door, fade_effect)
 		new_room = to_door.in_room
 
 		-- switch to new room and...
-		change_room(new_room, fade_effect)
+		--change_room(new_room, fade_effect)
 		-- ...auto-position actor at to_door in new room...
-		local pos = get_use_pos(to_door)
-		put_actor_at(selected_actor, pos.x, pos.y, new_room)
-
+		--local pos = get_use_pos(to_door)
+		local pos = {x=to_door.x+4,y=to_door.y+(to_door.h*8)}
+		d("pos:"..pos.y)
 		-- ...in opposite use direction!
 		if to_door.use_dir then
 			opp_dir = to_door.use_dir + 2
@@ -1244,6 +1248,10 @@ function come_out_door(from_door, to_door, fade_effect)
 		if selected_actor.face_dir == 2 then 
 			selected_actor.flip = true 
 		end
+
+		-- finally, move player into room
+		put_actor_at(selected_actor, pos.x, pos.y, new_room)
+		d("here!")
 	else
 		say_line("the door is closed")
 	end
