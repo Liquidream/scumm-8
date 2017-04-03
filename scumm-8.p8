@@ -495,7 +495,37 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 		}
 	}
 
-
+	obj_switch_tent = {
+		data = [[
+			name=switch to tentacle
+			state=1
+			states={170}
+			trans_col=15
+			x=1
+			y=1
+			w=1
+			h=1
+			z=60
+		]],
+		scripts = {
+			show_button = function()
+				while true do
+					d("show but"..time())
+					d("test:"..selected_actor.y )
+					obj_switch_tent.in_room = selected_actor.in_room
+					obj_switch_tent.x = cam_x+120
+					obj_switch_tent.y = 1
+					break_time()
+				end
+			end
+		},
+		verbs = {
+			use = function(me)
+				selected_actor = purp_tentacle
+				camera_follow(purp_tentacle)
+			end
+		}
+	}
 -- 
 -- room definitions
 -- 
@@ -575,7 +605,8 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 		objects = {
 			obj_rail_left,
 			obj_rail_right,
-			obj_front_door
+			obj_front_door,
+			obj_switch_tent
 		},
 		enter = function(me)
 			-- 
@@ -591,6 +622,11 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 				-- make camera follow player
 				-- (setting now, will be re-instated after cutscene)
 				camera_follow(selected_actor)
+
+				-- add switch player button
+				start_script(obj_switch_tent.scripts.show_button,true)
+
+
 				-- do cutscene
 				cutscene(cut_noverbs, 
 					-- cutscene code (hides ui, etc.)
@@ -724,10 +760,19 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 		}
 	}
 	
-
+-- the void - send objects here to hide them!
+rm_void = {
+	data = [[
+		map = {0,0}
+	]],
+	objects = {
+		--obj_switch_tent
+	},
+}
 
 
 rooms = {
+	rm_void,
 	title_room,
 	outside_room,
 	first_room,
@@ -789,55 +834,7 @@ rooms = {
 		--in_room = rooms.first_room,
 		in_room = second_room,
 		verbs = {
-				lookat = function()
-					say_line("it's a weird looking tentacle, thing!")
-				end,
-				talkto = function(me)
-					cutscene(cut_noverbs, function()
-						--do_anim(purp_tentacle, anim_face, selected_actor)
-						say_line(me,"what do you want?")
-					end)
-
-					-- dialog loop start
-					while (true) do
-						-- build dialog options
-						dialog_set({ 
-							(me.asked_where and "" or "where am i?"),
-							"who are you?",
-							"how much wood would a wood-chuck chuck, if a wood-chuck could chuck wood?",
-							"nevermind"
-						})
-						dialog_start(selected_actor.col, 7)
-
-						-- wait for selection
-						while not selected_sentence do break_time() end
-						-- chosen options
-						dialog_hide()
-
-						cutscene(cut_noverbs, function()
-							say_line(selected_sentence.msg)
-							
-							if selected_sentence.num == 1 then
-								say_line(me, "you are in paul's game")
-								me.asked_where = true
-
-							elseif selected_sentence.num == 2 then
-								say_line(me, "it's complicated...")
-
-							elseif selected_sentence.num == 3 then
-								say_line(me, "a wood-chuck would chuck no amount of wood, coz a wood-chuck can't chuck wood!")
-
-							elseif selected_sentence.num == 4 then
-								say_line(me, "ok bye!")
-								dialog_end()
-								return
-							end
-						end)
-
-						dialog_clear()
-
-					end --dialog loop
-				end, -- talkto
+			
 				use = function(me)
 					selected_actor = me
 					camera_follow(me)
@@ -861,6 +858,7 @@ function startup_script()
 
 	--change_room(rm_library, 1) -- iris fade
 	change_room(title_room, 1) -- iris fade
+
 end
 
 
