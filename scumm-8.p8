@@ -356,8 +356,7 @@ verb_defcol = 10   -- default action (yellow)
 			end,
 			open = function(me)
 				open_door(me, obj_front_door_inside)
-
-				camera_follow(purp_tentacle)
+				--camera_follow(purp_tentacle)
 			end,
 			close = function(me)
 				close_door(me, obj_front_door_inside)
@@ -477,6 +476,45 @@ verb_defcol = 10   -- default action (yellow)
 	}
 
 
+	obj_switch_tent = {		
+		data = [[
+			name=purple tentacle
+			state=state_here
+			state_here=170
+			trans_col=15
+			x=1
+			y=1
+			w=1
+			h=1
+		]],
+		verbs = {
+			use = function(me)
+				selected_actor = purp_tentacle
+				camera_follow(purp_tentacle)
+			end
+		}
+	}
+
+	obj_switch_player= {		
+		data = [[
+			name=humanoid
+			state=state_here
+			state_here=209
+			trans_col=11
+			x=1
+			y=1
+			w=1
+			h=1
+		]],
+		verbs = {
+			use = function(me)
+				selected_actor = main_actor
+				camera_follow(main_actor)
+			end
+		}
+	}
+
+
 -- 
 -- room definitions
 -- 
@@ -509,7 +547,7 @@ verb_defcol = 10   -- default action (yellow)
 							print_line("cozy fireplaces...",90,20,8,1)
 							print_line("(just look at it!)",90,20,8,1)
 							shake(false)]]
-
+--[[
 							-- part 2
 							change_room(second_room, 1)
 							print_line("strange looking aliens...",30,20,8,1,false,true)
@@ -527,7 +565,7 @@ verb_defcol = 10   -- default action (yellow)
 							camera_pan_to(0)
 							wait_for_camera()
 							print_line("quack!",45,60,10,1)
-
+]]
 							-- part 4
 							change_room(outside_room, 1)
 							
@@ -704,10 +742,20 @@ verb_defcol = 10   -- default action (yellow)
 		}
 	}
 	
-
+	-- the void, a place to put objects/actors when not in a room
+	rm_void = {
+		data = [[
+			map = {0,0}
+		]],
+		objects = {
+			obj_switch_player,
+			obj_switch_tent
+		},
+	}
 
 
 rooms = {
+	rm_void,
 	title_room,
 	outside_room,
 	first_room,
@@ -740,6 +788,9 @@ rooms = {
 			face_dir = face_front
 		]],
 		-- sprites for directions (front, left, back, right) - note: right=left-flipped
+		inventory = {
+			obj_switch_tent
+		},
 		verbs = {
 			use = function(me)
 				selected_actor = me
@@ -765,6 +816,9 @@ rooms = {
 			use_pos = pos_left
 		]],
 		in_room = second_room,
+		inventory = {
+			obj_switch_player
+		},
 		verbs = {
 				lookat = function()
 					say_line("it's a weird looking tentacle, thing!")
@@ -840,12 +894,24 @@ function startup_script()
 	-- set which room to start the game in 
 	-- (e.g. could be a "pseudo" room for title screen!)
 
+	pickup_obj(obj_switch_tent, main_actor)
+	pickup_obj(obj_switch_player, purp_tentacle)
+			-- 
+
 	--change_room(rm_library, 1) -- iris fade
 	change_room(title_room, 1) -- iris fade
 end
 
 
 -- (end of customisable game content)
+
+
+
+
+
+
+
+
 
 
 
@@ -1355,12 +1421,12 @@ function valid_verb(verb, object)
 	return false
 end
 
-function pickup_obj(obj)
-	--local obj = find_object(objname)
---	if obj then
-		-- assume selected_actor picked-up at this point
-		add(selected_actor.inventory, obj)
-		obj.owner = selected_actor
+function pickup_obj(obj, actor)
+		-- use actor spectified, or default to selected
+    actor = actor or selected_actor
+
+		add(actor.inventory, obj)
+		obj.owner = actor
 		-- remove it from room
 		del(obj.in_room.objects, obj)
 --	end
@@ -2445,7 +2511,9 @@ function ui_draw()
 			rectfill(xpos-1, stage_top+ypos-1, xpos+8, stage_top+ypos+8, 1)
 
 			obj = selected_actor.inventory[start_pos+ipos]
+			d("inv obj#:"..#selected_actor.inventory)
 			if obj then
+				d("inv obj")
 				-- something to draw
 				obj.x, obj.y = xpos, ypos
 				-- draw object/sprite
@@ -2560,8 +2628,8 @@ function game_init()
 		actor.talk_tmr = 1
 		actor.anim_pos = 1 	-- used to track anim pos
 		actor.inventory = {
-			-- object1,
-			-- object2
+			-- obj_switch_player,
+			-- obj_switch_tent
 		}
 		actor.inv_pos = 0 	-- pointer to the row to start displaying from
 	end
