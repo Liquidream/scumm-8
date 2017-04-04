@@ -704,8 +704,6 @@ verb_defcol = 10   -- default action (yellow)
 		enter = function(me)
 			-- animate fireplace
 			start_script(me.scripts.anim_fire, true) -- bg script
-			d("z:"..obj_library_secret_panel.z)
-			d("type:"..type(obj_library_secret_panel.z))
 		end,
 		exit = function(me)
 			-- pause fireplace while not in room
@@ -1141,11 +1139,11 @@ function get_use_pos(obj)
 
 	-- determine use pos
 	elseif not obj_use_pos or
-		obj_use_pos == pos_infront then
+		obj_use_pos == "pos_infront" then
 		x = obj.x + ((obj.w*8)/2) -cam_x -4
 		y = obj.y + (obj.h*8) +2
 
-	elseif obj_use_pos == pos_left then
+	elseif obj_use_pos == "pos_left" then
 		-- diff calc for actors
 		if obj.offset_x then
 			x = obj.x -cam_x - (obj.w*8 +4)
@@ -1156,7 +1154,7 @@ function get_use_pos(obj)
 			y = obj.y + ((obj.h*8) -2)
 		end
 
-	elseif obj_use_pos == pos_right then
+	elseif obj_use_pos == "pos_right" then
 		x = obj.x + (obj.w*8)-cam_x
 		y = obj.y + ((obj.h*8) -2)
 	end
@@ -1166,6 +1164,14 @@ end
 
 
 function do_anim(actor, cmd_type, cmd_value)
+
+	dir_nums = {
+		"face_front",
+		"face_left",
+		"face_back",
+		"face_right" 
+	}
+
 	-- animate turn to face (object/actor or explicit direction)
 	if cmd_type == "anim_face" then
 		
@@ -1189,21 +1195,14 @@ function do_anim(actor, cmd_type, cmd_value)
 
 			-- set final target face direction to obj/actor
 			cmd_value = 4 - flr(degrees/90)
+
+			-- convert final value
+			cmd_value = dir_nums[cmd_value]
 		end
 
-
-
-		
-		dir_nums = {
-			"face_front",
-			"face_left",
-			"face_back",
-			"face_right" 
-		}
-		
 		face_dir = face_dir_vals[actor.face_dir]
 		cmd_value = face_dir_vals[cmd_value]
-		d("facedir:"..face_dir)
+		
 		while face_dir != cmd_value do
 			-- turn to target face_dir
 			if face_dir < cmd_value then
@@ -1224,14 +1223,12 @@ end
 
 -- open one (or more) doors
 function open_door(door_obj1, door_obj2)
-	d("open_door")
 	if door_obj1.state == "state_open" then
 		say_line"it's already open"
 	else
 		door_obj1.state = "state_open"
 		if door_obj2 then door_obj2.state = "state_open" end
 	end
-	d("exit open_door")
 end
 
 -- close one (or more) doors
@@ -1254,7 +1251,6 @@ function come_out_door(from_door, to_door, fade_effect)
 		-- ...auto-position actor at to_door in new room...
 		local pos = get_use_pos(to_door)
 		put_actor_at(selected_actor, pos.x, pos.y, new_room)
-
 
 		-- ...in opposite use direction!
 		dir_opp = { 
@@ -1600,7 +1596,6 @@ function walk_to(actor, x, y)
 				end
 			end
 		end
-		--d("reach dest")
 		actor.moving = 2 --arrived
 end
 
@@ -1659,7 +1654,6 @@ face_dir_vals = {
 function get_keys(obj)
 	local keys = {}
 	for k,v in pairs(obj) do
-		--d("k:"..k)
 		add(keys,k)
 	end
 	return keys
@@ -2154,7 +2148,6 @@ end
 
 
 function reset_zplanes()
---	d("reset_zplanes()")
 	draw_zplanes = {}
 	for x = -64, 64 do
 		draw_zplanes[x] = {}
@@ -2172,12 +2165,8 @@ function recalc_zplane(obj)
 	end
 	zplane = flr(ypos - stage_top)
 
-	if obj.z then 
-		-- if obj.name then d("obj2:"..obj.name) end
-		--  d("obj2z:"..obj.z)
-		zplane = obj.z 
-	else
-		--d("no!")
+	if obj.z then
+		zplane = obj.z
 	end
 
 	add(draw_zplanes[zplane],obj)
@@ -2238,15 +2227,11 @@ function room_draw()
 			pal()		
 		else
 			-- draw other layers
-		--	d("z:"..z)
 			zplane = draw_zplanes[z]
 		
 			-- draw all objs/actors in current zplane
 			for obj in all(zplane) do
 				-- object or actor?
-				-- if obj.name then
-				-- 	d("obj.name1:"..obj.name)
-				-- end
 				if not has_flag(obj.classes, "class_actor") then
 					-- object
 					if obj.states	  -- object has a state?
@@ -2656,7 +2641,6 @@ end
 
 function is_cell_walkable(celx, cely)
 		local spr_num = mget(celx, cely)
-		--d("spr:"..spr_num)
 		local walkable = fget(spr_num,0)
 		return walkable
 end
