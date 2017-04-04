@@ -52,11 +52,7 @@ verb_defcol = 10   -- default action (yellow)
 -- object definitions
 -- 
 
-
-
-
-	obj_fire = {		
-		-- poss diff types (s_data, n_data, arr_data)?
+	obj_fire = {
 		data = [[
 			name=fire
 			x=88
@@ -102,8 +98,6 @@ verb_defcol = 10   -- default action (yellow)
 			use_pos = pos_right
 			use_dir = face_left
 		]],
-		-- use_pos = pos_right,
-		-- use_dir = face_left,
 		verbs = {
 			walkto = function(me)
 				come_out_door(me, obj_front_door)
@@ -128,8 +122,6 @@ verb_defcol = 10   -- default action (yellow)
 			use_pos = pos_left
 			use_dir = face_right
 		]],
-		-- use_pos = pos_left,
-		-- use_dir = face_right,
 		verbs = {
 			walkto = function(me)
 				come_out_door(me, obj_kitchen_door_hall)
@@ -151,7 +143,6 @@ verb_defcol = 10   -- default action (yellow)
 			use_with=true
 			classes = {class_pickupable}
 		]],
-		--class = class_pickupable,
 		verbs = {
 			lookat = function(me)
 				if owner_of(me) == selected_actor then
@@ -221,12 +212,11 @@ verb_defcol = 10   -- default action (yellow)
 			use_pos={40,57}
 			classes = {class_openable}
 		]],
-		--class = class_openable,
 		verbs = {
 			open = function(me)
 				if not me.done_cutscene then
 					cutscene(
-						{"cut_noverbs"}, 
+						1, -- no verbs 
 						function()
 							me.done_cutscene = true
 							-- cutscene code
@@ -284,8 +274,6 @@ verb_defcol = 10   -- default action (yellow)
 			use_pos = pos_right
 			use_dir = face_left
 		]],
-		-- use_pos = pos_right,
-		-- use_dir = face_left,
 		verbs = {
 			walkto = function(me)
 				come_out_door(me, obj_hall_door_kitchen)
@@ -308,8 +296,6 @@ verb_defcol = 10   -- default action (yellow)
 			use_pos = pos_left
 			use_dir = face_right
 		]],
-		-- use_pos = pos_left,
-		-- use_dir = face_right,
 		verbs = {
 			walkto = function(me)
 				come_out_door(me, obj_garden_door_kitchen)
@@ -364,7 +350,6 @@ verb_defcol = 10   -- default action (yellow)
 			classes = {class_openable}
 			use_dir = face_back
 		]],
-		--use_dir = face_back,
 		verbs = {
 			walkto = function(me)
 				come_out_door(me, obj_front_door_inside)
@@ -390,7 +375,6 @@ verb_defcol = 10   -- default action (yellow)
 			classes = {class_openable}
 			use_dir = face_back
 		]],
-		--use_dir = face_back,
 		verbs = {
 			walkto = function(me)
 				come_out_door(me, obj_back_door)
@@ -406,17 +390,17 @@ verb_defcol = 10   -- default action (yellow)
 
 	obj_library_secret_panel = {		
 		data = [[
-			state=state_here
+			state=state_closed
 			x=120
 			y=16
 			z=-1
 			w=1
 			h=3
-			state_here=80
+			state_closed=80
+			state_open=80
 			classes = {class_untouchable}
 			use_dir = face_back
 		]],
-		--use_dir = face_back,
 		verbs = {
 		}
 	}
@@ -424,18 +408,18 @@ verb_defcol = 10   -- default action (yellow)
 	obj_library_door_secret = {		
 		data = [[
 			name=secret passage
-			state=state_here
+			state=state_closed
 			x=120
 			y=16
 			z=-10
 			w=1
 			h=3
-			state_here=77
+			state_closed=77
 			use_dir = face_back
+			dependent_on_state = state_open
 		]],
 		dependent_on = obj_library_secret_panel,
-		dependent_on_state = 2,
-		--use_dir = face_back,
+		--dependent_on_state = state_open,
 		verbs = {
 			walkto = function(me)
 				change_room(title_room, 1)
@@ -453,14 +437,13 @@ verb_defcol = 10   -- default action (yellow)
 			use_pos={140,60}
 			classes = {class_pickupable}
 		]],
-		--class = class_pickupable,
 		verbs = {
 			lookat = function(me)
 				say_line("this book sticks out")
 			end,
 			pull = function(me)
-				if obj_library_secret_panel.state != 2 then
-					obj_library_secret_panel.state=2
+				if obj_library_secret_panel.state != "state_open" then
+					obj_library_secret_panel.state="state_open"
 					shake(true)
 					while (obj_library_secret_panel.y > -8) do
 						obj_library_secret_panel.y -= 1
@@ -484,7 +467,6 @@ verb_defcol = 10   -- default action (yellow)
 			h=1
 			classes = {class_pickupable}
 		]],
-		--class = class_pickupable,
 		verbs = {
 			pickup = function(me)
 				pickup_obj(me)
@@ -512,20 +494,20 @@ verb_defcol = 10   -- default action (yellow)
 				me.done_intro = true
 			
 					cutscene(
-						{"cut_noverbs","cut_no_follow"}, 
+						3, -- no verbs & no follow, 
 						function()
 
---[[							-- intro
+							-- intro
 							break_time(50)
 							print_line("in a galaxy not far away...",64,45,8,1)
-]]
+
 		--[[					change_room(first_room, 1)
 							shake(true)
 							start_script(first_room.scripts.spin_top,false,true)
 							print_line("cozy fireplaces...",90,20,8,1)
 							print_line("(just look at it!)",90,20,8,1)
 							shake(false)]]
---[[
+
 							-- part 2
 							change_room(second_room, 1)
 							print_line("strange looking aliens...",30,20,8,1,false,true)
@@ -543,7 +525,7 @@ verb_defcol = 10   -- default action (yellow)
 							camera_pan_to(0)
 							wait_for_camera()
 							print_line("quack!",45,60,10,1)
-]]
+
 							-- part 4
 							change_room(outside_room, 1)
 							
@@ -591,7 +573,7 @@ verb_defcol = 10   -- default action (yellow)
 				camera_follow(selected_actor)
 				-- do cutscene
 				cutscene(
-					{"cut_noverbs"}, 
+					1, -- no verbs
 					-- cutscene code (hides ui, etc.)
 					function()
 						camera_at(0)
@@ -618,8 +600,7 @@ verb_defcol = 10   -- default action (yellow)
 			obj_hall_door_kitchen,
 			obj_bucket,
 			obj_spinning_top,
-			obj_window,
-			--obj_ztest
+			obj_window
 		},
 		enter = function(me)
 			
@@ -756,8 +737,7 @@ rooms = {
 			classes = {class_actor}
 			face_dir = face_front
 		]],
-		--face_dir = face_front, 	-- default direction facing
-		-- sprites for idle (front, left, back, right) - right=flip
+		-- sprites for directions (front, left, back, right) - note: right=left-flipped
 		verbs = {
 			use = function(me)
 				selected_actor = me
@@ -782,8 +762,6 @@ rooms = {
 			face_dir = face_front
 			use_pos = pos_left
 		]],
-		-- face_dir = face_front,
-		-- use_pos = pos_left,
 		in_room = second_room,
 		verbs = {
 				lookat = function()
@@ -791,7 +769,7 @@ rooms = {
 				end,
 				talkto = function(me)
 					cutscene(
-						{"cut_noverbs"}, 
+						1, -- no verbs
 						function()
 							--do_anim(purp_tentacle, anim_face, selected_actor)
 							say_line(me,"what do you want?")
@@ -814,7 +792,7 @@ rooms = {
 						dialog_hide()
 
 						cutscene(
-							{"cut_noverbs"}, 
+							1, -- no verbs
 							function()
 								say_line(selected_sentence.msg)
 								
@@ -1745,7 +1723,8 @@ function game_update()
 			-- cutscene ended, restore prev state	
 						
 			-- restore follow-cam if flag allows (and had a value!)
-			if not has_flag(cutscene_curr.flags, "cut_no_follow") 
+			if cutscene_curr.flags != 3 
+			--if not has_flag(cutscene_curr.flags, "cut_no_follow") 
 			 and cutscene_curr.paused_cam_following 
 			then
 				camera_follow(cutscene_curr.paused_cam_following)
@@ -1849,7 +1828,8 @@ function game_draw()
 
 	-- draw ui and inventory (only if actor selected to use it!)
 	if (not cutscene_curr
-		or not has_flag(cutscene_curr.flags, "cut_noverbs"))
+		or cutscene_curr.flags == 2) -- quick-cut
+		--or not has_flag(cutscene_curr.flags, "cut_noverbs"))
 		-- and not just left a cutscene
 		and (cutscene_curr_lastval == cutscene_curr) then
 		ui_draw()
