@@ -356,6 +356,8 @@ verb_defcol = 10   -- default action (yellow)
 			end,
 			open = function(me)
 				open_door(me, obj_front_door_inside)
+
+				camera_follow(purp_tentacle)
 			end,
 			close = function(me)
 				close_door(me, obj_front_door_inside)
@@ -1013,6 +1015,11 @@ function camera_follow(actor)
 		end
 	end
 	start_script(cam_script, true) -- bg script
+
+	-- auto-switch to room actor resides in
+	if cam_following_actor.in_room != room_curr then
+		change_room(cam_following_actor.in_room, 1)
+	end
 end
 
 

@@ -1,5 +1,5 @@
 pico-8 cartridge // http://www.pico-8.com
-version 10
+version 9
 __lua__
 -- scumm-8 game template
 -- paul nicholas
@@ -11,7 +11,7 @@ __lua__
 -- now 6860 tokens (after adding library)
 -- now 6906 tokens (after adding "use" object/actor & fix shake crop)
 -- now 6805 tokens (after also converting flags/enums to strings)
--- now 6792 tokens (after made cutscene flags = numbers)
+
 
 -- debugging
 show_debuginfo = false
