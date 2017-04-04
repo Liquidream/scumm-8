@@ -16,7 +16,7 @@ __lua__
 show_debuginfo = false
 show_collision = false
 --show_pathfinding = true
-show_perfinfo = false
+show_perfinfo = true
 enable_mouse = true
 d = printh
 
@@ -47,41 +47,10 @@ verb_shadcol = 1   -- shadow (dk blue)
 verb_defcol = 10   -- default action (yellow)
 
 
--- scumm-8 enums/constants
--- 
-
--- object states
-state_closed, state_open, state_off, state_on, state_gone, state_here  = 1, 2, 1, 2, 1, 2
-
-
--- actor constants - states for actor direction (not sprite #'s)
---face_front, face_left, face_back, face_right = 1, 2, 3, 4
---
---pos_infront, pos_behind, pos_left, pos_right, pos_inside = 1, 3, 2, 4, 5
-
--- actor animations
-anim_face = 1	 -- face actor in a direction (show the turning stages of animation)
-
-
 
 -- 
 -- object definitions
 -- 
-
-
-#note idea = store state as string...
-[[
-	name=object1
-	state=face_front
-	face_front=81
-	face_left=82
-	face_back=83
-	face_right=84
-	lighting = 1
-]]
-
-
-
 
 
 
@@ -99,18 +68,18 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 			lighting = 1
 		]],
 		dependent_on = obj_front_door_inside,
-		dependent_on_state = state_open,
+		dependent_on_state = "state_open",
 		verbs = {
 			lookat = function()
 				say_line("it's a nice, warm fire...")
 				break_time(10)
-				do_anim(selected_actor, anim_face, "face_front")
+				do_anim(selected_actor, "anim_face", "face_front")
 				say_line("ouch! it's hot!:*stupid fire*")
 			end,
 			talkto = function()
 				say_line("'hi fire...'")
 				break_time(10)
-				do_anim(selected_actor, anim_face, "face_front")
+				do_anim(selected_actor, "anim_face", "face_front")
 				say_line("the fire didn't say hello back:burn!!")
 			end,
 			pickup = function(me)
@@ -122,13 +91,13 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 	obj_front_door_inside = {		
 		data = [[
 			name = front door
-			state = 1
+			state = state_closed
 			x=8
 			y=16
 			z=1
 			w=1
 			h=4
-			states={79,0}
+			state_closed=79
 			classes = {class_openable}
 			use_pos = pos_right
 			use_dir = face_left
@@ -151,7 +120,7 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 	obj_hall_door_kitchen = {		
 		data = [[
 			name = kitchen
-			state = 2
+			state = state_open
 			x=112
 			y=16
 			w=1
@@ -171,12 +140,13 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 	obj_bucket = {		
 		data = [[
 			name = bucket
-			state = 2
+			state = state_open
 			x=104
 			y=48
 			w=1
 			h=1
-			states={143,159}
+			state_closed=143
+			state_open = 159
 			trans_col=15
 			use_with=true
 			classes = {class_pickupable}
@@ -199,7 +169,7 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 					say_line(purp_tentacle, "sure")
 					me.owner = purp_tentacle
 					say_line(purp_tentacle, "here ya go...")
-					me.state = state_closed
+					me.state = "state_closed"
 					me.name = "full bucket"
 					pickup_obj(me)
 				else
@@ -208,7 +178,7 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 			end,
 			use = function(me, noun2)
 				if (noun2 == obj_window) then
-					obj_window.state = state_open
+					obj_window.state = "state_open"
 				end
 			end
 		}
@@ -217,11 +187,11 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 	obj_spinning_top = {		
 		data = [[
 			name=spinning top
-			state=1
 			x=16
 			y=48
 			w=1
 			h=1
+			state=1
 			states={158,174,190}
 			col_replace={12,7}
 			trans_col=15
@@ -241,12 +211,13 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 	obj_window = {		
 		data = [[
 			name=window
-			state=1
+			state=state_closed
 			x=32
 			y=8
 			w=2
 			h=2
-			states={68,70}
+			state_closed=68
+			state_open=70
 			use_pos={40,57}
 			classes = {class_openable}
 		]],
@@ -259,7 +230,7 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 						function()
 							me.done_cutscene = true
 							-- cutscene code
-							me.state = state_open
+							me.state = "state_open"
 							me.z = -2
 							print_line("*bang*",40,20,8,1)
 							change_room(second_room, 1)
@@ -280,7 +251,7 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 								selected_actor.x-10, 
 								selected_actor.y)
 							say_line("intruder!!!")
-							do_anim(main_actor, anim_face, purp_tentacle)
+							do_anim(main_actor, "anim_face", purp_tentacle)
 						end,
 						-- override for cutscene
 						function()
@@ -289,7 +260,7 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 							change_room(first_room)
 							put_actor_at(purp_tentacle, 105, 44, first_room)
 							stop_talking()
-							do_anim(main_actor, anim_face, purp_tentacle)
+							do_anim(main_actor, "anim_face", purp_tentacle)
 						end
 					)
 				end
@@ -305,7 +276,7 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 	obj_kitchen_door_hall = {		
 		data = [[
 			name = hall
-			state=2
+			state=state_open
 			x=8
 			y=16
 			w=1
@@ -325,13 +296,13 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 	obj_back_door = {		
 		data = [[
 			name=back door
-			state=1
+			state=state_closed
 			x=176
 			y=16
 			z=1
 			w=1
 			h=4
-			states={79,0}
+			state_closed=79
 			flip_x=true
 			classes = {class_openable}
 			use_pos = pos_left
@@ -356,41 +327,39 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 
 	obj_rail_left = {		
 		data = [[
-			state=1
+			state=state_here
 			x=80
 			y=24
 			w=1
 			h=2
-			states={47}
+			state_here=47
 			repeat_x = 8
 			classes = {class_untouchable}
 		]],
-		--class = class_untouchable
 	}
 
 	obj_rail_right = {		
 		data = [[
-			state=1
+			state=state_here
 			x=176
 			y=24
 			w=1
 			h=2
-			states={47}
+			state_here=47
 			repeat_x = 8
 			classes = {class_untouchable}
 		]],
-		--class = class_untouchable
 	}
 
 	obj_front_door = {		
 		data = [[
 			name = front door
-			state=1
+			state=state_closed
 			x=152
 			y=8
 			w=1
 			h=3
-			states={78,0}
+			state_closed=78
 			flip_x = true
 			classes = {class_openable}
 			use_dir = face_back
@@ -412,12 +381,12 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 	obj_garden_door_kitchen = {		
 		data = [[
 			name=kitchen
-			state=1
+			state=state_closed
 			x=104
 			y=8
 			w=1
 			h=3
-			states={78,0}
+			state_closed=78
 			classes = {class_openable}
 			use_dir = face_back
 		]],
@@ -437,13 +406,13 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 
 	obj_library_secret_panel = {		
 		data = [[
-			state=1
+			state=state_here
 			x=120
 			y=16
 			z=-1
 			w=1
 			h=3
-			states={80,80}
+			state_here=80
 			classes = {class_untouchable}
 			use_dir = face_back
 		]],
@@ -455,13 +424,13 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 	obj_library_door_secret = {		
 		data = [[
 			name=secret passage
-			state=1
+			state=state_here
 			x=120
 			y=16
 			z=-10
 			w=1
 			h=3
-			states={77}
+			state_here=77
 			use_dir = face_back
 		]],
 		dependent_on = obj_library_secret_panel,
@@ -477,7 +446,6 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 	obj_book = {		
 		data = [[
 			name=loose book
-			state=1
 			x=140
 			y=16
 			w=1
@@ -507,8 +475,8 @@ anim_face = 1	 -- face actor in a direction (show the turning stages of animatio
 	obj_duck = {		
 		data = [[
 			name=rubber duck
-			state=1
-			states={142}
+			state=state_here
+			state_here=142
 			trans_col=12
 			x=1
 			y=1
@@ -770,7 +738,6 @@ rooms = {
 
 
 
--- ================================================================
 -- actor definitions
 -- 
 
@@ -924,12 +891,10 @@ end
 
 
 
-
--- ################################################################
 -- scumm-8 public api functions
--- ================================================================
+-- 
 -- (you should not need to modify anything below here!)
--- ################################################################
+
 
 
 
@@ -951,7 +916,7 @@ function find_default_verb(obj)
 	if has_flag(obj.classes, "class_talkable") then
 		default_verb = "talkto"
 	elseif has_flag(obj.classes, "class_openable") then
-		if obj.state == state_closed then
+		if obj.state == "state_closed" then
 			default_verb = "open"
 		else
 			default_verb = "close"
@@ -1202,7 +1167,7 @@ end
 
 function do_anim(actor, cmd_type, cmd_value)
 	-- animate turn to face (object/actor or explicit direction)
-	if cmd_type == anim_face then
+	if cmd_type == "anim_face" then
 		
 		-- check if cmd_value is an actor/object, rather than explicit face_dir
 		if type(cmd_value) == "table" then
@@ -1228,46 +1193,59 @@ function do_anim(actor, cmd_type, cmd_value)
 
 
 
-		dirs = { "face_front", "face_left", "face_back", "face_right" }
-
-#finish this!
-
-		while actor.face_dir != cmd_value do
+		
+		dir_nums = {
+			"face_front",
+			"face_left",
+			"face_back",
+			"face_right" 
+		}
+		
+		face_dir = face_dir_vals[actor.face_dir]
+		cmd_value = face_dir_vals[cmd_value]
+		d("facedir:"..face_dir)
+		while face_dir != cmd_value do
 			-- turn to target face_dir
-			if actor.face_dir < cmd_value then
-				actor.face_dir += 1
+			if face_dir < cmd_value then
+				face_dir += 1
 			else 
-				actor.face_dir -= 1
+				face_dir -= 1
 			end
+			-- set face dir
+			actor.face_dir = dir_nums[face_dir]
 			-- is target dir left? flip?
 			actor.flip = (actor.face_dir == "face_left")
 			break_time(10)
 		end
+
+
 	end
 end
 
 -- open one (or more) doors
 function open_door(door_obj1, door_obj2)
-	if door_obj1.state == state_open then
+	d("open_door")
+	if door_obj1.state == "state_open" then
 		say_line"it's already open"
 	else
-		door_obj1.state = state_open
-		if door_obj2 then door_obj2.state = state_open end
+		door_obj1.state = "state_open"
+		if door_obj2 then door_obj2.state = "state_open" end
 	end
+	d("exit open_door")
 end
 
 -- close one (or more) doors
 function close_door(door_obj1, door_obj2)
-	if door_obj1.state == state_closed then
+	if door_obj1.state == "state_closed" then
 		say_line"it's already closed"
 	else
-		door_obj1.state = state_closed
-		if door_obj2 then door_obj2.state = state_closed end
+		door_obj1.state = "state_closed"
+		if door_obj2 then door_obj2.state = "state_closed" end
 	end
 end
 
 function come_out_door(from_door, to_door, fade_effect)
-	if from_door.state == state_open then
+	if from_door.state == "state_open" then
 		-- go to new room!
 		new_room = to_door.in_room
 
@@ -1279,20 +1257,25 @@ function come_out_door(from_door, to_door, fade_effect)
 
 
 		-- ...in opposite use direction!
-#finish this too!
+		dir_opp = { 
+			face_front="face_back", 
+			face_left="face_right", 
+			face_back="face_front",
+			face_right="face_left" 
+		}
 
 		if to_door.use_dir then
-			opp_dir = to_door.use_dir + 2
-			if opp_dir > 4 then
-				opp_dir -= 4
-			end
+			opp_dir = dir_opp[to_door.use_dir]
+			-- opp_dir = to_door.use_dir + 2
+			-- if opp_dir > 4 then
+			-- 	opp_dir -= 4
+			-- end
 		else
-		opp_dir = 1 -- front
+			opp_dir = 1 -- front
 		end
 		selected_actor.face_dir = opp_dir
-		if selected_actor.face_dir == 2 then 
-			selected_actor.flip = true 
-		end
+		-- is target dir left? flip?
+		selected_actor.flip = (selected_actor.face_dir == "face_left")
 	else
 		say_line("the door is closed")
 	end
@@ -1402,39 +1385,6 @@ function pickup_obj(obj)
 --	end
 end
 
---[[function owner_of(objname)
-	obj = find_object(objname)
-	if obj then
-		return obj.owner
-	end
-end
-
-function state_of(objname, state)
-	obj = find_object(objname)
-	if obj then
-		return obj.state
-	end
-end
-
-function set_state(objname, state)
-	obj = find_object(objname)
-	if obj then
-		obj.state = state
-	end
-end]]
---[[
--- find object by ref or name
-function find_object(name)
-	-- if object passed, just return object!
-	if type(name) == "table" then return name end
-	
-	-- todo: allow find by obj id!!
-
-	-- else look for object by unique name
-	for k,obj in pairs(room_curr.objects) do
-		if obj.name == name then return obj end
-	end
-end]]
 
 function start_script(func, bg, noun1, noun2)
 	-- create new thread for script and add to list of local_scripts (or background scripts)
@@ -1696,6 +1646,13 @@ cursor_cols = {7,12,13,13,12,7}
 ui_arrows = {
 	{ spr = 208, x = 75, y = stage_top + 60 },
 	{ spr = 240, x = 75, y = stage_top + 72 }
+}
+
+face_dir_vals = { 
+	face_front=1, 
+	face_left=2, 
+	face_back=3,
+	face_right=4 
 }
 
 
@@ -2066,7 +2023,7 @@ function input_button_pressed(button_index)
 				-- unless a diff dir specified
 				if walk_obj.use_dir then use_dir = walk_obj.use_dir end
 				-- turn to use dir				
-				do_anim(selected_actor, anim_face, use_dir)
+				do_anim(selected_actor, "anim_face", use_dir)
 			end
 			-- does current object support active verb?
 			if valid_verb(verb_curr,noun1_curr) then
@@ -2293,8 +2250,9 @@ function room_draw()
 				if not has_flag(obj.classes, "class_actor") then
 					-- object
 					if obj.states	  -- object has a state?
-					 and obj.states[obj.state]
-					 and obj.states[obj.state] > 0
+				    or (obj.state
+					   and obj[obj.state]
+					   and obj[obj.state] > 0)
 					 and (not obj.dependent_on 			-- object has a valid dependent state?
 						or obj.dependent_on.state == obj.dependent_on_state)
 					 and not obj.owner   						-- object is not "owned"
@@ -2333,7 +2291,6 @@ end
 
 
 function object_draw(obj)
-	--d("obj.name:"..obj.name)
 	-- replace colors?
 	replace_colors(obj)
 	-- allow for repeating
@@ -2341,10 +2298,13 @@ function object_draw(obj)
 	if obj.repeat_x then rx = obj.repeat_x end
 	for h = 0, rx-1 do
 		-- draw object (in its state!)
-		-- d("obj.states1:"..type(obj.states))
-		-- d("obj.states2:"..#obj.states)		
-		sprdraw(obj.states[obj.state], obj.x+(h*(obj.w*8)), obj.y, obj.w, obj.h, obj.trans_col, obj.flip_x)
-		--d(">>test")
+		local obj_spr = 0
+		if obj.states then
+			obj_spr = obj.states[obj.state]
+		else
+			obj_spr = obj[obj.state]
+		end
+		sprdraw(obj_spr, obj.x+(h*(obj.w*8)), obj.y, obj.w, obj.h, obj.trans_col, obj.flip_x)
 	end
 	--reset palette
 	pal() 
@@ -2352,6 +2312,8 @@ end
 
 -- draw actor(s)
 function actor_draw(actor)
+
+	dirnum = face_dir_vals[actor.face_dir]
 
 	if actor.moving == 1
 	 and actor.walk_anim 
@@ -2367,9 +2329,7 @@ function actor_draw(actor)
 	else
 
 		-- idle
-#finish (need to tie up "str" with spr index somehow...)
-
-		sprnum = actor.idle[actor.face_dir]
+		sprnum = actor.idle[dirnum]
 	end
 
 	-- replace colors?
@@ -2384,7 +2344,7 @@ function actor_draw(actor)
 	 and talking_actor == actor 
 	then
 			if actor.talk_tmr < 7 then
-				sprnum = actor.talk[actor.face_dir]
+				sprnum = actor.talk[dirnum]
 				sprdraw(sprnum, actor.offset_x, actor.offset_y +8, 1, 1, 
 					actor.trans_col, actor.flip, false)
 			end
