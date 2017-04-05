@@ -47,479 +47,13 @@ verb_shadcol = 1   -- shadow (dk blue)
 verb_defcol = 10   -- default action (yellow)
 
 
-
 -- 
--- object definitions
--- 
-
-	obj_fire = {
-		data = [[
-			name=fire
-			x=88
-			y=32
-			w=1
-			h=1
-			state=1
-			states={81,82,83}
-			lighting = 1
-		]],
-		dependent_on = obj_front_door_inside,
-		dependent_on_state = "state_open",
-		verbs = {
-			lookat = function()
-				say_line("it's a nice, warm fire...")
-				break_time(10)
-				do_anim(selected_actor, "anim_face", "face_front")
-				say_line("ouch! it's hot!:*stupid fire*")
-			end,
-			talkto = function()
-				say_line("'hi fire...'")
-				break_time(10)
-				do_anim(selected_actor, "anim_face", "face_front")
-				say_line("the fire didn't say hello back:burn!!")
-			end,
-			pickup = function(me)
-				pickup_obj(me)
-			end
-		}
-	}
-
-	obj_front_door_inside = {		
-		data = [[
-			name = front door
-			state = state_closed
-			x=8
-			y=16
-			z=1
-			w=1
-			h=4
-			state_closed=79
-			classes = {class_openable}
-			use_pos = pos_right
-			use_dir = face_left
-		]],
-		verbs = {
-			walkto = function(me)
-				come_out_door(me, obj_front_door)
-			end,
-			open = function(me)
-				open_door(me, obj_front_door)
-			end,
-			close = function(me)
-				close_door(me, obj_front_door)
-			end
-		}
-	}
-
-	obj_hall_door_kitchen = {		
-		data = [[
-			name = kitchen
-			state = state_open
-			x=112
-			y=16
-			w=1
-			h=4
-			use_pos = pos_left
-			use_dir = face_right
-		]],
-		verbs = {
-			walkto = function(me)
-				come_out_door(me, obj_kitchen_door_hall)
-			end
-		}
-	}
-
-	obj_bucket = {		
-		data = [[
-			name = bucket
-			state = state_open
-			x=104
-			y=48
-			w=1
-			h=1
-			state_closed=143
-			state_open = 159
-			trans_col=15
-			use_with=true
-			classes = {class_pickupable}
-		]],
-		verbs = {
-			lookat = function(me)
-				if owner_of(me) == selected_actor then
-					say_line("it is a bucket in my pocket")
-				else
-					say_line("it is a bucket")
-				end
-			end,
-			pickup = function(me)
-				pickup_obj(me)
-			end,
-			give = function(me, noun2)
-				if noun2 == purp_tentacle then
-					say_line("can you fill this up for me?")
-					say_line(purp_tentacle, "sure")
-					me.owner = purp_tentacle
-					say_line(purp_tentacle, "here ya go...")
-					me.state = "state_closed"
-					me.name = "full bucket"
-					pickup_obj(me)
-				else
-					say_line("i might need this")
-				end
-			end,
-			use = function(me, noun2)
-				if (noun2 == obj_window) then
-					obj_window.state = "state_open"
-				end
-			end
-		}
-	}
-
-	obj_spinning_top = {		
-		data = [[
-			name=spinning top
-			x=16
-			y=48
-			w=1
-			h=1
-			state=1
-			states={158,174,190}
-			col_replace={12,7}
-			trans_col=15
-		]],
-		verbs = {
-			use = function(me)
-				if script_running(room_curr.scripts.spin_top) then
-					stop_script(room_curr.scripts.spin_top)
-					me.state = 1
-				else
-					start_script(room_curr.scripts.spin_top)
-				end
-			end
-		}
-	}
-
-	obj_window = {		
-		data = [[
-			name=window
-			state=state_closed
-			x=32
-			y=8
-			w=2
-			h=2
-			state_closed=68
-			state_open=70
-			use_pos={40,57}
-			classes = {class_openable}
-		]],
-		verbs = {
-			open = function(me)
-				if not me.done_cutscene then
-					cutscene(
-						1, -- no verbs 
-						function()
-							me.done_cutscene = true
-							-- cutscene code
-							me.state = "state_open"
-							me.z = -2
-							print_line("*bang*",40,20,8,1)
-							change_room(second_room, 1)
-							selected_actor = purp_tentacle
-							walk_to(selected_actor, 
-								selected_actor.x+10, 
-								selected_actor.y)
-							say_line("what was that?!")
-							say_line("i'd better check...")
-							walk_to(selected_actor, 
-								selected_actor.x-10, 
-								selected_actor.y)
-							change_room(first_room, 1)
-							-- wait for a bit, then appear in room1
-							break_time(50)
-							put_actor_at(selected_actor, 115, 44, first_room)
-							walk_to(selected_actor, 
-								selected_actor.x-10, 
-								selected_actor.y)
-							say_line("intruder!!!")
-							do_anim(main_actor, "anim_face", purp_tentacle)
-						end,
-						-- override for cutscene
-						function()
-							--if cutscene_curr.skipped then
-							--d("override!")
-							change_room(first_room)
-							put_actor_at(purp_tentacle, 105, 44, first_room)
-							stop_talking()
-							do_anim(main_actor, "anim_face", purp_tentacle)
-						end
-					)
-				end
-				-- (code here will not run, as room change nuked "local" scripts)
-			end
-		}
-	}
-
-
-
+-- room & object definitions
 -- 
 
-	obj_kitchen_door_hall = {		
-		data = [[
-			name = hall
-			state=state_open
-			x=8
-			y=16
-			w=1
-			h=4
-			use_pos = pos_right
-			use_dir = face_left
-		]],
-		verbs = {
-			walkto = function(me)
-				come_out_door(me, obj_hall_door_kitchen)
-			end
-		}
-	}
-
-	obj_back_door = {		
-		data = [[
-			name=back door
-			state=state_closed
-			x=176
-			y=16
-			z=1
-			w=1
-			h=4
-			state_closed=79
-			flip_x=true
-			classes = {class_openable}
-			use_pos = pos_left
-			use_dir = face_right
-		]],
-		verbs = {
-			walkto = function(me)
-				come_out_door(me, obj_garden_door_kitchen)
-			end,
-			open = function(me)
-				open_door(me, obj_garden_door_kitchen)
-			end,
-			close = function(me)
-				close_door(me, obj_garden_door_kitchen)
-			end
-		}
-	}
-
--- ----
-
-	obj_rail_left = {		
-		data = [[
-			state=state_here
-			x=80
-			y=24
-			w=1
-			h=2
-			state_here=47
-			repeat_x = 8
-			classes = {class_untouchable}
-		]],
-	}
-
-	obj_rail_right = {		
-		data = [[
-			state=state_here
-			x=176
-			y=24
-			w=1
-			h=2
-			state_here=47
-			repeat_x = 8
-			classes = {class_untouchable}
-		]],
-	}
-
-	obj_front_door = {		
-		data = [[
-			name = front door
-			state=state_closed
-			x=152
-			y=8
-			w=1
-			h=3
-			state_closed=78
-			flip_x = true
-			classes = {class_openable}
-			use_dir = face_back
-		]],
-		verbs = {
-			walkto = function(me)
-				come_out_door(me, obj_front_door_inside)
-			end,
-			open = function(me)
-				open_door(me, obj_front_door_inside)
-				--camera_follow(purp_tentacle)
-			end,
-			close = function(me)
-				close_door(me, obj_front_door_inside)
-			end
-		}
-	}
-
-	obj_garden_door_kitchen = {		
-		data = [[
-			name=kitchen
-			state=state_closed
-			x=104
-			y=8
-			w=1
-			h=3
-			state_closed=78
-			classes = {class_openable}
-			use_dir = face_back
-		]],
-		verbs = {
-			walkto = function(me)
-				come_out_door(me, obj_back_door)
-			end,
-			open = function(me)
-				open_door(me, obj_back_door)
-			end,
-			close = function(me)
-				close_door(me, obj_back_door)
-			end
-		}
-	}
-
-	obj_library_secret_panel = {		
-		data = [[
-			state=state_closed
-			x=120
-			y=16
-			z=-1
-			w=1
-			h=3
-			state_closed=80
-			state_open=80
-			classes = {class_untouchable}
-			use_dir = face_back
-		]],
-		verbs = {
-		}
-	}
-
-	obj_library_door_secret = {		
-		data = [[
-			name=secret passage
-			state=state_closed
-			x=120
-			y=16
-			z=-10
-			w=1
-			h=3
-			state_closed=77
-			use_dir = face_back
-			dependent_on_state = state_open
-		]],
-		dependent_on = obj_library_secret_panel,
-		--dependent_on_state = state_open,
-		verbs = {
-			walkto = function(me)
-				change_room(title_room, 1)
-			end
-		}
-	}
-
-	obj_book = {		
-		data = [[
-			name=loose book
-			x=140
-			y=16
-			w=1
-			h=1
-			use_pos={140,60}
-			classes = {class_pickupable}
-		]],
-		verbs = {
-			lookat = function(me)
-				say_line("this book sticks out")
-			end,
-			pull = function(me)
-				if obj_library_secret_panel.state != "state_open" then
-					obj_library_secret_panel.state="state_open"
-					shake(true)
-					while (obj_library_secret_panel.y > -8) do
-						obj_library_secret_panel.y -= 1
-						break_time(10)
-					end
-					shake(false)
-				end
-			end,
-		}
-	}
-
-	obj_duck = {		
-		data = [[
-			name=rubber duck
-			state=state_here
-			state_here=142
-			trans_col=12
-			x=1
-			y=1
-			w=1
-			h=1
-			classes = {class_pickupable}
-		]],
-		verbs = {
-			pickup = function(me)
-				pickup_obj(me)
-			end,
-		}
-	}
-
-
-	obj_switch_tent = {		
-		data = [[
-			name=purple tentacle
-			state=state_here
-			state_here=170
-			trans_col=15
-			x=1
-			y=1
-			w=1
-			h=1
-		]],
-		verbs = {
-			use = function(me)
-				selected_actor = purp_tentacle
-				camera_follow(purp_tentacle)
-			end
-		}
-	}
-
-	obj_switch_player= {		
-		data = [[
-			name=humanoid
-			state=state_here
-			state_here=209
-			trans_col=11
-			x=1
-			y=1
-			w=1
-			h=1
-		]],
-		verbs = {
-			use = function(me)
-				selected_actor = main_actor
-				camera_follow(main_actor)
-			end
-		}
-	}
-
-
--- 
--- room definitions
--- 
-
-	title_room = {
+-- title "room"
+	-- objects
+	rm_title = {
 		data = [[
 			map = {0,8}
 		]],
@@ -536,22 +70,22 @@ verb_defcol = 10   -- default action (yellow)
 					cutscene(
 						3, -- no verbs & no follow, 
 						function()
---[[
+
 							-- intro
 							break_time(50)
 							print_line("in a galaxy not far away...",64,45,8,1)
-]]
-		--[[					change_room(first_room, 1)
+
+		--[[			change_room(rm_hall, 1)
 							shake(true)
-							start_script(first_room.scripts.spin_top,false,true)
+							start_script(rm_hall.scripts.spin_top,false,true)
 							print_line("cozy fireplaces...",90,20,8,1)
 							print_line("(just look at it!)",90,20,8,1)
 							shake(false)]]
---[[
-							-- part 2
-							change_room(second_room, 1)
+
+		--[[					-- part 2
+							change_room(rm_kitchen, 1)
 							print_line("strange looking aliens...",30,20,8,1,false,true)
-							put_actor_at(purp_tentacle, 130, purp_tentacle.y, second_room)
+							put_actor_at(purp_tentacle, 130, purp_tentacle.y, rm_kitchen)
 							walk_to(purp_tentacle, 
 								purp_tentacle.x-30, 
 								purp_tentacle.y)
@@ -559,24 +93,22 @@ verb_defcol = 10   -- default action (yellow)
 							say_line(purp_tentacle, "what did you call me?!")
 
 							-- part 3
-							change_room(back_garden, 1)
+							change_room(rm_garden, 1)
 							print_line("and even swimming pools!",90,20,8,1,false,true)
 							camera_at(200)
 							camera_pan_to(0)
 							wait_for_camera()
-							print_line("quack!",45,60,10,1)
-]]
-							-- part 4
-							change_room(outside_room, 1)
-							
---[[
-							-- outro
-							--break_time(25)
-							change_room(title_room, 1)
-						
+							print_line("quack!",45,60,10,1)]]
 
-							fades(1,1)	-- fade out
-							break_time(100)]]
+							-- part 4
+							change_room(rm_outside, 1)
+							
+
+							-- outro
+							-- change_room(rm_title, 1)
+
+							-- fades(1,1)	-- fade out
+							-- break_time(100)
 							
 						end) -- end cutscene
 
@@ -588,59 +120,194 @@ verb_defcol = 10   -- default action (yellow)
 	}
 
 
-	outside_room = {
-		data = [[
-			map = {0,24,31,31}
-		]],
-		objects = {
-			obj_rail_left,
-			obj_rail_right,
-			obj_front_door
-		},
-		enter = function(me)
-			-- 
-			-- initialise game in first room entry...
-			-- 
-			if not me.done_intro then
-				-- don't do this again
-				me.done_intro = true
-				-- set which actor the player controls by default
-				selected_actor = main_actor
-				-- init actor
-				put_actor_at(selected_actor, 144, 36, outside_room)
-				-- make camera follow player
-				-- (setting now, will be re-instated after cutscene)
-				camera_follow(selected_actor)
-				-- do cutscene
-				cutscene(
-					1, -- no verbs
-					-- cutscene code (hides ui, etc.)
-					function()
-						camera_at(0)
-						camera_pan_to(selected_actor)
-						wait_for_camera()
-						say_line("let's do this")
+-- hall
+	-- objects
+		obj_front_door_inside = {		
+			data = [[
+				name = front door
+				state = state_closed
+				x=8
+				y=16
+				z=1
+				w=1
+				h=4
+				state_closed=79
+				classes = {class_openable}
+				use_pos = pos_right
+				use_dir = face_left
+			]],
+			verbs = {
+				walkto = function(me)
+					come_out_door(me, obj_front_door)
+				end,
+				open = function(me)
+					open_door(me, obj_front_door)
+				end,
+				close = function(me)
+					close_door(me, obj_front_door)
+				end
+			}
+		}
+
+		obj_hall_door_kitchen = {		
+			data = [[
+				name = kitchen
+				state = state_open
+				x=112
+				y=16
+				w=1
+				h=4
+				use_pos = pos_left
+				use_dir = face_right
+			]],
+			verbs = {
+				walkto = function(me)
+					come_out_door(me, obj_kitchen_door_hall)
+				end
+			}
+		}
+
+		obj_bucket = {		
+			data = [[
+				name = bucket
+				state = state_open
+				x=104
+				y=48
+				w=1
+				h=1
+				state_closed=143
+				state_open = 159
+				trans_col=15
+				use_with=true
+				classes = {class_pickupable}
+			]],
+			verbs = {
+				lookat = function(me)
+					if owner_of(me) == selected_actor then
+						say_line("it is a bucket in my pocket")
+					else
+						say_line("it is a bucket")
 					end
-				)
-			end
-		end,
-		exit = function(me)
-			-- todo: anything here?
-		end,
-	}
+				end,
+				pickup = function(me)
+					pickup_obj(me)
+				end,
+				give = function(me, noun2)
+					if noun2 == purp_tentacle then
+						say_line("can you fill this up for me?")
+						say_line(purp_tentacle, "sure")
+						me.owner = purp_tentacle
+						say_line(purp_tentacle, "here ya go...")
+						me.state = "state_closed"
+						me.name = "full bucket"
+						pickup_obj(me)
+					else
+						say_line("i might need this")
+					end
+				end,
+				use = function(me, noun2)
+					if (noun2 == obj_window) then
+						obj_window.state = "state_open"
+					end
+				end
+			}
+		}
+
+		obj_spinning_top = {		
+			data = [[
+				name=spinning top
+				x=16
+				y=48
+				w=1
+				h=1
+				state=1
+				states={158,174,190}
+				col_replace={12,7}
+				trans_col=15
+			]],
+			verbs = {
+				use = function(me)
+					if script_running(room_curr.scripts.spin_top) then
+						stop_script(room_curr.scripts.spin_top)
+						me.state = 1
+					else
+						start_script(room_curr.scripts.spin_top)
+					end
+				end
+			}
+		}
+
+		obj_window = {		
+			data = [[
+				name=window
+				state=state_closed
+				x=32
+				y=8
+				w=2
+				h=2
+				state_closed=68
+				state_open=70
+				use_pos={40,57}
+				classes = {class_openable}
+			]],
+			verbs = {
+				open = function(me)
+					if not me.done_cutscene then
+						cutscene(
+							1, -- no verbs 
+							function()
+								me.done_cutscene = true
+								-- cutscene code
+								me.state = "state_open"
+								me.z = -2
+								print_line("*bang*",40,20,8,1)
+								change_room(rm_kitchen, 1)
+								selected_actor = purp_tentacle
+								walk_to(selected_actor, 
+									selected_actor.x+10, 
+									selected_actor.y)
+								say_line("what was that?!")
+								say_line("i'd better check...")
+								walk_to(selected_actor, 
+									selected_actor.x-10, 
+									selected_actor.y)
+								change_room(rm_hall, 1)
+								-- wait for a bit, then appear in room1
+								break_time(50)
+								put_actor_at(selected_actor, 115, 44, rm_hall)
+								walk_to(selected_actor, 
+									selected_actor.x-10, 
+									selected_actor.y)
+								say_line("intruder!!!")
+								do_anim(main_actor, "anim_face", purp_tentacle)
+							end,
+							-- override for cutscene
+							function()
+								--if cutscene_curr.skipped then
+								--d("override!")
+								change_room(rm_hall)
+								put_actor_at(purp_tentacle, 105, 44, rm_hall)
+								stop_talking()
+								do_anim(main_actor, "anim_face", purp_tentacle)
+							end
+						)
+					end
+					-- (code here will not run, as room change nuked "local" scripts)
+				end
+			}
+		}
 
 
-	first_room = {
+	rm_hall = {
 		data = [[
-			map = {0,0}
-			lighting = 1
+			map = {16,16,39,23}
 		]],
 		objects = {
 			obj_front_door_inside,
 			obj_hall_door_kitchen,
 			obj_bucket,
 			obj_spinning_top,
-			obj_window
+			--obj_window
 		},
 		enter = function(me)
 			
@@ -678,36 +345,108 @@ verb_defcol = 10   -- default action (yellow)
 		},
 	}
 
-	second_room = {
-		data = [[
-			map = {16,0,39,7}
-		]],
-		objects = {
-			obj_kitchen_door_hall,
-			obj_back_door
-		},
-		enter = function()
-				-- todo: anything here?
-		end,
-		exit = function()
-			-- todo: anything here?
-		end,
-	}
 
-	back_garden = {
-		data = [[
-			map = {40,0,63,7}
-		]],
-		objects = {
-			obj_garden_door_kitchen
-		},
-		enter = function()
-				-- todo: anything here?
-		end,
-		exit = function()
-			-- todo: anything here?
-		end,
-	}
+-- library
+	-- objects
+		obj_fire = {
+			data = [[
+				name=fire
+				x=88
+				y=32
+				w=1
+				h=1
+				state=1
+				states={81,82,83}
+				lighting = 1
+			]],
+			dependent_on = obj_front_door_inside,
+			dependent_on_state = "state_open",
+			verbs = {
+				lookat = function()
+					say_line("it's a nice, warm fire...")
+					break_time(10)
+					do_anim(selected_actor, "anim_face", "face_front")
+					say_line("ouch! it's hot!:*stupid fire*")
+				end,
+				talkto = function()
+					say_line("'hi fire...'")
+					break_time(10)
+					do_anim(selected_actor, "anim_face", "face_front")
+					say_line("the fire didn't say hello back:burn!!")
+				end,
+				pickup = function(me)
+					pickup_obj(me)
+				end
+			}
+		}
+
+		obj_library_secret_panel = {		
+			data = [[
+				state=state_closed
+				x=120
+				y=16
+				z=-1
+				w=1
+				h=3
+				state_closed=80
+				state_open=80
+				classes = {class_untouchable}
+				use_dir = face_back
+			]],
+			verbs = {
+			}
+		}
+
+		obj_library_door_secret = {		
+			data = [[
+				name=secret passage
+				state=state_closed
+				x=120
+				y=16
+				z=-10
+				w=1
+				h=3
+				state_closed=77
+				use_dir = face_back
+				dependent_on_state = state_open
+			]],
+			dependent_on = obj_library_secret_panel,
+			--dependent_on_state = state_open,
+			verbs = {
+				walkto = function(me)
+					change_room(rm_title, 1)
+				end
+			}
+		}
+
+		obj_book = {		
+			data = [[
+				name=loose book
+				x=140
+				y=16
+				w=1
+				h=1
+				use_pos={140,60}
+				classes = {class_pickupable}
+			]],
+			verbs = {
+				lookat = function(me)
+					say_line("this book sticks out")
+				end,
+				pull = function(me)
+					if obj_library_secret_panel.state != "state_open" then
+						obj_library_secret_panel.state="state_open"
+						shake(true)
+						while (obj_library_secret_panel.y > -8) do
+							obj_library_secret_panel.y -= 1
+							break_time(10)
+						end
+						shake(false)
+					end
+				end,
+			}
+		}
+
 
 	rm_library = {
 		data = [[
@@ -742,7 +481,255 @@ verb_defcol = 10   -- default action (yellow)
 		}
 	}
 	
-	-- the void, a place to put objects/actors when not in a room
+
+-- kitchen
+	-- objects
+		obj_kitchen_door_hall = {		
+			data = [[
+				name = hall
+				state=state_open
+				x=8
+				y=16
+				w=1
+				h=4
+				use_pos = pos_right
+				use_dir = face_left
+			]],
+			verbs = {
+				walkto = function(me)
+					come_out_door(me, obj_hall_door_kitchen)
+				end
+			}
+		}
+
+		obj_back_door = {		
+			data = [[
+				name=back door
+				state=state_closed
+				x=176
+				y=16
+				z=1
+				w=1
+				h=4
+				state_closed=79
+				flip_x=true
+				classes = {class_openable}
+				use_pos = pos_left
+				use_dir = face_right
+			]],
+			verbs = {
+				walkto = function(me)
+					come_out_door(me, obj_garden_door_kitchen)
+				end,
+				open = function(me)
+					open_door(me, obj_garden_door_kitchen)
+				end,
+				close = function(me)
+					close_door(me, obj_garden_door_kitchen)
+				end
+			}
+		}
+
+	rm_kitchen = {
+		data = [[
+			map = {16,0,39,7}
+		]],
+		objects = {
+			obj_kitchen_door_hall,
+			obj_back_door
+		},
+		enter = function()
+				-- todo: anything here?
+		end,
+		exit = function()
+			-- todo: anything here?
+		end,
+	}
+
+-- outside (front)
+	-- objects
+		obj_rail_left = {		
+			data = [[
+				state=state_here
+				x=80
+				y=24
+				w=1
+				h=2
+				state_here=47
+				repeat_x = 8
+				classes = {class_untouchable}
+			]],
+		}
+
+		obj_rail_right = {		
+			data = [[
+				state=state_here
+				x=176
+				y=24
+				w=1
+				h=2
+				state_here=47
+				repeat_x = 8
+				classes = {class_untouchable}
+			]],
+		}
+
+		obj_front_door = {		
+			data = [[
+				name = front door
+				state=state_closed
+				x=152
+				y=8
+				w=1
+				h=3
+				state_closed=78
+				flip_x = true
+				classes = {class_openable}
+				use_dir = face_back
+			]],
+			verbs = {
+				walkto = function(me)
+					come_out_door(me, obj_front_door_inside)
+				end,
+				open = function(me)
+					open_door(me, obj_front_door_inside)
+					--camera_follow(purp_tentacle)
+				end,
+				close = function(me)
+					close_door(me, obj_front_door_inside)
+				end
+			}
+		}
+
+	rm_outside = {
+		data = [[
+			map = {0,24,31,31}
+		]],
+		objects = {
+			obj_rail_left,
+			obj_rail_right,
+			obj_front_door
+		},
+		enter = function(me)
+			-- 
+			-- initialise game in first room entry...
+			-- 
+			if not me.done_intro then
+				-- don't do this again
+				me.done_intro = true
+				-- set which actor the player controls by default
+				selected_actor = main_actor
+				-- init actor
+				put_actor_at(selected_actor, 144, 36, rm_outside)
+				-- make camera follow player
+				-- (setting now, will be re-instated after cutscene)
+				camera_follow(selected_actor)
+				-- do cutscene
+				cutscene(
+					1, -- no verbs
+					-- cutscene code (hides ui, etc.)
+					function()
+						camera_at(0)
+						camera_pan_to(selected_actor)
+						wait_for_camera()
+						say_line("let's do this")
+					end
+				)
+			end
+		end,
+		exit = function(me)
+			-- todo: anything here?
+		end,
+	}
+
+-- back garden
+	-- objects
+		obj_garden_door_kitchen = {		
+			data = [[
+				name=kitchen
+				state=state_closed
+				x=104
+				y=8
+				w=1
+				h=3
+				state_closed=78
+				classes = {class_openable}
+				use_dir = face_back
+			]],
+			verbs = {
+				walkto = function(me)
+					come_out_door(me, obj_back_door)
+				end,
+				open = function(me)
+					open_door(me, obj_back_door)
+				end,
+				close = function(me)
+					close_door(me, obj_back_door)
+				end
+			}
+		}
+
+	rm_garden = {
+		data = [[
+			map = {40,0,63,7}
+		]],
+		objects = {
+			obj_garden_door_kitchen
+		},
+		enter = function()
+				-- todo: anything here?
+		end,
+		exit = function()
+			-- todo: anything here?
+		end,
+	}
+
+
+
+
+-- "the void" (room)
+-- a place to put objects/actors when not in a room
+	
+	-- objects
+
+		obj_switch_tent = {		
+			data = [[
+				name=purple tentacle
+				state=state_here
+				state_here=170
+				trans_col=15
+				x=1
+				y=1
+				w=1
+				h=1
+			]],
+			verbs = {
+				use = function(me)
+					selected_actor = purp_tentacle
+					camera_follow(purp_tentacle)
+				end
+			}
+		}
+
+		obj_switch_player= {		
+			data = [[
+				name=humanoid
+				state=state_here
+				state_here=209
+				trans_col=11
+				x=1
+				y=1
+				w=1
+				h=1
+			]],
+			verbs = {
+				use = function(me)
+					selected_actor = main_actor
+					camera_follow(main_actor)
+				end
+			}
+		}
+
 	rm_void = {
 		data = [[
 			map = {0,0}
@@ -754,13 +741,44 @@ verb_defcol = 10   -- default action (yellow)
 	}
 
 
+-- ----
+
+	
+
+	obj_duck = {		
+		data = [[
+			name=rubber duck
+			state=state_here
+			state_here=142
+			trans_col=12
+			x=1
+			y=1
+			w=1
+			h=1
+			classes = {class_pickupable}
+		]],
+		verbs = {
+			pickup = function(me)
+				pickup_obj(me)
+			end,
+		}
+	}
+
+
+
+-- 
+-- room definitions
+-- 
+
+	
+
 rooms = {
 	rm_void,
-	title_room,
-	outside_room,
-	first_room,
-	second_room,
-	back_garden,
+	rm_title,
+	rm_outside,
+	rm_hall,
+	rm_kitchen,
+	rm_garden,
 	rm_library
 }
 
@@ -815,7 +833,7 @@ rooms = {
 			face_dir = face_front
 			use_pos = pos_left
 		]],
-		in_room = second_room,
+		in_room = rm_kitchen,
 		inventory = {
 			obj_switch_player
 		},
@@ -899,7 +917,7 @@ function startup_script()
 			-- 
 
 	--change_room(rm_library, 1) -- iris fade
-	change_room(title_room, 1) -- iris fade
+	change_room(rm_title, 1) -- iris fade
 end
 
 
@@ -1513,15 +1531,6 @@ function print_line(msg, x, y, col, align, use_caps, dont_wait_msg)
 
 	local col=col or 7 		-- default to white
 	local align=align or 0	-- default to no align
-
-	--d(msg)
-	-- default max width (unless hit a screen edge)
-	--local lines = {}
-	--local curchar = ""
-	--local msg_left = "" --used for splitting messages with ";"
-	
-	--longest_line=0
-	-- auto-wrap
 	-- calc max line width based on x-pos/available space
 	local screen_space = min(x -cam_x, 127 - (x -cam_x))
 	-- (or no less than min length)
@@ -1659,14 +1668,6 @@ function wait_for_actor(actor)
 end
 
 function proximity(obj1, obj2)
-	-- check for name params
---[[	if type(obj1) == "string" then
-		obj1 = find_object(obj1)
-	end
-	if type(obj2) == "string" then
-		obj2 = find_object(obj2)
-	end]]
-
 	-- calc dist between objects
 	if obj1.in_room == obj2.in_room then
 		local distance = sqrt((obj1.x - obj2.x) ^ 2 + (obj1.y - obj2.y) ^ 2)
@@ -1678,7 +1679,7 @@ function proximity(obj1, obj2)
 end
 
 
--- ================================================================
+-- 
 -- internal functions
 -- 
 
@@ -3332,10 +3333,10 @@ __map__
 0000000000100000002000000000000011313131313131251515151515151535313131313131312115151515151515155070707070707070707070707070706050707070707070707070707070707060507070707070707070707070707070605070707070707070707070707070706050707070707070707070707070707060
 2000000000000000000020000000000031313131313131313131313131313131313131313131313115151515151515157070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070
 4646464848484848484848484846464607070708080808080808080808062605080808080807070748484848484646464646465656565656565656565646464646464648484848484848484848464646464646565656565656565656564646464646464848484848484848484846464646464656565656565656565656464646
-4646464848484848484848484846464607070708080808080808080808002626080808080807070748484848484646464646465656565656565656565646464646464648484848484848484848464646464646565656565656565656564646464646464848484848484848484846464646464656565656565656565656464646
+46464648484848484848484848464646070707080808080808080808080b2626080808080807070748484848484646464646465656565656565656565646464646464648484848484848484848464646464646565656565656565656564646464646464848484848484848484846464646464656565656565656565656464646
 4600464848484848484848484846004607000708080800080808080808162626080808080807000748484848484600464600465656565656565656565646004646004648484848484848484848460046460046565656565656565656564600464600464848484848484848484846004646004656565656565656565656460046
 4600464848484848484848484846004607000760606000606060606016262636606060606007000748484848484600464600465656565656565656565646004646004648484848484848484848460046460046565656565656565656564600464600464848484848484848484846004646004656565656565656565656460046
-4600464848484848484848484846004607000770707000707070701626263676707070707007000748484848484600464600465656565656565656565646004646004648484848484848484848460046460046565656565656565656564600464600464848484848484848484846004646004656565656565656565656460046
+460046484848484848484848484600460700077070700070707070162626361b707070707007000748484848484600464600465656565656565656565646004646004648484848484848484848460046460046565656565656565656564600464600464848484848484848484846004646004656565656565656565656460046
 4640507070707070707070707060404607011131313131313131313131313131313131313121010770707070706040464640507070707070707070707060404646405070707070707070707070604046464050707070707070707070706040464640507070707070707070707060404646405070707070707070707070604046
 5070707070707070707070707070706011313131313131251515151515151535313131313131312170707070707070605070707070707070707070707070706050707070707070707070707070707060507070707070707070707070707070605070707070707070707070707070706050707070707070707070707070707060
 7070707070707070707070707070707031313131313131313131313131313131313131313131313170707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070
