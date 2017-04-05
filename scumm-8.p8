@@ -16,7 +16,7 @@ __lua__
 show_debuginfo = false
 show_collision = false
 --show_pathfinding = true
-show_perfinfo = true
+show_perfinfo = false
 enable_mouse = true
 d = printh
 
@@ -536,11 +536,11 @@ verb_defcol = 10   -- default action (yellow)
 					cutscene(
 						3, -- no verbs & no follow, 
 						function()
-
+--[[
 							-- intro
 							break_time(50)
 							print_line("in a galaxy not far away...",64,45,8,1)
-
+]]
 		--[[					change_room(first_room, 1)
 							shake(true)
 							start_script(first_room.scripts.spin_top,false,true)
@@ -2392,14 +2392,13 @@ function actor_draw(actor)
 
 	--reset palette
 	pal()
-
-	--pset(actor.x, actor.y+stage_top, 8)
 end
 
 function command_draw()
 	-- draw current command
 	command = ""
 	cmd_col = 12
+	verb_curr_ref = verb_curr[2] 
 
 	if not executing_cmd then
 		if verb_curr then
@@ -2407,9 +2406,9 @@ function command_draw()
 		end
 		if noun1_curr then
 			command = command.." "..noun1_curr.name
-			if verb_curr[2] == "use" then
+			if verb_curr_ref == "use" then
 				command = command.." with"
-			elseif verb_curr[2] == "give" then
+			elseif verb_curr_ref == "give" then
 				command = command.." to"
 			end
 		end
@@ -2418,7 +2417,11 @@ function command_draw()
 		elseif hover_curr_object 
 		  and hover_curr_object.name != ""
 			-- don't show use object with itself!
-			and ( not noun1_curr or (noun1_curr != hover_curr_object) ) then
+			and ( not noun1_curr or (noun1_curr != hover_curr_object) )
+			-- or walk-to objs in inventory!
+			and ( not hover_curr_object.owner 
+							or verb_curr_ref != get_verb(verb_default)[2] )
+		then
 			command = command.." "..hover_curr_object.name
 		end
 		cmd_curr = command
@@ -2511,9 +2514,7 @@ function ui_draw()
 			rectfill(xpos-1, stage_top+ypos-1, xpos+8, stage_top+ypos+8, 1)
 
 			obj = selected_actor.inventory[start_pos+ipos]
-			d("inv obj#:"..#selected_actor.inventory)
 			if obj then
-				d("inv obj")
 				-- something to draw
 				obj.x, obj.y = xpos, ypos
 				-- draw object/sprite
