@@ -13,7 +13,7 @@ __lua__
 
 
 -- debugging
-show_debuginfo = false
+show_debuginfo = true
 show_collision = false
 --show_pathfinding = true
 show_perfinfo = false
@@ -119,7 +119,6 @@ verb_defcol = 10   -- default action (yellow)
 		end,
 	}
 
-
 -- hall
 	-- objects
 		obj_front_door_inside = {		
@@ -145,6 +144,26 @@ verb_defcol = 10   -- default action (yellow)
 				end,
 				close = function(me)
 					close_door(me, obj_front_door)
+				end
+			}
+		}
+
+		obj_hall_door_library = {		
+			data = [[
+				name=library
+				state=state_open
+				x=48
+				y=16
+				w=1
+				h=3
+				use_dir = face_back
+			]],
+			verbs = {
+				walkto = function(me)
+					come_out_door(me, obj_library_door_hall)
+				end,
+				open = function(me)
+					open_door(me, obj_library_door_hall)
 				end
 			}
 		}
@@ -344,7 +363,6 @@ verb_defcol = 10   -- default action (yellow)
 			end
 		},
 	}
-
 
 -- library
 	-- objects
@@ -1865,7 +1883,7 @@ function game_draw()
 		print("mem: "..flr(stat(0)/1024*100).."%", 0, stage_top - 8, 8)
 	end
 	if show_debuginfo then 
-		print("x: "..cursor_x.." y:"..cursor_y-stage_top, 80, stage_top - 8, 8) 
+		print("x: "..cursor_x+cam_x.." y:"..cursor_y-stage_top, 80, stage_top - 8, 8) 
 	end
 
 	-- draw active/speech text
@@ -2231,34 +2249,6 @@ function room_draw()
 	-- set room background col (or black by default)
 	rectfill(0, stage_top, 127, stage_top+64, room_curr.bg_col or 0)
 
-
-	-- debug walkable areas
-	-- 
-	-- if show_pathfinding then
-	-- 	actor_cell_pos = getcellpos(selected_actor)
-
-	-- 	celx = flr((cursor_x + cam_x) /8) + room_curr.map_x
-	-- 	cely = flr((cursor_y - stage_top)/8 ) + room_curr.map_y
-	-- 	target_cell_pos = { celx, cely }
-
-	-- 	path = find_path(actor_cell_pos, target_cell_pos)
-
-	-- 	-- finally, add our destination to list
-	-- 	click_cell = getcellpos({x=(cursor_x + cam_x), y=(cursor_y - stage_top)})
-	-- 	if is_cell_walkable(click_cell[1], click_cell[2]) then
-	-- 	--if (#path>0) then
-	-- 		add(path, click_cell)
-	-- 	end
-
-	-- 	for p in all(path) do
-	-- 		--d("  > "..p[1]..","..p[2])
-	-- 		rect(
-	-- 			(p[1]-room_curr.map_x)*8, 
-	-- 			stage_top+(p[2]-room_curr.map_y)*8, 
-	-- 			(p[1]-room_curr.map_x)*8+7, 
-	-- 			stage_top+(p[2]-room_curr.map_y)*8+7, 11)
-	-- 	end
-	-- end
 
 
 	-- draw each zplane, from back to front
@@ -2681,14 +2671,6 @@ function _center_camera(val)
 end
 
 
-
--- returns whether room map cel at position is "walkable"
--- function iswalkable(x, y)
--- 		-- celx = flr(x/8) + room_curr.map_x
--- 		-- cely = flr(y/8) + room_curr.map_y
--- 		-- walkable = is_cell_walkable(celx, cely)
--- 		return walkable
--- end
 
 function getcellpos(obj)
 	local celx = flr(obj.x/8) + room_curr.map[1] --map_x
