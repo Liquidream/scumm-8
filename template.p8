@@ -13,6 +13,7 @@ __lua__
 -- now 6805 tokens (after also converting flags/enums to strings)
 -- now 6845 tokens (after adding switch chars via inventory)
 -- now 6944 tokens (after adding in landing & error reporting)
+-- now 6977 tokens (after adding new use_pos & error check for nil doors)
 
 
 -- debugging
