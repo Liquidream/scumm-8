@@ -752,6 +752,7 @@ verb_defcol = 10   -- default action (yellow)
 					y=56
 					w=3
 					h=2
+					use_pos = pos_above
 					use_dir = face_front
 				]],
 				verbs = {

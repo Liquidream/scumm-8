@@ -1214,6 +1214,9 @@ function get_use_pos(obj)
 	elseif obj_use_pos == "pos_right" then
 		x = obj.x + (obj.w*8)-cam_x
 		y = obj.y + ((obj.h*8) -2)
+	
+	-- else "pos_above"
+	
 	end
 	
 	return {x=x,y=y}
