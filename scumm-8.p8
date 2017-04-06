@@ -294,7 +294,6 @@ verb_defcol = 10   -- default action (yellow)
 				]],
 				verbs = {
 					walkto = function(me)
-						d("here!")
 						come_out_door(me, obj_kitchen_door_hall)
 					end
 				}
