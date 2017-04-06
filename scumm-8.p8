@@ -1207,7 +1207,7 @@ function get_use_pos(obj)
 			y += 1
 		else
 			-- object pos
-			x -= -2
+			x -= 2
 			y += ((obj.h*8) -2)
 		end
 
