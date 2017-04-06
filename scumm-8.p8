@@ -2234,7 +2234,7 @@ function recalc_zplane(obj)
 	else
 		ypos = obj.y + (obj.h*8)
 	end
-	zplane = flr(ypos - stage_top)
+	zplane = flr(ypos) --  - stage_top)
 
 	if obj.z then
 		zplane = obj.z
