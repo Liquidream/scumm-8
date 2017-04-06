@@ -55,7 +55,7 @@ verb_defcol = 10   -- default action (yellow)
 	-- objects
 	rm_title = {
 		data = [[
-			map = {0,8}
+			map = {0,16}
 		]],
 		objects = {
 		},
@@ -319,7 +319,7 @@ verb_defcol = 10   -- default action (yellow)
 
 	rm_hall = {
 		data = [[
-			map = {16,16,39,23}
+			map = {32,24,55,31}
 		]],
 		objects = {
 			obj_front_door_inside,
@@ -468,7 +468,7 @@ verb_defcol = 10   -- default action (yellow)
 
 	rm_library = {
 		data = [[
-			map = {16,8,39,15}
+			map = {56,24,79,31}
 			trans_col = 10
 			col_replace={7,4}
 		]],
@@ -550,7 +550,7 @@ verb_defcol = 10   -- default action (yellow)
 
 	rm_kitchen = {
 		data = [[
-			map = {16,0,39,7}
+			map = {80,24,103,31}
 		]],
 		objects = {
 			obj_kitchen_door_hall,
@@ -689,7 +689,7 @@ verb_defcol = 10   -- default action (yellow)
 
 	rm_garden = {
 		data = [[
-			map = {40,0,63,7}
+			map = {104,24,127,31}
 		]],
 		objects = {
 			obj_garden_door_kitchen
@@ -1883,7 +1883,7 @@ function game_draw()
 		print("mem: "..flr(stat(0)/1024*100).."%", 0, stage_top - 8, 8)
 	end
 	if show_debuginfo then 
-		print("x: "..cursor_x+cam_x.." y:"..cursor_y-stage_top, 80, stage_top - 8, 8) 
+		print("x: "..flr(cursor_x+cam_x).." y:"..cursor_y-stage_top, 80, stage_top - 8, 8) 
 	end
 
 	-- draw active/speech text
