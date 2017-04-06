@@ -72,9 +72,8 @@ verb_defcol = 10   -- default action (yellow)
 						function()
 
 							-- intro
-							break_time(50)
-							print_line("in a galaxy not far away...",64,45,8,1)
-
+		--[[					break_time(50)
+							print_line("in a galaxy not far away...",64,45,8,1)]]
 		--[[			change_room(rm_hall, 1)
 							shake(true)
 							start_script(rm_hall.scripts.spin_top,false,true)
@@ -119,588 +118,559 @@ verb_defcol = 10   -- default action (yellow)
 		end,
 	}
 
--- hall
-	-- objects
-		obj_front_door_inside = {		
-			data = [[
-				name = front door
-				state = state_closed
-				x=8
-				y=16
-				z=1
-				w=1
-				h=4
-				state_closed=79
-				classes = {class_openable}
-				use_pos = pos_right
-				use_dir = face_left
-			]],
-			verbs = {
-				walkto = function(me)
-					come_out_door(me, obj_front_door)
-				end,
-				open = function(me)
-					open_door(me, obj_front_door)
-				end,
-				close = function(me)
-					close_door(me, obj_front_door)
-				end
-			}
-		}
 
-		obj_hall_door_library = {		
-			data = [[
-				name=library
-				state=state_open
-				x=48
-				y=16
-				w=1
-				h=3
-				use_dir = face_back
-			]],
-			verbs = {
-				walkto = function(me)
-					come_out_door(me, obj_library_door_hall)
-				end,
-				open = function(me)
-					open_door(me, obj_library_door_hall)
-				end
-			}
-		}
+-- [ ground floor ]
 
-		obj_hall_door_kitchen = {		
-			data = [[
-				name = kitchen
-				state = state_open
-				x=112
-				y=16
-				w=1
-				h=4
-				use_pos = pos_left
-				use_dir = face_right
-			]],
-			verbs = {
-				walkto = function(me)
-					come_out_door(me, obj_kitchen_door_hall)
-				end
+	-- outside (front)
+		-- objects
+			obj_rail_left = {		
+				data = [[
+					state=state_here
+					x=80
+					y=24
+					w=1
+					h=2
+					state_here=47
+					repeat_x = 8
+					classes = {class_untouchable}
+				]],
 			}
-		}
 
-		obj_bucket = {		
-			data = [[
-				name = bucket
-				state = state_open
-				x=104
-				y=48
-				w=1
-				h=1
-				state_closed=143
-				state_open = 159
-				trans_col=15
-				use_with=true
-				classes = {class_pickupable}
-			]],
-			verbs = {
-				lookat = function(me)
-					if owner_of(me) == selected_actor then
-						say_line("it is a bucket in my pocket")
-					else
-						say_line("it is a bucket")
+			obj_rail_right = {		
+				data = [[
+					state=state_here
+					x=176
+					y=24
+					w=1
+					h=2
+					state_here=47
+					repeat_x = 8
+					classes = {class_untouchable}
+				]],
+			}
+
+			obj_front_door = {		
+				data = [[
+					name = front door
+					state=state_closed
+					x=152
+					y=8
+					w=1
+					h=3
+					state_closed=78
+					flip_x = true
+					classes = {class_openable}
+					use_dir = face_back
+				]],
+				verbs = {
+					walkto = function(me)
+						come_out_door(me, obj_front_door_inside)
+					end,
+					open = function(me)
+						open_door(me, obj_front_door_inside)
+						--camera_follow(purp_tentacle)
+					end,
+					close = function(me)
+						close_door(me, obj_front_door_inside)
 					end
-				end,
-				pickup = function(me)
-					pickup_obj(me)
-				end,
-				give = function(me, noun2)
-					if noun2 == purp_tentacle then
-						say_line("can you fill this up for me?")
-						say_line(purp_tentacle, "sure")
-						me.owner = purp_tentacle
-						say_line(purp_tentacle, "here ya go...")
-						me.state = "state_closed"
-						me.name = "full bucket"
-						pickup_obj(me)
-					else
-						say_line("i might need this")
-					end
-				end,
-				use = function(me, noun2)
-					if (noun2 == obj_window) then
-						obj_window.state = "state_open"
-					end
-				end
+				}
 			}
-		}
 
-		obj_spinning_top = {		
+		rm_outside = {
 			data = [[
-				name=spinning top
-				x=16
-				y=48
-				w=1
-				h=1
-				state=1
-				states={158,174,190}
-				col_replace={12,7}
-				trans_col=15
+				map = {0,24,31,31}
 			]],
-			verbs = {
-				use = function(me)
-					if script_running(room_curr.scripts.spin_top) then
-						stop_script(room_curr.scripts.spin_top)
-						me.state = 1
-					else
-						start_script(room_curr.scripts.spin_top)
-					end
+			objects = {
+				obj_rail_left,
+				obj_rail_right,
+				obj_front_door
+			},
+			enter = function(me)
+				-- 
+				-- initialise game in first room entry...
+				-- 
+				if not me.done_intro then
+					-- don't do this again
+					me.done_intro = true
+					-- set which actor the player controls by default
+					selected_actor = main_actor
+					-- init actor
+					put_actor_at(selected_actor, 144, 36, rm_outside)
+					-- make camera follow player
+					-- (setting now, will be re-instated after cutscene)
+					camera_follow(selected_actor)
+					-- do cutscene
+					-- cutscene(
+					-- 	1, -- no verbs
+					-- 	-- cutscene code (hides ui, etc.)
+					-- 	function()
+					-- 		camera_at(0)
+					-- 		camera_pan_to(selected_actor)
+					-- 		wait_for_camera()
+					-- 		say_line("let's do this")
+					-- 	end
+					-- )
 				end
-			}
-		}
-
-		obj_window = {		
-			data = [[
-				name=window
-				state=state_closed
-				x=32
-				y=8
-				w=2
-				h=2
-				state_closed=68
-				state_open=70
-				use_pos={40,57}
-				classes = {class_openable}
-			]],
-			verbs = {
-				open = function(me)
-					if not me.done_cutscene then
-						cutscene(
-							1, -- no verbs 
-							function()
-								me.done_cutscene = true
-								-- cutscene code
-								me.state = "state_open"
-								me.z = -2
-								print_line("*bang*",40,20,8,1)
-								change_room(rm_kitchen, 1)
-								selected_actor = purp_tentacle
-								walk_to(selected_actor, 
-									selected_actor.x+10, 
-									selected_actor.y)
-								say_line("what was that?!")
-								say_line("i'd better check...")
-								walk_to(selected_actor, 
-									selected_actor.x-10, 
-									selected_actor.y)
-								change_room(rm_hall, 1)
-								-- wait for a bit, then appear in room1
-								break_time(50)
-								put_actor_at(selected_actor, 115, 44, rm_hall)
-								walk_to(selected_actor, 
-									selected_actor.x-10, 
-									selected_actor.y)
-								say_line("intruder!!!")
-								do_anim(main_actor, "anim_face", purp_tentacle)
-							end,
-							-- override for cutscene
-							function()
-								--if cutscene_curr.skipped then
-								--d("override!")
-								change_room(rm_hall)
-								put_actor_at(purp_tentacle, 105, 44, rm_hall)
-								stop_talking()
-								do_anim(main_actor, "anim_face", purp_tentacle)
-							end
-						)
-					end
-					-- (code here will not run, as room change nuked "local" scripts)
-				end
-			}
-		}
-
-
-	rm_hall = {
-		data = [[
-			map = {32,24,55,31}
-		]],
-		objects = {
-			obj_front_door_inside,
-			obj_hall_door_kitchen,
-			obj_bucket,
-			obj_spinning_top,
-			--obj_window
-		},
-		enter = function(me)
-			
-			start_script(me.scripts.tentacle_guard, true) -- bg script
-		end,
-		exit = function(me)
-			
-			stop_script(me.scripts.tentacle_guard)
-		end,
-		scripts = {	  -- scripts that are at room-level
-			spin_top = function()
-				dir=-1				
-				while true do	
-					for x=1,3 do					
-						for f=1,3 do
-							obj_spinning_top.state = f
-							break_time(4)
-						end
-						-- move top
-						--top = find_object("spinning top")
-						obj_spinning_top.x -= dir					
-					end	
-					dir *= -1
-				end				
 			end,
-			tentacle_guard = function()
-				while true do
-					--d("tentacle guarding...")
-					if proximity(main_actor, purp_tentacle) < 30 then
-						say_line(purp_tentacle, "halt!!!", true)
+			exit = function(me)
+				-- todo: anything here?
+			end,
+		}
+
+	-- hall
+		-- objects
+			obj_front_door_inside = {		
+				data = [[
+					name = front door
+					state = state_closed
+					x=8
+					y=16
+					z=1
+					w=1
+					h=4
+					state_closed=79
+					classes = {class_openable}
+					use_pos = pos_right
+					use_dir = face_left
+				]],
+				verbs = {
+					walkto = function(me)
+						come_out_door(me, obj_front_door)
+					end,
+					open = function(me)
+						open_door(me, obj_front_door)
+					end,
+					close = function(me)
+						close_door(me, obj_front_door)
 					end
-					break_time(10)
-				end
-			end
-		},
-	}
-
--- library
-	-- objects
-		obj_fire = {
-			data = [[
-				name=fire
-				x=88
-				y=32
-				w=1
-				h=1
-				state=1
-				states={81,82,83}
-				lighting = 1
-			]],
-			dependent_on = obj_front_door_inside,
-			dependent_on_state = "state_open",
-			verbs = {
-				lookat = function()
-					say_line("it's a nice, warm fire...")
-					break_time(10)
-					do_anim(selected_actor, "anim_face", "face_front")
-					say_line("ouch! it's hot!:*stupid fire*")
-				end,
-				talkto = function()
-					say_line("'hi fire...'")
-					break_time(10)
-					do_anim(selected_actor, "anim_face", "face_front")
-					say_line("the fire didn't say hello back:burn!!")
-				end,
-				pickup = function(me)
-					pickup_obj(me)
-				end
+				}
 			}
-		}
 
-		obj_library_secret_panel = {		
-			data = [[
-				state=state_closed
-				x=120
-				y=16
-				z=-1
-				w=1
-				h=3
-				state_closed=80
-				state_open=80
-				classes = {class_untouchable}
-				use_dir = face_back
-			]],
-			verbs = {
+			obj_hall_exit_landing = {		
+				data = [[
+					name=upstairs
+					state=state_open
+					x=88
+					y=0
+					w=1
+					h=2
+					use_dir = face_back
+				]],
+				verbs = {
+					walkto = function(me)
+						come_out_door(me, obj_landing_exit_hall)
+					end
+				}
 			}
-		}
 
-		obj_library_door_secret = {		
-			data = [[
-				name=secret passage
-				state=state_closed
-				x=120
-				y=16
-				z=-10
-				w=1
-				h=3
-				state_closed=77
-				use_dir = face_back
-				dependent_on_state = state_open
-			]],
-			dependent_on = obj_library_secret_panel,
-			--dependent_on_state = state_open,
-			verbs = {
-				walkto = function(me)
-					change_room(rm_title, 1)
-				end
+			obj_hall_door_library = {		
+				data = [[
+					name=library
+					state=state_open
+					x=136
+					y=16
+					w=1
+					h=3
+					use_dir = face_back
+				]],
+				verbs = {
+					walkto = function(me)
+						come_out_door(me, obj_library_door_hall)
+					end
+				}
 			}
-		}
 
-		obj_book = {		
-			data = [[
-				name=loose book
-				x=140
-				y=16
-				w=1
-				h=1
-				use_pos={140,60}
-				classes = {class_pickupable}
-			]],
-			verbs = {
-				lookat = function(me)
-					say_line("this book sticks out")
-				end,
-				pull = function(me)
-					if obj_library_secret_panel.state != "state_open" then
-						obj_library_secret_panel.state="state_open"
-						shake(true)
-						while (obj_library_secret_panel.y > -8) do
-							obj_library_secret_panel.y -= 1
-							break_time(10)
+			obj_hall_door_kitchen = {		
+				data = [[
+					name = kitchen
+					state = state_open
+					x=176
+					y=16
+					w=1
+					h=4
+					use_pos = pos_left
+					use_dir = face_right
+				]],
+				verbs = {
+					walkto = function(me)
+						come_out_door(me, obj_kitchen_door_hall)
+					end
+				}
+			}
+
+			obj_bucket = {		
+				data = [[
+					name = bucket
+					state = state_open
+					x=104
+					y=48
+					w=1
+					h=1
+					state_closed=143
+					state_open = 159
+					trans_col=15
+					use_with=true
+					classes = {class_pickupable}
+				]],
+				verbs = {
+					lookat = function(me)
+						if me.owner == selected_actor then
+							say_line("it is a bucket in my pocket")
+						else
+							say_line("it is a bucket")
 						end
-						shake(false)
+					end,
+					pickup = function(me)
+						pickup_obj(me)
+					end,
+					give = function(me, noun2)
+						if noun2 == purp_tentacle then
+							say_line("can you fill this up for me?")
+							say_line(purp_tentacle, "sure")
+							me.owner = purp_tentacle
+							say_line(purp_tentacle, "here ya go...")
+							me.state = "state_closed"
+							me.name = "full bucket"
+							pickup_obj(me)
+						else
+							say_line("i might need this")
+						end
+					end,
+					use = function(me, noun2)
+						if (noun2 == obj_window) then
+							obj_window.state = "state_open"
+						end
 					end
-				end,
+				}
 			}
-		}
+
+			obj_spinning_top = {		
+				data = [[
+					name=spinning top
+					x=16
+					y=48
+					w=1
+					h=1
+					state=1
+					states={158,174,190}
+					col_replace={12,7}
+					trans_col=15
+				]],
+				verbs = {
+					use = function(me)
+						if script_running(room_curr.scripts.spin_top) then
+							stop_script(room_curr.scripts.spin_top)
+							me.state = 1
+						else
+							start_script(room_curr.scripts.spin_top)
+						end
+					end
+				}
+			}
+
+			obj_window = {		
+				data = [[
+					name=window
+					state=state_closed
+					x=32
+					y=8
+					w=2
+					h=2
+					state_closed=68
+					state_open=70
+					use_pos={40,57}
+					classes = {class_openable}
+				]],
+				verbs = {
+					open = function(me)
+						if not me.done_cutscene then
+							cutscene(
+								1, -- no verbs 
+								function()
+									me.done_cutscene = true
+									-- cutscene code
+									me.state = "state_open"
+									me.z = -2
+									print_line("*bang*",40,20,8,1)
+									change_room(rm_kitchen, 1)
+									selected_actor = purp_tentacle
+									walk_to(selected_actor, 
+										selected_actor.x+10, 
+										selected_actor.y)
+									say_line("what was that?!")
+									say_line("i'd better check...")
+									walk_to(selected_actor, 
+										selected_actor.x-10, 
+										selected_actor.y)
+									change_room(rm_hall, 1)
+									-- wait for a bit, then appear in room1
+									break_time(50)
+									put_actor_at(selected_actor, 115, 44, rm_hall)
+									walk_to(selected_actor, 
+										selected_actor.x-10, 
+										selected_actor.y)
+									say_line("intruder!!!")
+									do_anim(main_actor, "anim_face", purp_tentacle)
+								end,
+								-- override for cutscene
+								function()
+									--if cutscene_curr.skipped then
+									--d("override!")
+									change_room(rm_hall)
+									put_actor_at(purp_tentacle, 105, 44, rm_hall)
+									stop_talking()
+									do_anim(main_actor, "anim_face", purp_tentacle)
+								end
+							)
+						end
+						-- (code here will not run, as room change nuked "local" scripts)
+					end
+				}
+			}
 
 
-	rm_library = {
-		data = [[
-			map = {56,24,79,31}
-			trans_col = 10
-			col_replace={7,4}
-		]],
-		objects = {
-			obj_fire,
-			obj_library_door_secret,
-			obj_library_secret_panel,
-			obj_duck,
-			obj_book
-		},
-		enter = function(me)
-			-- animate fireplace
-			start_script(me.scripts.anim_fire, true) -- bg script
-		end,
-		exit = function(me)
-			-- pause fireplace while not in room
-			stop_script(me.scripts.anim_fire)
-		end,
-		scripts = {
-			anim_fire = function()
-				while true do
-					for f=1,3 do
-						obj_fire.state = f
-						break_time(8)
+		rm_hall = {
+			data = [[
+				map = {32,24,55,31}
+			]],
+			objects = {
+				obj_front_door_inside,
+				obj_hall_exit_landing,
+				obj_hall_door_library,
+				obj_hall_door_kitchen,
+				obj_bucket,
+				obj_spinning_top,
+				--obj_window
+			},
+			enter = function(me)
+				
+				start_script(me.scripts.tentacle_guard, true) -- bg script
+			end,
+			exit = function(me)
+				
+				stop_script(me.scripts.tentacle_guard)
+			end,
+			scripts = {	  -- scripts that are at room-level
+				spin_top = function()
+					dir=-1				
+					while true do	
+						for x=1,3 do					
+							for f=1,3 do
+								obj_spinning_top.state = f
+								break_time(4)
+							end
+							-- move top
+							--top = find_object("spinning top")
+							obj_spinning_top.x -= dir					
+						end	
+						dir *= -1
+					end				
+				end,
+				tentacle_guard = function()
+					while true do
+						--d("tentacle guarding...")
+						if proximity(main_actor, purp_tentacle) < 30 then
+							say_line(purp_tentacle, "halt!!!", true)
+						end
+						break_time(10)
 					end
 				end
-			end
-		}
-	}
-	
-
--- kitchen
-	-- objects
-		obj_kitchen_door_hall = {		
-			data = [[
-				name = hall
-				state=state_open
-				x=8
-				y=16
-				w=1
-				h=4
-				use_pos = pos_right
-				use_dir = face_left
-			]],
-			verbs = {
-				walkto = function(me)
-					come_out_door(me, obj_hall_door_kitchen)
-				end
-			}
+			},
 		}
 
-		obj_back_door = {		
-			data = [[
-				name=back door
-				state=state_closed
-				x=176
-				y=16
-				z=1
-				w=1
-				h=4
-				state_closed=79
-				flip_x=true
-				classes = {class_openable}
-				use_pos = pos_left
-				use_dir = face_right
-			]],
-			verbs = {
-				walkto = function(me)
-					come_out_door(me, obj_garden_door_kitchen)
-				end,
-				open = function(me)
-					open_door(me, obj_garden_door_kitchen)
-				end,
-				close = function(me)
-					close_door(me, obj_garden_door_kitchen)
-				end
-			}
-		}
-
-	rm_kitchen = {
-		data = [[
-			map = {80,24,103,31}
-		]],
-		objects = {
-			obj_kitchen_door_hall,
-			obj_back_door
-		},
-		enter = function()
-				-- todo: anything here?
-		end,
-		exit = function()
-			-- todo: anything here?
-		end,
-	}
-
--- outside (front)
-	-- objects
-		obj_rail_left = {		
-			data = [[
-				state=state_here
-				x=80
-				y=24
-				w=1
-				h=2
-				state_here=47
-				repeat_x = 8
-				classes = {class_untouchable}
-			]],
-		}
-
-		obj_rail_right = {		
-			data = [[
-				state=state_here
-				x=176
-				y=24
-				w=1
-				h=2
-				state_here=47
-				repeat_x = 8
-				classes = {class_untouchable}
-			]],
-		}
-
-		obj_front_door = {		
-			data = [[
-				name = front door
-				state=state_closed
-				x=152
-				y=8
-				w=1
-				h=3
-				state_closed=78
-				flip_x = true
-				classes = {class_openable}
-				use_dir = face_back
-			]],
-			verbs = {
-				walkto = function(me)
-					come_out_door(me, obj_front_door_inside)
-				end,
-				open = function(me)
-					open_door(me, obj_front_door_inside)
-					--camera_follow(purp_tentacle)
-				end,
-				close = function(me)
-					close_door(me, obj_front_door_inside)
-				end
-			}
-		}
-
-	rm_outside = {
-		data = [[
-			map = {0,24,31,31}
-		]],
-		objects = {
-			obj_rail_left,
-			obj_rail_right,
-			obj_front_door
-		},
-		enter = function(me)
-			-- 
-			-- initialise game in first room entry...
-			-- 
-			if not me.done_intro then
-				-- don't do this again
-				me.done_intro = true
-				-- set which actor the player controls by default
-				selected_actor = main_actor
-				-- init actor
-				put_actor_at(selected_actor, 144, 36, rm_outside)
-				-- make camera follow player
-				-- (setting now, will be re-instated after cutscene)
-				camera_follow(selected_actor)
-				-- do cutscene
-				cutscene(
-					1, -- no verbs
-					-- cutscene code (hides ui, etc.)
-					function()
-						camera_at(0)
-						camera_pan_to(selected_actor)
-						wait_for_camera()
-						say_line("let's do this")
+	-- library
+		-- objects
+			
+			obj_library_door_hall = {		
+				data = [[
+					name=hall
+					state=state_open
+					x=48
+					y=16
+					w=1
+					h=3
+					use_dir = face_back
+				]],
+				verbs = {
+					walkto = function(me)
+						come_out_door(me, obj_hall_door_library)
 					end
-				)
-			end
-		end,
-		exit = function(me)
-			-- todo: anything here?
-		end,
-	}
+				}
+			}
+			
+			obj_fire = {
+				data = [[
+					name=fire
+					x=88
+					y=32
+					w=1
+					h=1
+					state=1
+					states={81,82,83}
+					lighting = 1
+				]],
+				dependent_on = obj_front_door_inside,
+				dependent_on_state = "state_open",
+				verbs = {
+					lookat = function()
+						say_line("it's a nice, warm fire...")
+						break_time(10)
+						do_anim(selected_actor, "anim_face", "face_front")
+						say_line("ouch! it's hot!:*stupid fire*")
+					end,
+					talkto = function()
+						say_line("'hi fire...'")
+						break_time(10)
+						do_anim(selected_actor, "anim_face", "face_front")
+						say_line("the fire didn't say hello back:burn!!")
+					end,
+					pickup = function(me)
+						pickup_obj(me)
+					end
+				}
+			}
 
--- back garden
-	-- objects
-		obj_garden_door_kitchen = {		
+			obj_library_secret_panel = {		
+				data = [[
+					state=state_closed
+					x=120
+					y=16
+					z=-1
+					w=1
+					h=3
+					state_closed=80
+					state_open=80
+					classes = {class_untouchable}
+					use_dir = face_back
+				]],
+				verbs = {
+				}
+			}
+
+			obj_library_door_secret = {		
+				data = [[
+					name=secret passage
+					state=state_closed
+					x=120
+					y=16
+					z=-10
+					w=1
+					h=3
+					state_closed=77
+					use_dir = face_back
+					dependent_on_state = state_open
+				]],
+				dependent_on = obj_library_secret_panel,
+				--dependent_on_state = state_open,
+				verbs = {
+					walkto = function(me)
+						change_room(rm_title, 1)
+					end
+				}
+			}
+
+			obj_book = {		
+				data = [[
+					name=loose book
+					x=140
+					y=16
+					w=1
+					h=1
+					use_pos={140,60}
+					classes = {class_pickupable}
+				]],
+				verbs = {
+					lookat = function(me)
+						say_line("this book sticks out")
+					end,
+					pull = function(me)
+						if obj_library_secret_panel.state != "state_open" then
+							obj_library_secret_panel.state="state_open"
+							shake(true)
+							while (obj_library_secret_panel.y > -8) do
+								obj_library_secret_panel.y -= 1
+								break_time(10)
+							end
+							shake(false)
+						end
+					end,
+				}
+			}
+
+
+		rm_library = {
 			data = [[
-				name=kitchen
-				state=state_closed
-				x=104
-				y=8
-				w=1
-				h=3
-				state_closed=78
-				classes = {class_openable}
-				use_dir = face_back
+				map = {56,24,79,31}
+				trans_col = 10
+				col_replace={7,4}
 			]],
-			verbs = {
-				walkto = function(me)
-					come_out_door(me, obj_back_door)
-				end,
-				open = function(me)
-					open_door(me, obj_back_door)
-				end,
-				close = function(me)
-					close_door(me, obj_back_door)
+			objects = {
+				obj_library_door_hall,
+				obj_fire,
+				obj_library_door_secret,
+				obj_library_secret_panel,
+				obj_duck,
+				obj_book
+			},
+			enter = function(me)
+				-- animate fireplace
+				start_script(me.scripts.anim_fire, true) -- bg script
+			end,
+			exit = function(me)
+				-- pause fireplace while not in room
+				stop_script(me.scripts.anim_fire)
+			end,
+			scripts = {
+				anim_fire = function()
+					while true do
+						for f=1,3 do
+							obj_fire.state = f
+							break_time(8)
+						end
+					end
 				end
 			}
 		}
+		
 
-	rm_garden = {
-		data = [[
-			map = {104,24,127,31}
-		]],
-		objects = {
-			obj_garden_door_kitchen
-		},
-		enter = function()
-				-- todo: anything here?
-		end,
-		exit = function()
-			-- todo: anything here?
-		end,
-	}
+-- [ second floor ]
+
+	-- landing
+		-- objects
+			obj_landing_exit_hall = {		
+				data = [[
+					name=hall
+					state=state_open
+					x=88
+					y=76
+					w=1
+					h=2
+					use_dir = face_front
+				]],
+				verbs = {
+					walkto = function(me)
+						come_out_door(me, obj_hall_exit_landing)
+					end
+				}
+			}
+
+		rm_landing = {
+			data = [[
+				map = {32,16,55,31}
+			]],
+			objects = {
+				obj_landing_exit_hall
+			},
+			enter = function(me)
+				
+			end,
+			exit = function(me)
+
+			end,
+			scripts = {	  
+			},
+		}
+
 
 
 
@@ -1388,8 +1358,13 @@ function fades(fade, dir) -- 1=down, -1=up
 	end
 end
 
-
 function change_room(new_room, fade)
+	-- check param
+	if new_room == nil then
+		show_error("room does not exist")
+		return
+	end
+
 	-- stop any existing fade (shouldn't be any, but just in case!)
 	stop_script(fade_script)
 
@@ -1549,9 +1524,13 @@ function print_line(msg, x, y, col, align, use_caps, dont_wait_msg)
 
 	local col=col or 7 		-- default to white
 	local align=align or 0	-- default to no align
+
 	-- calc max line width based on x-pos/available space
-	local screen_space = min(x -cam_x, 127 - (x -cam_x))
-	-- (or no less than min length)
+	if align == 1 then
+		screen_space = min(x -cam_x, 127 - (x -cam_x))
+	else
+		screen_space = 127 - (x -cam_x)
+	end
 	local max_line_length = max(flr(screen_space/2), 16)
 
 	-- search for ";"'s
@@ -1576,8 +1555,9 @@ function print_line(msg, x, y, col, align, use_caps, dont_wait_msg)
 	local longest_line = longest_line_size(lines)
 
 	-- center-align text block
+	xpos = x -cam_x 
 	if align == 1 then
-		xpos = x -cam_x - ((longest_line*4)/2)
+		xpos -= ((longest_line*4)/2)
 	end
 
 	-- screen bound check
@@ -2892,6 +2872,11 @@ end
 --
 -- helper functions 
 -- 
+
+function show_error(msg)
+	print_line("-error-;"..msg,5+cam_x,5,8,0)
+end
+
 function explode_data(obj)
 	local lines=split(obj.data, "\n")
 	for l in all(lines) do
@@ -3052,14 +3037,14 @@ __gfx__
 0000c00055555555ddddddddeeeeeeee33555555333333330044444466666666555555551c1c1c1c000000005555555500000000000000000000000000045000
 0000100055555555ddddddddeeeeeeee6666666633333333aaaaaaaa6666666658888588c1c1c1c1000000005555555500000000000000000000000000045000
 0000000055555555ddddddddeeeeeeee66666666333333339999999966666666588885887c7c7c7c000000005555555500000000000000000000000000045000
-0000000055777777dd666666eebbbbbb553333335555555544444444000000000000000000000000000000000000000000000000000000000000000099999999
-0000000055557777dddd6666eeeebbbb553333335555333344444444000000000000000000000000000000000000000000000000000000000000000044444444
-0000000055555577dddddd66eeeeeebb6666333355333333aaaaaaaa000000000000000000000000000000000000000000000000000000000000000000045000
-000c000055555555ddddddddeeeeeeee666633335333333399999999000000000000000000000000000000000000000000000000000000000000000000045000
-0000000055555555ddddddddeeeeeeee555555335333333344444444000000000000000000000000000000000000000000000000000000000000000000045000
-0000000055555555ddddddddeeeeeeee555555335533333344444444000000000000000000000000000000000000000000000000000000000000000000045000
-0000000055555555ddddddddeeeeeeee6666666655553333aaaaaaaa000000000000000000000000000000000000000000000000000000000000000000045000
-0000000055555555ddddddddeeeeeeee666666665555555599999999000000000000000000000000000000000000000000000000000000000000000000045000
+0000000055777777dd666666eebbbbbb553333335555555544444444777777777777777700000000000000000000000000000000000000000000000099999999
+0000000055557777dddd6666eeeebbbb553333335555333344444444777777777777777700000000000000000000000000000000000000000000000044444444
+0000000055555577dddddd66eeeeeebb6666333355333333aaaaaaaa777777777777777700000000000000000000000000000000000000000000000000045000
+000c000055555555ddddddddeeeeeeee666633335333333399999999777777777777777700000000000000000000000000000000000000000000000000045000
+0000000055555555ddddddddeeeeeeee555555335333333344444444777777555577777700000000000000000000000000000000000000000000000000045000
+0000000055555555ddddddddeeeeeeee555555335533333344444444777755555555777700000000000000000000000000000000000000000000000000045000
+0000000055555555ddddddddeeeeeeee6666666655553333aaaaaaaa775555555555557700000000000000000000000000000000000000000000000000045000
+0000000055555555ddddddddeeeeeeee666666665555555599999999555555555555555500000000000000000000000000000000000000000000000000045000
 0000000055555555ddddddddbbbbbbbb555555555555555544444444cccccccc5555555677777777c77777776555555533333336633333330000000000045000
 0000000055555555ddddddddbbbbbbbb555555553333555544444444cccccccc555555677777777ccc7777777655555533333367763333330000000000045000
 0000000055555555ddddddddbbbbbbbb6666666633333355aaaaaa55cccccccc55555677777777ccccc777777765555533333677776333330000000000045000
@@ -3092,14 +3077,14 @@ ffff4fff1dd6dd6dd6dd6dd6d6dd6d517000000766665555444ffffffffff4440000000000000000
 444949441d6dd6dd6dd6dd6ddd6dd65170000007000077764449444aa44494440000000000000000000000000000000000000000d51111114f4444944f444494
 444949441d6dd6dd6dd6dd6ddd6dd651777777770000777644494444444494440000000000000000000000000000000000000000d55555554ffffff44f444494
 44494944166666666666666666666651555555555555666644499999999994440000000000000000000000000000000000000000dddddddd444444444f444494
-444949441dd6dd600000000056dd6d516dd6dd6d000000004449444444449444000000000000000000000000000000000000000000000000000000004f444494
-444949441dd6dd650000000056dd6d5166666666000000004449444444449444000000000000000000000000000000000000000000000000000000004f444994
-44494944166666650000000056666651d6dd6dd6000000004449444444449444000000000000000000000000000000000000000000000000000000004f499444
-444949441d6dd6d5000000005d6dd651d6dd6dd6000000004449444444449444000000000000000000000000000000000000000000000000000000004f944444
-444949441d6dd6d5000000005d6dd651666666660000000044494444444494440000000000000000000000000000000000000000000000000000000044444400
-444949441666666500000000566666516dd6dd6d0000000044494444444494440000000000000000000000000000000000000000000000000000000044440000
-999949991dd6dd650000000056dd6d516dd6dd6d0000000044499999999994440000000000000000000000000000000000000000000000000000000044000000
-444444441dd6dd650000000056dd6d51666666660000000044444444444444440000000000000000000000000000000000000000000000000000000000000000
+444949441dd6dd600000000056dd6d516dd6dd6d0000000044494444444494440000000000000000000000000000000000000000000000004f4444944f444494
+444949441dd6dd650000000056dd6d51666666660000000044494444444494440000000000000000000000000000000000000000000000004f4444944f444994
+44494944166666650000000056666651d6dd6dd60000000044494444444494440000000000000000000000000000000000000000000000004f4444944f499444
+444949441d6dd6d5000000005d6dd651d6dd6dd60000000044494444444494440000000000000000000000000000000000000000000000004f4444944f944444
+444949441d6dd6d5000000005d6dd651666666660000000044494444444494440000000000000000000000000000000000000000000000004f44449444444400
+444949441666666500000000566666516dd6dd6d0000000044494444444494440000000000000000000000000000000000000000000000004f44449444440000
+999949991dd6dd650000000056dd6d516dd6dd6d0000000044499999999994440000000000000000000000000000000000000000000000004f44449444000000
+444444441dd6dd650000000056dd6d51666666660000000044444444444444440000000000000000000000000000000000000000000000004f44449400000000
 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000ccccccccffffffff
 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000ccccccccf666677f
 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000cccccccc7cccccc7
@@ -3295,41 +3280,41 @@ ccc0ccc01c10ccc0000000000a00a0a0aaa0a0a000000a00aa1000001cc0cc10ccc0000000000011
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 
 __gff__
-0001010100010100000000010000000000010101010101000000000100000000000101010101010000000000000000000001010101010100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0001010100010100000000010000000000010101010101000000000100000000000101010101010101000000000000000001010101010100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 __map__
-0707070808080808080808080807070717171709090909090909090909090909090909090917171700000010000061626262626262626262626262620000001046464648484848484848484848464646464646565656565656565656564646464646464848484848484848484846464646464656565656565656565656464646
-0707070800000808080808080807070717171709090909090909444444450909090909090917171700200000002071447474744473b27144747444740000200046464648484848484848484848464646464646565656565656565656564646464646464848484848484848484846464646464656565656565656565656464646
-07000708000008080808080808070007170017656565656565655464645565656565656565170017182f2f2f2f2f71647474746473b27164747464742f2f2f2f46004648484848484848484848460046460046565656565656565656564600464600464848484848484848484846004646004656565656565656565656460046
-07000760606060616263606060070007170017666766676667666766676667666766676667170017183f3f3f3f3f61747474747473b27174747474743f3f3f3f46004648484848484848484848460046460046565656565656565656564600464600464848484848484848484846004646004656565656565656565656460046
-0700077070707071727370707007000717001776777677767776777677767776777677767717001715151515151515151515151515151515151515151515151546004648484848484848484848460046460046565656565656565656564600464600464848484848484848484846004646004656565656565656565656460046
-0701113131313131313131313121010717021232323232323232323232323232323232323222021715153c191919191919191919343434191919193d1515151546405070707070707070707070604046464050707070707070707070706040464640507070707070707070707060404646405070707070707070707070604046
-11313131251515151515153531313121123232323232323232323232323232323232323232323222153c3937373737378e373737373737373737373a3d15151550707070707070707070707070707060507070707070707070707070707070605070707070707070707070707070706050707070707070707070707070707060
-313131313131313131313131313131313232323232323232323232323232323232323232323232323c393737373737373737373737373737373737373a3d151570707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070
-0000000000000000002000000000002007070750405040504050404040504050405040504007070762626263001f00104646464848484848484848484846464646464656565656565656565656464646464646484848484848484848484646464646465656565656565656565646464646464648484848484848484848464646
-0020000000000000000000000010000007070740504050405040504050405040504050405007070744734473001f20004646464848484848484848484846464646464656565656565656565656464646464646484848484848484848484646464646465656565656565656565646464646464648484848484848484848464646
-0000002000000000000000000000000007000750405000505050405040504000405040504007000764736473201f00004600464848484848484848484846004646004656565656565656565656460046460046484848484848484848484600464600465656565656565656565646004646004648484848484848484848460046
-0000000000000000000000000000000007000760606000606060616263606000606060606007000762626263001f00204600464848484848484848484846004646004656565656565656565656460046460046484848484848484848484600464600465656565656565656565646004646004648484848484848484848460046
-0000000000000000000000000000000007000770707000707070717273707000707070707007000731313131310b30304600464848484848484848484846004646004656565656565656565656460046460046484848484848484848484600464600465656565656565656565646004646004648484848484848484848460046
-0000000000000000000000000000200007011131313131313131313131313131313131313121010718181818181815154640507070707070707070707060404646405070707070707070707070604046464050707070707070707070706040464640507070707070707070707060404646405070707070707070707070604046
-0000000000100000002000000000000011313131313131251515151515151535313131313131312115151515151515155070707070707070707070707070706050707070707070707070707070707060507070707070707070707070707070605070707070707070707070707070706050707070707070707070707070707060
-2000000000000000000020000000000031313131313131313131313131313131313131313131313115151515151515157070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070
-4646464848484848484848484846464607070708080808080808080808062605080808080807070748484848484646464646465656565656565656565646464646464648484848484848484848464646464646565656565656565656564646464646464848484848484848484846464646464656565656565656565656464646
-46464648484848484848484848464646070707080808080808080808080b2626080808080807070748484848484646464646465656565656565656565646464646464648484848484848484848464646464646565656565656565656564646464646464848484848484848484846464646464656565656565656565656464646
-4600464848484848484848484846004607000708080800080808080808162626080808080807000748484848484600464600465656565656565656565646004646004648484848484848484848460046460046565656565656565656564600464600464848484848484848484846004646004656565656565656565656460046
-4600464848484848484848484846004607000760606000606060606016262636606060606007000748484848484600464600465656565656565656565646004646004648484848484848484848460046460046565656565656565656564600464600464848484848484848484846004646004656565656565656565656460046
-460046484848484848484848484600460700077070700070707070162626361b707070707007000748484848484600464600465656565656565656565646004646004648484848484848484848460046460046565656565656565656564600464600464848484848484848484846004646004656565656565656565656460046
-4640507070707070707070707060404607011131313131313131313131313131313131313121010770707070706040464640507070707070707070707060404646405070707070707070707070604046464050707070707070707070706040464640507070707070707070707060404646405070707070707070707070604046
-5070707070707070707070707070706011313131313131251515151515151535313131313131312170707070707070605070707070707070707070707070706050707070707070707070707070707060507070707070707070707070707070605070707070707070707070707070706050707070707070707070707070707060
-7070707070707070707070707070707031313131313131313131313131313131313131313131313170707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070
-000000100000200000001f0061626262626262626262626262626263001f0010464646565656565656565656564646464646464848484848484848484846464646464656565656565656565656464646464646484848484848484848484646464646465656565656565656565646464646464648484848484848484848464646
-002000000000001000001f2071447144714473004e71447344734473001f2000464646565656565656565656564646464646464848484848484848484846464646464656565656565656565656464646464646484848484848484848484646464646465656565656565656565646464646464648484848484848484848464646
-200000000020000000201f0071647164716473005e71647364736473201f0000460046565656565656565656564600464600464848484848484848484846004646004656565656565656565656460046460046484848484848484848484600464600465656565656565656565646004646004648484848484848484848460046
-000020000000000020001f0062626262626273006e71626262626263001f0020460046565656565656565656564600464600464848484848484848484846004646004656565656565656565656460046460046484848484848484848484600464600465656565656565656565646004646004648484848484848484848460046
-303030303030303030301b3131313131313131253531313131313131310b3030460046565656565656565656564600464600464848484848484848484846004646004656565656565656565656460046460046484848484848484848484600464600465656565656565656565646004646004648484848484848484848460046
-1515151515151515151518181818181818183434343418181818181818181515464050707070707070707070706040464640507070707070707070707060404646405070707070707070707070604046464050707070707070707070706040464640507070707070707070707060404646405070707070707070707070604046
-1515151515151515151515151515151515143434343424151515151515151515507070707070707070707070707070605070707070707070707070707070706050707070707070707070707070707060507070707070707070707070707070605070707070707070707070707070706050707070707070707070707070707060
-1515151515151515151515151515151515151515151515151515151515151515707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070
+0707070808080808080808080807070707070717171717171717171717070707171717080808080808080808081717170707071717171717171717171707070717171708080808080808080808171717070707171717171717171717170707071717170808080808080808080817171707070717171717171717171717070707
+0707070800000808080808080807070707070717171717171717171717070707171717080808080808080808081717170707071717171717171717171707070717171708080808080808080808171717070707171717171717171717170707071717170808080808080808080817171707070717171717171717171717070707
+0707070800000808080808080807000707000717171717171717171717070007170017080808080808080808081700170700071717171717171717171707000717001708080808080808080808170017070007171717171717171717170700071700170808080808080808080817001707000717171717171717171717070007
+0707076060606061626360606007000707000717171717171717171717070007170017080808080808080808081700170700071717171717171717171707000717001708080808080808080808170017070007171717171717171717170700071700170808080808080808080817001707000717171717171717171717070007
+0707077070707071727370707007000707000717171717171717171717070007170017080808080808080808081700170700071717171717171717171707000717001708080808080808080808170017070007171717171717171717170700071700170808080808080808080817001707000717171717171717171717070007
+0727113131313131313131313121010707011131313131313131313131210107170212323232323232323232322202170701113131313131313131313121010717021232323232323232323232220217070111313131313131313131312101071702123232323232323232323222021707011131313131313131313131210107
+1131313125151515151515353131312111313131313131313131313131313121123232323232323232323232323232221131313131313131313131313131312112323232323232323232323232323222113131313131313131313131313131211232323232323232323232323232322211313131313131313131313131313121
+3131313131313131313131313131313131313131313131313131313131313131323232323232323232323232323232323131313131313131313131313131313132323232323232323232323232323232313131313131313131313131313131313232323232323232323232323232323231313131313131313131313131313131
+0707071717171717171717171707070717171708080808080808080808171717070707171717171717171717170707071717170808080808080808080817171707070717171717171717171717070707171717080808080808080808081717170707071717171717171717171707070717171708080808080808080808171717
+0707071717171717171717171707070717171708080808080808080808171717070707171717171717171717170707071717170808080808080808080817171707070717171717171717171717070707171717080808080808080808081717170707071717171717171717171707070717171708080808080808080808171717
+0700071717171717171717171707000717001708080808080808080808170017070007171717171717171717170700071700170808080808080808080817001707000717171717171717171717070007170017080808080808080808081700170700071717171717171717171707000717001708080808080808080808170017
+0700071717171717171717171707000717001708080808080808080808170017070007171717171717171717170700071700170808080808080808080817001707000717171717171717171717070007170017080808080808080808081700170700071717171717171717171707000717001708080808080808080808170017
+0700071717171717171717171707000717001708080808080808080808170017070007171717171717171717170700071700170808080808080808080817001707000717171717171717171717070007170017080808080808080808081700170700071717171717171717171707000717001708080808080808080808170017
+0701113131313131313131313121010717021232323232323232323232220217070111313131313131313131312101071702123232323232323232323222021707011131313131313131313131210107170212323232323232323232322202170701113131313131313131313121010717021232323232323232323232220217
+1131313131313131313131313131312112323232323232323232323232323222113131313131313131313131313131211232323232323232323232323232322211313131313131313131313131313121123232323232323232323232323232221131313131313131313131313131312112323232323232323232323232323222
+3131313131313131313131313131313132323232323232323232323232323232313131313131313131313131313131313232323232323232323232323232323231313131313131313131313131313131323232323232323232323232323232323131313131313131313131313131313132323232323232323232323232323232
+0000000000000000002000000000002007070717171717171717171717070707070707080808080808614050405063080808080808070707000000000000000017171708080808080808080808171717070707171717171717171717170707071717170808080808080808080817171707070717171717171717171717070707
+0020000000000000000000000010000007070717171717171717171717070707070707080808080808715040504073080808080808070707000000000000000017171708080808080808080808171717070707171717171717171717170707071717170808080808080808080817171707070717171717171717171717070707
+00000020000000000000000000000000070007171717171717171717170700070700070808084e080871405040507308084e080808070007000000000000000017001708080808080808080808170017070007171717171717171717170700071700170808080808080808080817001707000717171717171717171717070007
+00000000000000000000000000000000070007171717171717171717170700070700076262625e626271666766677362625e626262070007000000000000000017001708080808080808080808170017070007171717171717171717170700071700170808080808080808080817001707000717171717171717171717070007
+00000000000000000000000000000000070007171717171717171717170700070700077474746e747471767776777374746e747474070007000000000000000017001708080808080808080808170017070007171717171717171717170700071700170808080808080808080817001707000717171717171717171717070007
+0000000000000000000000000000200007011131313131313131313131210107070111313131313131313131313131313131313131210107000000000000000017021232323232323232323232220217070111313131313131313131312101071702123232323232323232323222021707011131313131313131313131210107
+0000000000100000002000000000000011313131313131313131313131313121113131313131312515151515151515353131313131313121000000000000000012323232323232323232323232323222113131313131313131313131313131211232323232323232323232323232322211313131313131313131313131313121
+2000000000000000000020000000000031313131313131313131313131313131312f2f2f2f2f2f2f2f2f3131312f2f2f2f2f2f2f2f2f2f2f000000000000000032323232323232323232323232323232313131313131313131313131313131313232323232323232323232323232323231313131313131313131313131313131
+000000100000200000001f0061626262626262626262626262626263001f0010070707080808080807000006050007080808080808070707070707504050405040504040405040504050405040070707171717090909090909090909090909090909090909171717000000100000616262626262626262626262626200000010
+002000000000001000001f2071447144714473004e71447344734473001f200007070708080808080700000006050708080808080807070707070740504050405040504050405040504050405007070717171709090909090909444444450909090909090917171700200000002071447474744473b271447474447400002000
+200000000020000000201f0071647164716473005e71647364736473201f0000070007080808080807000016263607084e00080808070007070707504050005050504050405040004050405040070707170017656565656565655464645565656565656565170017182f2f2f2f2f71647474746473b27164747464742f2f2f2f
+000020000000000020001f0062626262626273006e71626262626263001f0020070007606060606007001626360007605e00606060070007070707606060006060606162636060006060606060070707170017666766676667666766676667666766676667170017183f3f3f3f3f61747474747473b27174747474743f3f3f3f
+303030303030303030301b3131313131313131253531313131313131310b3030070007707070707027162636000028706e00707070070007070707707070007070707172737070007070707070070707170017767776777677767776777677767776777677170017151515151515151515151515151515151515151515151515
+151515151515151515151818181818181818343434341818181818181818151507011131313131313131313131313131313131313121010707271131313131313131313131313131313131313121280717021232323232323232323232323232323232323222021715153c191919191919191919343434191919193d15151515
+1515151515151515151515151515151515143434343424151515151515151515113131313131312515151515151515353131313131313121113131313131312515151515151515353131313131313121123232323232323232323232323232323232323232323222153c3937373737378e373737373737373737373a3d151515
+15151515151515151515151515151515151515151515151515151515151515153131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313232323232323232323232323232323232323232323232323c393737373737373737373737373737373737373a3d1515
 __sfx__
 000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
