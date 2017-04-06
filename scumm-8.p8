@@ -16,7 +16,7 @@ __lua__
 show_debuginfo = true
 show_collision = false
 --show_pathfinding = true
-show_perfinfo = false
+show_perfinfo = true
 enable_mouse = true
 d = printh
 
@@ -255,6 +255,7 @@ verb_defcol = 10   -- default action (yellow)
 					w=1
 					h=2
 					use_dir = face_back
+					use_pos = pos_center
 				]],
 				verbs = {
 					walkto = function(me)
@@ -293,6 +294,7 @@ verb_defcol = 10   -- default action (yellow)
 				]],
 				verbs = {
 					walkto = function(me)
+						d("here!")
 						come_out_door(me, obj_kitchen_door_hall)
 					end
 				}
@@ -641,10 +643,11 @@ verb_defcol = 10   -- default action (yellow)
 				data = [[
 					name=hall
 					state=state_open
-					x=88
-					y=76
-					w=1
+					x=80
+					y=56
+					w=3
 					h=2
+					use_pos = pos_center
 					use_dir = face_front
 				]],
 				verbs = {
@@ -670,7 +673,6 @@ verb_defcol = 10   -- default action (yellow)
 			scripts = {	  
 			},
 		}
-
 
 
 
@@ -767,7 +769,8 @@ rooms = {
 	rm_hall,
 	rm_kitchen,
 	rm_garden,
-	rm_library
+	rm_library,
+	rm_landing
 }
 
 
@@ -1187,7 +1190,9 @@ end
 
 
 function get_use_pos(obj)
-	obj_use_pos = obj.use_pos
+	local obj_use_pos = obj.use_pos
+	local x = obj.x -cam_x
+	local y = obj.y
 
 	-- first check for specific pos
 	if type(obj_use_pos) == "table" then
@@ -1195,28 +1200,33 @@ function get_use_pos(obj)
 		y = obj_use_pos[2]-stage_top
 
 	-- determine use pos
-	elseif not obj_use_pos or
-		obj_use_pos == "pos_infront" then
-		x = obj.x + ((obj.w*8)/2) -cam_x -4
-		y = obj.y + (obj.h*8) +2
-
 	elseif obj_use_pos == "pos_left" then
 		-- diff calc for actors
 		if obj.offset_x then
-			x = obj.x -cam_x - (obj.w*8 +4)
-			y = obj.y + 1
+			x -= (obj.w*8 +4)
+			y += 1
 		else
 			-- object pos
-			x = obj.x -cam_x  -2
-			y = obj.y + ((obj.h*8) -2)
+			x -= -2
+			y += ((obj.h*8) -2)
 		end
 
 	elseif obj_use_pos == "pos_right" then
-		x = obj.x + (obj.w*8)-cam_x
-		y = obj.y + ((obj.h*8) -2)
+		x += (obj.w*8)
+		y += ((obj.h*8) -2)
 	
-	-- else "pos_above"
+	elseif obj_use_pos == "pos_above" then
+		x += ((obj.w*8) /2) -4
+		y -= 2
 	
+	elseif obj_use_pos == "pos_center" then
+		x += ((obj.w*8) /2)
+		y += ((obj.h*8) /2) -4
+
+	elseif obj_use_pos == "pos_infront"
+	 or obj_use_pos == nil then
+		x += ((obj.w*8) /2) -4
+		y += (obj.h*8) +2
 	end
 	
 	return {x=x,y=y}
@@ -1302,6 +1312,12 @@ function close_door(door_obj1, door_obj2)
 end
 
 function come_out_door(from_door, to_door, fade_effect)
+	-- check param
+	if to_door == nil then
+		show_error("exit door does not exist")
+		return
+	end
+
 	if from_door.state == "state_open" then
 		-- go to new room!
 		new_room = to_door.in_room
