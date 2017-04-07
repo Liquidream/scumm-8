@@ -2320,6 +2320,13 @@ end
 function object_draw(obj)
 	-- replace colors?
 	replace_colors(obj)
+	
+	-- check for custom draw
+	if obj.draw then
+		obj.draw(obj)
+		return
+	end
+	
 	-- allow for repeating
 	rx=1
 	if obj.repeat_x then rx = obj.repeat_x end
