@@ -791,7 +791,8 @@ rooms = {
 			walk_anim_back = { 200, 199, 201, 199 }
 			col = 12
 			trans_col = 11
-			speed = 0.6
+			walk_speed = 0.6
+			frame_delay = 5
 			classes = {class_actor}
 			face_dir = face_front
 		]],
@@ -818,7 +819,7 @@ rooms = {
 			talk = { 171, 171, 171, 171 }
 			col = 11
 			trans_col = 15
-			speed = 0.25
+			walk_speed = 0.25
 			classes = {class_actor,class_talkable}
 			face_dir = face_front
 			use_pos = pos_left
@@ -1636,8 +1637,8 @@ function walk_to(actor, x, y)
 			local py = (p[2]-room_curr.map[2])*8 + 4
 
 			local distance = sqrt((px - actor.x) ^ 2 + (py - actor.y) ^ 2)
-			local step_x = actor.speed * (px - actor.x) / distance
-			local step_y = actor.speed * (py - actor.y) / distance
+			local step_x = actor.walk_speed * (px - actor.x) / distance
+			local step_y = actor.walk_speed * (py - actor.y) / distance
 
 			-- only walk if we're not already there!
 			if distance > 5 then 
@@ -1665,7 +1666,7 @@ function walk_to(actor, x, y)
 					if actor.flip then actor.face_dir = "face_left" end
 				end
 
-				for i = 0, distance/actor.speed do
+				for i = 0, distance/actor.walk_speed do
 					actor.x += step_x
 					actor.y += step_y
 					yield()
@@ -2350,7 +2351,7 @@ function actor_draw(actor)
 	 and actor.walk_anim 
 	then
 		actor.tmr += 1
-		if actor.tmr > 5 then
+		if actor.tmr > actor.frame_delay then
 			actor.tmr = 1
 			actor.anim_pos += 1
 			if actor.anim_pos > #actor.walk_anim then actor.anim_pos=1 end
@@ -2373,6 +2374,7 @@ function actor_draw(actor)
 	-- talking overlay
 	if talking_actor 
 	 and talking_actor == actor 
+	 and talking_actor.talk
 	then
 			if actor.talk_tmr < 7 then
 				sprnum = actor.talk[dirnum]
