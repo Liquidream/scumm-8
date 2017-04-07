@@ -1010,7 +1010,8 @@ rooms = {
 			walk_anim_back = { 200, 199, 201, 199 }
 			col = 12
 			trans_col = 11
-			speed = 0.6
+			walk_speed = 0.6
+			frame_delay = 5
 			classes = {class_actor}
 			face_dir = face_front
 		]],
@@ -1037,7 +1038,8 @@ rooms = {
 			talk = { 171, 171, 171, 171 }
 			col = 11
 			trans_col = 15
-			speed = 0.25
+			walk_speed = 0.25
+			frame_delay = 5
 			classes = {class_actor,class_talkable}
 			face_dir = face_front
 			use_pos = pos_left
@@ -1199,6 +1201,7 @@ end
 -- (you should not need to modify anything below here!)
 
 
+
 function shake(cf) if cf then
 cg=1 end ch=cf end function ci(cj) local ck=nil if has_flag(cj.classes,"class_talkable") then
 ck="talkto"elseif has_flag(cj.classes,"class_openable") then if cj.state=="state_closed"then
@@ -1255,11 +1258,11 @@ fo-=((dp*4)/2) end fo=max(2,fo) fg=max(18,y) fo=min(fo,127-(dp*4)-1) fd={fp=dm,x
 fr=fh wait_for_message() fh=fr print_line(fl,x,y,col,fi,fe) end if not ff then
 wait_for_message() end end function put_actor_at(cx,x,y,fs) if fs then cx.in_room=fs end
 cx.x,cx.y=x,y end function walk_to(cx,x,y) x+=ct local ft=fu(cx) local fv=flr(x/8)+room_curr.map[1] local fw=flr(y/8)+room_curr.map[2] local fx={fv,fw} local fy=fz(ft,fx) local ga=fu({x=x,y=y}) if gb(ga[1],ga[2]) then
-add(fy,ga) end for gc in all(fy) do local gd=(gc[1]-room_curr.map[1])*8+4 local ge=(gc[2]-room_curr.map[2])*8+4 local gf=sqrt((gd-cx.x)^2+(ge-cx.y)^2) local gg=cx.speed*(gd-cx.x)/gf local gh=cx.speed*(ge-cx.y)/gf if gf>5 then
+add(fy,ga) end for gc in all(fy) do local gd=(gc[1]-room_curr.map[1])*8+4 local ge=(gc[2]-room_curr.map[2])*8+4 local gf=sqrt((gd-cx.x)^2+(ge-cx.y)^2) local gg=cx.walk_speed*(gd-cx.x)/gf local gh=cx.walk_speed*(ge-cx.y)/gf if gf>5 then
 cx.gi=1 cx.flip=(gg<0) if abs(gg)<0.4 then
 if gh>0 then
 cx.gj=cx.walk_anim_front cx.face_dir="face_front"else cx.gj=cx.walk_anim_back cx.face_dir="face_back"end else cx.gj=cx.walk_anim_side cx.face_dir="face_right"if cx.flip then cx.face_dir="face_left"end
-end for fm=0,gf/cx.speed do cx.x+=gg cx.y+=gh yield() end end end cx.gi=2 end function wait_for_actor(cx) cx=cx or selected_actor while cx.gi!=2 do yield() end end function proximity(cp,cq) if cp.in_room==cq.in_room then
+end for fm=0,gf/cx.walk_speed do cx.x+=gg cx.y+=gh yield() end end end cx.gi=2 end function wait_for_actor(cx) cx=cx or selected_actor while cx.gi!=2 do yield() end end function proximity(cp,cq) if cp.in_room==cq.in_room then
 local gf=sqrt((cp.x-cq.x)^2+(cp.y-cq.y)^2) return gf else return 1000 end end dv=16 ct,cv,cy,cg=0,nil,nil,0 gk,gl,gm,gn=63.5,63.5,0,1 go={7,12,13,13,12,7} gp={{spr=208,x=75,y=dv+60},{spr=240,x=75,y=dv+72}} ed={face_front=1,face_left=2,face_back=3,face_right=4} function gq(cj) local gr={} for fa,cl in pairs(cj) do add(gr,fa) end return gr end function get_verb(cj) local co={} local gr=gq(cj[1]) add(co,gr[1]) add(co,cj[1][gr[1]]) add(co,cj.text) return co end function et() gs=get_verb(verb_default) gt,gu,n,gv,gw=nil,nil,nil,false,""end et() fd=nil dj=nil dh=nil fh=nil ey={} es={} dg={} gx={} eq,eq=0,0 function _init() if enable_mouse then poke(0x5f2d,1) end
 gy() start_script(startup_script,true) end function _update60() gz() end function _draw() ha() end function gz() if selected_actor and selected_actor.dd
 and not coresume(selected_actor.dd) then selected_actor.dd=nil end hb(ey) if dh then
@@ -1328,13 +1331,14 @@ if cj.states
 or(cj.state and cj[cj.state] and cj[cj.state]>0) and(not cj.dependent_on or cj.dependent_on.state==cj.dependent_on_state) and not cj.owner then is(cj) end else if cj.in_room==room_curr then
 it(cj) end end iu(cj) end end end end function ip(cj) if cj.col_replace then
 iv=cj.col_replace pal(iv[1],iv[2]) end if cj.lighting then
-iw(cj.lighting) elseif cj.in_room then iw(cj.in_room.lighting) end end function is(cj) ip(cj) ix=1 if cj.repeat_x then ix=cj.repeat_x end
+iw(cj.lighting) elseif cj.in_room then iw(cj.in_room.lighting) end end function is(cj) ip(cj) if cj.draw then
+cj.draw(cj) return end ix=1 if cj.repeat_x then ix=cj.repeat_x end
 for h=0,ix-1 do local iy=0 if cj.states then
 iy=cj.states[cj.state] else iy=cj[cj.state] end iz(iy,cj.x+(h*(cj.w*8)),cj.y,cj.w,cj.h,cj.trans_col,cj.flip_x) end pal() end function it(cx) ja=ed[cx.face_dir] if cx.gi==1
-and cx.gj then cx.jb+=1 if cx.jb>5 then
+and cx.gj then cx.jb+=1 if cx.jb>cx.frame_delay then
 cx.jb=1 cx.jc+=1 if cx.jc>#cx.gj then cx.jc=1 end
 end jd=cx.gj[cx.jc] else jd=cx.idle[ja] end ip(cx) iz(jd,cx.dw,cx.il,cx.w,cx.h,cx.trans_col,cx.flip,false) if fh
-and fh==cx then if cx.je<7 then
+and fh==cx and fh.talk then if cx.je<7 then
 jd=cx.talk[ja] iz(jd,cx.dw,cx.il+8,1,1,cx.trans_col,cx.flip,false) end cx.je+=1 if cx.je>14 then cx.je=1 end
 end pal() end function hl() jf=""jg=12 jh=gs[2] if not gv then
 if gs then
@@ -1391,6 +1395,10 @@ iv=not iv elseif ik=="~"then if lk then a=a..ik end
 lk,jl=not lk,not jl else if iv==jl and ik>="a"and ik<="z"then
 for ke=1,26 do if ik==sub("abcdefghijklmnopqrstuvwxyz",ke,ke) then
 ik=sub("\65\66\67\68\69\70\71\72\73\74\75\76\77\78\79\80\81\82\83\84\85\86\87\88\89\90\91\92",ke,ke) break end end end a=a..ik iv,lk=false,false end end return a end
+
+
+
+
 
 
 
@@ -1687,7 +1695,7 @@ __map__
 00000000000000000000000000000000070007171717171717171717170700070700076262625e626262666766676262625e6262620700070000000000000000070007090909095a5b09090909070707070007171717171717171717170700071700170808080808080808080817001707000717171717171717171717070007
 00000000000000000000000000000000070007171717171717171717170700070700077474746e747474767776777474746e747474070007000000000000000007000709096667606066670909070707070007171717171717171717170700071700170808080808080808080817001707000717171717171717171717070007
 0000000000000000000000000000200007011131313131313131313131210107070111313131313131313131313131313131313131210107000000000000000007011131317e7e31317e7e3131212807070111313131313131313131312101071702123232323232323232323222021707011131313131313131313131210107
-0000000000100000002000000000000011313131313131313131313131313121113131313131312515151515151515353131313131313121000000000000000011313131313131313131313131313121113131313131313131313131313131211232323232323232323232323232322211313131313131313131313131313121
+0000000000100000002000000000000011313131313131313131313131313121113131313131312515151515151515353131313131313121000000000000000011313131313131253531313131313121113131313131313131313131313131211232323232323232323232323232322211313131313131313131313131313121
 20000000000000000000200000000000313131313131313131313131313131312f2f2f2f2f2f2f2f2f2f3131312f2f2f2f2f2f2f2f2f2f2f000000000000000031313131313131313131313131313131313131313131313131313131313131313232323232323232323232323232323231313131313131313131313131313131
 000000100000200000001f0061626262626262626262626262626263001f00100707071a48491a1a000000000605001a1a1a1a1a1a070707070707504050405040504040405040504050405040070707171717090909090909090909090909090909090909171717000000100000616262626262626262626262626200000010
 002000000000001000001f2071447144714473004e71447344734473001f20000707071a58591a1a000000000006051a1a1a1a1a1a07070707070740504050405040504050405040504050405007070717171709090909090909444444450909090909090917171700200000002071447474744473b271447474447400002000
