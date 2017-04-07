@@ -93,7 +93,7 @@ verb_defcol = 10   -- default action (yellow)
 							print_line("quack!",45,60,10,1)]]
 
 							-- part 4
-							change_room(rm_outside, 1)
+							change_room(rm_mi_dock, 1)
 							
 
 							-- outro
@@ -111,11 +111,11 @@ verb_defcol = 10   -- default action (yellow)
 		end,
 	}
 
--- [ ground floor ]
+-- [ monkey island mini-game ]
 
-	-- outside (front)
+	-- dock
 		-- objects
-			obj_bg = {		
+			obj_mi_bg = {		
 				data = [[
 					x=0
 					y=0
@@ -131,7 +131,7 @@ verb_defcol = 10   -- default action (yellow)
 				end
 			}
 
-			obj_poster = {		
+			obj_mi_poster = {		
 				data = [[
 					name=poster
 					x=32
@@ -146,7 +146,7 @@ verb_defcol = 10   -- default action (yellow)
 				}
 			}
 
-			obj_door = {		
+			obj_mi_scummdoor = {		
 				data = [[
 					name = door
 					state=state_closed
@@ -165,7 +165,6 @@ verb_defcol = 10   -- default action (yellow)
 					end,
 					open = function(me)
 						open_door(me, obj_front_door_inside)
-						--camera_follow(purp_tentacle)
 					end,
 					close = function(me)
 						close_door(me, obj_front_door_inside)
@@ -173,15 +172,15 @@ verb_defcol = 10   -- default action (yellow)
 				}
 			}
 
-		rm_outside = {
+		rm_mi_dock = {
 			data = [[
 				map = {0,8,39,15}
 				trans_col = 11
 			]],
 			objects = {
-				obj_bg,
-				obj_poster,
-				obj_door
+				obj_mi_bg,
+				obj_mi_poster,
+				obj_mi_scummdoor
 			},
 			enter = function(me)
 				-- 
@@ -191,9 +190,9 @@ verb_defcol = 10   -- default action (yellow)
 					-- don't do this again
 					me.done_intro = true
 					-- set which actor the player controls by default
-					selected_actor = main_actor
+					selected_actor = mi_actor
 					-- init actor
-					put_actor_at(selected_actor, 20, 60, rm_outside)
+					put_actor_at(selected_actor, 20, 60, rm_mi_dock)
 					
 					
 					
@@ -242,7 +241,7 @@ verb_defcol = 10   -- default action (yellow)
 rooms = {
 	rm_void,
 	rm_title,
-	rm_outside
+	rm_mi_dock
 }
 
 
@@ -252,9 +251,9 @@ rooms = {
 -- 
 
 	-- initialize the player's actor object
-	main_actor = { 	
+	mi_actor = { 	
 		data = [[
-			name = humanoid
+			name = guybrush
 			w = 1
 			h = 2
 			idle = { 47, 47, 15, 47 }
@@ -283,7 +282,7 @@ rooms = {
 -- active actors list
 -- 
 actors = {
-	main_actor
+	mi_actor
 	--purp_tentacle
 }
 
@@ -297,10 +296,10 @@ function startup_script()
 	-- set which room to start the game in 
 	-- (e.g. could be a "pseudo" room for title screen!)
 
-	-- pickup_obj(obj_switch_tent, main_actor)
+	-- pickup_obj(obj_switch_tent, mi_actor)
 	-- pickup_obj(obj_switch_player, purp_tentacle)
 			-- 
-	change_room(rm_outside, 1) -- iris fade
+	change_room(rm_mi_dock, 1) -- iris fade
 	--change_room(rm_title, 1) -- iris fade
 
 	--room_curr = rm_title
@@ -560,7 +559,7 @@ __gfx__
 0000000000000000000100010101010111111111111c111c1c1c1c1c00000000000000000000000000000000000000001aaaaaa10000000000000000f7777f88
 00000000000000000000000000000000c1c1c1c1c1c1c1c1c1c1c1c1bbbbbbbbbbbbbb4400bbbbbbbbbbbbbb000000001aaaaaa10000000000000000f7777f88
 000000000000000000000000000000001c1c1c1c1c1c1c1c1c1c1c1cbbbbbbbbbbbb44000000bbbbbbbbbbbb000000001aaaaaa10000000000000000f5500f88
-00000000000000000000000000000000c1c1c1c1c1c1c1c1e1e1e1e1bbbbbbbbbb440000000000bbbbbbbbbb001010001aaaaaa1000000000000000085500888
+00000000000000000000000000000000c1c1c1c1c1c1c1c1c1c1c1c1bbbbbbbbbb440000000000bbbbbbbbbb001010001aaaaaa1000000000000000085500888
 000000000000000000000000000000001c1c1c1c1e1e1e1e1e1e1e1ebbbbbbbb4400000000000000bbbbbbbb000000001aaaaaa1000000000000000085000888
 00000000000000000000000000000000c1c1c1c1c2c2c2c2e2e2e2e2bbbbbb44000000000000000000bbbbbb010001001aaaaaa1000000000000000080080888
 000000000000000000000000000000001c1c1c1c2e2e2e2e2e99992ebbbb440000000000000000000000bbbb001110001aaaaaa1000000000000000088787888
