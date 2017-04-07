@@ -2261,10 +2261,7 @@ function room_draw()
 				palt(0, false)
 				palt(room_curr.trans_col, true)
 			end
-			-- d("-----> map_x:"..room_curr.map[1])
-			-- d("-----> map_y:"..room_curr.map[2])
 			map(room_curr.map[1], room_curr.map[2], 0, stage_top, room_curr.map_w, room_curr.map_h)
-			--map(room_curr.map_x, room_curr.map_y, 0, stage_top, room_curr.map_w , room_curr.map_h)
 			--reset palette
 			pal()		
 		else
