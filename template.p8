@@ -879,7 +879,7 @@ verb_defcol = 10   -- default action (yellow)
 
 							-- intro
 							break_time(50)
-							--print_line("deep in the caribbean:on the isle of...; ;thimbleweed!",64,45,8,1,true)
+							print_line("deep in the caribbean:on the isle of...; ;thimbleweed!",64,45,8,1,true)
 
 							change_room(rm_mi_dock, 1)
 							
@@ -1002,8 +1002,8 @@ verb_defcol = 10   -- default action (yellow)
 
 					
 					
-					--say_line("there's something very famililar about all this...")
-					say_line("i'm a pirate!")
+					say_line("this all seems very famililar...")
+					--say_line("i'm a pirate!")
 
 				end
 			end,
@@ -1281,13 +1281,13 @@ function startup_script()
 	-- make camera follow player
 	-- (setting now, will be re-instated after cutscene)
 	camera_follow(selected_actor)
-	change_room(rm_computer, 1) -- iris fade
+--	change_room(rm_computer, 1) -- iris fade
 	
 
 
 	--change_room(rm_title, 1) -- iris fade
 
-	--room_curr = rm_title
+	room_curr = rm_computer
 end
 
 
