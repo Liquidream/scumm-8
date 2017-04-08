@@ -1196,8 +1196,8 @@ function get_use_pos(obj)
 
 	-- first check for specific pos
 	if type(obj_use_pos) == "table" then
-		x = obj_use_pos[1]-cam_x
-		y = obj_use_pos[2]-stage_top
+		x = obj_use_pos[1] -- -cam_x
+		y = obj_use_pos[2] -- -stage_top
 
 	-- determine use pos
 	elseif obj_use_pos == "pos_left" then

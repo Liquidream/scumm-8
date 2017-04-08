@@ -781,6 +781,7 @@ verb_defcol = 10   -- default action (yellow)
 			},
 		}
 
+--use_pos={66,48}
 
 	-- computer room
 		-- objects
@@ -795,12 +796,12 @@ verb_defcol = 10   -- default action (yellow)
 					h=2
 					trans_col=8
 					state_here=74
-					use_pos={66,48}
+					use_pos={64,48}
 					use_dir = face_back
 				]],
 				verbs = {
 					lookat = function(me)
-						say_line("it's old \"286\" pc-compatible computer!")
+						say_line("it's old \"286\" pc-compatible")
 					end,
 					use = function(me)
 						change_room(rm_mi_title, 1)
@@ -861,7 +862,7 @@ verb_defcol = 10   -- default action (yellow)
 	-- title "room"
 		rm_mi_title = {
 			data = [[
-				map = {111,0}
+				map = {112,0}
 			]],
 			objects = {
 			},
@@ -1329,7 +1330,7 @@ ct=cu(cw) end yield() end end start_script(cy,true) if cw.in_room!=room_curr the
 change_room(cw.in_room,1) end end function camera_pan_to(cs) cv=cu(cs) cw=nil cy=function() while(true) do if ct==cv then
 cv=nil return elseif cv>ct then ct+=0.5 else ct-=0.5 end yield() end end start_script(cy,true) end function wait_for_camera() while script_running(cy) do yield() end end function cutscene(cz,da,db) dc={cz=cz,dd=cocreate(da),de=db,df=cw} add(dg,dc) dh=dc break_time() end function dialog_set(di) for msg in all(di) do dialog_add(msg) end end function dialog_add(msg) if not dj then dj={dk={},dl=false} end
 dm=dn(msg,32) dp=dq(dm) dr={num=#dj.dk+1,msg=msg,dm=dm,ds=dp} add(dj.dk,dr) end function dialog_start(col,dt) dj.col=col dj.dt=dt dj.dl=true selected_sentence=nil end function dialog_hide() dj.dl=false end function dialog_clear() dj.dk={} selected_sentence=nil end function dialog_end() dj=nil end function get_use_pos(cj) local du=cj.use_pos local x=cj.x-ct local y=cj.y if type(du)=="table"then
-x=du[1]-ct y=du[2]-dv elseif du=="pos_left"then if cj.dw then
+x=du[1] y=du[2] elseif du=="pos_left"then if cj.dw then
 x-=(cj.w*8+4) y+=1 else x-=2 y+=((cj.h*8)-2) end elseif du=="pos_right"then x+=(cj.w*8) y+=((cj.h*8)-2) elseif du=="pos_above"then x+=((cj.w*8)/2)-4 y-=2 elseif du=="pos_center"then x+=((cj.w*8)/2) y+=((cj.h*8)/2)-4 elseif du=="pos_infront"or du==nil then x+=((cj.w*8)/2)-4 y+=(cj.h*8)+2 end return{x=x,y=y} end function do_anim(cx,dx,dy) dz={"face_front","face_left","face_back","face_right"} if dx=="anim_face"then
 if type(dy)=="table"then
 ea=atan2(cx.x-dy.x,dy.y-cx.y) eb=93*(3.1415/180) ea=eb-ea ec=ea*360 ec=ec%360 if ec<0 then ec+=360 end
@@ -1411,7 +1412,7 @@ selected_actor.ia+=1 end end return end if gt!=nil
 and not gv then if gs[2]=="use"or gs[2]=="give"then
 if gu then
 elseif gt.use_with and gt.owner==selected_actor then return end end gv=true selected_actor.dd=cocreate(function() if(not gt.owner
-and(not has_flag(gt.classes,"class_actor") or gs[2]!="use")) or gu then ib=gu or gt ic=get_use_pos(ib) walk_to(selected_actor,ic.x,ic.y) if selected_actor.gi!=2 then return end
+and(not has_flag(gt.classes,"class_actor") or gs[2]!="use")) or gu then printh("11aa") ib=gu or gt ic=get_use_pos(ib) printh("usepos x="..ic.x..", y="..ic.y) walk_to(selected_actor,ic.x,ic.y) if selected_actor.gi!=2 then return end
 use_dir=ib if ib.use_dir then use_dir=ib.use_dir end
 do_anim(selected_actor,"anim_face",use_dir) end if valid_verb(gs,gt) then
 start_script(gt.verbs[gs[1]],false,gt,gu) else cn(gs[2],gt,gu) end et() end) coresume(selected_actor.dd) elseif gl>dv and gl<dv+64 then gv=true selected_actor.dd=cocreate(function() walk_to(selected_actor,gk,gl-dv) et() end) coresume(selected_actor.dd) end end function hd() hw,hy,hx,hv,hz=nil,nil,nil,nil,nil if dj
