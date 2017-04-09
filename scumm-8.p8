@@ -41,11 +41,12 @@ verb_default = {
 } 
 
 
-verb_maincol = 12  -- main color (lt blue)
-verb_hovcol = 7    -- hover color (white)
-verb_shadcol = 1   -- shadow (dk blue)
-verb_defcol = 10   -- default action (yellow)
-
+function reset_ui()
+	verb_maincol = 12  -- main color (lt blue)
+	verb_hovcol = 7    -- hover color (white)
+	verb_shadcol = 1   -- shadow (dk blue)
+	verb_defcol = 10   -- default action (yellow)
+end
 
 -- 
 -- room & object definitions
@@ -900,13 +901,15 @@ actors = {
 
 -- this script is execute once on game startup
 function startup_script()	
-	-- set which room to start the game in 
-	-- (e.g. could be a "pseudo" room for title screen!)
+	-- set ui colors
+	reset_ui()
 
+	-- set initial inventory (if applicable)
 	pickup_obj(obj_switch_tent, main_actor)
 	pickup_obj(obj_switch_player, purp_tentacle)
-			-- 
 
+	-- set which room to start the game in 
+	-- (e.g. could be a "pseudo" room for title screen!)
 	--change_room(rm_library, 1) -- iris fade
 	change_room(rm_title, 1) -- iris fade
 end
@@ -1142,7 +1145,9 @@ function cutscene(flags, func_cutscene, func_override)
 	add(cutscenes, cut)
 	-- set as active cutscene
 	cutscene_curr = cut
+
 	-- yield for system catch-up
+	-- todo: see if this is still needed!
 	break_time()
 end
 

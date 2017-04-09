@@ -17,7 +17,7 @@ __lua__
 
 
 -- debugging
-show_debuginfo = false
+show_debuginfo = true
 show_collision = false
 --show_pathfinding = true
 show_perfinfo = false
@@ -45,10 +45,13 @@ verb_default = {
 } 
 
 
-verb_maincol = 12  -- main color (lt blue)
-verb_hovcol = 7    -- hover color (white)
-verb_shadcol = 1   -- shadow (dk blue)
-verb_defcol = 10   -- default action (yellow)
+function reset_ui()
+	verb_maincol = 12  -- main color (lt blue)
+	verb_hovcol = 7    -- hover color (white)
+	verb_shadcol = 1   -- shadow (dk blue)
+	verb_defcol = 10   -- default action (yellow)
+end
+
 
 
 -- 
@@ -780,8 +783,6 @@ verb_defcol = 10   -- default action (yellow)
 			},
 		}
 
---use_pos={66,48}
-
 	-- computer room
 		-- objects
 			obj_computer = {		
@@ -803,9 +804,8 @@ verb_defcol = 10   -- default action (yellow)
 						say_line("it's old \"286\" pc-compatible")
 					end,
 					use = function(me)
-						change_room(rm_mi_title, 1)
-
-					
+						me.played = true
+						change_room(rm_mi_title, 1)					
 					end
 				}
 			}
@@ -834,7 +834,33 @@ verb_defcol = 10   -- default action (yellow)
 				obj_cursor
 			},
 			enter = function(me)
+				-- just exited the game?
+				d("1")
 				start_script(me.scripts.anim_cursor, true) 
+
+				if obj_computer.played then
+					obj_computer.played = false
+					selected_actor = main_actor
+					cutscene(
+						3, -- no verbs & no follow, 
+						function()
+							-- reset gfx,ui & player (to restore after playing mini-game)
+							d("2")
+							reload()
+							d("3")
+							reset_ui()
+							d("4")
+							--selected_actor = main_actor
+							d("5")
+							do_anim(selected_actor, "anim_face", "face_front")
+							d("6")
+							say_line("well, that was short!;developers are so lazy")
+							d("6.5")
+							--say_line("test")
+						end
+					) -- end cutscene
+				end
+				d("7")
 			end,
 			exit = function(me)
 				stop_script(me.scripts.anim_cursor)
@@ -869,18 +895,18 @@ verb_defcol = 10   -- default action (yellow)
 			},
 			enter = function(me)
 
-					-- load embedded gfx (from sfx area)
-						reload(0,0x3b00,0x800)
+				-- load embedded gfx (from sfx area)
+				reload(0,0x3b00,0x800)
 
 				-- demo intro
 					cutscene(
 						3, -- no verbs & no follow, 
 						function()
-
+--[[
 							-- intro
 							break_time(50)
 							print_line("deep in the caribbean:on the isle of...; ;thimbleweed!",64,45,8,1,true)
-
+]]
 							change_room(rm_mi_dock, 1)
 							
 						end
@@ -940,8 +966,10 @@ verb_defcol = 10   -- default action (yellow)
 				verbs = {
 					walkto = function(me)
 						-- outro
-						change_room(rm_title, 1)
-						
+						--selected_actor = main_actor
+						--camera_follow(selected_actor)
+						change_room(rm_computer, 1)
+						--change_room(rm_title, 1)
 					end,
 					open = function(me)
 						open_door(me, obj_front_door_inside)
@@ -979,31 +1007,17 @@ verb_defcol = 10   -- default action (yellow)
 					-- init actor
 					put_actor_at(selected_actor, 212, 60, rm_mi_dock)
 					
-					
-					
-					-- make camera follow player
-					-- (setting now, will be re-instated after cutscene)
-				--	camera_follow(selected_actor)
+				
 
-
-					--[[camera_at(140)
-					break_time(50)
-					camera_pan_to(0,60)
-					wait_for_camera()
-					camera_follow(selected_actor)]]
-
-					camera_at(0)
+					--[[camera_at(0)
 					break_time(30)
 					camera_pan_to(212,60)
 					wait_for_camera()
 					camera_follow(selected_actor)
 					
-				
+					say_line("this all seems very famililar...")]]
 
-					
-					
-					say_line("this all seems very famililar...")
-					--say_line("i'm a pirate!")
+					camera_follow(selected_actor)
 
 				end
 			end,
@@ -1267,9 +1281,10 @@ actors = {
 
 -- this script is execute once on game startup
 function startup_script()	
-	-- set which room to start the game in 
-	-- (e.g. could be a "pseudo" room for title screen!)
+	-- set ui colors
+	reset_ui()
 
+	-- set initial inventory (if applicable)
 	pickup_obj(obj_switch_tent, main_actor)
 	pickup_obj(obj_switch_player, purp_tentacle)
 	
@@ -1284,7 +1299,8 @@ function startup_script()
 --	change_room(rm_computer, 1) -- iris fade
 	
 
-
+	-- set which room to start the game in 
+	-- (e.g. could be a "pseudo" room for title screen!)
 	--change_room(rm_title, 1) -- iris fade
 
 	room_curr = rm_computer
