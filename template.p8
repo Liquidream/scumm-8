@@ -835,32 +835,23 @@ end
 			},
 			enter = function(me)
 				-- just exited the game?
-				d("1")
 				start_script(me.scripts.anim_cursor, true) 
 
 				if obj_computer.played then
 					obj_computer.played = false
-					selected_actor = main_actor
 					cutscene(
 						3, -- no verbs & no follow, 
 						function()
 							-- reset gfx,ui & player (to restore after playing mini-game)
-							d("2")
 							reload()
-							d("3")
 							reset_ui()
-							d("4")
-							--selected_actor = main_actor
-							d("5")
+							selected_actor = main_actor
 							do_anim(selected_actor, "anim_face", "face_front")
-							d("6")
 							say_line("well, that was short!;developers are so lazy")
-							d("6.5")
 							--say_line("test")
 						end
 					) -- end cutscene
 				end
-				d("7")
 			end,
 			exit = function(me)
 				stop_script(me.scripts.anim_cursor)
