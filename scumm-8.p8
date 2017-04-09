@@ -1327,8 +1327,10 @@ function come_out_door(from_door, to_door, fade_effect)
 		-- go to new room!
 		new_room = to_door.in_room
 
-		-- switch to new room and...
-		change_room(new_room, fade_effect)
+		if from_door.in_room != to_door.in_room then
+			-- switch to new room and...
+			change_room(new_room, fade_effect)
+		end
 		-- ...auto-position actor at to_door in new room...
 		local pos = get_use_pos(to_door)
 		put_actor_at(selected_actor, pos.x, pos.y, new_room)
