@@ -966,6 +966,7 @@ end
 							reload()
 							reset_ui()
 							selected_actor = main_actor
+							camera_follow(selected_actor)
 							do_anim(selected_actor, "anim_face", "face_front")
 							say_line("well, that was short!;developers are so lazy")
 							--say_line("test")
