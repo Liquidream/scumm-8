@@ -10,7 +10,7 @@ __lua__
 -- token counts:
 --   > 6790 (after more token hunting) 
 --   > 6832 (after adding "use" object/actor & fix shake crop)
-
+--   > 6904 (before door "targets")
 
 -- debugging
 show_debuginfo = true
@@ -72,34 +72,7 @@ end
 						3, -- no verbs & no follow, 
 						function()
 
-							-- intro
-		--[[					break_time(50)
-							print_line("in a galaxy not far away...",64,45,8,1)]]
-		--[[			change_room(rm_hall, 1)
-							shake(true)
-							start_script(rm_hall.scripts.spin_top,false,true)
-							print_line("cozy fireplaces...",90,20,8,1)
-							print_line("(just look at it!)",90,20,8,1)
-							shake(false)]]
-
-		--[[					-- part 2
-							change_room(rm_kitchen, 1)
-							print_line("strange looking aliens...",30,20,8,1,false,true)
-							put_actor_at(purp_tentacle, 130, purp_tentacle.y, rm_kitchen)
-							walk_to(purp_tentacle, 
-								purp_tentacle.x-30, 
-								purp_tentacle.y)
-							wait_for_actor(purp_tentacle)
-							say_line(purp_tentacle, "what did you call me?!")
-
-							-- part 3
-							change_room(rm_garden, 1)
-							print_line("and even swimming pools!",90,20,8,1,false,true)
-							camera_at(200)
-							camera_pan_to(0)
-							wait_for_camera()
-							print_line("quack!",45,60,10,1)]]
-
+			
 							-- part 4
 							change_room(rm_outside, 1)
 							
@@ -122,35 +95,25 @@ end
 
 -- [ ground floor ]
 
-
-
 	-- hall
 		-- objects
 			obj_front_door_inside = {		
 				data = [[
 					name = front door
-					state = state_closed
+					state = state_closed					
 					x=8
 					y=16
 					z=1
 					w=1
 					h=4
 					state_closed=79
-					classes = {class_openable}
+					classes = {class_openable, class_door}
 					use_pos = pos_right
 					use_dir = face_left
 				]],
-				verbs = {
-					walkto = function(me)
-						come_out_door(me, obj_front_door)
-					end,
-					open = function(me)
-						open_door(me, obj_front_door)
-					end,
-					close = function(me)
-						close_door(me, obj_front_door)
-					end
-				}
+				get_target_door = function()  
+					return obj_front_door
+				end
 			}
 
 			obj_hall_exit_landing = {		
@@ -163,12 +126,11 @@ end
 					h=2
 					use_dir = face_back
 					use_pos = pos_center
+					classes = {class_door}
 				]],
-				verbs = {
-					walkto = function(me)
-						come_out_door(me, obj_landing_exit_hall)
-					end
-				}
+				get_target_door = function()  
+					return obj_landing_exit_hall
+				end
 			}
 
 			obj_hall_door_library = {		
@@ -180,12 +142,11 @@ end
 					w=1
 					h=3
 					use_dir = face_back
+					classes = {class_door}
 				]],
-				verbs = {
-					walkto = function(me)
-						come_out_door(me, obj_library_door_hall)
-					end
-				}
+				get_target_door = function()  
+					return obj_library_door_hall
+				end
 			}
 
 			obj_hall_door_kitchen = {		
@@ -198,12 +159,11 @@ end
 					h=4
 					use_pos = pos_left
 					use_dir = face_right
+					classes = {class_door}
 				]],
-				verbs = {
-					walkto = function(me)
-						come_out_door(me, obj_kitchen_door_hall)
-					end
-				}
+				get_target_door = function()  
+					return obj_kitchen_door_hall
+				end
 			}
 
 			obj_bucket = {		
@@ -398,12 +358,11 @@ end
 					w=1
 					h=3
 					use_dir = face_back
+					classes = {class_door}
 				]],
-				verbs = {
-					walkto = function(me)
-						come_out_door(me, obj_hall_door_library)
-					end
-				}
+				get_target_door = function()  
+					return obj_hall_door_library
+				end
 			}
 			
 			obj_fire = {
@@ -451,8 +410,8 @@ end
 					classes = {class_untouchable}
 					use_dir = face_back
 				]],
-				verbs = {
-				}
+				--[[verbs = {
+				}]]
 			}
 
 			obj_library_door_secret = {		
@@ -557,12 +516,11 @@ end
 					h=2
 					use_pos = pos_center
 					use_dir = face_front
+					classes = {class_door}
 				]],
-				verbs = {
-					walkto = function(me)
-						come_out_door(me, obj_hall_exit_landing)
-					end
-				}
+				get_target_door = function()  
+					return obj_hall_exit_landing
+				end
 			}
 
 		obj_landing_door_computer = {		
@@ -575,12 +533,11 @@ end
 				h=4
 				use_pos = pos_left
 				use_dir = face_right
+				classes = {class_door}
 			]],
-			verbs = {
-				walkto = function(me)
-					come_out_door(me, obj_computer_door_landing)
-				end
-			}
+			get_target_door = function()  
+				return obj_computer_door_landing
+			end
 		}
 
 		obj_landing_door_room1 = {		
@@ -1332,7 +1289,7 @@ end
 function come_out_door(from_door, to_door, fade_effect)
 	-- check param
 	if to_door == nil then
-		show_error("exit door does not exist")
+		show_error("target door does not exist")
 		return
 	end
 
@@ -2117,8 +2074,24 @@ function input_button_pressed(button_index)
 				-- finally, execute verb script
 				start_script(noun1_curr.verbs[verb_curr[1]], false, noun1_curr, noun2_curr)
 			else
-				-- e.g. "i don't think that will work"
-				unsupported_action(verb_curr[2], noun1_curr, noun2_curr)
+				-- check for door
+				if has_flag(noun1_curr.classes, "class_door") then
+					-- perform default door action
+					--start_script(function()
+						if verb_curr[1] == "walkto" then
+							come_out_door(noun1_curr, noun1_curr.get_target_door())
+						elseif verb_curr[1] == "open" then
+							open_door(noun1_curr, noun1_curr.target_door)
+						elseif verb_curr[1] == "close" then
+							close_door(noun1_curr, noun1_curr.target_door)
+						end
+					--end, false)
+				else
+					d("7")
+					-- e.g. "i don't think that will work"
+					unsupported_action(verb_curr[2], noun1_curr, noun2_curr)
+				end
+				d("8")
 			end
 			-- clear current command
 			clear_curr_cmd()
