@@ -126,7 +126,7 @@ end
 					h=2
 					use_dir = face_back
 					use_pos = pos_center
-					classes = {class_door}
+					classes = { class_door }
 				]],
 				init = function(me)  
 					me.target_door = obj_landing_exit_hall
@@ -2045,7 +2045,7 @@ function input_button_pressed(button_index)
 
 		-- execute verb script
 		executing_cmd = true
-		selected_actor.thread = cocreate(function() --actor, obj, verb, noun2)
+		selected_actor.thread = cocreate(function()
 			-- if obj not in inventory (or about to give/use it)...
 			if (not noun1_curr.owner 
 				   and (not has_flag(noun1_curr.classes, "class_actor")
