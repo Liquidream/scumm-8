@@ -122,101 +122,7 @@ end
 
 -- [ ground floor ]
 
-	-- outside (front)
-		-- objects
-			obj_rail_left = {		
-				data = [[
-					state=state_here
-					x=80
-					y=24
-					w=1
-					h=2
-					state_here=47
-					repeat_x = 8
-					classes = {class_untouchable}
-				]],
-			}
 
-			obj_rail_right = {		
-				data = [[
-					state=state_here
-					x=176
-					y=24
-					w=1
-					h=2
-					state_here=47
-					repeat_x = 8
-					classes = {class_untouchable}
-				]],
-			}
-
-			obj_front_door = {		
-				data = [[
-					name = front door
-					state=state_closed
-					x=152
-					y=8
-					w=1
-					h=3
-					state_closed=78
-					flip_x = true
-					classes = {class_openable}
-					use_dir = face_back
-				]],
-				verbs = {
-					walkto = function(me)
-						come_out_door(me, obj_front_door_inside)
-					end,
-					open = function(me)
-						open_door(me, obj_front_door_inside)
-						--camera_follow(purp_tentacle)
-					end,
-					close = function(me)
-						close_door(me, obj_front_door_inside)
-					end
-				}
-			}
-
-		rm_outside = {
-			data = [[
-				map = {0,24,31,31}
-			]],
-			objects = {
-				obj_rail_left,
-				obj_rail_right,
-				obj_front_door
-			},
-			enter = function(me)
-				-- 
-				-- initialise game in first room entry...
-				-- 
-				if not me.done_intro then
-					-- don't do this again
-					me.done_intro = true
-					-- set which actor the player controls by default
-					selected_actor = main_actor
-					-- init actor
-					put_actor_at(selected_actor, 144, 36, rm_outside)
-					-- make camera follow player
-					-- (setting now, will be re-instated after cutscene)
-					camera_follow(selected_actor)
-					-- do cutscene
-					-- cutscene(
-					-- 	1, -- no verbs
-					-- 	-- cutscene code (hides ui, etc.)
-					-- 	function()
-					-- 		camera_at(0)
-					-- 		camera_pan_to(selected_actor)
-					-- 		wait_for_camera()
-					-- 		say_line("let's do this")
-					-- 	end
-					-- )
-				end
-			end,
-			exit = function(me)
-				-- todo: anything here?
-			end,
-		}
 
 	-- hall
 		-- objects
@@ -480,7 +386,7 @@ end
 			},
 		}
 
-	-- library
+-- library
 		-- objects
 			
 			obj_library_door_hall = {		
@@ -511,8 +417,8 @@ end
 					states={81,82,83}
 					lighting = 1
 				]],
-				dependent_on = obj_front_door_inside,
-				dependent_on_state = "state_open",
+				--dependent_on = obj_front_door_inside,
+				--dependent_on_state = "state_open",
 				verbs = {
 					lookat = function()
 						say_line("it's a nice, warm fire...")
@@ -578,7 +484,7 @@ end
 					y=16
 					w=1
 					h=1
-					use_pos={140,60}
+					use_pos={140,40}
 					classes = {class_pickupable}
 				]],
 				verbs = {
@@ -635,7 +541,9 @@ end
 		}
 		
 
+
 -- [ second floor ]
+
 
 	-- landing
 		-- objects
@@ -657,12 +565,100 @@ end
 				}
 			}
 
+		obj_landing_door_computer = {		
+			data = [[
+				name = computer room
+				state = state_open
+				x=176
+				y=16
+				w=1
+				h=4
+				use_pos = pos_left
+				use_dir = face_right
+			]],
+			verbs = {
+				walkto = function(me)
+					come_out_door(me, obj_computer_door_landing)
+				end
+			}
+		}
+
+		obj_landing_door_room1 = {		
+				data = [[
+					name = door #1
+					state = state_closed
+					x=8
+					y=16
+					z=1
+					w=1
+					h=4
+					state_closed=79
+					state_open=0
+					classes = {class_openable}
+					use_pos = pos_right
+					use_dir = face_left
+				]],
+				verbs = {
+					open = function(me)
+						rm_landing.scripts.door_teleport(me, obj_landing_door_room3)
+					end
+				}
+			}
+
+		obj_landing_door_room2 = {		
+				data = [[
+					name = door #2
+					state = state_closed
+					x=48
+					y=16
+					z=1
+					w=1
+					h=3
+					state_closed=78
+					classes = {class_openable}
+					use_pos = pos_infront
+					use_dir = face_back
+				]],
+				verbs = {
+					open = function(me)
+						rm_landing.scripts.door_teleport(me, obj_landing_door_room3)
+					end
+				}
+			}
+		
+		obj_landing_door_room3 = {		
+				data = [[
+					name = door #3
+					state = state_closed
+					x=136
+					y=16
+					z=1
+					w=1
+					h=3
+					state_closed=78
+					state_open=0
+					classes = {class_openable}
+					use_pos = pos_infront
+					use_dir = face_back
+				]],
+				verbs = {
+					open = function(me)
+						rm_landing.scripts.door_teleport(me, obj_landing_door_room1)
+					end
+				}
+			}
+		
+
 		rm_landing = {
 			data = [[
 				map = {32,16,55,31}
 			]],
 			objects = {
-				obj_landing_exit_hall
+				obj_landing_exit_hall,
+				obj_landing_door_room1,
+				obj_landing_door_room2,
+				obj_landing_door_room3,
+				obj_landing_door_computer
 			},
 			enter = function(me)
 				
@@ -671,9 +667,21 @@ end
 
 			end,
 			scripts = {	  
+				door_teleport = function(door1, door2)
+					open_door(door1)
+					break_time(10)
+					put_actor_at(selected_actor,0,0,rm_void)
+					close_door(door1)
+					camera_pan_to(door2)
+					wait_for_camera()
+					open_door(door1, door2)
+					break_time(10)
+					come_out_door(door1, door2)
+					close_door(door1,door2)
+					camera_follow(selected_actor)
+				end
 			},
 		}
-
 
 
 
@@ -911,7 +919,12 @@ function startup_script()
 	-- set which room to start the game in 
 	-- (e.g. could be a "pseudo" room for title screen!)
 	--change_room(rm_library, 1) -- iris fade
-	change_room(rm_title, 1) -- iris fade
+
+	selected_actor = main_actor
+	put_actor_at(selected_actor,60,60,rm_hall)
+	camera_follow(selected_actor)
+
+	change_room(rm_hall, 1) -- iris fade
 end
 
 
@@ -1196,7 +1209,7 @@ end
 
 function get_use_pos(obj)
 	local obj_use_pos = obj.use_pos
-	local x = obj.x -cam_x
+	local x = obj.x -- -cam_x
 	local y = obj.y
 
 	-- first check for specific pos
@@ -1327,14 +1340,15 @@ function come_out_door(from_door, to_door, fade_effect)
 		-- go to new room!
 		new_room = to_door.in_room
 
-		if from_door.in_room != to_door.in_room then
+		if new_room != room_curr then
 			-- switch to new room and...
 			change_room(new_room, fade_effect)
 		end
+	
 		-- ...auto-position actor at to_door in new room...
 		local pos = get_use_pos(to_door)
 		put_actor_at(selected_actor, pos.x, pos.y, new_room)
-
+	
 		-- ...in opposite use direction!
 		dir_opp = { 
 			face_front="face_back", 
@@ -1355,6 +1369,7 @@ function come_out_door(from_door, to_door, fade_effect)
 		selected_actor.face_dir = opp_dir
 		-- is target dir left? flip?
 		selected_actor.flip = (selected_actor.face_dir == "face_left")
+
 	else
 		say_line("the door is closed")
 	end
@@ -1623,7 +1638,7 @@ end
 -- walk actor to position
 function walk_to(actor, x, y)
 		--offset for camera
-		x += cam_x
+	--	x += cam_x
 
 		local actor_cell_pos = getcellpos(actor)
 		local celx = flr(x /8) + room_curr.map[1]
@@ -2114,7 +2129,7 @@ function input_button_pressed(button_index)
 		executing_cmd = true
 		-- attempt to walk to target
 		selected_actor.thread = cocreate(function() --(x,y)
-			walk_to(selected_actor, cursor_x, cursor_y - stage_top)
+			walk_to(selected_actor, cursor_x+cam_x, cursor_y - stage_top)
 			--walk_to(selected_actor, x, y)
 			-- clear current command
 			clear_curr_cmd()
@@ -3332,9 +3347,9 @@ __map__
 3131313131313131313131313131313132323232323232323232323232323232313131313131313131313131313131313232323232323232323232323232323231313131313131313131313131313131323232323232323232323232323232323131313131313131313131313131313132323232323232323232323232323232
 0000000000000000002000000000002007070717171717171717171717070707070707080808080808614050405063080808080808070707000000000000000017171708080808080808080808171717070707171717171717171717170707071717170808080808080808080817171707070717171717171717171717070707
 0020000000000000000000000010000007070717171717171717171717070707070707080808080808715040504073080808080808070707000000000000000017171708080808080808080808171717070707171717171717171717170707071717170808080808080808080817171707070717171717171717171717070707
-00000020000000000000000000000000070007171717171717171717170700070700070808084e080871405040507308084e080808070007000000000000000017001708080808080808080808170017070007171717171717171717170700071700170808080808080808080817001707000717171717171717171717070007
-00000000000000000000000000000000070007171717171717171717170700070700076262625e626271666766677362625e626262070007000000000000000017001708080808080808080808170017070007171717171717171717170700071700170808080808080808080817001707000717171717171717171717070007
-00000000000000000000000000000000070007171717171717171717170700070700077474746e747471767776777374746e747474070007000000000000000017001708080808080808080808170017070007171717171717171717170700071700170808080808080808080817001707000717171717171717171717070007
+0000002000000000000000000000000007000717171717171717171717070007070007080808000808714050405073080800080808070007000000000000000017001708080808080808080808170017070007171717171717171717170700071700170808080808080808080817001707000717171717171717171717070007
+0000000000000000000000000000000007000717171717171717171717070007070007626262006262716667666773626200626262070007000000000000000017001708080808080808080808170017070007171717171717171717170700071700170808080808080808080817001707000717171717171717171717070007
+0000000000000000000000000000000007000717171717171717171717070007070007747474007474717677767773747400747474070007000000000000000017001708080808080808080808170017070007171717171717171717170700071700170808080808080808080817001707000717171717171717171717070007
 0000000000000000000000000000200007011131313131313131313131210107070111313131313131313131313131313131313131210107000000000000000017021232323232323232323232220217070111313131313131313131312101071702123232323232323232323222021707011131313131313131313131210107
 0000000000100000002000000000000011313131313131313131313131313121113131313131312515151515151515353131313131313121000000000000000012323232323232323232323232323222113131313131313131313131313131211232323232323232323232323232322211313131313131313131313131313121
 2000000000000000000020000000000031313131313131313131313131313131312f2f2f2f2f2f2f2f2f3131312f2f2f2f2f2f2f2f2f2f2f000000000000000032323232323232323232323232323232313131313131313131313131313131313232323232323232323232323232323231313131313131313131313131313131

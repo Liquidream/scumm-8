@@ -515,8 +515,8 @@ end
 					states={81,82,83}
 					lighting = 1
 				]],
-				dependent_on = obj_front_door_inside,
-				dependent_on_state = "state_open",
+				-- dependent_on = obj_front_door_inside,
+				-- dependent_on_state = "state_open",
 				verbs = {
 					lookat = function()
 						say_line("it's a nice, warm fire...")
@@ -582,7 +582,7 @@ end
 					y=16
 					w=1
 					h=1
-					use_pos={140,60}
+					use_pos={140,40}
 					classes = {class_pickupable}
 				]],
 				verbs = {
@@ -869,11 +869,16 @@ end
 			end,
 			scripts = {	  
 				door_teleport = function(door1, door2)
-					open_door(door1, door2)
+					open_door(door1)
+					break_time(10)
+					put_actor_at(selected_actor,0,0,rm_void)
+					close_door(door1)
 					camera_pan_to(door2)
 					wait_for_camera()
+					open_door(door1, door2)
+					break_time(10)
 					come_out_door(door1, door2)
-					close_door(door1, door2)
+					close_door(door1,door2)
 					camera_follow(selected_actor)
 				end
 			},
@@ -1449,201 +1454,200 @@ end
 -- (you should not need to modify anything below here!)
 
 
-
-function shake(cg) if cg then
-ch=1 end ci=cg end function cj(ck) local cl=nil if has_flag(ck.classes,"class_talkable") then
-cl="talkto"elseif has_flag(ck.classes,"class_openable") then if ck.state=="state_closed"then
-cl="open"else cl="close"end else cl="lookat"end for cm in all(verbs) do cn=get_verb(cm) if cn[2]==cl then cl=cm break end
-end return cl end function co(cp,cq,cr) local cs=has_flag(cq.classes,"class_actor") if cp=="walkto"then
-return elseif cp=="pickup"then if cs then
-say_line"i don't need them"else say_line"i don't need that"end elseif cp=="use"then if cs then
-say_line"i can't just *use* someone"end if cr then
-if has_flag(cr.classes,class_actor) then
-say_line"i can't use that on someone!"else say_line"that doesn't work"end end elseif cp=="give"then if cs then
-say_line"i don't think i should be giving this away"else say_line"i can't do that"end elseif cp=="lookat"then if cs then
-say_line"i think it's alive"else say_line"looks pretty ordinary"end elseif cp=="open"then if cs then
-say_line"they don't seem to open"else say_line"it doesn't seem to open"end elseif cp=="close"then if cs then
-say_line"they don't seem to close"else say_line"it doesn't seem to close"end elseif cp=="push"or cp=="pull"then if cs then
-say_line"moving them would accomplish nothing"else say_line"it won't budge!"end elseif cp=="talkto"then if cs then
-say_line"erm... i don't think they want to talk"else say_line"i am not talking to that!"end else say_line"hmm. no."end end function camera_at(ct) cu=cv(ct) cw=nil cx=nil end function camera_follow(cy) stop_script(cz) cx=cy cw=nil cz=function() while cx do if cx.in_room==room_curr then
-cu=cv(cx) end yield() end end start_script(cz,true) if cx.in_room!=room_curr then
-change_room(cx.in_room,1) end end function camera_pan_to(ct) cw=cv(ct) cx=nil cz=function() while(true) do if cu==cw then
-cw=nil return elseif cw>cu then cu+=0.5 else cu-=0.5 end yield() end end start_script(cz,true) end function wait_for_camera() while script_running(cz) do yield() end end function cutscene(da,db,dc) dd={da=da,de=cocreate(db),df=dc,dg=cx} add(dh,dd) di=dd break_time() end function dialog_set(dj) for msg in all(dj) do dialog_add(msg) end end function dialog_add(msg) if not dk then dk={dl={},dm=false} end
-dn=dp(msg,32) dq=dr(dn) ds={num=#dk.dl+1,msg=msg,dn=dn,dt=dq} add(dk.dl,ds) end function dialog_start(col,du) dk.col=col dk.du=du dk.dm=true selected_sentence=nil end function dialog_hide() dk.dm=false end function dialog_clear() dk.dl={} selected_sentence=nil end function dialog_end() dk=nil end function get_use_pos(ck) local dv=ck.use_pos local x=ck.x-cu local y=ck.y if type(dv)=="table"then
-x=dv[1] y=dv[2] elseif dv=="pos_left"then if ck.dw then
-x-=(ck.w*8+4) y+=1 else x-=2 y+=((ck.h*8)-2) end elseif dv=="pos_right"then x+=(ck.w*8) y+=((ck.h*8)-2) elseif dv=="pos_above"then x+=((ck.w*8)/2)-4 y-=2 elseif dv=="pos_center"then x+=((ck.w*8)/2) y+=((ck.h*8)/2)-4 elseif dv=="pos_infront"or dv==nil then x+=((ck.w*8)/2)-4 y+=(ck.h*8)+2 end return{x=x,y=y} end function do_anim(cy,dx,dy) dz={"face_front","face_left","face_back","face_right"} if dx=="anim_face"then
-if type(dy)=="table"then
-ea=atan2(cy.x-dy.x,dy.y-cy.y) eb=93*(3.1415/180) ea=eb-ea ec=ea*360 ec=ec%360 if ec<0 then ec+=360 end
-dy=4-flr(ec/90) dy=dz[dy] end face_dir=ed[cy.face_dir] dy=ed[dy] while face_dir!=dy do if face_dir<dy then
-face_dir+=1 else face_dir-=1 end cy.face_dir=dz[face_dir] cy.flip=(cy.face_dir=="face_left") break_time(10) end end end function open_door(ee,ef) if ee.state=="state_open"then
-say_line"it's already open"else ee.state="state_open"if ef then ef.state="state_open"end
-end end function close_door(ee,ef) if ee.state=="state_closed"then
-say_line"it's already closed"else ee.state="state_closed"if ef then ef.state="state_closed"end
-end end function come_out_door(eg,eh,ei) if eh==nil then
-ej("exit door does not exist") return end if eg.state=="state_open"then
-ek=eh.in_room if eg.in_room!=eh.in_room then
-change_room(ek,ei) end local el=get_use_pos(eh) put_actor_at(selected_actor,el.x,el.y,ek) em={face_front="face_back",face_left="face_right",face_back="face_front",face_right="face_left"} if eh.use_dir then
-en=em[eh.use_dir] else en=1 end selected_actor.face_dir=en selected_actor.flip=(selected_actor.face_dir=="face_left") else say_line("the door is closed") end end function fades(eo,bq) if bq==1 then
-ep=0 else ep=50 end while true do ep+=bq*2 if ep>50
-or ep<0 then return end if eo==1 then
-eq=min(ep,32) end yield() end end function change_room(ek,eo) if ek==nil then
-ej("room does not exist") return end stop_script(er) if eo and room_curr then
-fades(eo,1) end if room_curr and room_curr.exit then
-room_curr.exit(room_curr) end es={} et() room_curr=ek if not cx
-or cx.in_room!=room_curr then cu=0 end stop_talking() if eo then
-er=function() fades(eo,-1) end start_script(er,true) else eq=0 end if room_curr.enter then
-room_curr.enter(room_curr) end end function valid_verb(cp,eu) if not eu
-or not eu.verbs then return false end if type(cp)=="table"then
-if eu.verbs[cp[1]] then return true end
-else if eu.verbs[cp] then return true end
-end return false end function pickup_obj(ck,cy) cy=cy or selected_actor add(cy.ce,ck) ck.owner=cy del(ck.in_room.objects,ck) end function start_script(ev,ew,ex,bh) local de=cocreate(ev) local scripts=es if ew then
-scripts=ey end add(scripts,{ev,de,ex,bh}) end function script_running(ev) for ez in all({es,ey}) do for fa,fb in pairs(ez) do if fb[1]==ev then
-return fb end end end return false end function stop_script(ev) fb=script_running(ev) if fb then
-del(es,fb) del(ey,fb) end end function break_time(fc) fc=fc or 1 for x=1,fc do yield() end end function wait_for_message() while fd!=nil do yield() end end function say_line(cy,msg,fe,ff) if type(cy)=="string"then
-msg=cy cy=selected_actor end fg=cy.y-(cy.h)*8+4 fh=cy print_line(msg,cy.x,fg,cy.col,1,fe,ff) end function stop_talking() fd,fh=nil,nil end function print_line(msg,x,y,col,fi,fe,ff) local col=col or 7 local fi=fi or 0 if fi==1 then
-fj=min(x-cu,127-(x-cu)) else fj=127-(x-cu) end local fk=max(flr(fj/2),16) local fl=""for fm=1,#msg do local fn=sub(msg,fm,fm) if fn==":"then
-fl=sub(msg,fm+1) msg=sub(msg,1,fm-1) break end end local dn=dp(msg,fk) local dq=dr(dn) fo=x-cu if fi==1 then
-fo-=((dq*4)/2) end fo=max(2,fo) fg=max(18,y) fo=min(fo,127-(dq*4)-1) fd={fp=dn,x=fo,y=fg,col=col,fi=fi,fq=(#msg)*8,dt=dq,fe=fe} if#fl>0 then
-fr=fh wait_for_message() fh=fr print_line(fl,x,y,col,fi,fe) end if not ff then
-wait_for_message() end end function put_actor_at(cy,x,y,fs) if fs then cy.in_room=fs end
-cy.x,cy.y=x,y end function walk_to(cy,x,y) x+=cu local ft=fu(cy) local fv=flr(x/8)+room_curr.map[1] local fw=flr(y/8)+room_curr.map[2] local fx={fv,fw} local fy=fz(ft,fx) local ga=fu({x=x,y=y}) if gb(ga[1],ga[2]) then
-add(fy,ga) end for gc in all(fy) do local gd=(gc[1]-room_curr.map[1])*8+4 local ge=(gc[2]-room_curr.map[2])*8+4 local gf=sqrt((gd-cy.x)^2+(ge-cy.y)^2) local gg=cy.walk_speed*(gd-cy.x)/gf local gh=cy.walk_speed*(ge-cy.y)/gf if gf>5 then
-cy.gi=1 cy.flip=(gg<0) if abs(gg)<0.4 then
-if gh>0 then
-cy.gj=cy.walk_anim_front cy.face_dir="face_front"else cy.gj=cy.walk_anim_back cy.face_dir="face_back"end else cy.gj=cy.walk_anim_side cy.face_dir="face_right"if cy.flip then cy.face_dir="face_left"end
-end for fm=0,gf/cy.walk_speed do cy.x+=gg cy.y+=gh yield() end end end cy.gi=2 end function wait_for_actor(cy) cy=cy or selected_actor while cy.gi!=2 do yield() end end function proximity(cq,cr) if cq.in_room==cr.in_room then
-local gf=sqrt((cq.x-cr.x)^2+(cq.y-cr.y)^2) return gf else return 1000 end end gk=16 cu,cw,cz,ch=0,nil,nil,0 gl,gm,gn,go=63.5,63.5,0,1 gp={7,12,13,13,12,7} gq={{spr=208,x=75,y=gk+60},{spr=240,x=75,y=gk+72}} ed={face_front=1,face_left=2,face_back=3,face_right=4} function gr(ck) local gs={} for fa,cm in pairs(ck) do add(gs,fa) end return gs end function get_verb(ck) local cp={} local gs=gr(ck[1]) add(cp,gs[1]) add(cp,ck[1][gs[1]]) add(cp,ck.text) return cp end function et() gt=get_verb(verb_default) gu,gv,o,gw,gx=nil,nil,nil,false,""end et() fd=nil dk=nil di=nil fh=nil ey={} es={} dh={} gy={} eq,eq=0,0 function _init() if enable_mouse then poke(0x5f2d,1) end
-gz() start_script(startup_script,true) end function _update60() ha() end function _draw() hb() end function ha() if selected_actor and selected_actor.de
-and not coresume(selected_actor.de) then selected_actor.de=nil end hc(ey) if di then
-if di.de
-and not coresume(di.de) then if di.da!=3
-and di.dg then camera_follow(di.dg) selected_actor=di.dg end del(dh,di) di=nil if#dh>0 then
-di=dh[#dh] end end else hc(es) end hd() he() hf,hg=1.5-rnd(3),1.5-rnd(3) hf=flr(hf*ch) hg=flr(hg*ch) if not ci then
-ch*=0.90 if ch<0.05 then ch=0 end
-end end function hb() rectfill(0,0,127,127,0) camera(cu+hf,0+hg) clip(0+eq-hf,gk+eq-hg,128-eq*2-hf,64-eq*2) hh() camera(0,0) clip() if show_perfinfo then
-print("cpu: "..flr(100*stat(1)).."%",0,gk-16,8) print("mem: "..flr(stat(0)/1024*100).."%",0,gk-8,8) end if show_debuginfo then
-print("x: "..flr(gl+cu).." y:"..gm-gk,80,gk-8,8) end hi() if dk
-and dk.dm then hj() hk() return end if hl==di then
-else hl=di return end if not di then
-hm() end if(not di
-or di.da==2) and(hl==di) then hn() else end hl=di if not di then
-hk() end end function hd() if di then
-if btnp(4) and btnp(5) and di.df then
-di.de=cocreate(di.df) di.df=nil return end return end if btn(0) then gl-=1 end
-if btn(1) then gl+=1 end
-if btn(2) then gm-=1 end
-if btn(3) then gm+=1 end
-if btnp(4) then ho(1) end
-if btnp(5) then ho(2) end
+function shake(cj) if cj then
+ck=1 end cl=cj end function cm(cn) local co=nil if has_flag(cn.classes,"class_talkable") then
+co="talkto"elseif has_flag(cn.classes,"class_openable") then if cn.state=="state_closed"then
+co="open"else co="close"end else co="lookat"end for cp in all(verbs) do cq=get_verb(cp) if cq[2]==co then co=cp break end
+end return co end function cr(cs,ct,cu) local cv=has_flag(ct.classes,"class_actor") if cs=="walkto"then
+return elseif cs=="pickup"then if cv then
+say_line"i don't need them"else say_line"i don't need that"end elseif cs=="use"then if cv then
+say_line"i can't just *use* someone"end if cu then
+if has_flag(cu.classes,class_actor) then
+say_line"i can't use that on someone!"else say_line"that doesn't work"end end elseif cs=="give"then if cv then
+say_line"i don't think i should be giving this away"else say_line"i can't do that"end elseif cs=="lookat"then if cv then
+say_line"i think it's alive"else say_line"looks pretty ordinary"end elseif cs=="open"then if cv then
+say_line"they don't seem to open"else say_line"it doesn't seem to open"end elseif cs=="close"then if cv then
+say_line"they don't seem to close"else say_line"it doesn't seem to close"end elseif cs=="push"or cs=="pull"then if cv then
+say_line"moving them would accomplish nothing"else say_line"it won't budge!"end elseif cs=="talkto"then if cv then
+say_line"erm... i don't think they want to talk"else say_line"i am not talking to that!"end else say_line"hmm. no."end end function camera_at(cw) cx=cy(cw) cz=nil da=nil end function camera_follow(db) stop_script(dc) da=db cz=nil dc=function() while da do if da.in_room==room_curr then
+cx=cy(da) end yield() end end start_script(dc,true) if da.in_room!=room_curr then
+change_room(da.in_room,1) end end function camera_pan_to(cw) cz=cy(cw) da=nil dc=function() while(true) do if cx==cz then
+cz=nil return elseif cz>cx then cx+=0.5 else cx-=0.5 end yield() end end start_script(dc,true) end function wait_for_camera() while script_running(dc) do yield() end end function cutscene(dd,de,df) dg={dd=dd,dh=cocreate(de),di=df,dj=da} add(dk,dg) dl=dg break_time() end function dialog_set(dm) for msg in all(dm) do dialog_add(msg) end end function dialog_add(msg) if not dn then dn={dp={},dq=false} end
+dr=ds(msg,32) dt=du(dr) dv={num=#dn.dp+1,msg=msg,dr=dr,dw=dt} add(dn.dp,dv) end function dialog_start(col,dx) dn.col=col dn.dx=dx dn.dq=true selected_sentence=nil end function dialog_hide() dn.dq=false end function dialog_clear() dn.dp={} selected_sentence=nil end function dialog_end() dn=nil end function get_use_pos(cn) local dy=cn.use_pos local x=cn.x local y=cn.y if type(dy)=="table"then
+x=dy[1] y=dy[2] elseif dy=="pos_left"then if cn.dz then
+x-=(cn.w*8+4) y+=1 else x-=2 y+=((cn.h*8)-2) end elseif dy=="pos_right"then x+=(cn.w*8) y+=((cn.h*8)-2) elseif dy=="pos_above"then x+=((cn.w*8)/2)-4 y-=2 elseif dy=="pos_center"then x+=((cn.w*8)/2) y+=((cn.h*8)/2)-4 elseif dy=="pos_infront"or dy==nil then x+=((cn.w*8)/2)-4 y+=(cn.h*8)+2 end return{x=x,y=y} end function do_anim(db,ea,eb) ec={"face_front","face_left","face_back","face_right"} if ea=="anim_face"then
+if type(eb)=="table"then
+ed=atan2(db.x-eb.x,eb.y-db.y) ee=93*(3.1415/180) ed=ee-ed ef=ed*360 ef=ef%360 if ef<0 then ef+=360 end
+eb=4-flr(ef/90) eb=ec[eb] end face_dir=eg[db.face_dir] eb=eg[eb] while face_dir!=eb do if face_dir<eb then
+face_dir+=1 else face_dir-=1 end db.face_dir=ec[face_dir] db.flip=(db.face_dir=="face_left") break_time(10) end end end function open_door(eh,ei) if eh.state=="state_open"then
+say_line"it's already open"else eh.state="state_open"if ei then ei.state="state_open"end
+end end function close_door(eh,ei) if eh.state=="state_closed"then
+say_line"it's already closed"else eh.state="state_closed"if ei then ei.state="state_closed"end
+end end function come_out_door(ej,ek,el) if ek==nil then
+em("exit door does not exist") return end if ej.state=="state_open"then
+en=ek.in_room if en!=room_curr then
+change_room(en,el) end local eo=get_use_pos(ek) put_actor_at(selected_actor,eo.x,eo.y,en) ep={face_front="face_back",face_left="face_right",face_back="face_front",face_right="face_left"} if ek.use_dir then
+eq=ep[ek.use_dir] else eq=1 end selected_actor.face_dir=eq selected_actor.flip=(selected_actor.face_dir=="face_left") else say_line("the door is closed") end end function fades(er,bq) if bq==1 then
+es=0 else es=50 end while true do es+=bq*2 if es>50
+or es<0 then return end if er==1 then
+et=min(es,32) end yield() end end function change_room(en,er) if en==nil then
+em("room does not exist") return end stop_script(eu) if er and room_curr then
+fades(er,1) end if room_curr and room_curr.exit then
+room_curr.exit(room_curr) end ev={} ew() room_curr=en if not da
+or da.in_room!=room_curr then cx=0 end stop_talking() if er then
+eu=function() fades(er,-1) end start_script(eu,true) else et=0 end if room_curr.enter then
+room_curr.enter(room_curr) end end function valid_verb(cs,ex) if not ex
+or not ex.verbs then return false end if type(cs)=="table"then
+if ex.verbs[cs[1]] then return true end
+else if ex.verbs[cs] then return true end
+end return false end function pickup_obj(cn,db) db=db or selected_actor add(db.ch,cn) cn.owner=db del(cn.in_room.objects,cn) end function start_script(ey,ez,fa,bh) local dh=cocreate(ey) local scripts=ev if ez then
+scripts=fb end add(scripts,{ey,dh,fa,bh}) end function script_running(ey) for fc in all({ev,fb}) do for fd,fe in pairs(fc) do if fe[1]==ey then
+return fe end end end return false end function stop_script(ey) fe=script_running(ey) if fe then
+del(ev,fe) del(fb,fe) end end function break_time(ff) ff=ff or 1 for x=1,ff do yield() end end function wait_for_message() while fg!=nil do yield() end end function say_line(db,msg,fh,fi) if type(db)=="string"then
+msg=db db=selected_actor end fj=db.y-(db.h)*8+4 fk=db print_line(msg,db.x,fj,db.col,1,fh,fi) end function stop_talking() fg,fk=nil,nil end function print_line(msg,x,y,col,fl,fh,fi) local col=col or 7 local fl=fl or 0 if fl==1 then
+fm=min(x-cx,127-(x-cx)) else fm=127-(x-cx) end local fn=max(flr(fm/2),16) local fo=""for fp=1,#msg do local fq=sub(msg,fp,fp) if fq==":"then
+fo=sub(msg,fp+1) msg=sub(msg,1,fp-1) break end end local dr=ds(msg,fn) local dt=du(dr) fr=x-cx if fl==1 then
+fr-=((dt*4)/2) end fr=max(2,fr) fj=max(18,y) fr=min(fr,127-(dt*4)-1) fg={fs=dr,x=fr,y=fj,col=col,fl=fl,ft=(#msg)*8,dw=dt,fh=fh} if#fo>0 then
+fu=fk wait_for_message() fk=fu print_line(fo,x,y,col,fl,fh) end if not fi then
+wait_for_message() end end function put_actor_at(db,x,y,fv) if fv then db.in_room=fv end
+db.x,db.y=x,y end function walk_to(db,x,y) local fw=fx(db) local fy=flr(x/8)+room_curr.map[1] local fz=flr(y/8)+room_curr.map[2] local ga={fy,fz} local gb=gc(fw,ga) local gd=fx({x=x,y=y}) if ge(gd[1],gd[2]) then
+add(gb,gd) end for gf in all(gb) do local gg=(gf[1]-room_curr.map[1])*8+4 local gh=(gf[2]-room_curr.map[2])*8+4 local gi=sqrt((gg-db.x)^2+(gh-db.y)^2) local gj=db.walk_speed*(gg-db.x)/gi local gk=db.walk_speed*(gh-db.y)/gi if gi>5 then
+db.gl=1 db.flip=(gj<0) if abs(gj)<0.4 then
+if gk>0 then
+db.gm=db.walk_anim_front db.face_dir="face_front"else db.gm=db.walk_anim_back db.face_dir="face_back"end else db.gm=db.walk_anim_side db.face_dir="face_right"if db.flip then db.face_dir="face_left"end
+end for fp=0,gi/db.walk_speed do db.x+=gj db.y+=gk yield() end end end db.gl=2 end function wait_for_actor(db) db=db or selected_actor while db.gl!=2 do yield() end end function proximity(ct,cu) if ct.in_room==cu.in_room then
+local gi=sqrt((ct.x-cu.x)^2+(ct.y-cu.y)^2) return gi else return 1000 end end gn=16 cx,cz,dc,ck=0,nil,nil,0 go,gp,gq,gr=63.5,63.5,0,1 gs={7,12,13,13,12,7} gt={{spr=208,x=75,y=gn+60},{spr=240,x=75,y=gn+72}} eg={face_front=1,face_left=2,face_back=3,face_right=4} function gu(cn) local gv={} for fd,cp in pairs(cn) do add(gv,fd) end return gv end function get_verb(cn) local cs={} local gv=gu(cn[1]) add(cs,gv[1]) add(cs,cn[1][gv[1]]) add(cs,cn.text) return cs end function ew() gw=get_verb(verb_default) gx,gy,o,gz,ha=nil,nil,nil,false,""end ew() fg=nil dn=nil dl=nil fk=nil fb={} ev={} dk={} hb={} et,et=0,0 function _init() if enable_mouse then poke(0x5f2d,1) end
+hc() start_script(startup_script,true) end function _update60() hd() end function _draw() he() end function hd() if selected_actor and selected_actor.dh
+and not coresume(selected_actor.dh) then selected_actor.dh=nil end hf(fb) if dl then
+if dl.dh
+and not coresume(dl.dh) then if dl.dd!=3
+and dl.dj then camera_follow(dl.dj) selected_actor=dl.dj end del(dk,dl) dl=nil if#dk>0 then
+dl=dk[#dk] end end else hf(ev) end hg() hh() hi,hj=1.5-rnd(3),1.5-rnd(3) hi=flr(hi*ck) hj=flr(hj*ck) if not cl then
+ck*=0.90 if ck<0.05 then ck=0 end
+end end function he() rectfill(0,0,127,127,0) camera(cx+hi,0+hj) clip(0+et-hi,gn+et-hj,128-et*2-hi,64-et*2) hk() camera(0,0) clip() if show_perfinfo then
+print("cpu: "..flr(100*stat(1)).."%",0,gn-16,8) print("mem: "..flr(stat(0)/1024*100).."%",0,gn-8,8) end if show_debuginfo then
+print("x: "..flr(go+cx).." y:"..gp-gn,80,gn-8,8) end hl() if dn
+and dn.dq then hm() hn() return end if ho==dl then
+else ho=dl return end if not dl then
+hp() end if(not dl
+or dl.dd==2) and(ho==dl) then hq() else end ho=dl if not dl then
+hn() end end function hg() if dl then
+if btnp(4) and btnp(5) and dl.di then
+dl.dh=cocreate(dl.di) dl.di=nil return end return end if btn(0) then go-=1 end
+if btn(1) then go+=1 end
+if btn(2) then gp-=1 end
+if btn(3) then gp+=1 end
+if btnp(4) then hr(1) end
+if btnp(5) then hr(2) end
 if enable_mouse then
-hp,hq=stat(32)-1,stat(33)-1 if hp!=hr then gl=hp end
-if hq!=hs then gm=hq end
+hs,ht=stat(32)-1,stat(33)-1 if hs!=hu then go=hs end
+if ht!=hv then gp=ht end
 if stat(34)>0 then
-if not ht then
-ho(stat(34)) ht=true end else ht=false end hr=hp hs=hq end gl=mid(0,gl,127) gm=mid(0,gm,127) end function ho(hu) local hv=gt if not selected_actor then
-return end if dk and dk.dm then
-if hw then
-selected_sentence=hw end return end if hx then
-gt=get_verb(hx) elseif hy then if hu==1 then
-if(gt[2]=="use"or gt[2]=="give")
-and gu then gv=hy else gu=hy end elseif hz then gt=get_verb(hz) gu=hy gr(gu) hm() end elseif ia then if ia==gq[1] then
-if selected_actor.ib>0 then
-selected_actor.ib-=1 end else if selected_actor.ib+2<flr(#selected_actor.ce/4) then
-selected_actor.ib+=1 end end return end if gu!=nil
-and not gw then if gt[2]=="use"or gt[2]=="give"then
-if gv then
-elseif gu.use_with and gu.owner==selected_actor then return end end gw=true selected_actor.de=cocreate(function() if(not gu.owner
-and(not has_flag(gu.classes,"class_actor") or gt[2]!="use")) or gv then ic=gv or gu id=get_use_pos(ic) walk_to(selected_actor,id.x,id.y) if selected_actor.gi!=2 then return end
-use_dir=ic if ic.use_dir then use_dir=ic.use_dir end
-do_anim(selected_actor,"anim_face",use_dir) end if valid_verb(gt,gu) then
-start_script(gu.verbs[gt[1]],false,gu,gv) else co(gt[2],gu,gv) end et() end) coresume(selected_actor.de) elseif gm>gk and gm<gk+64 then gw=true selected_actor.de=cocreate(function() walk_to(selected_actor,gl,gm-gk) et() end) coresume(selected_actor.de) end end function he() hx,hz,hy,hw,ia=nil,nil,nil,nil,nil if dk
-and dk.dm then for ez in all(dk.dl) do if ie(ez) then
-hw=ez end end return end ig() for ck in all(room_curr.objects) do if(not ck.classes
-or(ck.classes and not has_flag(ck.classes,"class_untouchable"))) and(not ck.dependent_on or ck.dependent_on.state==ck.dependent_on_state) then ih(ck,ck.w*8,ck.h*8,cu,ii) else ck.ij=nil end if ie(ck) then
-if not hy
-or(not ck.z and hy.z<0) or(ck.z and hy.z and ck.z>hy.z) then hy=ck end end ik(ck) end for fa,cy in pairs(actors) do if cy.in_room==room_curr then
-ih(cy,cy.w*8,cy.h*8,cu,ii) ik(cy) if ie(cy)
-and cy!=selected_actor then hy=cy end end end if selected_actor then
-for cm in all(verbs) do if ie(cm) then
-hx=cm end end for il in all(gq) do if ie(il) then
-ia=il end end for fa,ck in pairs(selected_actor.ce) do if ie(ck) then
-hy=ck if gt[2]=="pickup"and hy.owner then
-gt=nil end end if ck.owner!=selected_actor then
-del(selected_actor.ce,ck) end end if gt==nil then
-gt=get_verb(verb_default) end if hy then
-hz=cj(hy) end end end function ig() gy={} for x=-64,64 do gy[x]={} end end function ik(ck) fg=-1 if ck.im then
-fg=ck.y else fg=ck.y+(ck.h*8) end io=flr(fg) if ck.z then
-io=ck.z end add(gy[io],ck) end function hh() rectfill(0,gk,127,gk+64,room_curr.ip or 0) for z=-64,64 do if z==0 then
-iq(room_curr) if room_curr.trans_col then
-palt(0,false) palt(room_curr.trans_col,true) end map(room_curr.map[1],room_curr.map[2],0,gk,room_curr.ir,room_curr.is) pal() else io=gy[z] for ck in all(io) do if not has_flag(ck.classes,"class_actor") then
-if ck.states
-or(ck.state and ck[ck.state] and ck[ck.state]>0) and(not ck.dependent_on or ck.dependent_on.state==ck.dependent_on_state) and not ck.owner then it(ck) end else if ck.in_room==room_curr then
-iu(ck) end end iv(ck) end end end end function iq(ck) if ck.col_replace then
-iw=ck.col_replace pal(iw[1],iw[2]) end if ck.lighting then
-ix(ck.lighting) elseif ck.in_room then ix(ck.in_room.lighting) end end function it(ck) iq(ck) if ck.draw then
-ck.draw(ck) return end iy=1 if ck.repeat_x then iy=ck.repeat_x end
-for h=0,iy-1 do local iz=0 if ck.states then
-iz=ck.states[ck.state] else iz=ck[ck.state] end ja(iz,ck.x+(h*(ck.w*8)),ck.y,ck.w,ck.h,ck.trans_col,ck.flip_x) end pal() end function iu(cy) jb=ed[cy.face_dir] if cy.gi==1
-and cy.gj then cy.jc+=1 if cy.jc>cy.frame_delay then
-cy.jc=1 cy.jd+=1 if cy.jd>#cy.gj then cy.jd=1 end
-end je=cy.gj[cy.jd] else je=cy.idle[jb] end iq(cy) ja(je,cy.dw,cy.im,cy.w,cy.h,cy.trans_col,cy.flip,false) if fh
-and fh==cy and fh.talk then if cy.jf<7 then
-je=cy.talk[jb] ja(je,cy.dw,cy.im+8,1,1,cy.trans_col,cy.flip,false) end cy.jf+=1 if cy.jf>14 then cy.jf=1 end
-end pal() end function hm() jg=""jh=12 ji=gt[2] if not gw then
-if gt then
-jg=gt[3] end if gu then
-jg=jg.." "..gu.name if ji=="use"then
-jg=jg.." with"elseif ji=="give"then jg=jg.." to"end end if gv then
-jg=jg.." "..gv.name elseif hy and hy.name!=""and(not gu or(gu!=hy)) and(not hy.owner or ji!=get_verb(verb_default)[2]) then jg=jg.." "..hy.name end gx=jg else jg=gx jh=7 end print(jj(jg),jk(jg),gk+66,jh) end function hi() if fd then
-jl=0 for jm in all(fd.fp) do jn=0 if fd.fi==1 then
-jn=((fd.dt*4)-(#jm*4))/2 end jo(jm,fd.x+jn,fd.y+jl,fd.col,0,fd.fe) jl+=6 end fd.fq-=1 if fd.fq<=0 then
-stop_talking() end end end function hn() fo,fg,jp=0,75,0 for cm in all(verbs) do jq=verb_maincol if hz
-and cm==hz then jq=verb_defcol end if cm==hx then jq=verb_hovcol end
-cn=get_verb(cm) print(cn[3],fo,fg+gk+1,verb_shadcol) print(cn[3],fo,fg+gk,jq) cm.x=fo cm.y=fg ih(cm,#cn[3]*4,5,0,0) iv(cm) if#cn[3]>jp then jp=#cn[3] end
-fg+=8 if fg>=95 then
-fg=75 fo+=(jp+1.0)*4 jp=0 end end if selected_actor then
-fo,fg=86,76 jr=selected_actor.ib*4 js=min(jr+8,#selected_actor.ce) for jt=1,8 do rectfill(fo-1,gk+fg-1,fo+8,gk+fg+8,1) ck=selected_actor.ce[jr+jt] if ck then
-ck.x,ck.y=fo,fg it(ck) ih(ck,ck.w*8,ck.h*8,0,0) iv(ck) end fo+=11 if fo>=125 then
-fg+=12 fo=86 end jt+=1 end for fm=1,2 do ju=gq[fm] if ia==ju then pal(verb_maincol,7) end
-ja(ju.spr,ju.x,ju.y,1,1,0) ih(ju,8,7,0,0) iv(ju) pal() end end end function hj() fo,fg=0,70 for ez in all(dk.dl) do if ez.dt>0 then
-ez.x,ez.y=fo,fg ih(ez,ez.dt*4,#ez.dn*5,0,0) jq=dk.col if ez==hw then jq=dk.du end
-for jm in all(ez.dn) do print(jj(jm),fo,fg+gk,jq) fg+=5 end iv(ez) fg+=2 end end end function hk() col=gp[go] pal(7,col) spr(224,gl-4,gm-3,1,1,0) pal() gn+=1 if gn>7 then
-gn=1 go+=1 if go>#gp then go=1 end
-end end function ja(jv,x,y,w,h,jw,flip_x,jx) palt(0,false) palt(jw,true) spr(jv,x,gk+y,w,h,flip_x,jx) palt(jw,false) palt(0,true) end function gz() for fs in all(rooms) do jy(fs) if(#fs.map>2) then
-fs.ir=fs.map[3]-fs.map[1]+1 fs.is=fs.map[4]-fs.map[2]+1 else fs.ir=16 fs.is=8 end for ck in all(fs.objects) do jy(ck) ck.in_room=fs end end for jz,cy in pairs(actors) do jy(cy) cy.gi=2 cy.jc=1 cy.jf=1 cy.jd=1 cy.ce={} cy.ib=0 end end function iv(ck) local ka=ck.ij if show_collision
-and ka then rect(ka.x,ka.y,ka.kb,ka.kc,8) end end function hc(scripts) for fb in all(scripts) do if fb[2] and not coresume(fb[2],fb[3],fb[4]) then
-del(scripts,fb) fb=nil end end end function ix(kd) if kd then kd=1-kd end
-local gc=flr(mid(0,kd,1)*100) local ke={0,1,1,2,1,13,6,4,4,9,3,13,1,13,14} for kf=1,15 do col=kf kg=(gc+(kf*1.46))/22 for fa=1,kg do col=ke[col] end pal(kf,col) end end function cv(ct) if type(ct)=="table"then
-ct=ct.x end return mid(0,ct-64,(room_curr.ir*8)-128) end function fu(ck) local fv=flr(ck.x/8)+room_curr.map[1] local fw=flr(ck.y/8)+room_curr.map[2] return{fv,fw} end function gb(fv,fw) local kh=mget(fv,fw) local ki=fget(kh,0) return ki end function dp(msg,fk) local dn={} local kj=""local kk=""local fn=""local kl=function(km) if#kk+#kj>km then
-add(dn,kj) kj=""end kj=kj..kk kk=""end for fm=1,#msg do fn=sub(msg,fm,fm) kk=kk..fn if fn==" "
-or#kk>fk-1 then kl(fk) elseif#kk>fk-1 then kk=kk.."-"kl(fk) elseif fn==";"then kj=kj..sub(kk,1,#kk-1) kk=""kl(0) end end kl(fk) if kj!=""then
-add(dn,kj) end return dn end function dr(dn) dq=0 for jm in all(dn) do if#jm>dq then dq=#jm end
-end return dq end function has_flag(ck,kn) for br in all(ck) do if br==kn then
-return true end end return false end function ih(ck,w,h,ko,kp) x=ck.x y=ck.y if has_flag(ck.classes,"class_actor") then
-ck.dw=x-(ck.w*8)/2 ck.im=y-(ck.h*8)+1 x=ck.dw y=ck.im end ck.ij={x=x,y=y+gk,kb=x+w-1,kc=y+h+gk-1,ko=ko,kp=kp} end function fz(kq,kr) local ks,kt,ku={},{},{} kv(ks,kq,0) kt[kw(kq)]=nil ku[kw(kq)]=0 while#ks>0 and#ks<1000 do local kx=ks[#ks] del(ks,ks[#ks]) ky=kx[1] if kw(ky)==kw(kr) then
-break end local kz={} for x=-1,1 do for y=-1,1 do if x==0 and y==0 then
-else local la=ky[1]+x local lb=ky[2]+y if abs(x)!=abs(y) then lc=1 else lc=1.4 end
-if la>=room_curr.map[1] and la<=room_curr.map[1]+room_curr.ir
-and lb>=room_curr.map[2] and lb<=room_curr.map[2]+room_curr.is and gb(la,lb) and((abs(x)!=abs(y)) or gb(la,ky[2]) or gb(la-x,lb)) then add(kz,{la,lb,lc}) end end end end for ld in all(kz) do local le=kw(ld) local lf=ku[kw(ky)]+ld[3] if ku[le]==nil
-or lf<ku[le] then ku[le]=lf local lg=lf+max(abs(kr[1]-ld[1]),abs(kr[2]-ld[2])) kv(ks,ld,lg) kt[le]=ky end end end local fy={} ky=kt[kw(kr)] if ky then
-local lh=kw(ky) local li=kw(kq) while lh!=li do add(fy,ky) ky=kt[lh] lh=kw(ky) end for fm=1,#fy/2 do local lj=fy[fm] local lk=#fy-(fm-1) fy[fm]=fy[lk] fy[lk]=lj end end return fy end function kv(ll,ct,gc) if#ll>=1 then
-add(ll,{}) for fm=(#ll),2,-1 do local ld=ll[fm-1] if gc<ld[2] then
-ll[fm]={ct,gc} return else ll[fm]=ld end end ll[1]={ct,gc} else add(ll,{ct,gc}) end end function kw(lm) return((lm[1]+1)*16)+lm[2] end function ej(msg) print_line("-error-;"..msg,5+cu,5,8,0) end function jy(ck) local dn=ln(ck.data,"\n") for jm in all(dn) do local pairs=ln(jm,"=") if#pairs==2 then
-ck[pairs[1]]=lo(pairs[2]) else printh("invalid data line") end end end function ln(ez,lp) local lq={} local jr=0 local lr=0 for fm=1,#ez do local lt=sub(ez,fm,fm) if lt==lp then
-add(lq,sub(ez,jr,lr)) jr=0 lr=0 elseif lt!=" "and lt!="\t"then lr=fm if jr==0 then jr=fm end
-end end if jr+lr>0 then
-add(lq,sub(ez,jr,lr)) end return lq end function lo(lu) local lv=sub(lu,1,1) local lq=nil if lu=="true"then
-lq=true elseif lu=="false"then lq=false elseif lw(lv) then if lv=="-"then
-lq=sub(lu,2,#lu)*-1 else lq=lu+0 end elseif lv=="{"then local lj=sub(lu,2,#lu-1) lq=ln(lj,",") lx={} for ct in all(lq) do ct=lo(ct) add(lx,ct) end lq=lx else lq=lu end return lq end function lw(iw) for a=1,13 do if iw==sub("0123456789.-+",a,a) then
-return true end end end function jo(ly,x,y,lz,ma,fe) if not fe then ly=jj(ly) end
-for mb=-1,1 do for mc=-1,1 do print(ly,x+mb,y+mc,ma) end end print(ly,x,y,lz) end function jk(ez) return 63.5-flr((#ez*4)/2) end function md(ez) return 61 end function ie(ck) if not ck.ij then return false end
-ij=ck.ij if(gl+ij.ko>ij.kb or gl+ij.ko<ij.x)
-or(gm>ij.kc or gm<ij.y) then return false else return true end end function jj(ez) local a=""local jm,iw,ll=false,false for fm=1,#ez do local il=sub(ez,fm,fm) if il=="^"then
-if iw then a=a..il end
-iw=not iw elseif il=="~"then if ll then a=a..il end
-ll,jm=not ll,not jm else if iw==jm and il>="a"and il<="z"then
-for kf=1,26 do if il==sub("abcdefghijklmnopqrstuvwxyz",kf,kf) then
-il=sub("\65\66\67\68\69\70\71\72\73\74\75\76\77\78\79\80\81\82\83\84\85\86\87\88\89\90\91\92",kf,kf) break end end end a=a..il iw,ll=false,false end end return a end
+if not hw then
+hr(stat(34)) hw=true end else hw=false end hu=hs hv=ht end go=mid(0,go,127) gp=mid(0,gp,127) end function hr(hx) local hy=gw if not selected_actor then
+return end if dn and dn.dq then
+if hz then
+selected_sentence=hz end return end if ia then
+gw=get_verb(ia) elseif ib then if hx==1 then
+if(gw[2]=="use"or gw[2]=="give")
+and gx then gy=ib else gx=ib end elseif ic then gw=get_verb(ic) gx=ib gu(gx) hp() end elseif id then if id==gt[1] then
+if selected_actor.ie>0 then
+selected_actor.ie-=1 end else if selected_actor.ie+2<flr(#selected_actor.ch/4) then
+selected_actor.ie+=1 end end return end if gx!=nil
+and not gz then if gw[2]=="use"or gw[2]=="give"then
+if gy then
+elseif gx.use_with and gx.owner==selected_actor then return end end gz=true selected_actor.dh=cocreate(function() if(not gx.owner
+and(not has_flag(gx.classes,"class_actor") or gw[2]!="use")) or gy then ig=gy or gx ih=get_use_pos(ig) walk_to(selected_actor,ih.x,ih.y) if selected_actor.gl!=2 then return end
+use_dir=ig if ig.use_dir then use_dir=ig.use_dir end
+do_anim(selected_actor,"anim_face",use_dir) end if valid_verb(gw,gx) then
+start_script(gx.verbs[gw[1]],false,gx,gy) else cr(gw[2],gx,gy) end ew() end) coresume(selected_actor.dh) elseif gp>gn and gp<gn+64 then gz=true selected_actor.dh=cocreate(function() walk_to(selected_actor,go+cx,gp-gn) ew() end) coresume(selected_actor.dh) end end function hh() ia,ic,ib,hz,id=nil,nil,nil,nil,nil if dn
+and dn.dq then for fc in all(dn.dp) do if ii(fc) then
+hz=fc end end return end ij() for cn in all(room_curr.objects) do if(not cn.classes
+or(cn.classes and not has_flag(cn.classes,"class_untouchable"))) and(not cn.dependent_on or cn.dependent_on.state==cn.dependent_on_state) then ik(cn,cn.w*8,cn.h*8,cx,il) else cn.im=nil end if ii(cn) then
+if not ib
+or(not cn.z and ib.z<0) or(cn.z and ib.z and cn.z>ib.z) then ib=cn end end io(cn) end for fd,db in pairs(actors) do if db.in_room==room_curr then
+ik(db,db.w*8,db.h*8,cx,il) io(db) if ii(db)
+and db!=selected_actor then ib=db end end end if selected_actor then
+for cp in all(verbs) do if ii(cp) then
+ia=cp end end for ip in all(gt) do if ii(ip) then
+id=ip end end for fd,cn in pairs(selected_actor.ch) do if ii(cn) then
+ib=cn if gw[2]=="pickup"and ib.owner then
+gw=nil end end if cn.owner!=selected_actor then
+del(selected_actor.ch,cn) end end if gw==nil then
+gw=get_verb(verb_default) end if ib then
+ic=cm(ib) end end end function ij() hb={} for x=-64,64 do hb[x]={} end end function io(cn) fj=-1 if cn.iq then
+fj=cn.y else fj=cn.y+(cn.h*8) end ir=flr(fj) if cn.z then
+ir=cn.z end add(hb[ir],cn) end function hk() rectfill(0,gn,127,gn+64,room_curr.is or 0) for z=-64,64 do if z==0 then
+it(room_curr) if room_curr.trans_col then
+palt(0,false) palt(room_curr.trans_col,true) end map(room_curr.map[1],room_curr.map[2],0,gn,room_curr.iu,room_curr.iv) pal() else ir=hb[z] for cn in all(ir) do if not has_flag(cn.classes,"class_actor") then
+if cn.states
+or(cn.state and cn[cn.state] and cn[cn.state]>0) and(not cn.dependent_on or cn.dependent_on.state==cn.dependent_on_state) and not cn.owner then iw(cn) end else if cn.in_room==room_curr then
+ix(cn) end end iy(cn) end end end end function it(cn) if cn.col_replace then
+iz=cn.col_replace pal(iz[1],iz[2]) end if cn.lighting then
+ja(cn.lighting) elseif cn.in_room then ja(cn.in_room.lighting) end end function iw(cn) it(cn) if cn.draw then
+cn.draw(cn) return end jb=1 if cn.repeat_x then jb=cn.repeat_x end
+for h=0,jb-1 do local jc=0 if cn.states then
+jc=cn.states[cn.state] else jc=cn[cn.state] end jd(jc,cn.x+(h*(cn.w*8)),cn.y,cn.w,cn.h,cn.trans_col,cn.flip_x) end pal() end function ix(db) je=eg[db.face_dir] if db.gl==1
+and db.gm then db.jf+=1 if db.jf>db.frame_delay then
+db.jf=1 db.jg+=1 if db.jg>#db.gm then db.jg=1 end
+end jh=db.gm[db.jg] else jh=db.idle[je] end it(db) jd(jh,db.dz,db.iq,db.w,db.h,db.trans_col,db.flip,false) if fk
+and fk==db and fk.talk then if db.ji<7 then
+jh=db.talk[je] jd(jh,db.dz,db.iq+8,1,1,db.trans_col,db.flip,false) end db.ji+=1 if db.ji>14 then db.ji=1 end
+end pal() end function hp() jj=""jk=12 jl=gw[2] if not gz then
+if gw then
+jj=gw[3] end if gx then
+jj=jj.." "..gx.name if jl=="use"then
+jj=jj.." with"elseif jl=="give"then jj=jj.." to"end end if gy then
+jj=jj.." "..gy.name elseif ib and ib.name!=""and(not gx or(gx!=ib)) and(not ib.owner or jl!=get_verb(verb_default)[2]) then jj=jj.." "..ib.name end ha=jj else jj=ha jk=7 end print(jm(jj),jn(jj),gn+66,jk) end function hl() if fg then
+jo=0 for jp in all(fg.fs) do jq=0 if fg.fl==1 then
+jq=((fg.dw*4)-(#jp*4))/2 end jr(jp,fg.x+jq,fg.y+jo,fg.col,0,fg.fh) jo+=6 end fg.ft-=1 if fg.ft<=0 then
+stop_talking() end end end function hq() fr,fj,js=0,75,0 for cp in all(verbs) do jt=verb_maincol if ic
+and cp==ic then jt=verb_defcol end if cp==ia then jt=verb_hovcol end
+cq=get_verb(cp) print(cq[3],fr,fj+gn+1,verb_shadcol) print(cq[3],fr,fj+gn,jt) cp.x=fr cp.y=fj ik(cp,#cq[3]*4,5,0,0) iy(cp) if#cq[3]>js then js=#cq[3] end
+fj+=8 if fj>=95 then
+fj=75 fr+=(js+1.0)*4 js=0 end end if selected_actor then
+fr,fj=86,76 ju=selected_actor.ie*4 jv=min(ju+8,#selected_actor.ch) for jw=1,8 do rectfill(fr-1,gn+fj-1,fr+8,gn+fj+8,1) cn=selected_actor.ch[ju+jw] if cn then
+cn.x,cn.y=fr,fj iw(cn) ik(cn,cn.w*8,cn.h*8,0,0) iy(cn) end fr+=11 if fr>=125 then
+fj+=12 fr=86 end jw+=1 end for fp=1,2 do jx=gt[fp] if id==jx then pal(verb_maincol,7) end
+jd(jx.spr,jx.x,jx.y,1,1,0) ik(jx,8,7,0,0) iy(jx) pal() end end end function hm() fr,fj=0,70 for fc in all(dn.dp) do if fc.dw>0 then
+fc.x,fc.y=fr,fj ik(fc,fc.dw*4,#fc.dr*5,0,0) jt=dn.col if fc==hz then jt=dn.dx end
+for jp in all(fc.dr) do print(jm(jp),fr,fj+gn,jt) fj+=5 end iy(fc) fj+=2 end end end function hn() col=gs[gr] pal(7,col) spr(224,go-4,gp-3,1,1,0) pal() gq+=1 if gq>7 then
+gq=1 gr+=1 if gr>#gs then gr=1 end
+end end function jd(jy,x,y,w,h,jz,flip_x,ka) palt(0,false) palt(jz,true) spr(jy,x,gn+y,w,h,flip_x,ka) palt(jz,false) palt(0,true) end function hc() for fv in all(rooms) do kb(fv) if(#fv.map>2) then
+fv.iu=fv.map[3]-fv.map[1]+1 fv.iv=fv.map[4]-fv.map[2]+1 else fv.iu=16 fv.iv=8 end for cn in all(fv.objects) do kb(cn) cn.in_room=fv end end for kc,db in pairs(actors) do kb(db) db.gl=2 db.jf=1 db.ji=1 db.jg=1 db.ch={} db.ie=0 end end function iy(cn) local kd=cn.im if show_collision
+and kd then rect(kd.x,kd.y,kd.ke,kd.kf,8) end end function hf(scripts) for fe in all(scripts) do if fe[2] and not coresume(fe[2],fe[3],fe[4]) then
+del(scripts,fe) fe=nil end end end function ja(kg) if kg then kg=1-kg end
+local gf=flr(mid(0,kg,1)*100) local kh={0,1,1,2,1,13,6,4,4,9,3,13,1,13,14} for ki=1,15 do col=ki kj=(gf+(ki*1.46))/22 for fd=1,kj do col=kh[col] end pal(ki,col) end end function cy(cw) if type(cw)=="table"then
+cw=cw.x end return mid(0,cw-64,(room_curr.iu*8)-128) end function fx(cn) local fy=flr(cn.x/8)+room_curr.map[1] local fz=flr(cn.y/8)+room_curr.map[2] return{fy,fz} end function ge(fy,fz) local kk=mget(fy,fz) local kl=fget(kk,0) return kl end function ds(msg,fn) local dr={} local km=""local kn=""local fq=""local ko=function(kp) if#kn+#km>kp then
+add(dr,km) km=""end km=km..kn kn=""end for fp=1,#msg do fq=sub(msg,fp,fp) kn=kn..fq if fq==" "
+or#kn>fn-1 then ko(fn) elseif#kn>fn-1 then kn=kn.."-"ko(fn) elseif fq==";"then km=km..sub(kn,1,#kn-1) kn=""ko(0) end end ko(fn) if km!=""then
+add(dr,km) end return dr end function du(dr) dt=0 for jp in all(dr) do if#jp>dt then dt=#jp end
+end return dt end function has_flag(cn,kq) for br in all(cn) do if br==kq then
+return true end end return false end function ik(cn,w,h,kr,ks) x=cn.x y=cn.y if has_flag(cn.classes,"class_actor") then
+cn.dz=x-(cn.w*8)/2 cn.iq=y-(cn.h*8)+1 x=cn.dz y=cn.iq end cn.im={x=x,y=y+gn,ke=x+w-1,kf=y+h+gn-1,kr=kr,ks=ks} end function gc(kt,ku) local kv,kw,kx={},{},{} ky(kv,kt,0) kw[kz(kt)]=nil kx[kz(kt)]=0 while#kv>0 and#kv<1000 do local la=kv[#kv] del(kv,kv[#kv]) lb=la[1] if kz(lb)==kz(ku) then
+break end local lc={} for x=-1,1 do for y=-1,1 do if x==0 and y==0 then
+else local ld=lb[1]+x local le=lb[2]+y if abs(x)!=abs(y) then lf=1 else lf=1.4 end
+if ld>=room_curr.map[1] and ld<=room_curr.map[1]+room_curr.iu
+and le>=room_curr.map[2] and le<=room_curr.map[2]+room_curr.iv and ge(ld,le) and((abs(x)!=abs(y)) or ge(ld,lb[2]) or ge(ld-x,le)) then add(lc,{ld,le,lf}) end end end end for lg in all(lc) do local lh=kz(lg) local li=kx[kz(lb)]+lg[3] if kx[lh]==nil
+or li<kx[lh] then kx[lh]=li local lj=li+max(abs(ku[1]-lg[1]),abs(ku[2]-lg[2])) ky(kv,lg,lj) kw[lh]=lb end end end local gb={} lb=kw[kz(ku)] if lb then
+local lk=kz(lb) local ll=kz(kt) while lk!=ll do add(gb,lb) lb=kw[lk] lk=kz(lb) end for fp=1,#gb/2 do local lm=gb[fp] local ln=#gb-(fp-1) gb[fp]=gb[ln] gb[ln]=lm end end return gb end function ky(lo,cw,gf) if#lo>=1 then
+add(lo,{}) for fp=(#lo),2,-1 do local lg=lo[fp-1] if gf<lg[2] then
+lo[fp]={cw,gf} return else lo[fp]=lg end end lo[1]={cw,gf} else add(lo,{cw,gf}) end end function kz(lp) return((lp[1]+1)*16)+lp[2] end function em(msg) print_line("-error-;"..msg,5+cx,5,8,0) end function kb(cn) local dr=lq(cn.data,"\n") for jp in all(dr) do local pairs=lq(jp,"=") if#pairs==2 then
+cn[pairs[1]]=lr(pairs[2]) else printh("invalid data line") end end end function lq(fc,lt) local lu={} local ju=0 local lv=0 for fp=1,#fc do local lw=sub(fc,fp,fp) if lw==lt then
+add(lu,sub(fc,ju,lv)) ju=0 lv=0 elseif lw!=" "and lw!="\t"then lv=fp if ju==0 then ju=fp end
+end end if ju+lv>0 then
+add(lu,sub(fc,ju,lv)) end return lu end function lr(lx) local ly=sub(lx,1,1) local lu=nil if lx=="true"then
+lu=true elseif lx=="false"then lu=false elseif lz(ly) then if ly=="-"then
+lu=sub(lx,2,#lx)*-1 else lu=lx+0 end elseif ly=="{"then local lm=sub(lx,2,#lx-1) lu=lq(lm,",") ma={} for cw in all(lu) do cw=lr(cw) add(ma,cw) end lu=ma else lu=lx end return lu end function lz(iz) for a=1,13 do if iz==sub("0123456789.-+",a,a) then
+return true end end end function jr(mb,x,y,mc,md,fh) if not fh then mb=jm(mb) end
+for me=-1,1 do for mf=-1,1 do print(mb,x+me,y+mf,md) end end print(mb,x,y,mc) end function jn(fc) return 63.5-flr((#fc*4)/2) end function mg(fc) return 61 end function ii(cn) if not cn.im then return false end
+im=cn.im if(go+im.kr>im.ke or go+im.kr<im.x)
+or(gp>im.kf or gp<im.y) then return false else return true end end function jm(fc) local a=""local jp,iz,lo=false,false for fp=1,#fc do local ip=sub(fc,fp,fp) if ip=="^"then
+if iz then a=a..ip end
+iz=not iz elseif ip=="~"then if lo then a=a..ip end
+lo,jp=not lo,not jp else if iz==jp and ip>="a"and ip<="z"then
+for ki=1,26 do if ip==sub("abcdefghijklmnopqrstuvwxyz",ki,ki) then
+ip=sub("\65\66\67\68\69\70\71\72\73\74\75\76\77\78\79\80\81\82\83\84\85\86\87\88\89\90\91\92",ki,ki) break end end end a=a..ip iz,lo=false,false end end return a end
 
 
 
