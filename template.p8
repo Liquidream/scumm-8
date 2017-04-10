@@ -995,7 +995,7 @@ end
 							selected_actor = main_actor
 							camera_follow(selected_actor)
 							do_anim(selected_actor, "anim_face", "face_front")
-							say_line("well, that was short!;developers are so lazy")
+							say_line("well, that was short!:developers are so lazy...")
 							--say_line("test")
 						end
 					) -- end cutscene
@@ -1103,11 +1103,12 @@ end
 				]],
 				verbs = {
 					walkto = function(me)
-						-- outro
-						--selected_actor = main_actor
-						--camera_follow(selected_actor)
-						change_room(rm_computer, 1)
-						--change_room(rm_title, 1)
+						if me.state == "state_open" then
+							-- outro
+							change_room(rm_computer, 1)
+						else
+							say_line("the door is closed")
+						end
 					end,
 					open = function(me)
 						open_door(me, obj_front_door_inside)
@@ -1137,27 +1138,20 @@ end
 				verb_shadcol = 0 
 				verb_defcol = 10 
 
-				if not me.done_intro then
-					-- don't do this again
-					me.done_intro = true
-					-- set which actor the player controls by default
-					selected_actor = mi_actor
-					-- init actor
-					put_actor_at(selected_actor, 212, 60, rm_mi_dock)
-					
+				-- set which actor the player controls by default
+				selected_actor = mi_actor
+				-- init actor
+				put_actor_at(selected_actor, 212, 60, rm_mi_dock)
+
+				camera_at(0)
+				break_time(30)
+				camera_pan_to(212,60)
+				wait_for_camera()
+				camera_follow(selected_actor)
 				
+				say_line("this all seems very famililar...")
 
-					camera_at(0)
-					break_time(30)
-					camera_pan_to(212,60)
-					wait_for_camera()
-					camera_follow(selected_actor)
-					
-					say_line("this all seems very famililar...")
-
-					camera_follow(selected_actor)
-
-				end
+				camera_follow(selected_actor)
 			end,
 			exit = function(me)
 				-- todo: anything here?
