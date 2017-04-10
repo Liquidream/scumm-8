@@ -111,8 +111,8 @@ end
 					use_pos = pos_right
 					use_dir = face_left
 				]],
-				get_target_door = function()  
-					return obj_front_door
+				init = function(me)  
+					me.target_door = obj_front_door
 				end
 			}
 
@@ -128,8 +128,8 @@ end
 					use_pos = pos_center
 					classes = {class_door}
 				]],
-				get_target_door = function()  
-					return obj_landing_exit_hall
+				init = function(me)  
+					me.target_door = obj_landing_exit_hall
 				end
 			}
 
@@ -144,8 +144,8 @@ end
 					use_dir = face_back
 					classes = {class_door}
 				]],
-				get_target_door = function()  
-					return obj_library_door_hall
+				init = function(me)  
+					me.target_door = obj_library_door_hall
 				end
 			}
 
@@ -161,8 +161,8 @@ end
 					use_dir = face_right
 					classes = {class_door}
 				]],
-				get_target_door = function()  
-					return obj_kitchen_door_hall
+				init = function(me)  
+					me.target_door = obj_kitchen_door_hall
 				end
 			}
 
@@ -311,11 +311,9 @@ end
 				--obj_window
 			},
 			enter = function(me)
-				
 				start_script(me.scripts.tentacle_guard, true) -- bg script
 			end,
 			exit = function(me)
-				
 				stop_script(me.scripts.tentacle_guard)
 			end,
 			scripts = {	  -- scripts that are at room-level
@@ -360,8 +358,8 @@ end
 					use_dir = face_back
 					classes = {class_door}
 				]],
-				get_target_door = function()  
-					return obj_hall_door_library
+				init = function(me)  
+					me.target_door = obj_hall_door_library
 				end
 			}
 			
@@ -518,8 +516,8 @@ end
 					use_dir = face_front
 					classes = {class_door}
 				]],
-				get_target_door = function()  
-					return obj_hall_exit_landing
+				init = function(me)  
+					me.target_door = obj_hall_exit_landing
 				end
 			}
 
@@ -535,8 +533,8 @@ end
 				use_dir = face_right
 				classes = {class_door}
 			]],
-			get_target_door = function()  
-				return obj_computer_door_landing
+			init = function(me)  
+				me.target_door = obj_computer_door_landing
 			end
 		}
 
@@ -2079,7 +2077,7 @@ function input_button_pressed(button_index)
 					-- perform default door action
 					--start_script(function()
 						if verb_curr[1] == "walkto" then
-							come_out_door(noun1_curr, noun1_curr.get_target_door())
+							come_out_door(noun1_curr, noun1_curr.target_door)
 						elseif verb_curr[1] == "open" then
 							open_door(noun1_curr, noun1_curr.target_door)
 						elseif verb_curr[1] == "close" then
@@ -2087,11 +2085,9 @@ function input_button_pressed(button_index)
 						end
 					--end, false)
 				else
-					d("7")
 					-- e.g. "i don't think that will work"
 					unsupported_action(verb_curr[2], noun1_curr, noun2_curr)
 				end
-				d("8")
 			end
 			-- clear current command
 			clear_curr_cmd()
@@ -2609,6 +2605,9 @@ function game_init()
 		for obj in all(room.objects) do
 			explode_data(obj)
 			obj.in_room = room
+			if obj.init then
+				obj.init(obj)
+			end
 		end
 	end
 	-- init actors with defaults
