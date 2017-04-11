@@ -276,6 +276,7 @@ end
 					y=1
 					w=1
 					h=1
+					col_replace={5,2}
 					state=state_here
 					state_here=3
 					classes = {class_untouchable}
