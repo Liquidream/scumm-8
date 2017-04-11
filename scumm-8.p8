@@ -2313,22 +2313,23 @@ function object_draw(obj)
 	-- check for custom draw
 	if obj.draw then
 		obj.draw(obj)
-		return
-	end
-	
-	-- allow for repeating
-	rx=1
-	if obj.repeat_x then rx = obj.repeat_x end
-	for h = 0, rx-1 do
-		-- draw object (in its state!)
-		local obj_spr = 0
-		if obj.states then
-			obj_spr = obj.states[obj.state]
-		else
-			obj_spr = obj[obj.state]
+		--return
+	else
+		-- allow for repeating
+		rx=1
+		if obj.repeat_x then rx = obj.repeat_x end
+		for h = 0, rx-1 do
+			-- draw object (in its state!)
+			local obj_spr = 0
+			if obj.states then
+				obj_spr = obj.states[obj.state]
+			else
+				obj_spr = obj[obj.state]
+			end
+			sprdraw(obj_spr, obj.x+(h*(obj.w*8)), obj.y, obj.w, obj.h, obj.trans_col, obj.flip_x)
 		end
-		sprdraw(obj_spr, obj.x+(h*(obj.w*8)), obj.y, obj.w, obj.h, obj.trans_col, obj.flip_x)
 	end
+
 	--reset palette
 	pal() 
 end
@@ -2574,17 +2575,33 @@ end
 
 function sprdraw(n, x, y, w, h, transcol, flip_x, flip_y)
 	-- switch transparency
- 	palt(0, false)
- 	palt(transcol, true)
-	 -- draw sprite
+	set_trans_col(transcol, true)
+
+ 	-- palt(0, false)
+ 	-- palt(transcol, true)
+	
+	-- draw sprite
 	spr(n, x, stage_top + y, w, h, flip_x, flip_y) --
-	-- restore default trans	
- 	palt(transcol, false)
-	palt(0, true)
+	
+	-- -- restore default trans	
+	-- set_trans_col(transcol, false)
+ 	
+	-- palt(transcol, false)
+	-- palt(0, true)
+	
 	--pal() -- don't do, affects lighting!
 end
 
-
+function set_trans_col(transcol, enabled)
+	-- set transparency for specific col
+	palt(0, false)
+	palt(transcol, true)
+	
+	-- set status of default transparency
+	if transcol and transcol > 0 then
+		palt(0, false)
+	end
+end
 
 
 -- initialise all the rooms (e.g. add in parent links)
