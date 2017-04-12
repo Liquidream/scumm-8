@@ -168,48 +168,21 @@ end
 
 			obj_bucket = {		
 				data = [[
-					name = bucket
-					state = state_open
-					x=104
-					y=48
+					x=1
+					y=1
 					w=1
 					h=1
-					state_closed=143
-					state_open = 159
-					trans_col=15
-					use_with=true
-					classes = {class_pickupable}
+					state=state_here
+					state_here=3
+					col_replace={13,8}
+					classes={class_untouchable}
 				]],
-				verbs = {
-					lookat = function(me)
-						if me.owner == selected_actor then
-							say_line("it is a bucket in my pocket")
-						else
-							say_line("it is a bucket")
-						end
-					end,
-					pickup = function(me)
-						pickup_obj(me)
-					end,
-					give = function(me, noun2)
-						if noun2 == purp_tentacle then
-							say_line("can you fill this up for me?")
-							say_line(purp_tentacle, "sure")
-							me.owner = purp_tentacle
-							say_line(purp_tentacle, "here ya go...")
-							me.state = "state_closed"
-							me.name = "full bucket"
-							pickup_obj(me)
-						else
-							say_line("i might need this")
-						end
-					end,
-					use = function(me, noun2)
-						if (noun2 == obj_window) then
-							obj_window.state = "state_open"
-						end
-					end
-				}
+				draw = function(me)
+					-- switch transparency
+					--set_trans_col(13, true)
+					-- draw stairs
+					map(7,3, 60,50, 3,2)
+				end,
 			}
 
 			obj_spinning_top = {		
@@ -299,6 +272,7 @@ end
 
 		rm_hall = {
 			data = [[
+				col_replace={7,8}
 				map = {32,24,55,31}
 			]],
 			objects = {
@@ -2307,7 +2281,8 @@ function replace_colors(obj)
 	-- also apply brightness (default to room-level, if not set)
 	if obj.lighting then
 		_fadepal(obj.lighting)
-	elseif obj.in_room then
+	elseif obj.in_room 
+	 and obj.in_room.lighting then
 		_fadepal(obj.in_room.lighting)
 	end
 end
@@ -2316,7 +2291,7 @@ end
 function object_draw(obj)
 	-- replace colors?
 	replace_colors(obj)
-	
+
 	-- check for custom draw
 	if obj.draw then
 		obj.draw(obj)
@@ -2333,7 +2308,7 @@ function object_draw(obj)
 			else
 				obj_spr = obj[obj.state]
 			end
-			sprdraw(obj_spr, obj.x+(h*(obj.w*8)), obj.y, obj.w, obj.h, obj.trans_col, obj.flip_x)
+			--sprdraw(obj_spr, obj.x+(h*(obj.w*8)), obj.y, obj.w, obj.h, obj.trans_col, obj.flip_x)
 		end
 	end
 
