@@ -1746,11 +1746,11 @@ function _init()
 	-- reload(0x3000,0x3000,0x64,"mi_temp.p8") -- gfx flags pg1
 	-- cstore(0x3a00,0x3000,0x100) -- sfx (just b4 last 1/2)
 
+		-- load embedded gfx (from sfx area)
+	--	reload(0,0x3b00,0x800)
+		-- load embedded gfx flags (from sfx area)
+	--	reload(0x3000,0x3a00,0x100)
 
-
-	--reload(0,0,0x800,"mario014.p8") -- gfx pg1
-	--cstore(0x3b00,0,0x800) -- sfx (last 1/2)
- 	--reload(0,0x3b00,0x800) -- gfx pg1 (from end of sfx)
 
 	
 	--reload(0,0x3200,0x1000) -- gfx pg1&2 (from sfx)
