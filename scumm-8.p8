@@ -168,12 +168,8 @@ end
 
 			obj_bucket = {		
 				data = [[
-					x=1
-					y=1
-					w=1
-					h=1
-					state=state_here
-					state_here=3
+					x=60
+					y=50
 					col_replace={13,8}
 					classes={class_untouchable}
 				]],
@@ -181,7 +177,7 @@ end
 					-- switch transparency
 					--set_trans_col(13, true)
 					-- draw stairs
-					map(7,3, 60,50, 3,2)
+					map(7,3, me.x,me.y, 3,2)
 				end,
 			}
 
@@ -2253,6 +2249,7 @@ function room_draw()
 					 and (not obj.dependent_on 			-- object has a valid dependent state?
 						or obj.dependent_on.state == obj.dependent_on_state)
 					 and not obj.owner   						-- object is not "owned"
+					 or obj.draw
 					then
 						-- something to draw
 						object_draw(obj)
@@ -2604,6 +2601,7 @@ function game_init()
 		for obj in all(room.objects) do
 			explode_data(obj)
 			obj.in_room = room
+			obj.h = obj.h or 0
 			if obj.init then
 				obj.init(obj)
 			end
