@@ -1591,10 +1591,10 @@ local gl=sqrt((cw.x-cx.x)^2+(cw.y-cx.y)^2) return gl else return 1000 end end gq
 
 
 function _init() 
--- reload(0,0,0x800,"mi_temp.p8") -- gfx pg1
--- cstore(0x3b00,0,0x800) -- sfx (last 1/2)
-reload(0x3000,0x3000,0x64,"mi_temp.p8") -- gfx flags pg1
-cstore(0x4300,0,0x100) -- sfx (last 1/2)
+reload(0,0,0x800,"mi_temp.p8") -- gfx pg1
+cstore(0x3b00,0,0x800) -- sfx (last 1/2)
+-- reload(0x3000,0x3000,0x64,"mi_temp.p8") -- gfx flags pg1
+-- cstore(0x3a00,0x3000,0x100) -- sfx (just b4 last 1/2)
 
 if enable_mouse then poke(0x5f2d,1) end
 hf() start_script(startup_script,true) end function _update60() hg() end function _draw() hh() end function hg() if selected_actor and selected_actor.dk
