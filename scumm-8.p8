@@ -593,17 +593,21 @@ end
 			end,
 			scripts = {	  
 				door_teleport = function(door1, door2)
-					open_door(door1)
-					break_time(10)
-					put_actor_at(selected_actor,0,0,rm_void)
-					close_door(door1)
-					camera_pan_to(door2)
-					wait_for_camera()
-					open_door(door1, door2)
-					break_time(10)
-					come_out_door(door1, door2)
-					close_door(door1,door2)
-					camera_follow(selected_actor)
+					cutscene(
+						2, -- quick-cut
+						function()
+							open_door(door1)
+							break_time(10)
+							put_actor_at(selected_actor,0,0,rm_void)
+							close_door(door1)
+							camera_pan_to(door2)
+							wait_for_camera()
+							open_door(door1, door2)
+							break_time(10)
+							come_out_door(door1, door2)
+							close_door(door1,door2)
+							camera_follow(selected_actor)
+						end)
 				end
 			},
 		}
@@ -758,7 +762,7 @@ rooms = {
 			face_dir = face_front
 			use_pos = pos_left
 		]],
-		in_room = rm_kitchen,
+		in_room = rm_landing, --rm_kitchen,
 		inventory = {
 			obj_switch_player
 		},
@@ -772,7 +776,8 @@ rooms = {
 						function()
 							--do_anim(purp_tentacle, anim_face, selected_actor)
 							say_line(me,"what do you want?")
-						end)
+						end
+					)
 
 					-- dialog loop start
 					while (true) do
@@ -846,10 +851,12 @@ function startup_script()
 	--change_room(rm_library, 1) -- iris fade
 
 	selected_actor = main_actor
-	put_actor_at(selected_actor,60,60,rm_hall)
+	put_actor_at(selected_actor,60,60,rm_landing)
+	--put_actor_at(selected_actor,60,60,rm_hall)
 	camera_follow(selected_actor)
 
-	change_room(rm_hall, 1) -- iris fade
+	room_curr = rm_landing
+	--change_room(rm_hall, 1) -- iris fade
 end
 
 
@@ -1706,6 +1713,7 @@ draw_zplanes = {}		-- table of tables for each of the (8) zplanes for drawing de
 
 fade_iris, fade_iris = 0, 0
 
+cutscene_cooloff = 0
 
 -- game loop
 
@@ -1778,10 +1786,16 @@ function game_update()
 			end
 			-- now delete cutscene
 			del(cutscenes, cutscene_curr)
-			cutscene_curr = nil
+			
 			-- any more cutscenes?
 			if #cutscenes > 0 then
 				cutscene_curr = cutscenes[#cutscenes]
+			else
+				if cutscene_curr.flags != 2 then
+					-- start countdown (delay to ensure cutscenes/dialogs all over!)
+					cutscene_cooloff = 3
+				end
+				cutscene_curr = nil
 			end
 		end
 	else
@@ -1857,13 +1871,17 @@ function game_draw()
  -- as could be going straight into a dialog
  -- (would prefer a better way than this, but couldn't find one!)
  --
-	if cutscene_curr_lastval == cutscene_curr then
-		--d("cut_same")
-	else
-		--d("cut_diff")
-		cutscene_curr_lastval = cutscene_curr
-		return
-	end
+	if cutscene_cooloff > 0 then 
+ 		cutscene_cooloff -= 1 
+	 	return
+ 	end
+	-- if cutscene_curr_lastval == cutscene_curr then
+	-- 	--d("cut_same")
+	-- else
+	-- 	d("cut_diff")
+	-- 	cutscene_curr_lastval = cutscene_curr
+	-- 	return
+	-- end
 	
 
 	-- draw current command (verb/object)
@@ -1874,16 +1892,16 @@ function game_draw()
 	-- draw ui and inventory (only if actor selected to use it!)
 	if (not cutscene_curr
 		or cutscene_curr.flags == 2) -- quick-cut
-		--or not has_flag(cutscene_curr.flags, "cut_noverbs"))
 		-- and not just left a cutscene
-		and (cutscene_curr_lastval == cutscene_curr) then
+		and cutscene_cooloff == 0 then
+		--and (cutscene_curr_lastval == cutscene_curr) then
 		ui_draw()
 	else
 		--d("ui skipped")
 	end
 
 	-- hack: fix for display issue (see above hack info)
-	cutscene_curr_lastval = cutscene_curr
+	--cutscene_curr_lastval = cutscene_curr
 
 	if not cutscene_curr then
 		cursor_draw()
