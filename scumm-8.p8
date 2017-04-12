@@ -3014,8 +3014,14 @@ end
 
 --- collision check
 function iscursorcolliding(obj)
-	-- check params
-	if not obj.bounds then return false end
+	-- check params / not in cutscene
+	if not obj.bounds 
+	 or cutscene_curr then 
+	 return false 
+	end
+	-- check not in cutscene
+	
+
 	bounds = obj.bounds
 	if (cursor_x + bounds.cam_off_x > bounds.x1 or cursor_x + bounds.cam_off_x < bounds.x) 
 	 or (cursor_y > bounds.y1 or cursor_y < bounds.y) then
