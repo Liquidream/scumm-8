@@ -2305,7 +2305,7 @@ function object_draw(obj)
 			else
 				obj_spr = obj[obj.state]
 			end
-			--sprdraw(obj_spr, obj.x+(h*(obj.w*8)), obj.y, obj.w, obj.h, obj.trans_col, obj.flip_x)
+			sprdraw(obj_spr, obj.x+(h*(obj.w*8)), obj.y, obj.w, obj.h, obj.trans_col, obj.flip_x)
 		end
 	end
 
