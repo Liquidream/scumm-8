@@ -1527,12 +1527,6 @@ function walk_to(actor, x, y)
 		-- use pathfinding!
 	  local path = find_path(actor_cell_pos, target_cell_pos)
 
-		-- finally, add our destination to list
-		local final_cell = getcellpos({x=x, y=y})
-		if is_cell_walkable(final_cell[1], final_cell[2]) then
-			add(path, final_cell)
-		end
-
 		for p in all(path) do
 			local px = (p[1]-room_curr.map[1])*8 + 4
 			local py = (p[2]-room_curr.map[2])*8 + 4
@@ -2840,13 +2834,17 @@ function find_path(start, goal)
  -- now find goal..
  local path = {}
  current = came_from[vectoindex(goal)]
+ 
+ if current then
+ 	-- add "goal" to path
+	 add(path, goal)
  -- check for "no goal found"
- if not current
-  and lowest_dist_node then
+ elseif lowest_dist_node then
    -- start from closest to goal instead
    current = came_from[lowest_dist_node]
 	 add(path, lowest_dist_neigh)
  end
+
  if current then
 	local cindex = vectoindex(current)
 	local sindex = vectoindex(start)
