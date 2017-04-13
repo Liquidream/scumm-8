@@ -2769,7 +2769,7 @@ end
 --
 
 function find_path(start, goal)
- local frontier, came_from, cost_so_far  = {}, {}, {}
+ local frontier, came_from, cost_so_far, lowest_dist  = {}, {}, {}, nil
  insert(frontier, start, 0)
  came_from[vectoindex(start)] = nil
  cost_so_far[vectoindex(start)] = 0
@@ -2817,7 +2817,7 @@ function find_path(start, goal)
    local nextindex = vectoindex(next)
    local new_cost = cost_so_far[vectoindex(current)] + next[3] -- add extra costs here
 
-   if cost_so_far[nextindex] == nil
+   if not cost_so_far[nextindex]
 	  or new_cost < cost_so_far[nextindex]
 	 then
 	 	cost_so_far[nextindex] = new_cost
@@ -2827,7 +2827,7 @@ function find_path(start, goal)
     insert(frontier, next, priority)
     came_from[nextindex] = current
 
-		if lowest_dist == nil
+		if not lowest_dist
      or h < lowest_dist then
       lowest_dist = h
       lowest_dist_node = nextindex
@@ -2841,7 +2841,7 @@ function find_path(start, goal)
  local path = {}
  current = came_from[vectoindex(goal)]
   -- check for "no goal found"
- if current == nil then
+ if not current then
   -- start from closest to goal instead
   current = came_from[lowest_dist_node]
 	add(path, lowest_dist_neigh)
