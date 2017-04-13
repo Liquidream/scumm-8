@@ -15,7 +15,7 @@ __lua__
 -- debugging
 show_debuginfo = true
 show_collision = false
---show_pathfinding = true
+show_pathfinding = true
 show_perfinfo = true
 enable_mouse = true
 d = printh
@@ -386,15 +386,6 @@ end
 						say_line("this book sticks out")
 					end,
 					pull = function(me)
-						if obj_library_secret_panel.state != "state_open" then
-							obj_library_secret_panel.state="state_open"
-							shake(true)
-							while (obj_library_secret_panel.y > -8) do
-								obj_library_secret_panel.y -= 1
-								break_time(10)
-							end
-							shake(false)
-						end
 					end,
 				}
 			}
@@ -563,17 +554,6 @@ end
 					cutscene(
 						2, -- quick-cut
 						function()
-							open_door(door1)
-							break_time(10)
-							put_actor_at(selected_actor,0,0,rm_void)
-							close_door(door1)
-							camera_pan_to(door2)
-							wait_for_camera()
-							open_door(door1, door2)
-							break_time(10)
-							come_out_door(door1, door2)
-							close_door(door1,door2)
-							camera_follow(selected_actor)
 						end)
 				end
 			},
@@ -2203,6 +2183,8 @@ function room_draw()
 
 
 
+
+
 	-- draw each zplane, from back to front
 	for z = -64,64 do
 
@@ -2218,6 +2200,37 @@ function room_draw()
 			map(room_curr.map[1], room_curr.map[2], 0, stage_top, room_curr.map_w, room_curr.map_h)
 			--reset palette
 			pal()		
+
+
+					-- ===============================================================
+					-- debug walkable areas
+					
+					if show_pathfinding then
+						actor_cell_pos = getcellpos(selected_actor)
+
+						celx = flr((cursor_x + cam_x + 0) /8) + room_curr.map[1]
+						cely = flr((cursor_y - stage_top + 0) /8 ) + room_curr.map[2]
+						target_cell_pos = { celx, cely }
+
+						path = find_path(actor_cell_pos, target_cell_pos)
+
+						-- finally, add our destination to list
+						click_cell = getcellpos({x=(cursor_x + cam_x), y=(cursor_y - stage_top)})
+						if is_cell_walkable(click_cell[1], click_cell[2]) then
+						--if (#path>0) then
+							add(path, click_cell)
+						end
+
+						for p in all(path) do
+							--d("  > "..p[1]..","..p[2])
+							rect(
+								(p[1]-room_curr.map[1])*8, 
+								stage_top+(p[2]-room_curr.map[2])*8, 
+								(p[1]-room_curr.map[1])*8+7, 
+								stage_top+(p[2]-room_curr.map[2])*8+7, 11)
+						end
+					end
+
 		else
 			-- draw other layers
 			zplane = draw_zplanes[z]
