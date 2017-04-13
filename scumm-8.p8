@@ -2769,7 +2769,7 @@ end
 --
 
 function find_path(start, goal)
- local frontier, came_from, cost_so_far, lowest_dist, lowest_dist_node  = {}, {}, {}, nil, nil
+ local frontier, came_from, cost_so_far  = {}, {}, {}
  insert(frontier, start, 0)
  came_from[vectoindex(start)] = nil
  cost_so_far[vectoindex(start)] = 0
