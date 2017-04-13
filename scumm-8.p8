@@ -799,11 +799,13 @@ function startup_script()
 
 	selected_actor = main_actor
 	--put_actor_at(selected_actor,60,60,rm_landing)
-	put_actor_at(selected_actor,60,60,rm_hall)
+	--put_actor_at(selected_actor,60,60,rm_hall)
+	put_actor_at(selected_actor,60,60,rm_library)
 	camera_follow(selected_actor)
 
 	--room_curr = rm_landing
-	room_curr = rm_hall
+	--room_curr = rm_hall
+	room_curr = rm_library
 	--change_room(rm_hall, 1) -- iris fade
 end
 
@@ -1518,12 +1520,12 @@ end
 -- walk actor to position
 function walk_to(actor, x, y)
 		-- first check to see if already there
-		if actor.x == x
-		 and actor.y == y
-		then
-			-- no walk needed!
-			--return
-		end
+		-- if actor.x == x
+		--  and actor.y == y
+		-- then
+		-- 	-- no walk needed!
+		-- 	--return
+		-- end
 
 		local actor_cell_pos = getcellpos(actor)
 		local celx = flr(x /8) + room_curr.map[1]
@@ -1535,13 +1537,21 @@ function walk_to(actor, x, y)
 
 		-- finally, add our destination to list
 		local final_cell = getcellpos({x=x, y=y})
+		d("final_cell x="..final_cell[1]..", y="..final_cell[2])
 		if is_cell_walkable(final_cell[1], final_cell[2]) then
 			add(path, final_cell)
 		end
+	
+		d("path: "..#path)
+
 
 		for p in all(path) do
+			d("   > p[x]= "..p[1]..", p[y]="..p[2])
+
 			local px = (p[1]-room_curr.map[1])*8 + 4
 			local py = (p[2]-room_curr.map[2])*8 + 4
+
+			d("   > px= "..px..", py="..py)
 
 			local distance = sqrt((px - actor.x) ^ 2 + (py - actor.y) ^ 2)
 			local step_x = actor.walk_speed * (px - actor.x) / distance
@@ -2775,7 +2785,7 @@ end
 --
 
 function find_path(start, goal)
- local frontier, came_from, cost_so_far, lowest_dist  = {}, {}, {}, nil
+ local frontier, came_from, cost_so_far, lowest_dist, lowest_dist_node  = {}, {}, {}, nil, nil
  insert(frontier, start, 0)
  came_from[vectoindex(start)] = nil
  cost_so_far[vectoindex(start)] = 0
@@ -2835,6 +2845,7 @@ function find_path(start, goal)
 
 		if not lowest_dist
      or h < lowest_dist then
+		 	d("new low: "..h)
       lowest_dist = h
       lowest_dist_node = nextindex
 			lowest_dist_neigh = next
@@ -2847,12 +2858,18 @@ function find_path(start, goal)
  local path = {}
  current = came_from[vectoindex(goal)]
   -- check for "no goal found"
- if not current then
+ if not current
+  and lowest_dist_node then
+ 	d("current1="..type(current))
+	d("start closest walkable!!!!")
   -- start from closest to goal instead
   current = came_from[lowest_dist_node]
+	d("current2="..type(current))
+	d("lowest_dist_neigh="..type(lowest_dist_neigh))
 	add(path, lowest_dist_neigh)
  end
  if current then
+ 	d("...1")
 	local cindex = vectoindex(current)
 	local sindex = vectoindex(start)
 
