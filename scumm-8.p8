@@ -1030,9 +1030,9 @@ function wait_for_camera()
 end
 
 
-function cutscene(flags, func_cutscene, func_override)
+function cutscene(type, func_cutscene, func_override)
 	cut = {
-		flags = flags,
+		flags = type,
 		thread = cocreate(func_cutscene),
 		override = func_override,
 		paused_cam_following = cam_following_actor

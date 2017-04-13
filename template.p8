@@ -135,10 +135,6 @@ end
 				data = [[
 					x=1
 					y=1
-					w=1
-					h=1
-					state=state_here
-					state_here=3
 					classes = {class_untouchable}
 				]],
 				draw = function(me)
