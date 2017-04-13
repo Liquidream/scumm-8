@@ -798,11 +798,12 @@ function startup_script()
 	--change_room(rm_library, 1) -- iris fade
 
 	selected_actor = main_actor
-	put_actor_at(selected_actor,60,60,rm_landing)
-	--put_actor_at(selected_actor,60,60,rm_hall)
+	--put_actor_at(selected_actor,60,60,rm_landing)
+	put_actor_at(selected_actor,60,60,rm_hall)
 	camera_follow(selected_actor)
 
-	room_curr = rm_landing
+	--room_curr = rm_landing
+	room_curr = rm_hall
 	--change_room(rm_hall, 1) -- iris fade
 end
 
@@ -1516,8 +1517,13 @@ end
 
 -- walk actor to position
 function walk_to(actor, x, y)
-		--offset for camera
-	--	x += cam_x
+		-- first check to see if already there
+		if actor.x == x
+		 and actor.y == y
+		then
+			-- no walk needed!
+			--return
+		end
 
 		local actor_cell_pos = getcellpos(actor)
 		local celx = flr(x /8) + room_curr.map[1]
