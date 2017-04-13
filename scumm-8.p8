@@ -224,39 +224,6 @@ end
 							cutscene(
 								1, -- no verbs 
 								function()
-									me.done_cutscene = true
-									-- cutscene code
-									me.state = "state_open"
-									me.z = -2
-									print_line("*bang*",40,20,8,1)
-									change_room(rm_kitchen, 1)
-									selected_actor = purp_tentacle
-									walk_to(selected_actor, 
-										selected_actor.x+10, 
-										selected_actor.y)
-									say_line("what was that?!")
-									say_line("i'd better check...")
-									walk_to(selected_actor, 
-										selected_actor.x-10, 
-										selected_actor.y)
-									change_room(rm_hall, 1)
-									-- wait for a bit, then appear in room1
-									break_time(50)
-									put_actor_at(selected_actor, 115, 44, rm_hall)
-									walk_to(selected_actor, 
-										selected_actor.x-10, 
-										selected_actor.y)
-									say_line("intruder!!!")
-									do_anim(main_actor, "anim_face", purp_tentacle)
-								end,
-								-- override for cutscene
-								function()
-									--if cutscene_curr.skipped then
-									--d("override!")
-									change_room(rm_hall)
-									put_actor_at(purp_tentacle, 105, 44, rm_hall)
-									stop_talking()
-									do_anim(main_actor, "anim_face", purp_tentacle)
 								end
 							)
 						end
@@ -2789,7 +2756,7 @@ end
 --
 
 function find_path(start, goal)
- local frontier, came_from, cost_so_far = {}, {}, {}
+ local frontier, came_from, cost_so_far, lowest_dist, lowest_dist_node  = {}, {}, {}, nil, nil
  insert(frontier, start, 0)
  came_from[vectoindex(start)] = nil
  cost_so_far[vectoindex(start)] = 0
@@ -2842,9 +2809,17 @@ function find_path(start, goal)
 	 then
 	 	cost_so_far[nextindex] = new_cost
 		-- diagonal movement - assumes diag dist is 1, same as cardinals
-		local priority = new_cost +  max(abs(goal[1] - next[1]), abs(goal[2] - next[2]))
+		local h = max(abs(goal[1] - next[1]), abs(goal[2] - next[2]))
+		local priority = new_cost + h
     insert(frontier, next, priority)
     came_from[nextindex] = current
+
+		if lowest_dist == nil
+     or h < lowest_dist then
+      lowest_dist = h
+      lowest_dist_node = nextindex
+			lowest_dist_neigh = next
+    end
    end 
   end
  end
@@ -2852,6 +2827,12 @@ function find_path(start, goal)
  -- now find goal..
  local path = {}
  current = came_from[vectoindex(goal)]
+  -- check for "no goal found"
+ if current == nil then
+  -- start from closest to goal instead
+  current = came_from[lowest_dist_node]
+	add(path, lowest_dist_neigh)
+ end
  if current then
 	local cindex = vectoindex(current)
 	local sindex = vectoindex(start)
