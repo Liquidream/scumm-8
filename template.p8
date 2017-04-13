@@ -16,7 +16,7 @@ __lua__
 -- now 6977 tokens (after adding new use_pos & error check for nil doors)
 -- now 7489 tokens (after adding mini-game & door classes)
 -- now 7595 tokens (after stairs, door teleports, b4 tweak to pathfinding)
--- now 7656 tokens (after b4 tweak to pathfinding)
+-- now 7646 tokens (after b4 tweak to pathfinding)
 
 
 -- debugging
