@@ -1519,15 +1519,7 @@ end
 
 -- walk actor to position
 function walk_to(actor, x, y)
-		-- first check to see if already there
-		-- if actor.x == x
-		--  and actor.y == y
-		-- then
-		-- 	-- no walk needed!
-		-- 	--return
-		-- end
-
-		local actor_cell_pos = getcellpos(actor)
+			local actor_cell_pos = getcellpos(actor)
 		local celx = flr(x /8) + room_curr.map[1]
 		local cely = flr(y /8) + room_curr.map[2]
 		local target_cell_pos = { celx, cely }
@@ -1537,21 +1529,13 @@ function walk_to(actor, x, y)
 
 		-- finally, add our destination to list
 		local final_cell = getcellpos({x=x, y=y})
-		d("final_cell x="..final_cell[1]..", y="..final_cell[2])
 		if is_cell_walkable(final_cell[1], final_cell[2]) then
 			add(path, final_cell)
 		end
-	
-		d("path: "..#path)
-
 
 		for p in all(path) do
-			d("   > p[x]= "..p[1]..", p[y]="..p[2])
-
 			local px = (p[1]-room_curr.map[1])*8 + 4
 			local py = (p[2]-room_curr.map[2])*8 + 4
-
-			d("   > px= "..px..", py="..py)
 
 			local distance = sqrt((px - actor.x) ^ 2 + (py - actor.y) ^ 2)
 			local step_x = actor.walk_speed * (px - actor.x) / distance
@@ -2845,7 +2829,6 @@ function find_path(start, goal)
 
 		if not lowest_dist
      or h < lowest_dist then
-		 	d("new low: "..h)
       lowest_dist = h
       lowest_dist_node = nextindex
 			lowest_dist_neigh = next
@@ -2857,19 +2840,14 @@ function find_path(start, goal)
  -- now find goal..
  local path = {}
  current = came_from[vectoindex(goal)]
-  -- check for "no goal found"
+ -- check for "no goal found"
  if not current
   and lowest_dist_node then
- 	d("current1="..type(current))
-	d("start closest walkable!!!!")
-  -- start from closest to goal instead
-  current = came_from[lowest_dist_node]
-	d("current2="..type(current))
-	d("lowest_dist_neigh="..type(lowest_dist_neigh))
-	add(path, lowest_dist_neigh)
+   -- start from closest to goal instead
+   current = came_from[lowest_dist_node]
+	 add(path, lowest_dist_neigh)
  end
  if current then
- 	d("...1")
 	local cindex = vectoindex(current)
 	local sindex = vectoindex(start)
 
