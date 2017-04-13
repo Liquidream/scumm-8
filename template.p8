@@ -942,17 +942,21 @@ end
 			end,
 			scripts = {	  
 				door_teleport = function(door1, door2)
-					open_door(door1)
-					break_time(10)
-					put_actor_at(selected_actor,0,0,rm_void)
-					close_door(door1)
-					camera_pan_to(door2)
-					wait_for_camera()
-					open_door(door1, door2)
-					break_time(10)
-					come_out_door(door1, door2)
-					close_door(door1,door2)
-					camera_follow(selected_actor)
+					cutscene(
+						2, -- quick-cut
+						function()
+							open_door(door1)
+							break_time(10)
+							put_actor_at(selected_actor,0,0,rm_void)
+							close_door(door1)
+							camera_pan_to(door2)
+							wait_for_camera()
+							open_door(door1, door2)
+							break_time(10)
+							come_out_door(door1, door2)
+							close_door(door1,door2)
+							camera_follow(selected_actor)
+						end)
 				end
 			},
 		}
