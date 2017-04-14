@@ -114,10 +114,14 @@ end
 							
 
 							-- outro
-							print_line("coming soon...:to a pico-8 near you!",64,45,8,1)
+							print_line("congratulations!:you've completed the game!",64,45,8,1)
 							fades(1,1)	-- fade out
-							break_time(100)
-							
+							break_time(50)
+					
+							while true do 
+								print_line("game over",64,45,8,1)
+								break_time(10) 
+							end
 						end) -- end cutscene
 
 				end -- if not done intro
@@ -228,6 +232,7 @@ end
 						if noun2 == obj_fire then
 							put_at(obj_fire, 0, 0, rm_void)
 							put_at(obj_key, 88, 32, rm_library)
+							obj_bucket.state = "state_open"
 							say_line("the fire's out now")
 						elseif noun2 == obj_pool then
 							say_line("let's fill this up...")
@@ -1626,8 +1631,8 @@ function startup_script()
 	-- pickup_obj(obj_switch_tent, main_actor)
 	-- pickup_obj(obj_switch_player, purp_tentacle)
 	
-	--  pickup_obj(obj_bucket, main_actor)
-	--  obj_bucket.state = "state_closed"
+	 pickup_obj(obj_bucket, main_actor)
+	 obj_bucket.state = "state_closed"
 	
 	-- set which actor the player controls by default
 	selected_actor = main_actor
