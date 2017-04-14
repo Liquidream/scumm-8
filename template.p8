@@ -317,6 +317,24 @@ end
 				}
 			}
 
+			obj_pendulum= {		
+				data = [[
+					x=40
+					y=20
+					w=1
+					z=-1
+				]],
+				draw = function(me)
+					line(me.x, me.y, obj_pendulum.bobx, obj_pendulum.boby, 9)
+  				circfill(obj_pendulum.bobx, obj_pendulum.boby, 2)
+				end,
+				verbs = {
+					lookat = function(me)
+						say_line("wow. that is impressive...:...musta taken ages to code that!")
+					end,
+				}
+			}
+
 			obj_inside_stairs = {
 				data = [[
 					x=1
@@ -414,6 +432,7 @@ end
 				col_replace = {5,2}
 			]],
 			objects = {
+				obj_pendulum,
 				obj_front_door_inside,
 				obj_inside_stairs,
 				obj_hall_rail,
@@ -422,11 +441,40 @@ end
 				obj_hall_door_kitchen,
 			},
 			enter = function(me)
-				-- todo: anything here?
+				-- animate clock
+				start_script(me.scripts.anim_clock, true) -- bg script
 			end,
 			exit = function(me)
-				-- todo: anything here?
+				-- pause clock while not in room
+				stop_script(me.scripts.anim_clock)
 			end,
+			scripts = {
+				anim_clock = function()
+					local originX = obj_pendulum.x
+  				local originY = obj_pendulum.y
+					local length = 31
+					local gravity = 0.1
+					local mass = 0.2
+
+					obj_pendulum.angle = 3.1415 / 6.101  --6
+					printh("angle:"..obj_pendulum.angle )
+					obj_pendulum.aVel = 0
+
+					while true do
+						local aAcc = -9.81 / length * sin(obj_pendulum.angle)
+
+						obj_pendulum.aVel += aAcc * gravity * mass
+						obj_pendulum.angle += obj_pendulum.aVel * gravity
+						obj_pendulum.bobx = originX + sin(obj_pendulum.angle) * length
+						obj_pendulum.boby = originY - cos(obj_pendulum.angle) * length
+						-- printh("aAcc:"..aAcc)
+						-- printh("aVel:"..obj_pendulum.aVel)
+						-- printh("angle:"..obj_pendulum.angle)
+
+						break_time()
+					end
+				end
+			}
 		}
 
 	-- library
@@ -1631,18 +1679,18 @@ function startup_script()
 	-- pickup_obj(obj_switch_tent, main_actor)
 	-- pickup_obj(obj_switch_player, purp_tentacle)
 	
-	 pickup_obj(obj_bucket, main_actor)
-	 obj_bucket.state = "state_closed"
+	--  pickup_obj(obj_bucket, main_actor)
+	--  obj_bucket.state = "state_closed"
 	
 	-- set which actor the player controls by default
 	selected_actor = main_actor
 	
 	-- init actor
 	--put_at(selected_actor, 100, 48, rm_kitchen)
-	--put_at(selected_actor, 160, 48, rm_hall)
+	put_at(selected_actor, 60, 48, rm_hall)
 	--put_at(selected_actor, 16, 48, rm_computer)
 	--put_at(selected_actor, 110, 38, rm_garden)
-	put_at(selected_actor, 110, 38, rm_library)
+	--put_at(selected_actor, 110, 38, rm_library)
 	
 	-- make camera follow player
 	-- (setting now, will be re-instated after cutscene)
@@ -1652,10 +1700,10 @@ function startup_script()
 	-- (e.g. could be a "pseudo" room for title screen!)
 	--change_room(rm_title, 1) -- iris fade
 	--room_curr = rm_kitchen
-	--room_curr = rm_hall
+	room_curr = rm_hall
 	--room_curr = rm_computer
 	--room_curr = rm_garden
-	room_curr = rm_library
+	--room_curr = rm_library
 end
 
 
