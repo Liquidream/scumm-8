@@ -224,22 +224,9 @@ end
 					pickup = function(me)
 						pickup_obj(me)
 					end,
-					give = function(me, noun2)
-						if noun2 == purp_tentacle then
-							say_line("can you fill this up for me?")
-							say_line(purp_tentacle, "sure")
-							me.owner = purp_tentacle
-							say_line(purp_tentacle, "here ya go...")
-							me.state = "state_closed"
-							me.name = "full bucket"
-							pickup_obj(me)
-						else
-							say_line("i might need this")
-						end
-					end,
 					use = function(me, noun2)
-						if (noun2 == obj_window) then
-							obj_window.state = "state_open"
+						if (noun2 == obj_fire) then
+							obj_fire.extinguished = true
 						end
 					end
 				}
@@ -1036,7 +1023,7 @@ end
 
 			obj_floppy_disk = {	
 				data = [[
-					name=floppy disk
+					name=pico-8
 					x=60
 					y=44
 					w=1
@@ -1058,7 +1045,22 @@ end
 						if (noun2 == obj_computer) then
 							say_line("there's already a disk inserted")
 						end
-					end
+					end,
+					give = function(me, noun2)
+						if noun2 == purp_tentacle then
+							say_line("do you like programming?")
+							say_line(purp_tentacle, "yes, why?")
+							say_line("give pico-8 a go, see what you can make")
+							me.owner = purp_tentacle
+							say_line(purp_tentacle, "this is perfect!", true)
+							say_line(purp_tentacle, "thank you very much:i shall start making a game right now...")
+							stop_script(rm_kitchen.scripts.tentacle_guard)
+							walk_to(purp_tentacle, obj_kitchen_door_hall.x+4, obj_kitchen_door_hall.y+30)
+							put_actor_at(purp_tentacle, 0,0, rm_void)
+						else
+							say_line("i might need this")
+						end
+					end,
 				}
 			}
 
@@ -1528,9 +1530,9 @@ function startup_script()
 	selected_actor = main_actor
 	
 	-- init actor
-	put_actor_at(selected_actor, 100, 48, rm_kitchen)
+	--put_actor_at(selected_actor, 100, 48, rm_kitchen)
 	--put_actor_at(selected_actor, 160, 48, rm_hall)
-	--put_actor_at(selected_actor, 16, 48, rm_computer)
+	put_actor_at(selected_actor, 16, 48, rm_computer)
 	
 	-- make camera follow player
 	-- (setting now, will be re-instated after cutscene)
@@ -1539,9 +1541,9 @@ function startup_script()
 	-- set which room to start the game in 
 	-- (e.g. could be a "pseudo" room for title screen!)
 	--change_room(rm_title, 1) -- iris fade
-	room_curr = rm_kitchen
+	--room_curr = rm_kitchen
 	--room_curr = rm_hall
-	--room_curr = rm_computer
+	room_curr = rm_computer
 end
 
 
