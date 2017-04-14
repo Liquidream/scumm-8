@@ -1517,6 +1517,12 @@ function put_actor_at(actor, x, y, room)
 	actor.x, actor.y = x, y
 end
 
+
+function stop_actor(actor)
+	actor.moving = 0
+	clear_curr_cmd()
+end
+
 -- walk actor to position
 function walk_to(actor, x, y)
 		local actor_cell_pos = getcellpos(actor)
@@ -1527,6 +1533,8 @@ function walk_to(actor, x, y)
 		-- use pathfinding!
 	  local path = find_path(actor_cell_pos, target_cell_pos)
 
+		actor.moving = 1
+
 		for p in all(path) do
 			local px = (p[1]-room_curr.map[1])*8 + 4
 			local py = (p[2]-room_curr.map[2])*8 + 4
@@ -1535,10 +1543,15 @@ function walk_to(actor, x, y)
 			local step_x = actor.walk_speed * (px - actor.x) / distance
 			local step_y = actor.walk_speed * (py - actor.y) / distance
 
+			-- abort if actor stopped
+			if actor.moving == 0 then
+				return
+			end
+
 			-- only walk if we're not already there!
 			if distance > 5 then 
 				--walking
-				actor.moving = 1 
+				--actor.moving = 1 
 				actor.flip = (step_x<0)
 
 				-- choose walk anim based on dir
