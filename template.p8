@@ -334,7 +334,7 @@ end
 				end,
 				verbs = {
 					lookat = function(me)
-						say_line("wow. that is impressive...:...musta taken ages to code that!")
+						say_line("wow. that is impressive...:must've taken ages to code that!")
 					end,
 				}
 			}
@@ -350,12 +350,7 @@ end
 					rectfill(35, 20, 43, 56, 0)
 					line(me.x, me.y, obj_pendulum.bobx, obj_pendulum.boby, 9)
   				circfill(obj_pendulum.bobx, obj_pendulum.boby, 2)
-				end,
-				verbs = {
-					lookat = function(me)
-						say_line("wow. that is impressive...:...musta taken ages to code that!")
-					end,
-				}
+				end
 			}
 
 			obj_inside_stairs = {
@@ -474,27 +469,40 @@ end
 			end,
 			scripts = {
 				anim_clock = function()
-					local originX = obj_pendulum.x
-  				local originY = obj_pendulum.y
-					local length = 31
-					local gravity = 0.1
-					local mass = 0.2
+					local angle = 0.5149 --3.1415 / 6.101
+					local aVel = 0
+					local val = -10
+					local played = false
 
-					obj_pendulum.angle = 3.1415 / 6.101  --6
-					printh("angle:"..obj_pendulum.angle )
-					obj_pendulum.aVel = 0
-
+					--0.4846
+					--0.5148
+					d("------")
 					while true do
-						local aAcc = -9.81 / length * sin(obj_pendulum.angle)
+						local aAcc = -6.81 / 31 * sin(angle)
+						--local aAcc = -9.81 / 31 * sin(angle)
 
-						obj_pendulum.aVel += aAcc * gravity * mass
-						obj_pendulum.angle += obj_pendulum.aVel * gravity
-						obj_pendulum.bobx = originX + sin(obj_pendulum.angle) * length
-						obj_pendulum.boby = originY - cos(obj_pendulum.angle) * length
-						-- printh("aAcc:"..aAcc)
-						-- printh("aVel:"..obj_pendulum.aVel)
-						-- printh("angle:"..obj_pendulum.angle)
+						aVel += aAcc * 0.1 * 0.2
+						angle += aVel * 0.1
+						obj_pendulum.bobx = obj_pendulum.x + sin(angle) * 31
+						obj_pendulum.boby = obj_pendulum.y - cos(angle) * 31
+						
+						if angle <= 0.4850
+						 and not played then
+							sfx(0)
+							played = true
+						elseif angle >= 0.5140
+						 and not played then
+							sfx(1)
+							played = true
+						elseif angle > 0.49 and angle < 0.50 then
+							played = false
+						end
 
+						-- if obj_pendulum.angle > val then
+						-- 	val = obj_pendulum.angle
+						-- 	printh("low:"..val)
+						-- end
+						--printh("angle:"..obj_pendulum.angle )
 						break_time()
 					end
 				end
@@ -2277,8 +2285,8 @@ __map__
 1515151515151515151515151515151515151515151515151515151515151515113131313131312515151515151515353131313131313121113131313131312515151515151515353131313131313121123232323232323232323232323232323232323232323222153c3937373737378e373737373737373737373a3d151515
 15151515151515151515151515151515151515151515151515151515151515153131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313232323232323232323232323232323232323232323232323c393737373737373737373737373737373737373a3d1515
 __sfx__
-000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+010100001205000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+010100000f0500f000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
