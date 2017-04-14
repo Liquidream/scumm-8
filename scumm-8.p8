@@ -798,9 +798,9 @@ function startup_script()
 	--change_room(rm_library, 1) -- iris fade
 
 	selected_actor = main_actor
-	--put_actor_at(selected_actor,60,60,rm_landing)
+	--put_at(selected_actor,60,60,rm_landing)
 	put_at(selected_actor,60,60,rm_hall)
-	--put_actor_at(selected_actor,60,60,rm_library)
+	--put_at(selected_actor,60,60,rm_library)
 	camera_follow(selected_actor)
 
 	--room_curr = rm_landing
@@ -1229,7 +1229,7 @@ function come_out_door(from_door, to_door, fade_effect)
 	
 		-- ...auto-position actor at to_door in new room...
 		local pos = get_use_pos(to_door)
-		put_actor_at(selected_actor, pos.x, pos.y, new_room)
+		put_at(selected_actor, pos.x, pos.y, new_room)
 	
 		-- ...in opposite use direction!
 		dir_opp = { 
