@@ -128,7 +128,6 @@ end
 	}
 
 -- [ ground floor ]
-
 	-- outside (front)
 		-- objects
 			obj_outside_stairs = {
@@ -408,30 +407,6 @@ end
 				}
 			}
 
-			obj_spinning_top = {		
-				data = [[
-					name=spinning top
-					x=16
-					y=48
-					w=1
-					h=1
-					state=1
-					states={158,174,190}
-					col_replace={12,7}
-					trans_col=15
-				]],
-				verbs = {
-					use = function(me)
-						if script_running(room_curr.scripts.spin_top) then
-							stop_script(room_curr.scripts.spin_top)
-							me.state = 1
-						else
-							start_script(room_curr.scripts.spin_top)
-						end
-					end
-				}
-			}
-
 			obj_window = {		
 				data = [[
 					name=window
@@ -504,9 +479,7 @@ end
 				obj_hall_exit_landing,
 				obj_hall_door_library,
 				obj_hall_door_kitchen,
-				obj_bucket,
-				obj_spinning_top,
-				--obj_window
+				obj_bucket
 			},
 			enter = function(me)
 				
@@ -517,21 +490,6 @@ end
 				stop_script(me.scripts.tentacle_guard)
 			end,
 			scripts = {	  -- scripts that are at room-level
-				spin_top = function()
-					dir=-1				
-					while true do	
-						for x=1,3 do					
-							for f=1,3 do
-								obj_spinning_top.state = f
-								break_time(4)
-							end
-							-- move top
-							--top = find_object("spinning top")
-							obj_spinning_top.x -= dir					
-						end	
-						dir *= -1
-					end				
-				end,
 				tentacle_guard = function()
 					while true do
 						--d("tentacle guarding...")
@@ -1021,6 +979,47 @@ end
 				}
 			}
 
+			obj_spinning_top = {		
+				data = [[
+					name=spinning top
+					x=16
+					y=48
+					w=1
+					h=1
+					state=1
+					states={158,174,190}
+					col_replace={12,7}
+					trans_col=15
+				]],
+				scripts = {
+					spin_top = function()
+						dir=-1				
+						while true do	
+							for x=1,3 do					
+								for f=1,3 do
+									obj_spinning_top.state = f
+									break_time(4)
+								end
+								-- move top
+								--top = find_object("spinning top")
+								obj_spinning_top.x -= dir					
+							end	
+							dir *= -1
+						end				
+					end,
+				},
+				verbs = {
+					use = function(me)
+						if script_running(me.scripts.spin_top) then
+							stop_script(me.scripts.spin_top)
+							me.state = 1
+						else
+							start_script(me.scripts.spin_top)
+						end
+					end
+				}
+			}
+
 		rm_computer = {
 			data = [[
 				map = {64,16}
@@ -1028,7 +1027,8 @@ end
 			objects = {
 				obj_computer_door_landing,
 				obj_computer,
-				obj_cursor
+				obj_cursor,
+				obj_spinning_top
 			},
 			enter = function(me)
 				-- just exited the game?
@@ -1062,7 +1062,7 @@ end
 							break_time(15)
 						end
 					end
-				end
+				end				
 			},
 		}
 
@@ -1476,8 +1476,8 @@ function startup_script()
 	-- set which actor the player controls by default
 	selected_actor = main_actor
 	-- init actor
-	put_actor_at(selected_actor, 16, 48, rm_hall)
-	--put_actor_at(selected_actor, 16, 48, rm_computer)
+	--put_actor_at(selected_actor, 16, 48, rm_hall)
+	put_actor_at(selected_actor, 16, 48, rm_computer)
 	
 	-- make camera follow player
 	-- (setting now, will be re-instated after cutscene)
@@ -1488,8 +1488,8 @@ function startup_script()
 	--change_room(rm_title, 1) -- iris fade
 --	change_room(rm_computer, 1) -- iris fade
 
-	room_curr = rm_hall
-	--room_curr = rm_computer
+	--room_curr = rm_hall
+	room_curr = rm_computer
 end
 
 
