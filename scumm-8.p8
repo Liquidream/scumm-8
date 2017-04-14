@@ -1519,7 +1519,7 @@ end
 
 -- walk actor to position
 function walk_to(actor, x, y)
-			local actor_cell_pos = getcellpos(actor)
+		local actor_cell_pos = getcellpos(actor)
 		local celx = flr(x /8) + room_curr.map[1]
 		local cely = flr(y /8) + room_curr.map[2]
 		local target_cell_pos = { celx, cely }

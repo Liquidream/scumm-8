@@ -423,22 +423,11 @@ end
 				obj_hall_door_kitchen,
 			},
 			enter = function(me)
-				start_script(me.scripts.tentacle_guard, true) -- bg script
+				-- todo: anything here?
 			end,
 			exit = function(me)
-				stop_script(me.scripts.tentacle_guard)
+				-- todo: anything here?
 			end,
-			scripts = {	  -- scripts that are at room-level
-				tentacle_guard = function()
-					while true do
-						--d("tentacle guarding...")
-						if proximity(main_actor, purp_tentacle) < 30 then
-							say_line(purp_tentacle, "halt!!!", true)
-						end
-						break_time(10)
-					end
-				end
-			},
 		}
 
 	-- library
@@ -641,12 +630,37 @@ end
 				obj_kitchen_door_hall,
 				obj_back_door
 			},
-			enter = function()
-					-- todo: anything here?
+			enter = function(me)
+				start_script(me.scripts.tentacle_guard, true) -- bg script
 			end,
-			exit = function()
-				-- todo: anything here?
+			exit = function(me)
+				stop_script(me.scripts.tentacle_guard)
 			end,
+			scripts = {	  -- scripts that are at room-level
+				tentacle_guard = function()
+					while true do
+						d("tentacle guarding...")
+						if proximity(main_actor, obj_back_door) < 50 
+						 and not purp_tentacle.alerted then
+							d("1")
+							purp_tentacle.alerted = true
+							start_script(rm_kitchen.scripts.tentacle_stop_player)
+						end
+						break_time(10)
+					end
+				end,
+				tentacle_stop_player = function()
+					d("2")
+					cutscene(2,
+						function()
+							say_line(purp_tentacle, "stop!:come back here!", true)
+							walk_to(selected_actor, purp_tentacle.x-8, purp_tentacle.y)
+							do_anim(selected_actor, "anim_face", purp_tentacle)
+							purp_tentacle.alerted = false
+						end
+					)
+				end
+			},
 		}
 
 	-- back garden
@@ -1249,62 +1263,62 @@ end
 -- a place to put objects/actors when not in a room	
 	-- objects
 
-		obj_switch_tent = {		
-			data = [[
-				name=purple tentacle
-				state=state_here
-				state_here=170
-				trans_col=15
-				x=1
-				y=1
-				w=1
-				h=1
-			]],
-			verbs = {
-				use = function(me)
-					selected_actor = purp_tentacle
-					camera_follow(purp_tentacle)
-				end
-			}
-		}
+		-- obj_switch_tent = {		
+		-- 	data = [[
+		-- 		name=purple tentacle
+		-- 		state=state_here
+		-- 		state_here=170
+		-- 		trans_col=15
+		-- 		x=1
+		-- 		y=1
+		-- 		w=1
+		-- 		h=1
+		-- 	]],
+		-- 	verbs = {
+		-- 		use = function(me)
+		-- 			selected_actor = purp_tentacle
+		-- 			camera_follow(purp_tentacle)
+		-- 		end
+		-- 	}
+		-- }
 
-		obj_switch_player= {		
-			data = [[
-				name=humanoid
-				state=state_here
-				state_here=209
-				trans_col=11
-				x=1
-				y=1
-				w=1
-				h=1
-			]],
-			verbs = {
-				use = function(me)
-					selected_actor = main_actor
-					camera_follow(main_actor)
-				end
-			}
-		}
+		-- obj_switch_player= {		
+		-- 	data = [[
+		-- 		name=humanoid
+		-- 		state=state_here
+		-- 		state_here=209
+		-- 		trans_col=11
+		-- 		x=1
+		-- 		y=1
+		-- 		w=1
+		-- 		h=1
+		-- 	]],
+		-- 	verbs = {
+		-- 		use = function(me)
+		-- 			selected_actor = main_actor
+		-- 			camera_follow(main_actor)
+		-- 		end
+		-- 	}
+		-- }
 
-		obj_duck = {		
-			data = [[
-				name=rubber duck
-				state=state_here
-				state_here=142
-				trans_col=12
-				x=1
-				y=1
-				w=1
-				h=1
-				classes = {class_pickupable}
-			]],
-			verbs = {
-				pickup = function(me)
-					pickup_obj(me)
-				end,
-			}
-		}
+		-- obj_duck = {		
+		-- 	data = [[
+		-- 		name=rubber duck
+		-- 		state=state_here
+		-- 		state_here=142
+		-- 		trans_col=12
+		-- 		x=1
+		-- 		y=1
+		-- 		w=1
+		-- 		h=1
+		-- 		classes = {class_pickupable}
+		-- 	]],
+		-- 	verbs = {
+		-- 		pickup = function(me)
+		-- 			pickup_obj(me)
+		-- 		end,
+		-- 	}
+		-- }
 
 
 	rm_void = {
@@ -1312,8 +1326,8 @@ end
 			map = {0,0}
 		]],
 		objects = {
-			obj_switch_player,
-			obj_switch_tent
+			-- obj_switch_player,
+			-- obj_switch_tent
 		},
 	}
 
@@ -1377,8 +1391,8 @@ rooms = {
 	purp_tentacle = {
 		data = [[
 			name = purple tentacle
-			x = 40
-			y = 48
+			x = 140
+			y = 52
 			w = 1
 			h = 3
 			idle = { 154, 154, 154, 154 }
@@ -1503,16 +1517,17 @@ function startup_script()
 	reset_ui()
 
 	-- set initial inventory (if applicable)
-	pickup_obj(obj_switch_tent, main_actor)
-	pickup_obj(obj_switch_player, purp_tentacle)
+	-- pickup_obj(obj_switch_tent, main_actor)
+	-- pickup_obj(obj_switch_player, purp_tentacle)
 	
 	
 	-- set which actor the player controls by default
 	selected_actor = main_actor
 	
 	-- init actor
-	--put_actor_at(selected_actor, 16, 48, rm_hall)
-	put_actor_at(selected_actor, 16, 48, rm_computer)
+	put_actor_at(selected_actor, 100, 48, rm_kitchen)
+	--put_actor_at(selected_actor, 160, 48, rm_hall)
+	--put_actor_at(selected_actor, 16, 48, rm_computer)
 	
 	-- make camera follow player
 	-- (setting now, will be re-instated after cutscene)
@@ -1521,8 +1536,9 @@ function startup_script()
 	-- set which room to start the game in 
 	-- (e.g. could be a "pseudo" room for title screen!)
 	--change_room(rm_title, 1) -- iris fade
+	room_curr = rm_kitchen
 	--room_curr = rm_hall
-	room_curr = rm_computer
+	--room_curr = rm_computer
 end
 
 
