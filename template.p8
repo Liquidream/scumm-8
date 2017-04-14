@@ -666,12 +666,33 @@ end
 				end
 			}
 
+			obj_pool = {		
+				data = [[
+					name=swimming pool
+					x=96
+					y=48
+					w=3
+					h=2
+					use_pos = pos_above
+					use_dir = face_front
+				]],
+				verbs = {
+					walkto = function(me)
+						say_line("i can't swim!")
+					end,
+					lookat = function(me)
+						say_line("lovely and crystal clear...:definitely filled with water")
+					end,
+				}
+			}
+
 		rm_garden = {
 			data = [[
 				map = {104,24,127,31}
 			]],
 			objects = {
-				obj_garden_door_kitchen
+				obj_garden_door_kitchen,
+				obj_pool,
 			},
 			enter = function()
 					-- todo: anything here?
@@ -1532,7 +1553,8 @@ function startup_script()
 	-- init actor
 	--put_actor_at(selected_actor, 100, 48, rm_kitchen)
 	--put_actor_at(selected_actor, 160, 48, rm_hall)
-	put_actor_at(selected_actor, 16, 48, rm_computer)
+	--put_actor_at(selected_actor, 16, 48, rm_computer)
+	put_actor_at(selected_actor, 110, 38, rm_garden)
 	
 	-- make camera follow player
 	-- (setting now, will be re-instated after cutscene)
@@ -1543,7 +1565,8 @@ function startup_script()
 	--change_room(rm_title, 1) -- iris fade
 	--room_curr = rm_kitchen
 	--room_curr = rm_hall
-	room_curr = rm_computer
+	--room_curr = rm_computer
+	room_curr = rm_garden
 end
 
 
