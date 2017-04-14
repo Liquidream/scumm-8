@@ -639,17 +639,18 @@ end
 			scripts = {	  -- scripts that are at room-level
 				tentacle_guard = function()
 					while true do
-						d("tentacle guarding...")
 						if proximity(main_actor, obj_back_door) < 40 
-						 and not purp_tentacle.alerted then
-							purp_tentacle.alerted = true
+						 and not purp_tentacle.alerting
+						 and purp_tentacle.in_room == selected_actor.in_room then
+							purp_tentacle.alerting = true
+							purp_tentacle.stopped_player = true
 							cutscene(2,
 								function()
 									stop_actor(selected_actor)
 									say_line(purp_tentacle, "stop!:come back here!", true)
 									walk_to(selected_actor, purp_tentacle.x-8, purp_tentacle.y)
 									do_anim(selected_actor, "anim_face", purp_tentacle)
-									purp_tentacle.alerted = false
+									purp_tentacle.alerting = false
 								end
 							)
 						end
@@ -1421,9 +1422,10 @@ rooms = {
 					while (true) do
 						-- build dialog options
 						dialog_set({ 
+							(not me.stopped_player and "" or "why did you stop me?"),
 							(me.asked_where and "" or "where am i?"),
-							"who are you?",
-							"how much wood would a wood-chuck chuck, if a wood-chuck could chuck wood?",
+							--"who are you?",
+							(me.asked_woodchuck and "" or "how much wood would a wood-chuck chuck, if a wood-chuck could chuck wood?"),
 							"nevermind"
 						})
 						dialog_start(selected_actor.col, 7)
@@ -1439,14 +1441,19 @@ rooms = {
 								say_line(selected_sentence.msg)
 								
 								if selected_sentence.num == 1 then
-									say_line(me, "you are in paul's game")
-									me.asked_where = true
+									say_line(me, "i need your help:i'm so bored...:please can you give me something I can play with for ages?")
+									me.asked_why_stop = true
 
 								elseif selected_sentence.num == 2 then
-									say_line(me, "it's complicated...")
+									say_line(me, "you are in paul's demo scumm-8 game, I think!")
+									me.asked_where = true
+
+								-- elseif selected_sentence.num == 3 then
+								-- 	say_line(me, "it's complicated...")
 
 								elseif selected_sentence.num == 3 then
 									say_line(me, "a wood-chuck would chuck no amount of wood, coz a wood-chuck can't chuck wood!")
+									me.asked_woodchuck = true
 
 								elseif selected_sentence.num == 4 then
 									say_line(me, "ok bye!")
