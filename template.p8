@@ -418,13 +418,55 @@ end
 			}
 
 
+			obj_spinning_top = {		
+				data = [[
+					name=spinning top
+					x=125
+					y=50
+					w=1
+					h=1
+					state=1
+					states={158,174,190}
+					col_replace={12,7}
+					trans_col=15
+				]],
+				scripts = {
+					spin_top = function()
+						dir=-1				
+						while true do	
+							for x=1,3 do					
+								for f=1,3 do
+									obj_spinning_top.state = f
+									break_time(4)
+								end
+								-- move top
+								--top = find_object("spinning top")
+								obj_spinning_top.x -= dir					
+							end	
+							dir *= -1
+						end				
+					end,
+				},
+				verbs = {
+					use = function(me)
+						if script_running(me.scripts.spin_top) then
+							stop_script(me.scripts.spin_top)
+							me.state = 1
+						else
+							start_script(me.scripts.spin_top)
+						end
+					end
+				}
+			}
+
+
 		rm_hall = {
 			data = [[
 				map = {32,24,55,31}
 				col_replace = {5,2}
 			]],
 			objects = {
-				obj_spinning_top,
+				--obj_spinning_top,
 				obj_clock,
 				obj_pendulum,
 				obj_front_door_inside,
@@ -720,47 +762,6 @@ end
 				end
 			}
 
-			obj_spinning_top = {		
-				data = [[
-					name=spinning top
-					x=102
-					y=60
-					w=1
-					h=1
-					state=1
-					states={158,174,190}
-					col_replace={12,7}
-					trans_col=15
-				]],
-				scripts = {
-					spin_top = function()
-						dir=-1				
-						while true do	
-							for x=1,3 do					
-								for f=1,3 do
-									obj_spinning_top.state = f
-									break_time(4)
-								end
-								-- move top
-								--top = find_object("spinning top")
-								obj_spinning_top.x -= dir					
-							end	
-							dir *= -1
-						end				
-					end,
-				},
-				verbs = {
-					use = function(me)
-						if script_running(me.scripts.spin_top) then
-							stop_script(me.scripts.spin_top)
-							me.state = 1
-						else
-							start_script(me.scripts.spin_top)
-						end
-					end
-				}
-			}
-
 			obj_back_door = {		
 				data = [[
 					name=back door
@@ -786,8 +787,9 @@ end
 				map = {80,24,103,31}
 			]],
 			objects = {
+				obj_spinning_top,
 				obj_kitchen_door_hall,
-				obj_back_door,
+				obj_back_door
 			},
 			enter = function(me)
 				start_script(me.scripts.tentacle_guard, true) -- bg script
@@ -1108,6 +1110,7 @@ end
 				verbs = {
 				}
 			}
+
 
 			obj_window = {		
 				data = [[
