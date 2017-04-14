@@ -790,8 +790,8 @@ function startup_script()
 	reset_ui()
 
 	-- set initial inventory (if applicable)
-	pickup_obj(obj_switch_tent, main_actor)
-	pickup_obj(obj_switch_player, purp_tentacle)
+	-- pickup_obj(obj_switch_tent, main_actor)
+	-- pickup_obj(obj_switch_player, purp_tentacle)
 
 	-- set which room to start the game in 
 	-- (e.g. could be a "pseudo" room for title screen!)
@@ -799,13 +799,13 @@ function startup_script()
 
 	selected_actor = main_actor
 	--put_actor_at(selected_actor,60,60,rm_landing)
-	--put_actor_at(selected_actor,60,60,rm_hall)
-	put_actor_at(selected_actor,60,60,rm_library)
+	put_at(selected_actor,60,60,rm_hall)
+	--put_actor_at(selected_actor,60,60,rm_library)
 	camera_follow(selected_actor)
 
 	--room_curr = rm_landing
-	--room_curr = rm_hall
-	room_curr = rm_library
+	room_curr = rm_hall
+	--room_curr = rm_library
 	--change_room(rm_hall, 1) -- iris fade
 end
 
@@ -1512,9 +1512,16 @@ function print_line(msg, x, y, col, align, use_caps, dont_wait_msg)
 	end
 end
 
-function put_actor_at(actor, x, y, room)
-	if room then actor.in_room = room end
-	actor.x, actor.y = x, y
+function put_at(obj, x, y, room)
+	if room then 
+		if not has_flag(obj.classes, "class_actor") then
+			if obj.in_room then del(obj.in_room.objects, obj) end
+			add(room.objects, obj)
+			obj.owner = nil
+		end
+		obj.in_room = room
+	end
+	obj.x, obj.y = x, y
 end
 
 
@@ -2058,6 +2065,11 @@ end
 
 -- collision detection
 function check_collisions()
+ -- check for current room
+ if not room_curr then
+  return
+ end
+
 	-- reset hover collisions
 	hover_curr_verb, hover_curr_default_verb, hover_curr_object, hover_curr_sentence, hover_curr_arrow = nil, nil, nil, nil, nil
 	-- are we in dialog mode?
@@ -2112,6 +2124,7 @@ function check_collisions()
 			-- are we colliding (ignore self!)
 			if iscursorcolliding(actor)
 		 	 and actor != selected_actor then
+				d("hover actor!")
 				hover_curr_object = actor
 			end
 		end
@@ -2184,6 +2197,11 @@ function recalc_zplane(obj)
 end
 
 function room_draw()
+ -- check for current room
+ if not room_curr then
+ 	print("-error-  no current room set",5+cam_x,5+stage_top,8,0)
+  return
+ end
 
 	-- set room background col (or black by default)
 	rectfill(0, stage_top, 127, stage_top+64, room_curr.bg_col or 0)
@@ -3025,9 +3043,7 @@ function iscursorcolliding(obj)
 	 or cutscene_curr then 
 	 return false 
 	end
-	-- check not in cutscene
 	
-
 	bounds = obj.bounds
 	if (cursor_x + bounds.cam_off_x > bounds.x1 or cursor_x + bounds.cam_off_x < bounds.x) 
 	 or (cursor_y > bounds.y1 or cursor_y < bounds.y) then
