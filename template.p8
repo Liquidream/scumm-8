@@ -276,7 +276,6 @@ end
 					y=1 
 					w=1
 					h=1
-					col_replace={5,2}
 					state=state_here
 					state_here=3
 					classes = {class_untouchable}
@@ -471,6 +470,7 @@ end
 		rm_hall = {
 			data = [[
 				map = {32,24,55,31}
+				col_replace = {5,2}
 			]],
 			objects = {
 				obj_front_door_inside,
@@ -482,11 +482,9 @@ end
 				obj_bucket
 			},
 			enter = function(me)
-				
 				start_script(me.scripts.tentacle_guard, true) -- bg script
 			end,
 			exit = function(me)
-				
 				stop_script(me.scripts.tentacle_guard)
 			end,
 			scripts = {	  -- scripts that are at room-level
@@ -1476,8 +1474,8 @@ function startup_script()
 	-- set which actor the player controls by default
 	selected_actor = main_actor
 	-- init actor
-	--put_actor_at(selected_actor, 16, 48, rm_hall)
-	put_actor_at(selected_actor, 16, 48, rm_computer)
+	put_actor_at(selected_actor, 16, 48, rm_hall)
+	--put_actor_at(selected_actor, 16, 48, rm_computer)
 	
 	-- make camera follow player
 	-- (setting now, will be re-instated after cutscene)
@@ -1488,8 +1486,8 @@ function startup_script()
 	--change_room(rm_title, 1) -- iris fade
 --	change_room(rm_computer, 1) -- iris fade
 
-	--room_curr = rm_hall
-	room_curr = rm_computer
+	room_curr = rm_hall
+	--room_curr = rm_computer
 end
 
 
