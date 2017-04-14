@@ -199,6 +199,53 @@ end
 				}
 			}
 
+			obj_bucket = {		
+				data = [[
+					name = bucket
+					state = state_open
+					x=240
+					y=48
+					w=1
+					h=1
+					state_closed=143
+					state_open = 159
+					trans_col=15
+					use_with=true
+					classes = {class_pickupable}
+				]],
+				verbs = {
+					lookat = function(me)
+						if me.owner == selected_actor then
+							say_line("it is a bucket in my pocket")
+						else
+							say_line("it is a bucket")
+						end
+					end,
+					pickup = function(me)
+						pickup_obj(me)
+					end,
+					give = function(me, noun2)
+						if noun2 == purp_tentacle then
+							say_line("can you fill this up for me?")
+							say_line(purp_tentacle, "sure")
+							me.owner = purp_tentacle
+							say_line(purp_tentacle, "here ya go...")
+							me.state = "state_closed"
+							me.name = "full bucket"
+							pickup_obj(me)
+						else
+							say_line("i might need this")
+						end
+					end,
+					use = function(me, noun2)
+						if (noun2 == obj_window) then
+							obj_window.state = "state_open"
+						end
+					end
+				}
+			}
+
+
 		rm_outside = {
 			data = [[
 				map = {0,24,31,31}
@@ -207,7 +254,8 @@ end
 				obj_outside_stairs,
 				obj_rail_left,
 				obj_rail_right,
-				obj_front_door
+				obj_front_door,
+				obj_bucket
 			},
 			enter = function(me)
 				-- 
@@ -360,112 +408,6 @@ end
 				}
 			}
 
-			obj_bucket = {		
-				data = [[
-					name = bucket
-					state = state_open
-					x=104
-					y=48
-					w=1
-					h=1
-					state_closed=143
-					state_open = 159
-					trans_col=15
-					use_with=true
-					classes = {class_pickupable}
-				]],
-				verbs = {
-					lookat = function(me)
-						if me.owner == selected_actor then
-							say_line("it is a bucket in my pocket")
-						else
-							say_line("it is a bucket")
-						end
-					end,
-					pickup = function(me)
-						pickup_obj(me)
-					end,
-					give = function(me, noun2)
-						if noun2 == purp_tentacle then
-							say_line("can you fill this up for me?")
-							say_line(purp_tentacle, "sure")
-							me.owner = purp_tentacle
-							say_line(purp_tentacle, "here ya go...")
-							me.state = "state_closed"
-							me.name = "full bucket"
-							pickup_obj(me)
-						else
-							say_line("i might need this")
-						end
-					end,
-					use = function(me, noun2)
-						if (noun2 == obj_window) then
-							obj_window.state = "state_open"
-						end
-					end
-				}
-			}
-
-			obj_window = {		
-				data = [[
-					name=window
-					state=state_closed
-					x=32
-					y=8
-					w=2
-					h=2
-					state_closed=68
-					state_open=70
-					use_pos={40,57}
-					classes = {class_openable}
-				]],
-				verbs = {
-					open = function(me)
-						if not me.done_cutscene then
-							cutscene(
-								1, -- no verbs 
-								function()
-									me.done_cutscene = true
-									-- cutscene code
-									me.state = "state_open"
-									me.z = -2
-									print_line("*bang*",40,20,8,1)
-									change_room(rm_kitchen, 1)
-									selected_actor = purp_tentacle
-									walk_to(selected_actor, 
-										selected_actor.x+10, 
-										selected_actor.y)
-									say_line("what was that?!")
-									say_line("i'd better check...")
-									walk_to(selected_actor, 
-										selected_actor.x-10, 
-										selected_actor.y)
-									change_room(rm_hall, 1)
-									-- wait for a bit, then appear in room1
-									break_time(50)
-									put_actor_at(selected_actor, 115, 44, rm_hall)
-									walk_to(selected_actor, 
-										selected_actor.x-10, 
-										selected_actor.y)
-									say_line("intruder!!!")
-									do_anim(main_actor, "anim_face", purp_tentacle)
-								end,
-								-- override for cutscene
-								function()
-									--if cutscene_curr.skipped then
-									--d("override!")
-									change_room(rm_hall)
-									put_actor_at(purp_tentacle, 105, 44, rm_hall)
-									stop_talking()
-									do_anim(main_actor, "anim_face", purp_tentacle)
-								end
-							)
-						end
-						-- (code here will not run, as room change nuked "local" scripts)
-					end
-				}
-			}
-
 
 		rm_hall = {
 			data = [[
@@ -479,7 +421,6 @@ end
 				obj_hall_exit_landing,
 				obj_hall_door_library,
 				obj_hall_door_kitchen,
-				obj_bucket
 			},
 			enter = function(me)
 				start_script(me.scripts.tentacle_guard, true) -- bg script
@@ -1018,6 +959,71 @@ end
 				}
 			}
 
+			obj_window = {		
+				data = [[
+					name=window
+					state=state_closed
+					x=32
+					y=8
+					w=2
+					h=2
+					state_closed=68
+					state_open=70
+					classes = {class_openable}
+				]],
+				verbs = {
+					open = function(me)
+						me.state = "state_open"
+					end,
+					close = function(me)
+						me.state = "state_closed"
+					end,
+
+						-- if not me.done_cutscene then
+						-- 	cutscene(
+						-- 		1, -- no verbs 
+						-- 		function()
+						-- 			me.done_cutscene = true
+						-- 			-- cutscene code
+						--	 			me.state = "state_open"
+						-- 			me.z = -2
+						-- 			print_line("*bang*",40,20,8,1)
+						-- 			change_room(rm_kitchen, 1)
+						-- 			selected_actor = purp_tentacle
+						-- 			walk_to(selected_actor, 
+						-- 				selected_actor.x+10, 
+						-- 				selected_actor.y)
+						-- 			say_line("what was that?!")
+						-- 			say_line("i'd better check...")
+						-- 			walk_to(selected_actor, 
+						-- 				selected_actor.x-10, 
+						-- 				selected_actor.y)
+						-- 			change_room(rm_hall, 1)
+						-- 			-- wait for a bit, then appear in room1
+						-- 			break_time(50)
+						-- 			put_actor_at(selected_actor, 115, 44, rm_hall)
+						-- 			walk_to(selected_actor, 
+						-- 				selected_actor.x-10, 
+						-- 				selected_actor.y)
+						-- 			say_line("intruder!!!")
+						-- 			do_anim(main_actor, "anim_face", purp_tentacle)
+						-- 		end,
+						-- 		-- override for cutscene
+						-- 		function()
+						-- 			--if cutscene_curr.skipped then
+						-- 			--d("override!")
+						-- 			change_room(rm_hall)
+						-- 			put_actor_at(purp_tentacle, 105, 44, rm_hall)
+						-- 			stop_talking()
+						-- 			do_anim(main_actor, "anim_face", purp_tentacle)
+						-- 		end
+						-- 	)
+						-- end --if
+						-- (code here will not run, as room change nuked "local" scripts)
+				}
+			}
+
+
 		rm_computer = {
 			data = [[
 				map = {64,16}
@@ -1026,7 +1032,8 @@ end
 				obj_computer_door_landing,
 				obj_computer,
 				obj_cursor,
-				obj_spinning_top
+				obj_spinning_top,
+				obj_window
 			},
 			enter = function(me)
 				-- just exited the game?
@@ -1473,9 +1480,10 @@ function startup_script()
 	
 	-- set which actor the player controls by default
 	selected_actor = main_actor
+	
 	-- init actor
-	put_actor_at(selected_actor, 16, 48, rm_hall)
-	--put_actor_at(selected_actor, 16, 48, rm_computer)
+	--put_actor_at(selected_actor, 16, 48, rm_hall)
+	put_actor_at(selected_actor, 16, 48, rm_computer)
 	
 	-- make camera follow player
 	-- (setting now, will be re-instated after cutscene)
@@ -1484,10 +1492,8 @@ function startup_script()
 	-- set which room to start the game in 
 	-- (e.g. could be a "pseudo" room for title screen!)
 	--change_room(rm_title, 1) -- iris fade
---	change_room(rm_computer, 1) -- iris fade
-
-	room_curr = rm_hall
-	--room_curr = rm_computer
+	--room_curr = rm_hall
+	room_curr = rm_computer
 end
 
 
@@ -1743,20 +1749,20 @@ iq=sub("\65\66\67\68\69\70\71\72\73\74\75\76\77\78\79\80\81\82\83\84\85\86\87\88
 
 
 __gfx__
-0000000000000000000000000000000044444444440000004444444477777777f9e9f9f9ddd5ddd5bbbbbbbb5500000015151515000000000000000000000000
-00000000000000000000000000000000444444404400000044444444777777779eee9f9fdd5ddd5dbbbbbbbb5555000051515151000000000000000000000000
-00800800000000000000000000000000aaaaaa00aaaa000005aaaaaa77777777feeef9f9d5ddd5ddbbbbbbbb5555550015151515000000000000000000000000
-0008800055555555ddddddddeeeeeeee999990009999000005999999777777779fef9fef5ddd5dddbbbbbbbb5555555551515151000000000000000000000000
-0008800055555555ddddddddeeeeeeee44440000444444000005444477777777f9f9feeeddd5ddd5bbbbbbbb5555555515151515000000000000000000000000
-0080080055555555ddddddddeeeeeeee444000004444440000054444777777779f9f9eeedd5ddd5dbbbbbbbb5555555551515151000000000000000000000000
-0000000055555555ddddddddeeeeeeeeaa000000aaaaaaaa000005aa77777777f9f9feeed5ddd5ddbbbbbbbb5555555515151515000000000000000000000000
-0000000055555555ddddddddeeeeeeee900000009999999900000599777777779f9f9fef5ddd5dddbbbbbbbb5555555551515151000000000000000000000000
-0000000077777755666666ddbbbbbbee888888553333333313131344666666665888858866666666cbcbcbcb0000005515151544000000000000000088845888
-00000000777755556666ddddbbbbeeee88888855333333333131314466666666588885881c1c1c1cbcbcbcbc0000555551515144000000000000000088845888
-000010007755555566ddddddbbeeeeee88887777333333331313aaaa6666666655555555c1c1c1c1cbcbcbcb005555551515aaaa000000000000000088845888
-0000c00055555555ddddddddeeeeeeee88886666333333333131999966666666888588881c1c1c1cbcbcbcbc5555555551519999000000000000000088845888
-001c7c1055555555ddddddddeeeeeeee8855555533333333134444446666666688858888c1c1c1c1cbcbcbcb5555555515444444000000000000000088845888
-0000c00055555555ddddddddeeeeeeee88555555333333333144444466666666555555551c1c1c1cbcbcbcbc5555555551444444000000000000000088845888
+0000000000000000000000000000000044444444440000004444444477777777f9e9f9f9ddd5ddd5bbbbbbbb5500000010101010000000000000000000000000
+00000000000000000000000000000000444444404400000044444444777777779eee9f9fdd5ddd5dbbbbbbbb5555000001010101000000000000000000000000
+00800800000000000000000000000000aaaaaa00aaaa000005aaaaaa77777777feeef9f9d5ddd5ddbbbbbbbb5555550010101010000000000000000000000000
+0008800055555555ddddddddeeeeeeee999990009999000005999999777777779fef9fef5ddd5dddbbbbbbbb5555555501010101000000000000000000000000
+0008800055555555ddddddddeeeeeeee44440000444444000005444477777777f9f9feeeddd5ddd5bbbbbbbb5555555510101010000000000000000000000000
+0080080055555555ddddddddeeeeeeee444000004444440000054444777777779f9f9eeedd5ddd5dbbbbbbbb5555555501010101000000000000000000000000
+0000000055555555ddddddddeeeeeeeeaa000000aaaaaaaa000005aa77777777f9f9feeed5ddd5ddbbbbbbbb5555555510101010000000000000000000000000
+0000000055555555ddddddddeeeeeeee900000009999999900000599777777779f9f9fef5ddd5dddbbbbbbbb5555555501010101000000000000000000000000
+0000000077777755666666ddbbbbbbee888888553333333313131344666666665888858866666666cbcbcbcb0000005510101044000000000000000088845888
+00000000777755556666ddddbbbbeeee88888855333333333131314466666666588885881c1c1c1cbcbcbcbc0000555501010144000000000000000088845888
+000010007755555566ddddddbbeeeeee88887777333333331313aaaa6666666655555555c1c1c1c1cbcbcbcb005555551010aaaa000000000000000088845888
+0000c00055555555ddddddddeeeeeeee88886666333333333131999966666666888588881c1c1c1cbcbcbcbc5555555501019999000000000000000088845888
+001c7c1055555555ddddddddeeeeeeee8855555533333333134444446666666688858888c1c1c1c1cbcbcbcb5555555510444444000000000000000088845888
+0000c00055555555ddddddddeeeeeeee88555555333333333144444466666666555555551c1c1c1cbcbcbcbc5555555501444444000000000000000088845888
 0000100055555555ddddddddeeeeeeee7777777733333333aaaaaaaa6666666658888588c1c1c1c1cbcbcbcb55555555aaaaaaaa000000000000000088845888
 0000000055555555ddddddddeeeeeeee66666666333333339999999966666666588885887c7c7c7cbcbcbcbc5555555599999999000000000000000088845888
 0000000055777777dd666666eebbbbbb558888885555555544444444777777777777777755555555444444454444444444444445000000008888888999999999
@@ -2022,8 +2028,8 @@ __map__
 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000007070707072a0000000000000000000000000000000000003737270707073b2a270a072a00000000
 0000000000000000000000000000000000000000000000000000000000000000000000000000003300000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000021222122212221222122212221222122212221222122212221223233323332333233323332333233
 00000000000000000020000000000020070707171717171717171717170707070707071a1a1a1a1a1a1a405040501a1a1a1a1a1a1a070707484900004a4b000007070709090909090909090909070707070707171717171717171717170707071717170808080808080808080817171707070717171717171717171717070707
-00200000000000000000000000100000070707171717171717171717170707070707071a1a1a1a1a1a1a504050401a1a1a1a1a1a1a070707585900005a5b000007070709444509090909444509070707070707171717171717171717170707071717170808080808080808080817171707070717171717171717171717070707
-00000020000000000000000000000000070007171717171717171717170700070700071a1a1a001a1a1a405040501a1a1a001a1a1a070007686966676c6c666707000709545509090909545509070707070007171717171717171717170700071700170808080808080808080817001707000717171717171717171717070007
+00200000000000000000000000100000070707171717171717171717170707070707071a1a1a1a1a1a1a504050401a1a1a1a1a1a1a070707585900005a5b000007070709000009090909444509070707070707171717171717171717170707071717170808080808080808080817171707070717171717171717171717070707
+00000020000000000000000000000000070007171717171717171717170700070700071a1a1a001a1a1a405040501a1a1a001a1a1a070007686966676c6c666707000709000009090909545509070707070007171717171717171717170700071700170808080808080808080817001707000717171717171717171717070007
 000000000000000000000000000000000700071717171717171717171707000707000762626200626262666766676262620062626207000778797c002e1f3e7c07000709090909090909090909070707070007171717171717171717170700071700170808080808080808080817001707000717171717171717171717070007
 00000000000000000000000000000000070007171717171717171717170700070700077474740074747476777677747474007474740700076a6b002e1f3e2a0007000709090909090909090909070707070007171717171717171717170700071700170808080808080808080817001707000717171717171717171717070007
 00000000000000000000000000002000070111313131313131313131312101070701113131313131313131313131313131313131312101077a7b001f3e2a000007011131313131313131313131212807070111313131313131313131312101071702123232323232323232323222021707011131313131313131313131210107
