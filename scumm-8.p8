@@ -2124,7 +2124,6 @@ function check_collisions()
 			-- are we colliding (ignore self!)
 			if iscursorcolliding(actor)
 		 	 and actor != selected_actor then
-				d("hover actor!")
 				hover_curr_object = actor
 			end
 		end
