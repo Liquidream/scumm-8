@@ -418,48 +418,6 @@ end
 			}
 
 
-			obj_spinning_top = {		
-				data = [[
-					name=spinning top
-					x=125
-					y=50
-					w=1
-					h=1
-					state=1
-					states={158,174,190}
-					col_replace={12,7}
-					trans_col=15
-				]],
-				scripts = {
-					spin_top = function()
-						dir=-1				
-						while true do	
-							for x=1,3 do					
-								for f=1,3 do
-									obj_spinning_top.state = f
-									break_time(4)
-								end
-								-- move top
-								--top = find_object("spinning top")
-								obj_spinning_top.x -= dir					
-							end	
-							dir *= -1
-						end				
-					end,
-				},
-				verbs = {
-					use = function(me)
-						if script_running(me.scripts.spin_top) then
-							stop_script(me.scripts.spin_top)
-							me.state = 1
-						else
-							start_script(me.scripts.spin_top)
-						end
-					end
-				}
-			}
-
-
 		rm_hall = {
 			data = [[
 				map = {32,24,55,31}
@@ -745,6 +703,49 @@ end
 		
 	-- kitchen
 		-- objects
+
+			obj_spinning_top = {		
+				data = [[
+					name=spinning top
+					x=148
+					y=50
+					w=1
+					h=1
+					state=1
+					states={158,174,190}
+					col_replace={12,7}
+					trans_col=15
+				]],
+				scripts = {
+					spin_top = function()
+						dir=-1				
+						while true do	
+							for x=1,3 do					
+								for f=1,3 do
+									obj_spinning_top.state = f
+									break_time(4)
+								end
+								-- move top
+								--top = find_object("spinning top")
+								obj_spinning_top.x -= dir					
+							end	
+							dir *= -1
+						end				
+					end,
+				},
+				verbs = {
+					use = function(me)
+						if script_running(me.scripts.spin_top) then
+							stop_script(me.scripts.spin_top)
+							me.state = 1
+						else
+							start_script(me.scripts.spin_top)
+						end
+					end
+				}
+			}
+
+
 			obj_kitchen_door_hall = {		
 				data = [[
 					name = hall
@@ -1598,7 +1599,7 @@ rooms = {
 								say_line(selected_sentence.msg)
 								
 								if selected_sentence.num == 1 then
-									say_line(me, "i need your help:i'm so bored...:please can you give me something i can play with for ages?")
+									say_line(me, "i need your help:i'm bored with this spinning top...:if you can you find something i can play with, i'd appreciate it")
 									me.asked_why_stop = true
 
 								elseif selected_sentence.num == 2 then
@@ -1676,6 +1677,11 @@ function startup_script()
 	-- set ui colors
 	reset_ui()
 
+
+	-- set which room to start the game in 
+	-- (e.g. could be a "pseudo" room for title screen!)
+	change_room(rm_title, 1) -- iris fade
+
 	-- set initial inventory (if applicable)
 	-- pickup_obj(obj_switch_tent, main_actor)
 	-- pickup_obj(obj_switch_player, purp_tentacle)
@@ -1684,30 +1690,27 @@ function startup_script()
 	-- obj_bucket.state = "state_closed"
 	
 	-- set which actor the player controls by default
-	selected_actor = main_actor
+--	selected_actor = main_actor
 	
 	-- init actor
 	--put_at(selected_actor, 100, 48, rm_kitchen)
 	--put_at(selected_actor, 60, 48, rm_hall)
 	--put_at(selected_actor, 16, 48, rm_computer)
 	--put_at(selected_actor, 110, 38, rm_garden)
-	put_at(selected_actor, 110, 38, rm_library)
+--	put_at(selected_actor, 110, 38, rm_library)
 	
 	-- make camera follow player
 	-- (setting now, will be re-instated after cutscene)
-	camera_follow(selected_actor)
-
-	-- set which room to start the game in 
-	-- (e.g. could be a "pseudo" room for title screen!)
---	change_room(rm_title, 1) -- iris fade
+--	camera_follow(selected_actor)
 
 
-	--oom_curr = rm_title
+
+	--room_curr = rm_title
 	--room_curr = rm_kitchen
 	--room_curr = rm_hall
 	--room_curr = rm_computer
 	--room_curr = rm_garden
-	room_curr = rm_library
+	--room_curr = rm_library
 end
 
 
