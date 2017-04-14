@@ -1032,6 +1032,7 @@ end
 					h=1
 					state=state_here
 					state_here=189
+					use_with=true
 					classes={class_pickupable}
 				]],
 				verbs = {
@@ -1041,6 +1042,11 @@ end
 					pickup = function(me)
 						pickup_obj(me)
 					end,
+					use = function(me, noun2)
+						if (noun2 == obj_computer) then
+							say_line("there's already a disk inserted")
+						end
+					end
 				}
 			}
 
