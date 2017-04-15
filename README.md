@@ -2,7 +2,7 @@
 ## What is SCUMM-8?
 SCUMM-8 is a PICO-8 "demake" of the [SCUMM](https://en.wikipedia.org/wiki/SCUMM) engine that powered most of the classic LucasArts adventure games, such as Monkey Island and Maniac Mansion.  
 
-![SCUMM-8](http://i.imgur.com/FcE49f5.gif)![SCUMM-8](http://i.imgur.com/LO57HFN.gif)![SCUMM-8](http://i.imgur.com/3HiP7Jf.gif)
+![SCUMM-8](http://i.imgur.com/FcE49f5.gif)  ![SCUMM-8](http://i.imgur.com/LO57HFN.gif)  ![SCUMM-8](http://i.imgur.com/3HiP7Jf.gif)
 
 However, it is only (heavily) "inspired" by the SCUMM engine, not a true replica - for that you'll want good ol' [SCUMM-VM](https://en.wikipedia.org/wiki/ScummVM).
 > *"Cool, so does that mean I can play those games in PICO-8?!"*
