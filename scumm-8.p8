@@ -1985,7 +1985,8 @@ function input_button_pressed(button_index)
 
 	-- attempt to use verb on object (if not already executing verb)
 	if noun1_curr != nil 
-	 and not executing_cmd then
+	 --and not executing_cmd 
+	 then
 		-- are we starting a 'use' command?
 		if verb_curr[2] == "use" or verb_curr[2] == "give" then
 			if noun2_curr then
@@ -2388,32 +2389,32 @@ function command_draw()
 	cmd_col = 12
 	verb_curr_ref = verb_curr[2] 
 
-	if not executing_cmd then
-		if verb_curr then
-			command = verb_curr[3]
+	if verb_curr then
+		command = verb_curr[3]
+	end
+	if noun1_curr then
+		command = command.." "..noun1_curr.name
+		if verb_curr_ref == "use" then
+			command = command.." with"
+		elseif verb_curr_ref == "give" then
+			command = command.." to"
 		end
-		if noun1_curr then
-			command = command.." "..noun1_curr.name
-			if verb_curr_ref == "use" then
-				command = command.." with"
-			elseif verb_curr_ref == "give" then
-				command = command.." to"
-			end
-		end
-		if noun2_curr then
-			command = command.." "..noun2_curr.name
-		elseif hover_curr_object 
-		  and hover_curr_object.name != ""
-			-- don't show use object with itself!
-			and ( not noun1_curr or (noun1_curr != hover_curr_object) )
-			-- or walk-to objs in inventory!
-			and ( not hover_curr_object.owner 
-							or verb_curr_ref != get_verb(verb_default)[2] )
-		then
-			command = command.." "..hover_curr_object.name
-		end
-		cmd_curr = command
-	else
+	end
+	if noun2_curr then
+		command = command.." "..noun2_curr.name
+	elseif hover_curr_object 
+		and hover_curr_object.name != ""
+		-- don't show use object with itself!
+		and ( not noun1_curr or (noun1_curr != hover_curr_object) )
+		-- or walk-to objs in inventory!
+		and ( not hover_curr_object.owner 
+						or verb_curr_ref != get_verb(verb_default)[2] )
+	then
+		command = command.." "..hover_curr_object.name
+	end
+	cmd_curr = command
+
+	if executing_cmd then
 		-- highlight active command
 		command = cmd_curr
 		cmd_col = 7
