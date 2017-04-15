@@ -2,3 +2,4 @@
 *_fmt.p8
 *.pyxel
 *.png
+.vscode/*

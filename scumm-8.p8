@@ -8,15 +8,15 @@ __lua__
 --	"\65\66\67\68\69\70\71\72\73\74\75\76\77\78\79\80\81\82\83\84\85\86\87\88\89\90\91\92"
 
 -- token counts:
---   > 7027 (after fixing z-order hover, adding shake, lighting)
---   > 6873 (after token hunting and adding room bg color)
 --   > 6790 (after more token hunting) 
+--   > 6832 (after adding "use" object/actor & fix shake crop)
+--   > 6904 (before door "targets")
 
 -- debugging
 show_debuginfo = true
 show_collision = false
 --show_pathfinding = true
-show_perfinfo = false
+show_perfinfo = true
 enable_mouse = true
 d = printh
 
@@ -41,726 +41,335 @@ verb_default = {
 } 
 
 
-verb_maincol = 12  -- main color (lt blue)
-verb_hovcol = 7    -- hover color (white)
-verb_shadcol = 1   -- shadow (dk blue)
-verb_defcol = 10   -- default action (yellow)
-
-
--- scumm-8 enums/constants
--- 
-
--- object states
-state_closed, state_open, state_off, state_on, state_gone, state_here  = 1, 2, 1, 2, 1, 2
-
--- object classes (bitflags)
-class_untouchable = 1 -- will not register when the cursor moves over it. the object is invisible to the user.
-class_pickupable = 2  -- can be placed in actor inventory
-class_talkable = 4		-- can talk to actor/object
-class_giveable = 8		-- can be given to an actor/object
-class_openable = 16   -- can be opened/closed
-class_actor = 32      -- is an actor/person
-
-cut_noverbs = 1 		-- this removes the interface during the cut-scene.
-cut_no_follow = 4   -- this disables the follow-camera being reinstated after cut-scene.
-
--- actor constants - states for actor direction (not sprite #'s)
-face_front, face_left, face_back, face_right = 1, 2, 3, 4
---
-pos_infront, pos_behind, pos_left, pos_right, pos_inside = 1, 3, 2, 4, 5
-
--- actor animations
-anim_face = 1	 -- face actor in a direction (show the turning stages of animation)
+function reset_ui()
+	verb_maincol = 12  -- main color (lt blue)
+	verb_hovcol = 7    -- hover color (white)
+	verb_shadcol = 1   -- shadow (dk blue)
+	verb_defcol = 10   -- default action (yellow)
+end
 
 
 
 -- 
--- object definitions (new way!)
+-- room & object definitions
 -- 
 
-	obj_fire = {		
-		-- poss diff types (s_data, n_data, arr_data)?
-		data = [[
-			name=fire
-			x=88
-			y=32
-			w=1
-			h=1
-			state=1
-			states={81,82,83}
-			lighting = 1
-		]],
-		dependent_on = obj_front_door_inside,
-		dependent_on_state = state_open,
-		verbs = {
-			lookat = function()
-				say_line("it's a nice, warm fire...")
-				break_time(10)
-				do_anim(selected_actor, anim_face, face_front)
-				say_line("ouch! it's hot!:*stupid fire*")
-			end,
-			talkto = function()
-				say_line("'hi fire...'")
-				break_time(10)
-				do_anim(selected_actor, anim_face, face_front)
-				say_line("the fire didn't say hello back:burn!!")
-			end,
-			pickup = function(me)
-				pickup_obj(me)
-			end
-		}
-	}
+-- [ ground floor ]
 
-	obj_front_door_inside = {		
-		data = [[
-			name = front door
-			state = 1
-			x=8
-			y=16
-			z=1
-			w=1
-			h=4
-			states={79,0}
-		]],
-		class = class_openable,
-		use_pos = pos_right,
-		use_dir = face_left,
-		verbs = {
-			walkto = function(me)
-				if me.state == state_open then
-					-- go to new room!
-					come_out_door(obj_front_door)
-				else
-					say_line("the door is closed")
+	-- hall
+		-- objects
+			obj_front_door_inside = {		
+				data = [[
+					name = front door
+					state = state_closed					
+					x=8
+					y=16
+					z=1
+					w=1
+					h=4
+					state_closed=79
+					classes = {class_openable, class_door}
+					use_pos = pos_right
+					use_dir = face_left
+				]],
+				init = function(me)  
+					me.target_door = obj_front_door
 				end
-			end,
-			open = function(me)
-				open_door(me, obj_front_door)
-			end,
-			close = function(me)
-				close_door(me, obj_front_door)
-			end
-		}
-	}
+			}
 
-	obj_hall_door_kitchen = {		
-		data = [[
-			name = kitchen
-			state = 2
-			x=112
-			y=16
-			w=1
-			h=4
-		]],
-		use_pos = pos_left,
-		use_dir = face_right,
-		verbs = {
-			walkto = function()
-				-- go to new room!
-				come_out_door(obj_kitchen_door_hall) --, second_room) -- ()
-			end
-		}
-	}
 
-	obj_bucket = {		
-		data = [[
-			name = bucket
-			state = 2
-			x=104
-			y=48
-			w=1
-			h=1
-			states={143,159}
-			trans_col=15
-		]],
-		class = class_pickupable,
-		verbs = {
-			lookat = function(me)
-				if owner_of(me) == selected_actor then
-					say_line("it is a bucket in my pocket")
-				else
-					say_line("it is a bucket")
+			obj_hall_door_library = {		
+				data = [[
+					name=library
+					state=state_open
+					x=136
+					y=16
+					w=1
+					h=3
+					use_dir = face_back
+					classes = {class_door}
+				]],
+				init = function(me)  
+					me.target_door = obj_library_door_hall
 				end
-			end,
-			pickup = function(me)
-				pickup_obj(me)
-			end,
-			give = function(me, noun2)
-				if noun2 == purp_tentacle then
-					say_line("can you fill this up for me?")
-					say_line(purp_tentacle, "sure")
-					me.owner = purp_tentacle
-					say_line(purp_tentacle, "here ya go...")
-					me.state = state_closed
-					me.name = "full bucket"
-					pickup_obj(me)
-				else
-					say_line("i might need this")
-				end
-			end
-		}
-	}
+			}
 
-	obj_spinning_top = {		
-		data = [[
-			name=spinning top
-			state=1
-			x=16
-			y=48
-			w=1
-			h=1
-			states={158,174,190}
-			col_replace={12,7}
-			trans_col=15
-		]],
-		verbs = {
-			push = function(me)
-				if script_running(room_curr.scripts.spin_top) then
-					stop_script(room_curr.scripts.spin_top)
-					me.state = 1
-				else
-					start_script(room_curr.scripts.spin_top)
+			obj_hall_door_kitchen = {		
+				data = [[
+					name = kitchen
+					state = state_open
+					x=176
+					y=16
+					w=1
+					h=4
+					use_pos = pos_left
+					use_dir = face_right
+					classes = {class_door}
+				]],
+				init = function(me)  
+					me.target_door = obj_kitchen_door_hall
 				end
-			end,
-			pull = function(me)
-				stop_script(room_curr.scripts.spin_top)
-				me.state = 1
-			end
-		}
-	}
+			}
 
-	obj_window = {		
-		data = [[
-			name=window
-			state=1
-			x=32
-			y=8
-			w=2
-			h=2
-			states={68,70}
-			use_pos={40,57}
-		]],
-		class = class_openable,
-		verbs = {
-			open = function(me)
-				if not me.done_cutscene then
-					cutscene(cut_noverbs, 
-						function()
-							me.done_cutscene = true
-							-- cutscene code
-							me.state = state_open
-							me.z = -2
-							print_line("*bang*",40,20,8,1)
-							change_room(second_room, 1)
-							selected_actor = purp_tentacle
-							walk_to(selected_actor, 
-								selected_actor.x+10, 
-								selected_actor.y)
-							say_line("what was that?!")
-							say_line("i'd better check...")
-							walk_to(selected_actor, 
-								selected_actor.x-10, 
-								selected_actor.y)
-							change_room(first_room, 1)
-							-- wait for a bit, then appear in room1
-							break_time(50)
-							put_actor_at(selected_actor, 115, 44, first_room)
-							walk_to(selected_actor, 
-								selected_actor.x-10, 
-								selected_actor.y)
-							say_line("intruder!!!")
-							do_anim(main_actor, anim_face, purp_tentacle)
-						end,
-						-- override for cutscene
-						function()
-							--if cutscene_curr.skipped then
-							--d("override!")
-							change_room(first_room)
-							put_actor_at(purp_tentacle, 105, 44, first_room)
-							stop_talking()
-							do_anim(main_actor, anim_face, purp_tentacle)
+			obj_bucket = {		
+				data = [[
+					x=60
+					y=50
+					col_replace={13,8}
+					classes={class_untouchable}
+				]],
+				draw = function(me)
+					-- switch transparency
+					--set_trans_col(13, true)
+					-- draw stairs
+					map(7,3, me.x,me.y, 3,2)
+				end,
+			}
+
+			obj_spinning_top = {		
+				data = [[
+					name=spinning top
+					x=16
+					y=48
+					w=1
+					h=1
+					state=1
+					states={158,174,190}
+					col_replace={12,7}
+					trans_col=15
+				]],
+				verbs = {
+					use = function(me)
+						if script_running(room_curr.scripts.spin_top) then
+							stop_script(room_curr.scripts.spin_top)
+							me.state = 1
+						else
+							start_script(room_curr.scripts.spin_top)
 						end
-					)
-				end
-				-- (code here will not run, as room change nuked "local" scripts)
-			end
-		}
-	}
-
-
-
--- 
-
-	obj_kitchen_door_hall = {		
-		data = [[
-			name = hall
-			state=1
-			x=8
-			y=16
-			w=1
-			h=4
-		]],
-		use_pos = pos_right,
-		use_dir = face_left,
-		verbs = {
-			walkto = function()
-				-- go to new room!
-				come_out_door(obj_hall_door_kitchen)
-			end
-		}
-	}
-
-	obj_back_door = {		
-		data = [[
-			name=back door
-			state=1
-			x=176
-			y=16
-			z=1
-			w=1
-			h=4
-			states={78,0}
-			flip_x=true
-		]],
-		class = class_openable,
-		use_pos = pos_left,
-		use_dir = face_right,
-		verbs = {
-			walkto = function(me)
-				if me.state == state_open then
-					-- go to new room!
-					come_out_door(obj_garden_door_kitchen)
-				else
-					say_line("the door is closed")
-				end
-			end,
-			open = function(me)
-				open_door(me, obj_front_door_inside)
-			end,
-			close = function(me)
-				close_door(me, obj_front_door_inside)
-			end
-		}
-	}
-
--- ----
-
-	obj_rail_left = {		
-		data = [[
-			state=1
-			x=80
-			y=24
-			w=1
-			h=2
-			states={47}
-			repeat_x = 8
-		]],
-		class = class_untouchable
-	}
-
-	obj_rail_right = {		
-		data = [[
-			state=1
-			x=176
-			y=24
-			w=1
-			h=2
-			states={47}
-			repeat_x = 8
-		]],
-		class = class_untouchable
-	}
-
-	obj_front_door = {		
-		data = [[
-			name = front door
-			state=1
-			x=152
-			y=8
-			w=1
-			h=3
-			states={78,0}
-			flip_x = true
-		]],
-		class = class_openable,
-		use_dir = face_back,
-		verbs = {
-			walkto = function(me)
-				if me.state == state_open then
-					-- go to new room!
-					come_out_door(obj_front_door_inside)
-				else
-					say_line("the door is closed")
-				end
-			end,
-			open = function(me)
-				open_door(me, obj_front_door_inside)
-			end,
-			close = function(me)
-				close_door(me, obj_front_door_inside)
-			end
-		}
-	}
-
-	obj_garden_door_kitchen = {		
-		data = [[
-			name=kitchen
-			state=2
-			x=104
-			y=8
-			w=1
-			h=3
-		]],
-		verbs = {
-			walkto = function()
-				-- go to new room!
-				come_out_door(obj_back_door)
-			end
-		}
-	}
-
-	obj_library_secret_panel = {		
-		data = [[
-			state=1
-			x=120
-			y=16
-			z=-1
-			w=1
-			h=3
-			states={80,80}
-		]],
-		class = class_untouchable,
-		use_dir = face_back,
-		verbs = {
-		}
-	}
-
-	obj_library_door_secret = {		
-		data = [[
-			name=secret passage
-			state=1
-			x=120
-			y=16
-			z=-10
-			w=1
-			h=3
-			states={77}
-		]],
-		dependent_on = obj_library_secret_panel,
-		dependent_on_state = 2,
-		use_dir = face_back,
-		verbs = {
-			walkto = function(me)
-				change_room(title_room, 1)
-			end
-		}
-	}
-
-	obj_book = {		
-		data = [[
-			name=loose book
-			state=1
-			x=140
-			y=16
-			w=1
-			h=1
-			use_pos={140,60}
-		]],
-		class = class_pickupable,
-		verbs = {
-			lookat = function(me)
-				say_line("this book sticks out")
-			end,
-			pull = function(me)
-				if obj_library_secret_panel.state != 2 then
-					obj_library_secret_panel.state=2
-					shake(true)
-					while (obj_library_secret_panel.y > -8) do
-						obj_library_secret_panel.y -= 1
-						break_time(10)
 					end
-					shake(false)
-				end
+				}
+			}
+
+		rm_hall = {
+			data = [[
+				map = {32,24,55,31}
+			]],
+			objects = {
+				obj_front_door_inside,
+				obj_hall_door_library,
+				obj_hall_door_kitchen,
+				obj_spinning_top,
+			},
+			enter = function(me)
+				selected_actor = main_actor
+				put_at(selected_actor,60,60,rm_hall)
+				camera_follow(selected_actor)
 			end,
+			exit = function(me)
+				-- todo: anything here?
+			end,
+			scripts = {	  -- scripts that are at room-level
+				spin_top = function()
+					dir=-1				
+					while true do	
+						for x=1,3 do					
+							for f=1,3 do
+								obj_spinning_top.state = f
+								break_time(4)
+							end
+							-- move top
+							--top = find_object("spinning top")
+							obj_spinning_top.x -= dir					
+						end	
+						dir *= -1
+					end				
+				end,
+			},
 		}
+
+-- library
+		-- objects
+			
+			obj_library_door_hall = {		
+				data = [[
+					name=hall
+					state=state_open
+					x=48
+					y=16
+					w=1
+					h=3
+					use_dir = face_back
+					classes = {class_door}
+				]],
+				init = function(me)  
+					me.target_door = obj_hall_door_library
+				end
+			}
+			
+			obj_fire = {
+				data = [[
+					name=fire
+					x=88
+					y=32
+					w=1
+					h=1
+					state=1
+					states={81,82,83}
+					lighting = 1
+				]],
+				--dependent_on = obj_front_door_inside,
+				--dependent_on_state = "state_open",
+				verbs = {
+					lookat = function()
+						say_line("it's a nice, warm fire...")
+						break_time(10)
+						do_anim(selected_actor, "anim_face", "face_front")
+						say_line("ouch! it's hot!:*stupid fire*")
+					end,
+					talkto = function()
+						say_line("'hi fire...'")
+						break_time(10)
+						do_anim(selected_actor, "anim_face", "face_front")
+						say_line("the fire didn't say hello back:burn!!")
+					end,
+					pickup = function(me)
+						pickup_obj(me)
+					end
+				}
+			}
+
+			obj_library_secret_panel = {		
+				data = [[
+					state=state_closed
+					x=120
+					y=16
+					z=-1
+					w=1
+					h=3
+					state_closed=80
+					state_open=80
+					classes = {class_untouchable}
+					use_dir = face_back
+				]],
+				--[[verbs = {
+				}]]
+			}
+
+			obj_library_door_secret = {		
+				data = [[
+					name=secret passage
+					state=state_closed
+					x=120
+					y=16
+					z=-10
+					w=1
+					h=3
+					state_closed=77
+					use_dir = face_back
+					dependent_on_state = state_open
+				]],
+				dependent_on = obj_library_secret_panel,
+				--dependent_on_state = state_open,
+				verbs = {
+					walkto = function(me)
+						change_room(rm_title, 1)
+					end
+				}
+			}
+
+			obj_book = {		
+				data = [[
+					name=loose book
+					x=140
+					y=16
+					w=1
+					h=1
+					use_pos={140,40}
+					classes = {class_pickupable}
+				]],
+				verbs = {
+					lookat = function(me)
+						say_line("this book sticks out")
+					end,
+					pull = function(me)
+					end,
+				}
+			}
+
+
+		rm_library = {
+			data = [[
+				map = {56,24,79,31}
+				trans_col = 10
+				col_replace={7,4}
+			]],
+			objects = {
+				obj_library_door_hall,
+				obj_fire,
+				obj_library_door_secret,
+				obj_library_secret_panel,
+				obj_duck,
+				obj_book
+			},
+			enter = function(me)
+				-- animate fireplace
+				start_script(me.scripts.anim_fire, true) -- bg script
+			end,
+			exit = function(me)
+				-- pause fireplace while not in room
+				stop_script(me.scripts.anim_fire)
+			end,
+			scripts = {
+				anim_fire = function()
+					while true do
+						for f=1,3 do
+							obj_fire.state = f
+							break_time(8)
+						end
+					end
+				end
+			}
+		}
+		
+
+
+-- "the void" (room)
+-- a place to put objects/actors when not in a room
+	
+	-- objects
+
+	rm_void = {
+		data = [[
+			map = {0,0}
+		]],
+		objects = {
+		},
 	}
 
-	obj_duck = {		
-		data = [[
-			name=rubber duck
-			state=1
-			states={142}
-			trans_col=12
-			x=1
-			y=1
-			w=1
-			h=1
-		]],
-		class = class_pickupable,
-		verbs = {
-			pickup = function(me)
-				pickup_obj(me)
-			end,
-		}
-	}
 
 
 -- 
 -- room definitions
 -- 
 
-	title_room = {
-		data = [[
-			map = {0,8}
-		]],
-		objects = {
-		},
-		enter = function(me)
-
-			-- demo intro
-		
-			if not me.done_intro then
-				-- don't do this again
-				me.done_intro = true
-			
-					cutscene(cut_noverbs + cut_no_follow, 
-						function()
-
---[[
-
-							-- intro
-							break_time(50)
-							print_line("in a galaxy not far away...",64,45,8,1)
-
-							change_room(first_room, 1)
-							shake(true)
-							start_script(first_room.scripts.spin_top,false,true)
-							print_line("cozy fireplaces...",90,20,8,1)
-							print_line("(just look at it!)",90,20,8,1)
-							shake(false)
-
-							-- part 2
-							change_room(second_room, 1)
-							print_line("strange looking aliens...",30,20,8,1,false,true)
-							put_actor_at(purp_tentacle, 130, purp_tentacle.y, second_room)
-							walk_to(purp_tentacle, 
-								purp_tentacle.x-30, 
-								purp_tentacle.y)
-							wait_for_actor(purp_tentacle)
-							say_line(purp_tentacle, "what did you call me?!")
-
-							-- part 3
-							change_room(back_garden, 1)
-							print_line("and even swimming pools!",90,20,8,1,false,true)
-							camera_at(200)
-							camera_pan_to(0)
-							wait_for_camera()
-							print_line("quack!",45,60,10,1)
-
-							-- part 4
-							change_room(outside_room, 1)
-							
-
-							-- outro
-							--break_time(25)
-							change_room(title_room, 1)
-						]]	
-
-							print_line("coming soon...:to a pico-8 near you!",64,45,8,1)
-							print_line("until then, go & buy...",64,45,8,1)
-							print_line("thimbleweed park",64,45,12,1,true,false)
-							print_line("it's amazing:(tell ron I sent ya!)",64,45,8,1)
-							fades(1,1)	-- fade out
-							break_time(100)
-							
-						end) -- end cutscene
-
-				end -- if not done intro
-		end,
-		exit = function()
-			-- todo: anything here?
-		end,
-	}
-
-
-	outside_room = {
-		data = [[
-			map = {0,24,31,31}
-		]],
-		objects = {
-			obj_rail_left,
-			obj_rail_right,
-			obj_front_door
-		},
-		enter = function(me)
-			-- 
-			-- initialise game in first room entry...
-			-- 
-			if not me.done_intro then
-				-- don't do this again
-				me.done_intro = true
-				-- set which actor the player controls by default
-				selected_actor = main_actor
-				-- init actor
-				put_actor_at(selected_actor, 144, 36, outside_room)
-				-- make camera follow player
-				-- (setting now, will be re-instated after cutscene)
-				camera_follow(selected_actor)
-				-- do cutscene
-				cutscene(cut_noverbs, 
-					-- cutscene code (hides ui, etc.)
-					function()
-						camera_at(0)
-						camera_pan_to(selected_actor)
-						wait_for_camera()
-						say_line("let's do this")
-					end
-				)
-			end
-		end,
-		exit = function(me)
-			-- todo: anything here?
-		end,
-	}
-
-
-	first_room = {
-		data = [[
-			map = {0,0}
-			lighting = 1
-		]],
-		objects = {
-			obj_front_door_inside,
-			obj_hall_door_kitchen,
-			obj_bucket,
-			obj_spinning_top,
-			obj_window,
-			--obj_ztest
-		},
-		enter = function(me)
-			
-			start_script(me.scripts.tentacle_guard, true) -- bg script
-		end,
-		exit = function(me)
-			
-			stop_script(me.scripts.tentacle_guard)
-		end,
-		scripts = {	  -- scripts that are at room-level
-			spin_top = function()
-				dir=-1				
-				while true do	
-					for x=1,3 do					
-						for f=1,3 do
-							obj_spinning_top.state = f
-							break_time(4)
-						end
-						-- move top
-						--top = find_object("spinning top")
-						obj_spinning_top.x -= dir					
-					end	
-					dir *= -1
-				end				
-			end,
-			tentacle_guard = function()
-				while true do
-					--d("tentacle guarding...")
-					if proximity(main_actor, purp_tentacle) < 30 then
-						say_line(purp_tentacle, "halt!!!", true)
-					end
-					break_time(10)
-				end
-			end
-		},
-	}
-
-	second_room = {
-		data = [[
-			map = {16,0,39,7}
-		]],
-		objects = {
-			obj_kitchen_door_hall,
-			obj_back_door
-		},
-		enter = function()
-				-- todo: anything here?
-		end,
-		exit = function()
-			-- todo: anything here?
-		end,
-	}
-
-	back_garden = {
-		data = [[
-			map = {40,0,63,7}
-		]],
-		objects = {
-			obj_garden_door_kitchen
-		},
-		enter = function()
-				-- todo: anything here?
-		end,
-		exit = function()
-			-- todo: anything here?
-		end,
-	}
-
-	rm_library = {
-		data = [[
-			map = {16,8,39,15}
-			trans_col = 10
-			col_replace={7,6}
-		]],
-		objects = {
-			obj_fire,
-			obj_library_door_secret,
-			obj_library_secret_panel,
-			obj_duck,
-			obj_book
-		},
-		enter = function(me)
-			-- animate fireplace
-			start_script(me.scripts.anim_fire, true) -- bg script
-			d("z:"..obj_library_secret_panel.z)
-			d("type:"..type(obj_library_secret_panel.z))
-		end,
-		exit = function(me)
-			-- pause fireplace while not in room
-			stop_script(me.scripts.anim_fire)
-		end,
-		scripts = {
-			anim_fire = function()
-				while true do
-					for f=1,3 do
-						obj_fire.state = f
-						break_time(8)
-					end
-				end
-			end
-		}
-	}
 	
 
-
-
 rooms = {
-	title_room,
-	outside_room,
-	first_room,
-	second_room,
-	back_garden,
-	rm_library
+	rm_void,
+	rm_hall,
+	rm_library,
 }
 
 
 
 
--- ================================================================
 -- actor definitions
 -- 
 
 	-- initialize the player's actor object
 	main_actor = { 	
 		data = [[
+			name = humanoid
 			w = 1
 			h = 4
 			idle = { 193, 197, 199, 197 }
@@ -770,88 +379,25 @@ rooms = {
 			walk_anim_back = { 200, 199, 201, 199 }
 			col = 12
 			trans_col = 11
-			speed = 0.6
-		]],	
-		--name = "",
-		class = class_actor,
-		face_dir = face_front, 	-- default direction facing
-		-- sprites for idle (front, left, back, right) - right=flip
-	}
-
-	purp_tentacle = {
-		data = [[
-			name = purple tentacle
-			x = 40
-			y = 48
-			w = 1
-			h = 3
-			idle = { 154, 154, 154, 154 }
-			talk = { 171, 171, 171, 171 }
-			col = 11
-			trans_col = 15
-			speed = 0.25
+			walk_speed = 0.6
+			frame_delay = 5
+			classes = {class_actor}
+			face_dir = face_front
 		]],
-		class = class_talkable + class_actor,
-		face_dir = face_front,
-		use_pos = pos_left,
-		--in_room = rooms.first_room,
-		in_room = second_room,
+		-- sprites for directions (front, left, back, right) - note: right=left-flipped
+		inventory = {
+			obj_switch_tent
+		},
 		verbs = {
-				lookat = function()
-					say_line("it's a weird looking tentacle, thing!")
-				end,
-				talkto = function(me)
-					cutscene(cut_noverbs, function()
-						--do_anim(purp_tentacle, anim_face, selected_actor)
-						say_line(me,"what do you want?")
-					end)
-
-					-- dialog loop start
-					while (true) do
-						-- build dialog options
-						dialog_set({ 
-							(me.asked_where and "" or "where am i?"),
-							"who are you?",
-							"how much wood would a wood-chuck chuck, if a wood-chuck could chuck wood?",
-							"nevermind"
-						})
-						dialog_start(selected_actor.col, 7)
-
-						-- wait for selection
-						while not selected_sentence do break_time() end
-						-- chosen options
-						dialog_hide()
-
-						cutscene(cut_noverbs, function()
-							say_line(selected_sentence.msg)
-							
-							if selected_sentence.num == 1 then
-								say_line(me, "you are in paul's game")
-								me.asked_where = true
-
-							elseif selected_sentence.num == 2 then
-								say_line(me, "it's complicated...")
-
-							elseif selected_sentence.num == 3 then
-								say_line(me, "a wood-chuck would chuck no amount of wood, coz a wood-chuck can't chuck wood!")
-
-							elseif selected_sentence.num == 4 then
-								say_line(me, "ok bye!")
-								dialog_end()
-								return
-							end
-						end)
-
-						dialog_clear()
-
-					end --dialog loop
-				end -- talkto
-			}
+			use = function(me)
+				selected_actor = me
+				camera_follow(me)
+			end
+		}
 	}
 
 actors = {
-	main_actor,
-	purp_tentacle
+	main_actor
 }
 
 -- 
@@ -860,20 +406,16 @@ actors = {
 
 -- this script is execute once on game startup
 function startup_script()	
+	-- set ui colors
+	reset_ui()
+
+	-- set initial inventory (if applicable)
+	-- pickup_obj(obj_switch_tent, main_actor)
+	-- pickup_obj(obj_switch_player, purp_tentacle)
+
 	-- set which room to start the game in 
 	-- (e.g. could be a "pseudo" room for title screen!)
-	
-	selected_actor = main_actor
-	camera_follow(selected_actor)
-	put_actor_at(selected_actor, 60, 50, rm_library)
-	pickup_obj(obj_bucket)
-	pickup_obj(obj_duck)
-	
-
-	--change_room(title_room, 1) -- iris fade	
-	--change_room(first_room, 1) -- iris fade	
-	--change_room(outside_room, 1) -- iris fade
-	change_room(rm_library, 1) -- iris fade
+	change_room(rm_hall, 1) -- iris fade
 end
 
 
@@ -902,11 +444,17 @@ end
 
 
 
--- ################################################################
+
+
+
+
+
+
+
 -- scumm-8 public api functions
--- ================================================================
+-- 
 -- (you should not need to modify anything below here!)
--- ################################################################
+
 
 
 
@@ -925,10 +473,10 @@ end
 function find_default_verb(obj)
   local default_verb = nil
 
-	if has_flag(obj.class, class_talkable) then
+	if has_flag(obj.classes, "class_talkable") then
 		default_verb = "talkto"
-	elseif has_flag(obj.class, class_openable) then
-		if obj.state == state_closed then
+	elseif has_flag(obj.classes, "class_openable") then
+		if obj.state == "state_closed" then
 			default_verb = "open"
 		else
 			default_verb = "close"
@@ -948,22 +496,24 @@ end
 -- actions to perform when object doesn't have an entry for verb
 function unsupported_action(verb, obj1, obj2)
 
+	local is_actor = has_flag(obj1.classes, "class_actor") 
+
 	if verb == "walkto" then
 		return
 
 	elseif verb == "pickup" then
-		if has_flag(obj1.class, class_actor) then
+		if is_actor then
 			say_line"i don't need them"
 		else
 			say_line"i don't need that"
 		end
 
 	elseif verb == "use" then
-		if has_flag(obj1.class, class_actor) then
+		if is_actor then
 			say_line"i can't just *use* someone"
 		end
 		if obj2 then
-			if has_flag(obj2.class, class_actor) then
+			if has_flag(obj2.classes, class_actor) then
 				say_line"i can't use that on someone!"
 			else
 				say_line"that doesn't work"
@@ -971,42 +521,42 @@ function unsupported_action(verb, obj1, obj2)
 		end
 
 	elseif verb == "give" then
-		if has_flag(obj1.class, class_actor) then
+		if is_actor then
 			say_line"i don't think i should be giving this away"
 		else
 			say_line"i can't do that"
 		end
 
 	elseif verb == "lookat" then
-		if has_flag(obj1.class, class_actor) then
+		if is_actor then
 			say_line"i think it's alive"
 		else
 			say_line"looks pretty ordinary"
 		end
 
 	elseif verb == "open" then
-		if has_flag(obj1.class, class_actor) then
+		if is_actor then
 			say_line"they don't seem to open"
 		else
 			say_line"it doesn't seem to open"
 		end
 
 	elseif verb == "close" then
-		if has_flag(obj1.class, class_actor) then
+		if is_actor then
 			say_line"they don't seem to close"
 		else
 			say_line"it doesn't seem to close"
 		end
 
 	elseif verb == "push" or verb == "pull" then
-		if has_flag(obj1.class, class_actor) then
+		if is_actor then
 			say_line"moving them would accomplish nothing"
 		else
 			say_line"it won't budge!"
 		end
 
 	elseif verb == "talkto" then
-		if has_flag(obj1.class, class_actor) then
+		if is_actor then
 			say_line"erm... i don't think they want to talk"
 		else
 			say_line"i am not talking to that!"
@@ -1028,6 +578,8 @@ function camera_at(val)
 end
 
 function camera_follow(actor)
+	stop_script(cam_script) -- bg script
+
 	-- set target
 	cam_following_actor = actor
 	-- clear other cam values
@@ -1045,6 +597,11 @@ function camera_follow(actor)
 		end
 	end
 	start_script(cam_script, true) -- bg script
+
+	-- auto-switch to room actor resides in
+	if cam_following_actor.in_room != room_curr then
+		change_room(cam_following_actor.in_room, 1)
+	end
 end
 
 
@@ -1082,9 +639,9 @@ function wait_for_camera()
 end
 
 
-function cutscene(flags, func_cutscene, func_override)
+function cutscene(type, func_cutscene, func_override)
 	cut = {
-		flags = flags,
+		flags = type,
 		thread = cocreate(func_cutscene),
 		override = func_override,
 		paused_cam_following = cam_following_actor
@@ -1092,7 +649,9 @@ function cutscene(flags, func_cutscene, func_override)
 	add(cutscenes, cut)
 	-- set as active cutscene
 	cutscene_curr = cut
+
 	-- yield for system catch-up
+	-- todo: see if this is still needed!
 	break_time()
 end
 
@@ -1140,33 +699,43 @@ end
 
 
 function get_use_pos(obj)
-	obj_use_pos = obj.use_pos
+	local obj_use_pos = obj.use_pos
+	local x = obj.x -- -cam_x
+	local y = obj.y
 
 	-- first check for specific pos
 	if type(obj_use_pos) == "table" then
-		x = obj_use_pos[1]-cam_x
-		y = obj_use_pos[2]-stage_top
+		x = obj_use_pos[1] -- -cam_x
+		y = obj_use_pos[2] -- -stage_top
 
 	-- determine use pos
-	elseif not obj_use_pos or
-		obj_use_pos == pos_infront then
-		x = obj.x + ((obj.w*8)/2) -cam_x -4
-		y = obj.y + (obj.h*8) +2
-
-	elseif obj_use_pos == pos_left then
+	elseif obj_use_pos == "pos_left" then
 		-- diff calc for actors
 		if obj.offset_x then
-			x = obj.x -cam_x - (obj.w*8 +4)
-			y = obj.y + 1
+			x -= (obj.w*8 +4)
+			y += 1
 		else
 			-- object pos
-			x = obj.x -cam_x  -2
-			y = obj.y + ((obj.h*8) -2)
+			x -= 2
+			y += ((obj.h*8) -2)
 		end
 
-	elseif obj_use_pos == pos_right then
-		x = obj.x + (obj.w*8)-cam_x
-		y = obj.y + ((obj.h*8) -2)
+	elseif obj_use_pos == "pos_right" then
+		x += (obj.w*8)
+		y += ((obj.h*8) -2)
+	
+	elseif obj_use_pos == "pos_above" then
+		x += ((obj.w*8) /2) -4
+		y -= 2
+	
+	elseif obj_use_pos == "pos_center" then
+		x += ((obj.w*8) /2)
+		y += ((obj.h*8) /2) -4
+
+	elseif obj_use_pos == "pos_infront"
+	 or obj_use_pos == nil then
+		x += ((obj.w*8) /2) -4
+		y += (obj.h*8) +2
 	end
 	
 	return {x=x,y=y}
@@ -1174,8 +743,16 @@ end
 
 
 function do_anim(actor, cmd_type, cmd_value)
+
+	dir_nums = {
+		"face_front",
+		"face_left",
+		"face_back",
+		"face_right" 
+	}
+
 	-- animate turn to face (object/actor or explicit direction)
-	if cmd_type == anim_face then
+	if cmd_type == "anim_face" then
 		
 		-- check if cmd_value is an actor/object, rather than explicit face_dir
 		if type(cmd_value) == "table" then
@@ -1197,61 +774,96 @@ function do_anim(actor, cmd_type, cmd_value)
 
 			-- set final target face direction to obj/actor
 			cmd_value = 4 - flr(degrees/90)
+
+			-- convert final value
+			cmd_value = dir_nums[cmd_value]
 		end
 
-		while actor.face_dir != cmd_value do
+		face_dir = face_dir_vals[actor.face_dir]
+		cmd_value = face_dir_vals[cmd_value]
+		
+		while face_dir != cmd_value do
 			-- turn to target face_dir
-			if actor.face_dir < cmd_value then
-				actor.face_dir += 1
+			if face_dir < cmd_value then
+				face_dir += 1
 			else 
-				actor.face_dir -= 1
+				face_dir -= 1
 			end
+			-- set face dir
+			actor.face_dir = dir_nums[face_dir]
 			-- is target dir left? flip?
-			actor.flip = (actor.face_dir == face_left)
+			actor.flip = (actor.face_dir == "face_left")
 			break_time(10)
 		end
+
+
 	end
 end
 
 -- open one (or more) doors
 function open_door(door_obj1, door_obj2)
-	if door_obj1.state == state_open then
+	if door_obj1.state == "state_open" then
 		say_line"it's already open"
 	else
-		door_obj1.state = state_open
-		if door_obj2 then door_obj2.state = state_open end
+		door_obj1.state = "state_open"
+		if door_obj2 then door_obj2.state = "state_open" end
 	end
 end
 
 -- close one (or more) doors
 function close_door(door_obj1, door_obj2)
-	if door_obj1.state == state_closed then
+	if door_obj1.state == "state_closed" then
 		say_line"it's already closed"
 	else
-		door_obj1.state = state_closed
-		if door_obj2 then door_obj2.state = state_closed end
+		door_obj1.state = "state_closed"
+		if door_obj2 then door_obj2.state = "state_closed" end
 	end
 end
 
-function come_out_door(door_obj, fade_effect)
-	new_room = door_obj.in_room
-
-	-- switch to new room and...
-	change_room(new_room, fade_effect)
-	-- ...auto-position actor at door_obj in new room...
-	local pos = get_use_pos(door_obj)
-	put_actor_at(selected_actor, pos.x, pos.y, new_room)
-
-	-- ...in opposite use direction!
-	if door_obj.use_dir then
-		opp_dir = door_obj.use_dir + 2
-		if opp_dir > 4 then
-			opp_dir -= 4
-		end
-	else
-	 opp_dir = 1 -- front
+function come_out_door(from_door, to_door, fade_effect)
+	-- check param
+	if to_door == nil then
+		show_error("target door does not exist")
+		return
 	end
-	selected_actor.face_dir = opp_dir
+
+	if from_door.state == "state_open" then
+		-- go to new room!
+		new_room = to_door.in_room
+
+		if new_room != room_curr then
+			-- switch to new room and...
+			change_room(new_room, fade_effect)
+		end
+	
+		-- ...auto-position actor at to_door in new room...
+		local pos = get_use_pos(to_door)
+		put_at(selected_actor, pos.x, pos.y, new_room)
+	
+		-- ...in opposite use direction!
+		dir_opp = { 
+			face_front="face_back", 
+			face_left="face_right", 
+			face_back="face_front",
+			face_right="face_left" 
+		}
+
+		if to_door.use_dir then
+			opp_dir = dir_opp[to_door.use_dir]
+			-- opp_dir = to_door.use_dir + 2
+			-- if opp_dir > 4 then
+			-- 	opp_dir -= 4
+			-- end
+		else
+			opp_dir = 1 -- front
+		end
+		selected_actor.face_dir = opp_dir
+		-- is target dir left? flip?
+		selected_actor.flip = (selected_actor.face_dir == "face_left")
+
+	else
+		say_line("the door is closed")
+	end
 end
 
 function fades(fade, dir) -- 1=down, -1=up
@@ -1278,8 +890,13 @@ function fades(fade, dir) -- 1=down, -1=up
 	end
 end
 
-
 function change_room(new_room, fade)
+	-- check param
+	if new_room == nil then
+		show_error("room does not exist")
+		return
+	end
+
 	-- stop any existing fade (shouldn't be any, but just in case!)
 	stop_script(fade_script)
 
@@ -1347,50 +964,17 @@ function valid_verb(verb, object)
 	return false
 end
 
-function pickup_obj(obj)
-	--local obj = find_object(objname)
---	if obj then
-		-- assume selected_actor picked-up at this point
-		add(selected_actor.inventory, obj)
-		obj.owner = selected_actor
+function pickup_obj(obj, actor)
+		-- use actor spectified, or default to selected
+    actor = actor or selected_actor
+
+		add(actor.inventory, obj)
+		obj.owner = actor
 		-- remove it from room
 		del(obj.in_room.objects, obj)
 --	end
 end
 
---[[function owner_of(objname)
-	obj = find_object(objname)
-	if obj then
-		return obj.owner
-	end
-end
-
-function state_of(objname, state)
-	obj = find_object(objname)
-	if obj then
-		return obj.state
-	end
-end
-
-function set_state(objname, state)
-	obj = find_object(objname)
-	if obj then
-		obj.state = state
-	end
-end]]
---[[
--- find object by ref or name
-function find_object(name)
-	-- if object passed, just return object!
-	if type(name) == "table" then return name end
-	
-	-- todo: allow find by obj id!!
-
-	-- else look for object by unique name
-	for k,obj in pairs(room_curr.objects) do
-		if obj.name == name then return obj end
-	end
-end]]
 
 function start_script(func, bg, noun1, noun2)
 	-- create new thread for script and add to list of local_scripts (or background scripts)
@@ -1473,17 +1057,12 @@ function print_line(msg, x, y, col, align, use_caps, dont_wait_msg)
 	local col=col or 7 		-- default to white
 	local align=align or 0	-- default to no align
 
-	--d(msg)
-	-- default max width (unless hit a screen edge)
-	--local lines = {}
-	--local curchar = ""
-	--local msg_left = "" --used for splitting messages with ";"
-	
-	--longest_line=0
-	-- auto-wrap
 	-- calc max line width based on x-pos/available space
-	local screen_space = min(x -cam_x, 127 - (x -cam_x))
-	-- (or no less than min length)
+	if align == 1 then
+		screen_space = min(x -cam_x, 127 - (x -cam_x))
+	else
+		screen_space = 127 - (x -cam_x)
+	end
 	local max_line_length = max(flr(screen_space/2), 16)
 
 	-- search for ";"'s
@@ -1508,8 +1087,9 @@ function print_line(msg, x, y, col, align, use_caps, dont_wait_msg)
 	local longest_line = longest_line_size(lines)
 
 	-- center-align text block
+	xpos = x -cam_x 
 	if align == 1 then
-		xpos = x -cam_x - ((longest_line*4)/2)
+		xpos -= ((longest_line*4)/2)
 	end
 
 	-- screen bound check
@@ -1541,16 +1121,26 @@ function print_line(msg, x, y, col, align, use_caps, dont_wait_msg)
 	end
 end
 
-function put_actor_at(actor, x, y, room)
-	if room then actor.in_room = room end
-	actor.x, actor.y = x, y
+function put_at(obj, x, y, room)
+	if room then 
+		if not has_flag(obj.classes, "class_actor") then
+			if obj.in_room then del(obj.in_room.objects, obj) end
+			add(room.objects, obj)
+			obj.owner = nil
+		end
+		obj.in_room = room
+	end
+	obj.x, obj.y = x, y
+end
+
+
+function stop_actor(actor)
+	actor.moving = 0
+	clear_curr_cmd()
 end
 
 -- walk actor to position
 function walk_to(actor, x, y)
-		--offset for camera
-		x += cam_x
-
 		local actor_cell_pos = getcellpos(actor)
 		local celx = flr(x /8) + room_curr.map[1]
 		local cely = flr(y /8) + room_curr.map[2]
@@ -1559,24 +1149,25 @@ function walk_to(actor, x, y)
 		-- use pathfinding!
 	  local path = find_path(actor_cell_pos, target_cell_pos)
 
-		-- finally, add our destination to list
-		local final_cell = getcellpos({x=x, y=y})
-		if is_cell_walkable(final_cell[1], final_cell[2]) then
-			add(path, final_cell)
-		end
+		actor.moving = 1
 
 		for p in all(path) do
 			local px = (p[1]-room_curr.map[1])*8 + 4
 			local py = (p[2]-room_curr.map[2])*8 + 4
 
 			local distance = sqrt((px - actor.x) ^ 2 + (py - actor.y) ^ 2)
-			local step_x = actor.speed * (px - actor.x) / distance
-			local step_y = actor.speed * (py - actor.y) / distance
+			local step_x = actor.walk_speed * (px - actor.x) / distance
+			local step_y = actor.walk_speed * (py - actor.y) / distance
+
+			-- abort if actor stopped
+			if actor.moving == 0 then
+				return
+			end
 
 			-- only walk if we're not already there!
-			if distance > 1 then 
+			if distance > 5 then 
 				--walking
-				actor.moving = 1 
+				--actor.moving = 1 
 				actor.flip = (step_x<0)
 
 				-- choose walk anim based on dir
@@ -1585,28 +1176,27 @@ function walk_to(actor, x, y)
 					if step_y > 0 then
 						-- towards us
 						actor.walk_anim = actor.walk_anim_front
-						actor.face_dir = face_front
+						actor.face_dir = "face_front"
 					else
 						-- away
 						actor.walk_anim = actor.walk_anim_back
-						actor.face_dir = face_back
+						actor.face_dir = "face_back"
 					end
 				else
 					-- horizontal walk
 					actor.walk_anim = actor.walk_anim_side
 					-- face dir (at end of walk)
-					actor.face_dir = face_right
-					if actor.flip then actor.face_dir = face_left end
+					actor.face_dir = "face_right"
+					if actor.flip then actor.face_dir = "face_left" end
 				end
 
-				for i = 0, distance/actor.speed do
+				for i = 0, distance/actor.walk_speed do
 					actor.x += step_x
 					actor.y += step_y
 					yield()
 				end
 			end
 		end
-		--d("reach dest")
 		actor.moving = 2 --arrived
 end
 
@@ -1619,14 +1209,6 @@ function wait_for_actor(actor)
 end
 
 function proximity(obj1, obj2)
-	-- check for name params
---[[	if type(obj1) == "string" then
-		obj1 = find_object(obj1)
-	end
-	if type(obj2) == "string" then
-		obj2 = find_object(obj2)
-	end]]
-
 	-- calc dist between objects
 	if obj1.in_room == obj2.in_room then
 		local distance = sqrt((obj1.x - obj2.x) ^ 2 + (obj1.y - obj2.y) ^ 2)
@@ -1638,7 +1220,7 @@ function proximity(obj1, obj2)
 end
 
 
--- ================================================================
+-- 
 -- internal functions
 -- 
 
@@ -1654,11 +1236,17 @@ ui_arrows = {
 	{ spr = 240, x = 75, y = stage_top + 72 }
 }
 
+face_dir_vals = { 
+	face_front=1, 
+	face_left=2, 
+	face_back=3,
+	face_right=4 
+}
+
 
 function get_keys(obj)
 	local keys = {}
 	for k,v in pairs(obj) do
-		--d("k:"..k)
 		add(keys,k)
 	end
 	return keys
@@ -1695,10 +1283,31 @@ draw_zplanes = {}		-- table of tables for each of the (8) zplanes for drawing de
 
 fade_iris, fade_iris = 0, 0
 
+cutscene_cooloff = 0
 
 -- game loop
 
 function _init()
+
+	-- reload(0,0,0x800,"mi_temp.p8") -- gfx pg1
+	-- cstore(0x3b00,0,0x800) -- sfx (last 1/2)
+	-- reload(0x3000,0x3000,0x64,"mi_temp.p8") -- gfx flags pg1
+	-- cstore(0x3a00,0x3000,0x100) -- sfx (just b4 last 1/2)
+
+		-- load embedded gfx (from sfx area)
+	--	reload(0,0x3b00,0x800)
+		-- load embedded gfx flags (from sfx area)
+	--	reload(0x3000,0x3a00,0x100)
+
+
+	
+	--reload(0,0x3200,0x1000) -- gfx pg1&2 (from sfx)
+	--reload(0,0,0x1000,"mario014.p8") -- gfx pg1&2
+	--reload(0,0,0x800,"mario014.p8") -- gfx pg1
+	--cstore(0x3200,0,0x1000) -- sfx (start)
+	--cstore(0,0,0x800,"out.p8")
+
+
 	-- use mouse input?
 	if enable_mouse then poke(0x5f2d, 1) end
 
@@ -1737,7 +1346,8 @@ function game_update()
 			-- cutscene ended, restore prev state	
 						
 			-- restore follow-cam if flag allows (and had a value!)
-			if not has_flag(cutscene_curr.flags, cut_no_follow) 
+			if cutscene_curr.flags != 3 
+			--if not has_flag(cutscene_curr.flags, "cut_no_follow") 
 			 and cutscene_curr.paused_cam_following 
 			then
 				camera_follow(cutscene_curr.paused_cam_following)
@@ -1746,10 +1356,16 @@ function game_update()
 			end
 			-- now delete cutscene
 			del(cutscenes, cutscene_curr)
-			cutscene_curr = nil
+			
 			-- any more cutscenes?
 			if #cutscenes > 0 then
 				cutscene_curr = cutscenes[#cutscenes]
+			else
+				if cutscene_curr.flags != 2 then
+					-- start countdown (delay to ensure cutscenes/dialogs all over!)
+					cutscene_cooloff = 3
+				end
+				cutscene_curr = nil
 			end
 		end
 	else
@@ -1804,7 +1420,7 @@ function game_draw()
 		print("mem: "..flr(stat(0)/1024*100).."%", 0, stage_top - 8, 8)
 	end
 	if show_debuginfo then 
-		print("x: "..cursor_x.." y:"..cursor_y-stage_top, 80, stage_top - 8, 8) 
+		print("x: "..flr(cursor_x+cam_x).." y:"..cursor_y-stage_top, 80, stage_top - 8, 8) 
 	end
 
 	-- draw active/speech text
@@ -1825,13 +1441,17 @@ function game_draw()
  -- as could be going straight into a dialog
  -- (would prefer a better way than this, but couldn't find one!)
  --
-	if cutscene_curr_lastval == cutscene_curr then
-		--d("cut_same")
-	else
-		--d("cut_diff")
-		cutscene_curr_lastval = cutscene_curr
-		return
-	end
+	if cutscene_cooloff > 0 then 
+ 		cutscene_cooloff -= 1 
+	 	return
+ 	end
+	-- if cutscene_curr_lastval == cutscene_curr then
+	-- 	--d("cut_same")
+	-- else
+	-- 	d("cut_diff")
+	-- 	cutscene_curr_lastval = cutscene_curr
+	-- 	return
+	-- end
 	
 
 	-- draw current command (verb/object)
@@ -1841,16 +1461,17 @@ function game_draw()
 
 	-- draw ui and inventory (only if actor selected to use it!)
 	if (not cutscene_curr
-		or not has_flag(cutscene_curr.flags, cut_noverbs))
+		or cutscene_curr.flags == 2) -- quick-cut
 		-- and not just left a cutscene
-		and (cutscene_curr_lastval == cutscene_curr) then
+		and cutscene_cooloff == 0 then
+		--and (cutscene_curr_lastval == cutscene_curr) then
 		ui_draw()
 	else
 		--d("ui skipped")
 	end
 
 	-- hack: fix for display issue (see above hack info)
-	cutscene_curr_lastval = cutscene_curr
+	--cutscene_curr_lastval = cutscene_curr
 
 	if not cutscene_curr then
 		cursor_draw()
@@ -1973,12 +1594,15 @@ function input_button_pressed(button_index)
 
 	-- attempt to use verb on object (if not already executing verb)
 	if noun1_curr != nil 
-	 and not executing_cmd then
+	 --and not executing_cmd 
+	 then
 		-- are we starting a 'use' command?
 		if verb_curr[2] == "use" or verb_curr[2] == "give" then
 			if noun2_curr then
 				-- 'use' part 2
-			else
+			elseif noun1_curr.use_with 
+			 and noun1_curr.owner == selected_actor 
+			then
 				-- 'use' part 1 (e.g. "use hammer")
 				-- wait for noun2 to be set
 				return
@@ -1987,10 +1611,13 @@ function input_button_pressed(button_index)
 
 		-- execute verb script
 		executing_cmd = true
-		selected_actor.thread = cocreate(function() --actor, obj, verb, noun2)
+		selected_actor.thread = cocreate(function()
 			-- if obj not in inventory (or about to give/use it)...
-			if not noun1_curr.owner 
-			 or noun2_curr then
+			if (not noun1_curr.owner 
+				   and (not has_flag(noun1_curr.classes, "class_actor")
+							or verb_curr[2] != "use"))
+			 or noun2_curr 
+			then
 				-- walk to use pos and face dir
 				-- determine which item we're walking to
 				walk_obj = noun2_curr or noun1_curr
@@ -2004,15 +1631,29 @@ function input_button_pressed(button_index)
 				-- unless a diff dir specified
 				if walk_obj.use_dir then use_dir = walk_obj.use_dir end
 				-- turn to use dir				
-				do_anim(selected_actor, anim_face, use_dir)
+				do_anim(selected_actor, "anim_face", use_dir)
 			end
 			-- does current object support active verb?
 			if valid_verb(verb_curr,noun1_curr) then
 				-- finally, execute verb script
 				start_script(noun1_curr.verbs[verb_curr[1]], false, noun1_curr, noun2_curr)
 			else
-				-- e.g. "i don't think that will work"
-				unsupported_action(verb_curr[2], noun1_curr, noun2_curr)
+				-- check for door
+				if has_flag(noun1_curr.classes, "class_door") then
+					-- perform default door action
+					--start_script(function()
+						if verb_curr[2] == "walkto" then
+							come_out_door(noun1_curr, noun1_curr.target_door)
+						elseif verb_curr[2] == "open" then
+							open_door(noun1_curr, noun1_curr.target_door)
+						elseif verb_curr[2] == "close" then
+							close_door(noun1_curr, noun1_curr.target_door)
+						end
+					--end, false)
+				else
+					-- e.g. "i don't think that will work"
+					unsupported_action(verb_curr[2], noun1_curr, noun2_curr)
+				end
 			end
 			-- clear current command
 			clear_curr_cmd()
@@ -2023,7 +1664,7 @@ function input_button_pressed(button_index)
 		executing_cmd = true
 		-- attempt to walk to target
 		selected_actor.thread = cocreate(function() --(x,y)
-			walk_to(selected_actor, cursor_x, cursor_y - stage_top)
+			walk_to(selected_actor, cursor_x+cam_x, cursor_y - stage_top)
 			--walk_to(selected_actor, x, y)
 			-- clear current command
 			clear_curr_cmd()
@@ -2034,6 +1675,11 @@ end
 
 -- collision detection
 function check_collisions()
+ -- check for current room
+ if not room_curr then
+  return
+ end
+
 	-- reset hover collisions
 	hover_curr_verb, hover_curr_default_verb, hover_curr_object, hover_curr_sentence, hover_curr_arrow = nil, nil, nil, nil, nil
 	-- are we in dialog mode?
@@ -2055,8 +1701,8 @@ function check_collisions()
 	-- check room/object collisions
 	for obj in all(room_curr.objects) do
 		-- capture bounds (even for "invisible", but not untouchable/dependent, objects)
-		if (not obj.class
-			 or (obj.class and obj.class != class_untouchable))
+		if (not obj.classes
+			 or (obj.classes and not has_flag(obj.classes, "class_untouchable")))
 			and (not obj.dependent_on 			-- object has a valid dependent state?
 			 or obj.dependent_on.state == obj.dependent_on_state) 
 		then
@@ -2135,7 +1781,6 @@ end
 
 
 function reset_zplanes()
---	d("reset_zplanes()")
 	draw_zplanes = {}
 	for x = -64, 64 do
 		draw_zplanes[x] = {}
@@ -2151,52 +1796,27 @@ function recalc_zplane(obj)
 	else
 		ypos = obj.y + (obj.h*8)
 	end
-	zplane = flr(ypos - stage_top)
+	zplane = flr(ypos) --  - stage_top)
 
-	if obj.z then 
-		-- if obj.name then d("obj2:"..obj.name) end
-		--  d("obj2z:"..obj.z)
-		zplane = obj.z 
-	else
-		--d("no!")
+	if obj.z then
+		zplane = obj.z
 	end
 
 	add(draw_zplanes[zplane],obj)
 end
 
 function room_draw()
+ -- check for current room
+ if not room_curr then
+ 	print("-error-  no current room set",5+cam_x,5+stage_top,8,0)
+  return
+ end
 
 	-- set room background col (or black by default)
 	rectfill(0, stage_top, 127, stage_top+64, room_curr.bg_col or 0)
 
 
-	-- debug walkable areas
-	-- 
-	-- if show_pathfinding then
-	-- 	actor_cell_pos = getcellpos(selected_actor)
 
-	-- 	celx = flr((cursor_x + cam_x) /8) + room_curr.map_x
-	-- 	cely = flr((cursor_y - stage_top)/8 ) + room_curr.map_y
-	-- 	target_cell_pos = { celx, cely }
-
-	-- 	path = find_path(actor_cell_pos, target_cell_pos)
-
-	-- 	-- finally, add our destination to list
-	-- 	click_cell = getcellpos({x=(cursor_x + cam_x), y=(cursor_y - stage_top)})
-	-- 	if is_cell_walkable(click_cell[1], click_cell[2]) then
-	-- 	--if (#path>0) then
-	-- 		add(path, click_cell)
-	-- 	end
-
-	-- 	for p in all(path) do
-	-- 		--d("  > "..p[1]..","..p[2])
-	-- 		rect(
-	-- 			(p[1]-room_curr.map_x)*8, 
-	-- 			stage_top+(p[2]-room_curr.map_y)*8, 
-	-- 			(p[1]-room_curr.map_x)*8+7, 
-	-- 			stage_top+(p[2]-room_curr.map_y)*8+7, 11)
-	-- 	end
-	-- end
 
 
 	-- draw each zplane, from back to front
@@ -2211,31 +1831,57 @@ function room_draw()
 				palt(0, false)
 				palt(room_curr.trans_col, true)
 			end
-			-- d("-----> map_x:"..room_curr.map[1])
-			-- d("-----> map_y:"..room_curr.map[2])
 			map(room_curr.map[1], room_curr.map[2], 0, stage_top, room_curr.map_w, room_curr.map_h)
-			--map(room_curr.map_x, room_curr.map_y, 0, stage_top, room_curr.map_w , room_curr.map_h)
 			--reset palette
 			pal()		
+
+
+					-- ===============================================================
+					-- debug walkable areas
+					
+					-- if show_pathfinding then
+					-- 	actor_cell_pos = getcellpos(selected_actor)
+
+					-- 	celx = flr((cursor_x + cam_x + 0) /8) + room_curr.map[1]
+					-- 	cely = flr((cursor_y - stage_top + 0) /8 ) + room_curr.map[2]
+					-- 	target_cell_pos = { celx, cely }
+
+					-- 	path = find_path(actor_cell_pos, target_cell_pos)
+
+					-- 	-- finally, add our destination to list
+					-- 	click_cell = getcellpos({x=(cursor_x + cam_x), y=(cursor_y - stage_top)})
+					-- 	if is_cell_walkable(click_cell[1], click_cell[2]) then
+					-- 	--if (#path>0) then
+					-- 		add(path, click_cell)
+					-- 	end
+
+					-- 	for p in all(path) do
+					-- 		--d("  > "..p[1]..","..p[2])
+					-- 		rect(
+					-- 			(p[1]-room_curr.map[1])*8, 
+					-- 			stage_top+(p[2]-room_curr.map[2])*8, 
+					-- 			(p[1]-room_curr.map[1])*8+7, 
+					-- 			stage_top+(p[2]-room_curr.map[2])*8+7, 11)
+					-- 	end
+					-- end
+
 		else
 			-- draw other layers
-		--	d("z:"..z)
 			zplane = draw_zplanes[z]
 		
 			-- draw all objs/actors in current zplane
 			for obj in all(zplane) do
 				-- object or actor?
-				-- if obj.name then
-				-- 	d("obj.name1:"..obj.name)
-				-- end
-				if not has_flag(obj.class, class_actor) then
+				if not has_flag(obj.classes, "class_actor") then
 					-- object
 					if obj.states	  -- object has a state?
-					 and obj.states[obj.state]
-					 and obj.states[obj.state] > 0
+				    or (obj.state
+					   and obj[obj.state]
+					   and obj[obj.state] > 0)
 					 and (not obj.dependent_on 			-- object has a valid dependent state?
 						or obj.dependent_on.state == obj.dependent_on_state)
 					 and not obj.owner   						-- object is not "owned"
+					 or obj.draw
 					then
 						-- something to draw
 						object_draw(obj)
@@ -2264,26 +1910,37 @@ function replace_colors(obj)
 	-- also apply brightness (default to room-level, if not set)
 	if obj.lighting then
 		_fadepal(obj.lighting)
-	elseif obj.in_room then
+	elseif obj.in_room 
+	 and obj.in_room.lighting then
 		_fadepal(obj.in_room.lighting)
 	end
 end
 
 
 function object_draw(obj)
-	--d("obj.name:"..obj.name)
 	-- replace colors?
 	replace_colors(obj)
-	-- allow for repeating
-	rx=1
-	if obj.repeat_x then rx = obj.repeat_x end
-	for h = 0, rx-1 do
-		-- draw object (in its state!)
-		-- d("obj.states1:"..type(obj.states))
-		-- d("obj.states2:"..#obj.states)		
-		sprdraw(obj.states[obj.state], obj.x+(h*(obj.w*8)), obj.y, obj.w, obj.h, obj.trans_col, obj.flip_x)
-		--d(">>test")
+
+	-- check for custom draw
+	if obj.draw then
+		obj.draw(obj)
+		--return
+	else
+		-- allow for repeating
+		rx=1
+		if obj.repeat_x then rx = obj.repeat_x end
+		for h = 0, rx-1 do
+			-- draw object (in its state!)
+			local obj_spr = 0
+			if obj.states then
+				obj_spr = obj.states[obj.state]
+			else
+				obj_spr = obj[obj.state]
+			end
+			sprdraw(obj_spr, obj.x+(h*(obj.w*8)), obj.y, obj.w, obj.h, obj.trans_col, obj.flip_x)
+		end
 	end
+
 	--reset palette
 	pal() 
 end
@@ -2291,11 +1948,13 @@ end
 -- draw actor(s)
 function actor_draw(actor)
 
+	dirnum = face_dir_vals[actor.face_dir]
+
 	if actor.moving == 1
 	 and actor.walk_anim 
 	then
 		actor.tmr += 1
-		if actor.tmr > 5 then
+		if actor.tmr > actor.frame_delay then
 			actor.tmr = 1
 			actor.anim_pos += 1
 			if actor.anim_pos > #actor.walk_anim then actor.anim_pos=1 end
@@ -2303,8 +1962,9 @@ function actor_draw(actor)
 		-- choose walk anim frame
 		sprnum = actor.walk_anim[actor.anim_pos]	
 	else
+
 		-- idle
-		sprnum = actor.idle[actor.face_dir]
+		sprnum = actor.idle[dirnum]
 	end
 
 	-- replace colors?
@@ -2317,9 +1977,10 @@ function actor_draw(actor)
 	-- talking overlay
 	if talking_actor 
 	 and talking_actor == actor 
+	 and talking_actor.talk
 	then
 			if actor.talk_tmr < 7 then
-				sprnum = actor.talk[actor.face_dir]
+				sprnum = actor.talk[dirnum]
 				sprdraw(sprnum, actor.offset_x, actor.offset_y +8, 1, 1, 
 					actor.trans_col, actor.flip, false)
 			end
@@ -2329,37 +1990,40 @@ function actor_draw(actor)
 
 	--reset palette
 	pal()
-
-	--pset(actor.x, actor.y+stage_top, 8)
 end
 
 function command_draw()
 	-- draw current command
 	command = ""
 	cmd_col = 12
+	verb_curr_ref = verb_curr[2] 
 
-	if not executing_cmd then
-		if verb_curr then
-			command = verb_curr[3]
+	if verb_curr then
+		command = verb_curr[3]
+	end
+	if noun1_curr then
+		command = command.." "..noun1_curr.name
+		if verb_curr_ref == "use" then
+			command = command.." with"
+		elseif verb_curr_ref == "give" then
+			command = command.." to"
 		end
-		if noun1_curr then
-			command = command.." "..noun1_curr.name
-			if verb_curr[2] == "use" then
-				command = command.." with"
-			elseif verb_curr[2] == "give" then
-				command = command.." to"
-			end
-		end
-		if noun2_curr then
-			command = command.." "..noun2_curr.name
-		elseif hover_curr_object 
-		  and hover_curr_object.name != ""
-			-- don't show use object with itself!
-			and ( not noun1_curr or (noun1_curr != hover_curr_object) ) then
-			command = command.." "..hover_curr_object.name
-		end
-		cmd_curr = command
-	else
+	end
+	if noun2_curr then
+		command = command.." "..noun2_curr.name
+	elseif hover_curr_object 
+		and hover_curr_object.name != ""
+		-- don't show use object with itself!
+		and ( not noun1_curr or (noun1_curr != hover_curr_object) )
+		-- or walk-to objs in inventory!
+		and ( not hover_curr_object.owner 
+						or verb_curr_ref != get_verb(verb_default)[2] )
+	then
+		command = command.." "..hover_curr_object.name
+	end
+	cmd_curr = command
+
+	if executing_cmd then
 		-- highlight active command
 		command = cmd_curr
 		cmd_col = 7
@@ -2522,17 +2186,33 @@ end
 
 function sprdraw(n, x, y, w, h, transcol, flip_x, flip_y)
 	-- switch transparency
- 	palt(0, false)
- 	palt(transcol, true)
-	 -- draw sprite
+	set_trans_col(transcol, true)
+
+ 	-- palt(0, false)
+ 	-- palt(transcol, true)
+	
+	-- draw sprite
 	spr(n, x, stage_top + y, w, h, flip_x, flip_y) --
-	-- restore default trans	
- 	palt(transcol, false)
-	palt(0, true)
+	
+	-- -- restore default trans	
+	-- set_trans_col(transcol, false)
+ 	
+	-- palt(transcol, false)
+	-- palt(0, true)
+	
 	--pal() -- don't do, affects lighting!
 end
 
-
+function set_trans_col(transcol, enabled)
+	-- set transparency for specific col
+	palt(0, false)
+	palt(transcol, true)
+	
+	-- set status of default transparency
+	if transcol and transcol > 0 then
+		palt(0, false)
+	end
+end
 
 
 -- initialise all the rooms (e.g. add in parent links)
@@ -2553,6 +2233,10 @@ function game_init()
 		for obj in all(room.objects) do
 			explode_data(obj)
 			obj.in_room = room
+			obj.h = obj.h or 0
+			if obj.init then
+				obj.init(obj)
+			end
 		end
 	end
 	-- init actors with defaults
@@ -2563,8 +2247,8 @@ function game_init()
 		actor.talk_tmr = 1
 		actor.anim_pos = 1 	-- used to track anim pos
 		actor.inventory = {
-			-- object1,
-			-- object2
+			-- obj_switch_player,
+			-- obj_switch_tent
 		}
 		actor.inv_pos = 0 	-- pointer to the row to start displaying from
 	end
@@ -2615,14 +2299,6 @@ end
 
 
 
--- returns whether room map cel at position is "walkable"
--- function iswalkable(x, y)
--- 		-- celx = flr(x/8) + room_curr.map_x
--- 		-- cely = flr(y/8) + room_curr.map_y
--- 		-- walkable = is_cell_walkable(celx, cely)
--- 		return walkable
--- end
-
 function getcellpos(obj)
 	local celx = flr(obj.x/8) + room_curr.map[1] --map_x
 	local cely = flr(obj.y/8) + room_curr.map[2] --map_y
@@ -2631,7 +2307,6 @@ end
 
 function is_cell_walkable(celx, cely)
 		local spr_num = mget(celx, cely)
-		--d("spr:"..spr_num)
 		local walkable = fget(spr_num,0)
 		return walkable
 end
@@ -2692,7 +2367,12 @@ function longest_line_size(lines)
 end
 
 function has_flag(obj, value)
-  if band(obj, value) != 0 then return true end
+	for f in all(obj) do
+	 if f == value then 
+	 	return true 
+	 end
+	end
+  --if band(obj, value) != 0 then return true end
   return false
 end
 
@@ -2701,7 +2381,7 @@ function recalc_bounds(obj, w, h, cam_off_x, cam_off_y)
   x = obj.x
 	y = obj.y
 	-- offset for actors?
-	if has_flag(obj.class, class_actor) then
+	if has_flag(obj.classes, "class_actor") then
 		obj.offset_x = x - (obj.w *8) /2
 		obj.offset_y = y - (obj.h *8) +1		
 		x = obj.offset_x
@@ -2718,12 +2398,12 @@ function recalc_bounds(obj, w, h, cam_off_x, cam_off_y)
 end
 
 
--- ================================================================
+-- 
 -- a* pathfinding functions 
--- ================================================================
+--
 
 function find_path(start, goal)
- local frontier, came_from, cost_so_far = {}, {}, {}
+ local frontier, came_from, cost_so_far, lowest_dist, lowest_dist_node  = {}, {}, {}, nil, nil
  insert(frontier, start, 0)
  came_from[vectoindex(start)] = nil
  cost_so_far[vectoindex(start)] = 0
@@ -2771,14 +2451,22 @@ function find_path(start, goal)
    local nextindex = vectoindex(next)
    local new_cost = cost_so_far[vectoindex(current)] + next[3] -- add extra costs here
 
-   if cost_so_far[nextindex] == nil
+   if not cost_so_far[nextindex]
 	  or new_cost < cost_so_far[nextindex]
 	 then
 	 	cost_so_far[nextindex] = new_cost
 		-- diagonal movement - assumes diag dist is 1, same as cardinals
-		local priority = new_cost +  max(abs(goal[1] - next[1]), abs(goal[2] - next[2]))
+		local h = max(abs(goal[1] - next[1]), abs(goal[2] - next[2]))
+		local priority = new_cost + h
     insert(frontier, next, priority)
     came_from[nextindex] = current
+
+		if not lowest_dist
+     or h < lowest_dist then
+      lowest_dist = h
+      lowest_dist_node = nextindex
+			lowest_dist_neigh = next
+    end
    end 
   end
  end
@@ -2786,6 +2474,17 @@ function find_path(start, goal)
  -- now find goal..
  local path = {}
  current = came_from[vectoindex(goal)]
+ 
+ if current then
+ 	-- add "goal" to path
+	 add(path, goal)
+ -- check for "no goal found"
+ elseif lowest_dist_node then
+   -- start from closest to goal instead
+   current = came_from[lowest_dist_node]
+	 add(path, lowest_dist_neigh)
+ end
+
  if current then
 	local cindex = vectoindex(current)
 	local sindex = vectoindex(start)
@@ -2836,9 +2535,14 @@ end
 
 
 
--- ================================================================
+--
 -- helper functions 
 -- 
+
+function show_error(msg)
+	print_line("-error-;"..msg,5+cam_x,5,8,0)
+end
+
 function explode_data(obj)
 	local lines=split(obj.data, "\n")
 	for l in all(lines) do
@@ -2943,8 +2647,12 @@ end
 
 --- collision check
 function iscursorcolliding(obj)
-	-- check params
-	if not obj.bounds then return false end
+	-- check params / not in cutscene
+	if not obj.bounds 
+	 or cutscene_curr then 
+	 return false 
+	end
+	
 	bounds = obj.bounds
 	if (cursor_x + bounds.cam_off_x > bounds.x1 or cursor_x + bounds.cam_off_x < bounds.x) 
 	 or (cursor_y > bounds.y1 or cursor_y < bounds.y) then
@@ -2983,38 +2691,38 @@ end
 
 
 __gfx__
-0000000000000000000000000000000000000000000000000000000077777777f9e9f9f9ddd5ddd5bbbbbbbb5500000000000000000000000000000000000000
-00000000000000000000000000000000000000000000000000000000777777779eee9f9fdd5ddd5dbbbbbbbb5555000000000000000000000000000000000000
-0080080000000000000000000000000000000000000000000000000077777777feeef9f9d5ddd5ddbbbbbbbb5555550000000000000000000000000000000000
-0008800055555555ddddddddeeeeeeee000000000000000000000000777777779fef9fef5ddd5dddbbbbbbbb5555555500000000000000000000000000000000
-0008800055555555ddddddddeeeeeeee00000000000000000000000077777777f9f9feeeddd5ddd5bbbbbbbb5555555500000000000000000000000000000000
-0080080055555555ddddddddeeeeeeee000000000000000000000000777777779f9f9eeedd5ddd5dbbbbbbbb5555555500000000000000000000000000000000
-0000000055555555ddddddddeeeeeeee00000000000000000000000077777777f9f9feeed5ddd5ddbbbbbbbb5555555500000000000000000000000000000000
-0000000055555555ddddddddeeeeeeee000000000000000000000000777777779f9f9fef5ddd5dddbbbbbbbb5555555500000000000000000000000000000000
-0000000077777755666666ddbbbbbbee333333553333333300000000666666665888858866666666000000000000005500000000000000000000000000045000
-00000000777755556666ddddbbbbeeee33333355333333330000000066666666588885881c1c1c1c000000000000555500000000000000000000000000045000
-000010007755555566ddddddbbeeeeee3333666633333333000000006666666655555555c1c1c1c1000000000055555500000000000000000000000000045000
-0000c00055555555ddddddddeeeeeeee33336666333333330000000066666666888588881c1c1c1c000000005555555500000000000000000000000000045000
-001c7c1055555555ddddddddeeeeeeee3355555533333333000000006666666688858888c1c1c1c1000000005555555500000000000000000000000000045000
-0000c00055555555ddddddddeeeeeeee33555555333333330000000066666666555555551c1c1c1c000000005555555500000000000000000000000000045000
-0000100055555555ddddddddeeeeeeee6666666633333333000000006666666658888588c1c1c1c1000000005555555500000000000000000000000000045000
-0000000055555555ddddddddeeeeeeee66666666333333330000000066666666588885887c7c7c7c000000005555555500000000000000000000000000045000
-0000000055777777dd666666eebbbbbb553333335555555500000000000000000000000000000000000000000000000000000000000000000000000099999999
-0000000055557777dddd6666eeeebbbb553333335555333300000000000000000000000000000000000000000000000000000000000000000000000044444444
-0000000055555577dddddd66eeeeeebb666633335533333300000000000000000000000000000000000000000000000000000000000000000000000000045000
-000c000055555555ddddddddeeeeeeee666633335333333300000000000000000000000000000000000000000000000000000000000000000000000000045000
-0000000055555555ddddddddeeeeeeee555555335333333300000000000000000000000000000000000000000000000000000000000000000000000000045000
-0000000055555555ddddddddeeeeeeee555555335533333300000000000000000000000000000000000000000000000000000000000000000000000000045000
-0000000055555555ddddddddeeeeeeee666666665555333300000000000000000000000000000000000000000000000000000000000000000000000000045000
-0000000055555555ddddddddeeeeeeee666666665555555500000000000000000000000000000000000000000000000000000000000000000000000000045000
-0000000055555555ddddddddbbbbbbbb555555555555555500000000cccccccc5555555677777777c77777776555555533333336633333330000000000045000
-0000000055555555ddddddddbbbbbbbb555555553333555500000000cccccccc555555677777777ccc7777777655555533333367763333330000000000045000
-0000000055555555ddddddddbbbbbbbb666666663333335500000000cccccccc55555677777777ccccc777777765555533333677776333330000000000045000
-0000000055555555ddddddddbbbbbbbb666666663333333500000000cccccccc5555677777777ccccccc77777776555533336777777633330000000000045000
-0000000055555555ddddddddbbbbbbbb555555553333333500000000cccccccc555677777777ccccccccc7777777655533367777777763330000000000045000
-0000000055555555ddddddddbbbbbbbb555555553333335500000000cccccccc55677777777ccccccccccc777777765533677777777776330000000000045000
-0b03000055555555ddddddddbbbbbbbb666666663333555500000000cccccccc5677777777ccccccccccccc77777776536777777777777630000000099999999
-b00030b055555555ddddddddbbbbbbbb666666665555555500000000cccccccc677777777ccccccccccccccc7777777667777777777777760000000055555555
+0000000000000000000000000000000000000000440000004444444477777777f9e9f9f9ddd5ddd5bbbbbbbb5500000000000000000000000000000000000000
+00000000000000000000000000000000000000004400000044444444777777779eee9f9fdd5ddd5dbbbbbbbb5555000000000000000000000000000000000000
+0080080000000000000000000000000000000000aaaa000055aaaaaa77777777feeef9f9d5ddd5ddbbbbbbbb5555550000000000000000000000000000000000
+0008800055555555ddddddddeeeeeeee000000009999000005999999777777779fef9fef5ddd5dddbbbbbbbb5555555500000000000000000000000000000000
+0008800055555555ddddddddeeeeeeee00000000444444000555444477777777f9f9feeeddd5ddd5bbbbbbbb5555555500000000000000000000000000000000
+0080080055555555ddddddddeeeeeeee000000004444440000054444777777779f9f9eeedd5ddd5dbbbbbbbb5555555500000000000000000000000000000000
+0000000055555555ddddddddeeeeeeee00000000aaaaaaaa000555aa77777777f9f9feeed5ddd5ddbbbbbbbb5555555500000000000000000000000000000000
+0000000055555555ddddddddeeeeeeee000000009999999900000599777777779f9f9fef5ddd5dddbbbbbbbb5555555500000000000000000000000000000000
+0000000077777755666666ddbbbbbbee333333553333333300000044666666665888858866666666000000000000005500000000000000000000000000045000
+00000000777755556666ddddbbbbeeee33333355333333330000004466666666588885881c1c1c1c000000000000555500000000000000000000000000045000
+000010007755555566ddddddbbeeeeee33336666333333330000aaaa6666666655555555c1c1c1c1000000000055555500000000000000000000000000045000
+0000c00055555555ddddddddeeeeeeee33336666333333330000999966666666888588881c1c1c1c000000005555555500000000000000000000000000045000
+001c7c1055555555ddddddddeeeeeeee3355555533333333004444446666666688858888c1c1c1c1000000005555555500000000000000000000000000045000
+0000c00055555555ddddddddeeeeeeee33555555333333330044444466666666555555551c1c1c1c000000005555555500000000000000000000000000045000
+0000100055555555ddddddddeeeeeeee6666666633333333aaaaaaaa6666666658888588c1c1c1c1000000005555555500000000000000000000000000045000
+0000000055555555ddddddddeeeeeeee66666666333333339999999966666666588885887c7c7c7c000000005555555500000000000000000000000000045000
+0000000055777777dd666666eebbbbbb553333335555555544444444777777777777777700000000000000000000000000000000000000000000000099999999
+0000000055557777dddd6666eeeebbbb553333335555333344444444777777777777777700000000000000000000000000000000000000000000000044444444
+0000000055555577dddddd66eeeeeebb6666333355333333aaaaaaaa777777777777777700000000000000000000000000000000000000000000000000045000
+000c000055555555ddddddddeeeeeeee666633335333333399999999777777777777777700000000000000000000000000000000000000000000000000045000
+0000000055555555ddddddddeeeeeeee555555335333333344444444777777555577777700000000000000000000000000000000000000000000000000045000
+0000000055555555ddddddddeeeeeeee555555335533333344444444777755555555777700000000000000000000000000000000000000000000000000045000
+0000000055555555ddddddddeeeeeeee6666666655553333aaaaaaaa775555555555557700000000000000000000000000000000000000000000000000045000
+0000000055555555ddddddddeeeeeeee666666665555555599999999555555555555555500000000000000000000000000000000000000000000000000045000
+0000000055555555ddddddddbbbbbbbb555555555555555544444444cccccccc5555555677777777c77777776555555533333336633333330000000000045000
+0000000055555555ddddddddbbbbbbbb555555553333555544444444cccccccc555555677777777ccc7777777655555533333367763333330000000000045000
+0000000055555555ddddddddbbbbbbbb6666666633333355aaaaaa55cccccccc55555677777777ccccc777777765555533333677776333330000000000045000
+0000000055555555ddddddddbbbbbbbb666666663333333599999950cccccccc5555677777777ccccccc77777776555533336777777633330000000000045000
+0000000055555555ddddddddbbbbbbbb555555553333333544445550cccccccc555677777777ccccccccc7777777655533367777777763330000000000045000
+0000000055555555ddddddddbbbbbbbb555555553333335544445000cccccccc55677777777ccccccccccc777777765533677777777776330000000000045000
+0b03000055555555ddddddddbbbbbbbb6666666633335555aa555000cccccccc5677777777ccccccccccccc77777776536777777777777630000000099999999
+b00030b055555555ddddddddbbbbbbbb666666665555555599500000cccccccc677777777ccccccccccccccc7777777667777777777777760000000055555555
 00000000000000000000000000000000777777777777777777555555555555770000000000000000000000000000000000000000d00000004444444444444444
 9f00d700000000000000000000000000700000077000000770700000000007070000000000000000000000000000000000000000d50000004ffffff44ffffff4
 9f2ed728000000000000000000000000700000077000000770070000000070070000000000000000000000000000000000000000d51000004f4444944f444494
@@ -3039,14 +2747,14 @@ ffff4fff1dd6dd6dd6dd6dd6d6dd6d517000000766665555444ffffffffff4440000000000000000
 444949441d6dd6dd6dd6dd6ddd6dd65170000007000077764449444aa44494440000000000000000000000000000000000000000d51111114f4444944f444494
 444949441d6dd6dd6dd6dd6ddd6dd651777777770000777644494444444494440000000000000000000000000000000000000000d55555554ffffff44f444494
 44494944166666666666666666666651555555555555666644499999999994440000000000000000000000000000000000000000dddddddd444444444f444494
-444949441dd6dd600000000056dd6d516dd6dd6d000000004449444444449444000000000000000000000000000000000000000000000000000000004f444494
-444949441dd6dd650000000056dd6d5166666666000000004449444444449444000000000000000000000000000000000000000000000000000000004f444994
-44494944166666650000000056666651d6dd6dd6000000004449444444449444000000000000000000000000000000000000000000000000000000004f499444
-444949441d6dd6d5000000005d6dd651d6dd6dd6000000004449444444449444000000000000000000000000000000000000000000000000000000004f944444
-444949441d6dd6d5000000005d6dd651666666660000000044494444444494440000000000000000000000000000000000000000000000000000000044444400
-444949441666666500000000566666516dd6dd6d0000000044494444444494440000000000000000000000000000000000000000000000000000000044440000
-999949991dd6dd650000000056dd6d516dd6dd6d0000000044499999999994440000000000000000000000000000000000000000000000000000000044000000
-444444441dd6dd650000000056dd6d51666666660000000044444444444444440000000000000000000000000000000000000000000000000000000000000000
+444949441dd6dd600000000056dd6d516dd6dd6d0000000044494444444494440000000000000000000000000000000000000000000000004f4444944f444494
+444949441dd6dd650000000056dd6d51666666660000000044494444444494440000000000000000000000000000000000000000000000004f4444944f444994
+44494944166666650000000056666651d6dd6dd60000000044494444444494440000000000000000000000000000000000000000000000004f4444944f499444
+444949441d6dd6d5000000005d6dd651d6dd6dd60000000044494444444494440000000000000000000000000000000000000000000000004f4444944f944444
+444949441d6dd6d5000000005d6dd651666666660000000044494444444494440000000000000000000000000000000000000000000000004f44449444444400
+444949441666666500000000566666516dd6dd6d0000000044494444444494440000000000000000000000000000000000000000000000004f44449444440000
+999949991dd6dd650000000056dd6d516dd6dd6d0000000044499999999994440000000000000000000000000000000000000000000000004f44449444000000
+444444441dd6dd650000000056dd6d51666666660000000044444444444444440000000000000000000000000000000000000000000000004f44449400000000
 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000ccccccccffffffff
 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000ccccccccf666677f
 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000cccccccc7cccccc7
@@ -3242,41 +2950,41 @@ ccc0ccc01c10ccc0000000000a00a0a0aaa0a0a000000a00aa1000001cc0cc10ccc0000000000011
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 
 __gff__
-0001010100000000000000010000000000010101010100000000000100000000000101010101000000000000000000000001010101010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0001010100010100000000010000000000010101010101000000000100000000000101010101010101000000000000000001010101010100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 __map__
-0707070808080808080808080807070717171709090909090909090909090909090909090917171700000010000061626262626262626262626262620000001046464648484848484848484848464646464646565656565656565656564646464646464848484848484848484846464646464656565656565656565656464646
-0707070800000808080808080807070717171709090909090909444444450909090909090917171700200000002071447474744473b27144747444740000200046464648484848484848484848464646464646565656565656565656564646464646464848484848484848484846464646464656565656565656565656464646
-07000708000008080808080808070007170017656565656565655464645565656565656565170017182f2f2f2f2f71647474746473b27164747464742f2f2f2f46004648484848484848484848460046460046565656565656565656564600464600464848484848484848484846004646004656565656565656565656460046
-07000760606060616263606060070007170017666766676667666766676667666766676667170017183f3f3f3f3f61747474747473b27174747474743f3f3f3f46004648484848484848484848460046460046565656565656565656564600464600464848484848484848484846004646004656565656565656565656460046
-0700077070707071727370707007000717001776777677767776777677767776777677767717001715151515151515151515151515151515151515151515151546004648484848484848484848460046460046565656565656565656564600464600464848484848484848484846004646004656565656565656565656460046
-0701113131313131313131313121010717021232323232323232323232323232323232323222021715153c191919191919191919343434191919193d1515151546405070707070707070707070604046464050707070707070707070706040464640507070707070707070707060404646405070707070707070707070604046
-11313131251515151515153531313121123232323232323232323232323232323232323232323222153c3937373737378e373737373737373737373a3d15151550707070707070707070707070707060507070707070707070707070707070605070707070707070707070707070706050707070707070707070707070707060
-313131313131313131313131313131313232323232323232323232323232323232323232323232323c393737373737373737373737373737373737373a3d151570707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070
-0000000000000000002000000000002007070750405040504050404040504050405040504007070762626263001f00104646464848484848484848484846464646464656565656565656565656464646464646484848484848484848484646464646465656565656565656565646464646464648484848484848484848464646
-0020000000000000000000000010000007070740504050405040504050405040504050405007070744734473001f20004646464848484848484848484846464646464656565656565656565656464646464646484848484848484848484646464646465656565656565656565646464646464648484848484848484848464646
-0000002000000000000000000000000007000750405040505050405040504000405040504007000764736473201f00004600464848484848484848484846004646004656565656565656565656460046460046484848484848484848484600464600465656565656565656565646004646004648484848484848484848460046
-0000000000000000000000000000000007000760606060606060616263606000606060606007000762626263001f00204600464848484848484848484846004646004656565656565656565656460046460046484848484848484848484600464600465656565656565656565646004646004648484848484848484848460046
-0000000000000000000000000000000007000770707070707070717273707000707070707007000731313131310b30304600464848484848484848484846004646004656565656565656565656460046460046484848484848484848484600464600465656565656565656565646004646004648484848484848484848460046
-0000000000000000000000000000200007011131313131313131313131313131313131313121010718181818181815154640507070707070707070707060404646405070707070707070707070604046464050707070707070707070706040464640507070707070707070707060404646405070707070707070707070604046
-0000000000100000002000000000000011313131313131251515151515151535313131313131312115151515151515155070707070707070707070707070706050707070707070707070707070707060507070707070707070707070707070605070707070707070707070707070706050707070707070707070707070707060
-2000000000000000000020000000000031313131313131313131313131313131313131313131313115151515151515157070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070
-4646464848484848484848484846464646464656565656565656565656464646464646484848484848484848484646464646465656565656565656565646464646464648484848484848484848464646464646565656565656565656564646464646464848484848484848484846464646464656565656565656565656464646
-4646464848484848484848484846464646464656565656565656565656464646464646484848484848484848484646464646465656565656565656565646464646464648484848484848484848464646464646565656565656565656564646464646464848484848484848484846464646464656565656565656565656464646
-4600464848484848484848484846004646004656565656565656565656460046460046484848484848484848484600464600465656565656565656565646004646004648484848484848484848460046460046565656565656565656564600464600464848484848484848484846004646004656565656565656565656460046
-4600464848484848484848484846004646004656565656565656565656460046460046484848484848484848484600464600465656565656565656565646004646004648484848484848484848460046460046565656565656565656564600464600464848484848484848484846004646004656565656565656565656460046
-4600464848484848484848484846004646004656565656565656565656460046460046484848484848484848484600464600465656565656565656565646004646004648484848484848484848460046460046565656565656565656564600464600464848484848484848484846004646004656565656565656565656460046
-4640507070707070707070707060404646405070707070707070707070604046464050707070707070707070706040464640507070707070707070707060404646405070707070707070707070604046464050707070707070707070706040464640507070707070707070707060404646405070707070707070707070604046
-5070707070707070707070707070706050707070707070707070707070707060507070707070707070707070707070605070707070707070707070707070706050707070707070707070707070707060507070707070707070707070707070605070707070707070707070707070706050707070707070707070707070707060
-7070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070
-000000100000200000001f0061626262626262626262626262626263001f0010464646565656565656565656564646464646464848484848484848484846464646464656565656565656565656464646464646484848484848484848484646464646465656565656565656565646464646464648484848484848484848464646
-002000000000001000001f2071447144714473004e71447344734473001f2000464646565656565656565656564646464646464848484848484848484846464646464656565656565656565656464646464646484848484848484848484646464646465656565656565656565646464646464648484848484848484848464646
-200000000020000000201f0071647164716473005e71647364736473201f0000460046565656565656565656564600464600464848484848484848484846004646004656565656565656565656460046460046484848484848484848484600464600465656565656565656565646004646004648484848484848484848460046
-000020000000000020001f0062626262626273006e71626262626263001f0020460046565656565656565656564600464600464848484848484848484846004646004656565656565656565656460046460046484848484848484848484600464600465656565656565656565646004646004648484848484848484848460046
-303030303030303030301b3131313131313131253531313131313131310b3030460046565656565656565656564600464600464848484848484848484846004646004656565656565656565656460046460046484848484848484848484600464600465656565656565656565646004646004648484848484848484848460046
-1515151515151515151518181818181818183434343418181818181818181515464050707070707070707070706040464640507070707070707070707060404646405070707070707070707070604046464050707070707070707070706040464640507070707070707070707060404646405070707070707070707070604046
-1515151515151515151515151515151515143434343424151515151515151515507070707070707070707070707070605070707070707070707070707070706050707070707070707070707070707060507070707070707070707070707070605070707070707070707070707070706050707070707070707070707070707060
-1515151515151515151515151515151515151515151515151515151515151515707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070
+0707070808080808080808080807070707070717171717171717171717070707171717080808080808080808081717170707071717171717171717171707070717171708080808080808080808171717070707171717171717171717170707071717170808080808080808080817171707070717171717171717171717070707
+0707070800000808080808080807070707070717171717171717171717070707171717080808080808080808081717170707071717171717171717171707070717171708080808080808080808171717070707171717171717171717170707071717170808080808080808080817171707070717171717171717171717070707
+0707070800000808080808080807000707000717171717171717171717070007170017080808080808080808081700170700071717171717171717171707000717001708080808080808080808170017070007171717171717171717170700071700170808080808080808080817001707000717171717171717171717070007
+0707076060606061626360606007000707000717171717171717171717070007170017080808080808080808081700170700071717171717171717171707000717001708080808080808080808170017070007171717171717171717170700071700170808080808080808080817001707000717171717171717171717070007
+0707077070707071727370707007000707000717171717171717171717070007170017080808080808080808081700170700071717171717171717171707000717001708080808080808080808170017070007171717171717171717170700071700170808080808080808080817001707000717171717171717171717070007
+0727113131313131313131313121010707011131313131313131313131210107170212323232323232323232322202170701113131313131313131313121010717021232323232323232323232220217070111313131313131313131312101071702123232323232323232323222021707011131313131313131313131210107
+1131313125151515151515353131312111313131313131313131313131313121123232323232323232323232323232221131313131313131313131313131312112323232323232323232323232323222113131313131313131313131313131211232323232323232323232323232322211313131313131313131313131313121
+3131313131313131313131313131313131313131313131313131313131313131323232323232323232323232323232323131313131313131313131313131313132323232323232323232323232323232313131313131313131313131313131313232323232323232323232323232323231313131313131313131313131313131
+0707071717171717171717171707070717171708080808080808080808171717070707171717171717171717170707071717170808080808080808080817171707070717171717171717171717070707171717080808080808080808081717170707071717171717171717171707070717171708080808080808080808171717
+0707071717171717171717171707070717171708080808080808080808171717070707171717171717171717170707071717170808080808080808080817171707070717171717171717171717070707171717080808080808080808081717170707071717171717171717171707070717171708080808080808080808171717
+0700071717171717171717171707000717001708080808080808080808170017070007171717171717171717170700071700170808080808080808080817001707000717171717171717171717070007170017080808080808080808081700170700071717171717171717171707000717001708080808080808080808170017
+0700071717171717171717171707000717001708080808080808080808170017070007171717171717171717170700071700170808080808080808080817001707000717171717171717171717070007170017080808080808080808081700170700071717171717171717171707000717001708080808080808080808170017
+0700071717171717171717171707000717001708080808080808080808170017070007171717171717171717170700071700170808080808080808080817001707000717171717171717171717070007170017080808080808080808081700170700071717171717171717171707000717001708080808080808080808170017
+0701113131313131313131313121010717021232323232323232323232220217070111313131313131313131312101071702123232323232323232323222021707011131313131313131313131210107170212323232323232323232322202170701113131313131313131313121010717021232323232323232323232220217
+1131313131313131313131313131312112323232323232323232323232323222113131313131313131313131313131211232323232323232323232323232322211313131313131313131313131313121123232323232323232323232323232221131313131313131313131313131312112323232323232323232323232323222
+3131313131313131313131313131313132323232323232323232323232323232313131313131313131313131313131313232323232323232323232323232323231313131313131313131313131313131323232323232323232323232323232323131313131313131313131313131313132323232323232323232323232323232
+0000000000000000002000000000002007070717171717171717171717070707070707080808080808614050405063080808080808070707000000000000000017171708080808080808080808171717070707171717171717171717170707071717170808080808080808080817171707070717171717171717171717070707
+0020000000000000000000000010000007070717171717171717171717070707070707080808080808715040504073080808080808070707000000000000000017171708080808080808080808171717070707171717171717171717170707071717170808080808080808080817171707070717171717171717171717070707
+0000002000000000000000000000000007000717171717171717171717070007070007080808000808714050405073080800080808070007000000000000000017001708080808080808080808170017070007171717171717171717170700071700170808080808080808080817001707000717171717171717171717070007
+0000000000000000000000000000000007000717171717171717171717070007070007626262006262716667666773626200626262070007000000000000000017001708080808080808080808170017070007171717171717171717170700071700170808080808080808080817001707000717171717171717171717070007
+0000000000000000000000000000000007000717171717171717171717070007070007747474007474717677767773747400747474070007000000000000000017001708080808080808080808170017070007171717171717171717170700071700170808080808080808080817001707000717171717171717171717070007
+0000000000000000000000000000200007011131313131313131313131210107070111313131313131313131313131313131313131210107000000000000000017021232323232323232323232220217070111313131313131313131312101071702123232323232323232323222021707011131313131313131313131210107
+0000000000100000002000000000000011313131313131313131313131313121113131313131312515151515151515353131313131313121000000000000000012323232323232323232323232323222113131313131313131313131313131211232323232323232323232323232322211313131313131313131313131313121
+2000000000000000000020000000000031313131313131313131313131313131312f2f2f2f2f2f2f2f2f3131312f2f2f2f2f2f2f2f2f2f2f000000000000000032323232323232323232323232323232313131313131313131313131313131313232323232323232323232323232323231313131313131313131313131313131
+000000100000200000001f0061626262626262626262626262626263001f0010070707080808080808080808080808080808080808070707070707504050405040504040405040504050405040070707171717090909090909090909090909090909090909171717000000100000616262626262626262626262626200000010
+002000000000001000001f2071447144714473004e71447344734473001f200007070708080808080808080808080808080808080807070707070740504050405040504050405040504050405007070717171709090909090909444444450909090909090917171700200000002071447474744473b271447474447400002000
+200000000020000000201f0071647164716473005e71647364736473201f0000070007080808080808080808080808084e00080808070007070707504050005050504050405040004050405040070707170017656565656565655464645565656565656565170017182f2f2f2f2f71647474746473b27164747464742f2f2f2f
+000020000000000020001f0062626262626273006e71626262626263001f0020070007606060606060606060606060605e00606060070007070707606060006060606162636060006060606060070707170017666766676667666766676667666766676667170017183f3f3f3f3f61747474747473b27174747474743f3f3f3f
+303030303030303030301b3131313131313131253531313131313131310b3030070007707070707070707070707070706e00707070070007070707707070007070707172737070007070707070070707170017767776777677767776777677767776777677170017151515151515151515151515151515151515151515151515
+151515151515151515151818181818181818343434341818181818181818151507011131313131313131313131313131313131313121010707271131313131313131313131313131313131313121280717021232323232323232323232323232323232323222021715153c191919191919191919343434191919193d15151515
+1515151515151515151515151515151515143434343424151515151515151515113131313131312515151515151515353131313131313121113131313131312515151515151515353131313131313121123232323232323232323232323232323232323232323222153c3937373737378e373737373737373737373a3d151515
+15151515151515151515151515151515151515151515151515151515151515153131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313232323232323232323232323232323232323232323232323c393737373737373737373737373737373737373a3d1515
 __sfx__
 000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
