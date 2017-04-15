@@ -48,50 +48,11 @@ function reset_ui()
 	verb_defcol = 10   -- default action (yellow)
 end
 
+
+
 -- 
 -- room & object definitions
 -- 
-
--- title "room"
-	-- objects
-	rm_title = {
-		data = [[
-			map = {0,16}
-		]],
-		objects = {
-		},
-		enter = function(me)
-
-			-- demo intro
-		
-			if not me.done_intro then
-				-- don't do this again
-				me.done_intro = true
-			
-					cutscene(
-						3, -- no verbs & no follow, 
-						function()
-
-			
-							-- part 4
-							change_room(rm_outside, 1)
-							
-
-							-- outro
-							-- change_room(rm_title, 1)
-
-							-- fades(1,1)	-- fade out
-							-- break_time(100)
-							
-						end) -- end cutscene
-
-				end -- if not done intro
-		end,
-		exit = function()
-			-- todo: anything here?
-		end,
-	}
-
 
 -- [ ground floor ]
 
@@ -116,22 +77,6 @@ end
 				end
 			}
 
-			obj_hall_exit_landing = {		
-				data = [[
-					name=upstairs
-					state=state_open
-					x=88
-					y=0
-					w=1
-					h=2
-					use_dir = face_back
-					use_pos = pos_center
-					classes = { class_door }
-				]],
-				init = function(me)  
-					me.target_door = obj_landing_exit_hall
-				end
-			}
 
 			obj_hall_door_library = {		
 				data = [[
@@ -205,53 +150,23 @@ end
 				}
 			}
 
-			obj_window = {		
-				data = [[
-					name=window
-					state=state_closed
-					x=32
-					y=8
-					w=2
-					h=2
-					state_closed=68
-					state_open=70
-					use_pos={40,57}
-					classes = {class_openable}
-				]],
-				verbs = {
-					open = function(me)
-						if not me.done_cutscene then
-							cutscene(
-								1, -- no verbs 
-								function()
-								end
-							)
-						end
-						-- (code here will not run, as room change nuked "local" scripts)
-					end
-				}
-			}
-
-
 		rm_hall = {
 			data = [[
-				col_replace={7,8}
 				map = {32,24,55,31}
 			]],
 			objects = {
 				obj_front_door_inside,
-				obj_hall_exit_landing,
 				obj_hall_door_library,
 				obj_hall_door_kitchen,
-				obj_bucket,
 				obj_spinning_top,
-				--obj_window
 			},
 			enter = function(me)
-				start_script(me.scripts.tentacle_guard, true) -- bg script
+				selected_actor = main_actor
+				put_at(selected_actor,60,60,rm_hall)
+				camera_follow(selected_actor)
 			end,
 			exit = function(me)
-				stop_script(me.scripts.tentacle_guard)
+				-- todo: anything here?
 			end,
 			scripts = {	  -- scripts that are at room-level
 				spin_top = function()
@@ -269,15 +184,6 @@ end
 						dir *= -1
 					end				
 				end,
-				tentacle_guard = function()
-					while true do
-						--d("tentacle guarding...")
-						if proximity(main_actor, purp_tentacle) < 30 then
-							say_line(purp_tentacle, "halt!!!", true)
-						end
-						break_time(10)
-					end
-				end
 			},
 		}
 
@@ -427,215 +333,17 @@ end
 		
 
 
--- [ second floor ]
-
-
-	-- landing
-		-- objects
-			obj_landing_exit_hall = {		
-				data = [[
-					name=hall
-					state=state_open
-					x=80
-					y=56
-					w=3
-					h=2
-					use_pos = pos_center
-					use_dir = face_front
-					classes = {class_door}
-				]],
-				init = function(me)  
-					me.target_door = obj_hall_exit_landing
-				end
-			}
-
-		obj_landing_door_computer = {		
-			data = [[
-				name = computer room
-				state = state_open
-				x=176
-				y=16
-				w=1
-				h=4
-				use_pos = pos_left
-				use_dir = face_right
-				classes = {class_door}
-			]],
-			init = function(me)  
-				me.target_door = obj_computer_door_landing
-			end
-		}
-
-		obj_landing_door_room1 = {		
-				data = [[
-					name = door #1
-					state = state_closed
-					x=8
-					y=16
-					z=1
-					w=1
-					h=4
-					state_closed=79
-					state_open=0
-					classes = {class_openable}
-					use_pos = pos_right
-					use_dir = face_left
-				]],
-				verbs = {
-					open = function(me)
-						rm_landing.scripts.door_teleport(me, obj_landing_door_room3)
-					end
-				}
-			}
-
-		obj_landing_door_room2 = {		
-				data = [[
-					name = door #2
-					state = state_closed
-					x=48
-					y=16
-					z=1
-					w=1
-					h=3
-					state_closed=78
-					classes = {class_openable}
-					use_pos = pos_infront
-					use_dir = face_back
-				]],
-				verbs = {
-					open = function(me)
-						rm_landing.scripts.door_teleport(me, obj_landing_door_room3)
-					end
-				}
-			}
-		
-		obj_landing_door_room3 = {		
-				data = [[
-					name = door #3
-					state = state_closed
-					x=136
-					y=16
-					z=1
-					w=1
-					h=3
-					state_closed=78
-					state_open=0
-					classes = {class_openable}
-					use_pos = pos_infront
-					use_dir = face_back
-				]],
-				verbs = {
-					open = function(me)
-						rm_landing.scripts.door_teleport(me, obj_landing_door_room1)
-					end
-				}
-			}
-		
-
-		rm_landing = {
-			data = [[
-				map = {32,16,55,31}
-			]],
-			objects = {
-				obj_landing_exit_hall,
-				obj_landing_door_room1,
-				obj_landing_door_room2,
-				obj_landing_door_room3,
-				obj_landing_door_computer
-			},
-			enter = function(me)
-				
-			end,
-			exit = function(me)
-
-			end,
-			scripts = {	  
-				door_teleport = function(door1, door2)
-					cutscene(
-						2, -- quick-cut
-						function()
-						end)
-				end
-			},
-		}
-
-
-
 -- "the void" (room)
 -- a place to put objects/actors when not in a room
 	
 	-- objects
-
-		obj_switch_tent = {		
-			data = [[
-				name=purple tentacle
-				state=state_here
-				state_here=170
-				trans_col=15
-				x=1
-				y=1
-				w=1
-				h=1
-			]],
-			verbs = {
-				use = function(me)
-					selected_actor = purp_tentacle
-					camera_follow(purp_tentacle)
-				end
-			}
-		}
-
-		obj_switch_player= {		
-			data = [[
-				name=humanoid
-				state=state_here
-				state_here=209
-				trans_col=11
-				x=1
-				y=1
-				w=1
-				h=1
-			]],
-			verbs = {
-				use = function(me)
-					selected_actor = main_actor
-					camera_follow(main_actor)
-				end
-			}
-		}
 
 	rm_void = {
 		data = [[
 			map = {0,0}
 		]],
 		objects = {
-			obj_switch_player,
-			obj_switch_tent
 		},
-	}
-
-
--- ----
-
-	
-
-	obj_duck = {		
-		data = [[
-			name=rubber duck
-			state=state_here
-			state_here=142
-			trans_col=12
-			x=1
-			y=1
-			w=1
-			h=1
-			classes = {class_pickupable}
-		]],
-		verbs = {
-			pickup = function(me)
-				pickup_obj(me)
-			end,
-		}
 	}
 
 
@@ -648,13 +356,8 @@ end
 
 rooms = {
 	rm_void,
-	rm_title,
-	rm_outside,
 	rm_hall,
-	rm_kitchen,
-	rm_garden,
 	rm_library,
-	rm_landing
 }
 
 
@@ -693,91 +396,8 @@ rooms = {
 		}
 	}
 
-	purp_tentacle = {
-		data = [[
-			name = purple tentacle
-			x = 40
-			y = 48
-			w = 1
-			h = 3
-			idle = { 154, 154, 154, 154 }
-			talk = { 171, 171, 171, 171 }
-			col = 11
-			trans_col = 15
-			walk_speed = 0.25
-			classes = {class_actor,class_talkable}
-			face_dir = face_front
-			use_pos = pos_left
-		]],
-		in_room = rm_landing, --rm_kitchen,
-		inventory = {
-			obj_switch_player
-		},
-		verbs = {
-				lookat = function()
-					say_line("it's a weird looking tentacle, thing!")
-				end,
-				talkto = function(me)
-					cutscene(
-						1, -- no verbs
-						function()
-							--do_anim(purp_tentacle, anim_face, selected_actor)
-							say_line(me,"what do you want?")
-						end
-					)
-
-					-- dialog loop start
-					while (true) do
-						-- build dialog options
-						dialog_set({ 
-							(me.asked_where and "" or "where am i?"),
-							"who are you?",
-							"how much wood would a wood-chuck chuck, if a wood-chuck could chuck wood?",
-							"nevermind"
-						})
-						dialog_start(selected_actor.col, 7)
-
-						-- wait for selection
-						while not selected_sentence do break_time() end
-						-- chosen options
-						dialog_hide()
-
-						cutscene(
-							1, -- no verbs
-							function()
-								say_line(selected_sentence.msg)
-								
-								if selected_sentence.num == 1 then
-									say_line(me, "you are in paul's game")
-									me.asked_where = true
-
-								elseif selected_sentence.num == 2 then
-									say_line(me, "it's complicated...")
-
-								elseif selected_sentence.num == 3 then
-									say_line(me, "a wood-chuck would chuck no amount of wood, coz a wood-chuck can't chuck wood!")
-
-								elseif selected_sentence.num == 4 then
-									say_line(me, "ok bye!")
-									dialog_end()
-									return
-								end
-							end)
-
-						dialog_clear()
-
-					end --dialog loop
-				end, -- talkto
-				use = function(me)
-					selected_actor = me
-					camera_follow(me)
-				end
-			}
-	}
-
 actors = {
-	main_actor,
-	purp_tentacle
+	main_actor
 }
 
 -- 
@@ -795,18 +415,7 @@ function startup_script()
 
 	-- set which room to start the game in 
 	-- (e.g. could be a "pseudo" room for title screen!)
-	--change_room(rm_library, 1) -- iris fade
-
-	selected_actor = main_actor
-	--put_at(selected_actor,60,60,rm_landing)
-	put_at(selected_actor,60,60,rm_hall)
-	--put_at(selected_actor,60,60,rm_library)
-	camera_follow(selected_actor)
-
-	--room_curr = rm_landing
-	room_curr = rm_hall
-	--room_curr = rm_library
-	--change_room(rm_hall, 1) -- iris fade
+	change_room(rm_hall, 1) -- iris fade
 end
 
 
@@ -3368,11 +2977,11 @@ __map__
 0000000000000000000000000000200007011131313131313131313131210107070111313131313131313131313131313131313131210107000000000000000017021232323232323232323232220217070111313131313131313131312101071702123232323232323232323222021707011131313131313131313131210107
 0000000000100000002000000000000011313131313131313131313131313121113131313131312515151515151515353131313131313121000000000000000012323232323232323232323232323222113131313131313131313131313131211232323232323232323232323232322211313131313131313131313131313121
 2000000000000000000020000000000031313131313131313131313131313131312f2f2f2f2f2f2f2f2f3131312f2f2f2f2f2f2f2f2f2f2f000000000000000032323232323232323232323232323232313131313131313131313131313131313232323232323232323232323232323231313131313131313131313131313131
-000000100000200000001f0061626262626262626262626262626263001f0010070707080808080807000006050007080808080808070707070707504050405040504040405040504050405040070707171717090909090909090909090909090909090909171717000000100000616262626262626262626262626200000010
-002000000000001000001f2071447144714473004e71447344734473001f200007070708080808080700000006050708080808080807070707070740504050405040504050405040504050405007070717171709090909090909444444450909090909090917171700200000002071447474744473b271447474447400002000
-200000000020000000201f0071647164716473005e71647364736473201f0000070007080808080807000016263607084e00080808070007070707504050005050504050405040004050405040070707170017656565656565655464645565656565656565170017182f2f2f2f2f71647474746473b27164747464742f2f2f2f
-000020000000000020001f0062626262626273006e71626262626263001f0020070007606060606007001626360007605e00606060070007070707606060006060606162636060006060606060070707170017666766676667666766676667666766676667170017183f3f3f3f3f61747474747473b27174747474743f3f3f3f
-303030303030303030301b3131313131313131253531313131313131310b3030070007707070707027162636000028706e00707070070007070707707070007070707172737070007070707070070707170017767776777677767776777677767776777677170017151515151515151515151515151515151515151515151515
+000000100000200000001f0061626262626262626262626262626263001f0010070707080808080808080808080808080808080808070707070707504050405040504040405040504050405040070707171717090909090909090909090909090909090909171717000000100000616262626262626262626262626200000010
+002000000000001000001f2071447144714473004e71447344734473001f200007070708080808080808080808080808080808080807070707070740504050405040504050405040504050405007070717171709090909090909444444450909090909090917171700200000002071447474744473b271447474447400002000
+200000000020000000201f0071647164716473005e71647364736473201f0000070007080808080808080808080808084e00080808070007070707504050005050504050405040004050405040070707170017656565656565655464645565656565656565170017182f2f2f2f2f71647474746473b27164747464742f2f2f2f
+000020000000000020001f0062626262626273006e71626262626263001f0020070007606060606060606060606060605e00606060070007070707606060006060606162636060006060606060070707170017666766676667666766676667666766676667170017183f3f3f3f3f61747474747473b27174747474743f3f3f3f
+303030303030303030301b3131313131313131253531313131313131310b3030070007707070707070707070707070706e00707070070007070707707070007070707172737070007070707070070707170017767776777677767776777677767776777677170017151515151515151515151515151515151515151515151515
 151515151515151515151818181818181818343434341818181818181818151507011131313131313131313131313131313131313121010707271131313131313131313131313131313131313121280717021232323232323232323232323232323232323222021715153c191919191919191919343434191919193d15151515
 1515151515151515151515151515151515143434343424151515151515151515113131313131312515151515151515353131313131313121113131313131312515151515151515353131313131313121123232323232323232323232323232323232323232323222153c3937373737378e373737373737373737373a3d151515
 15151515151515151515151515151515151515151515151515151515151515153131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313232323232323232323232323232323232323232323232323c393737373737373737373737373737373737373a3d1515
