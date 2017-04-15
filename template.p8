@@ -150,21 +150,12 @@ end
 					h=3
 					state_closed=78
 					flip_x = true
-					classes = {class_openable}
+					classes = {class_openable,class_door}
 					use_dir = face_back
 				]],
-				verbs = {
-					walkto = function(me)
-						come_out_door(me, obj_front_door_inside)
-					end,
-					open = function(me)
-						open_door(me, obj_front_door_inside)
-						--camera_follow(purp_tentacle)
-					end,
-					close = function(me)
-						close_door(me, obj_front_door_inside)
-					end
-				}
+				init = function(me)
+					me.target_door = obj_front_door_inside
+				end
 			}
 
 			obj_bucket = {		
@@ -1541,7 +1532,7 @@ rooms = {
 			talk = { 171, 171, 171, 171 }
 			col = 11
 			trans_col = 15
-			walk_speed = 0.25
+			walk_speed = 0.4
 			frame_delay = 5
 			classes = {class_actor,class_talkable}
 			face_dir = face_front
@@ -1737,7 +1728,6 @@ end
 
 
 
-
 function shake(bq) if bq then
 br=1 end bs=bq end function bt(bu) local bv=nil if has_flag(bu.classes,"class_talkable") then
 bv="talkto"elseif has_flag(bu.classes,"class_openable") then if bu.state=="state_closed"then
@@ -1848,8 +1838,8 @@ and(not has_flag(gd.classes,"class_actor") or gc[2]!="use")) or ge then hl=ge or
 use_dir=hl if hl.use_dir then use_dir=hl.use_dir end
 do_anim(selected_actor,"anim_face",use_dir) end if valid_verb(gc,gd) then
 start_script(gd.verbs[gc[1]],false,gd,ge) else if has_flag(gd.classes,"class_door") then
-if gc[1]=="walkto"then
-come_out_door(gd,gd.target_door) elseif gc[1]=="open"then open_door(gd,gd.target_door) elseif gc[1]=="close"then close_door(gd,gd.target_door) end else by(gc[2],gd,ge) end end ed() end) coresume(selected_actor.co) elseif fv>ft and fv<ft+64 then gf=true selected_actor.co=cocreate(function() walk_to(selected_actor,fu+ce,fv-ft) ed() end) coresume(selected_actor.co) end end function go() if not room_curr then
+if gc[2]=="walkto"then
+come_out_door(gd,gd.target_door) elseif gc[2]=="open"then open_door(gd,gd.target_door) elseif gc[2]=="close"then close_door(gd,gd.target_door) end else by(gc[2],gd,ge) end end ed() end) coresume(selected_actor.co) elseif fv>ft and fv<ft+64 then gf=true selected_actor.co=cocreate(function() walk_to(selected_actor,fu+ce,fv-ft) ed() end) coresume(selected_actor.co) end end function go() if not room_curr then
 return end hg,hi,hh,hf,hj=nil,nil,nil,nil,nil if cu
 and cu.cw then for ek in all(cu.cv) do if hn(ek) then
 hf=ek end end return end ho() for bu in all(room_curr.objects) do if(not bu.classes

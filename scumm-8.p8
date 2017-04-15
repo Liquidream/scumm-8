@@ -1642,11 +1642,11 @@ function input_button_pressed(button_index)
 				if has_flag(noun1_curr.classes, "class_door") then
 					-- perform default door action
 					--start_script(function()
-						if verb_curr[1] == "walkto" then
+						if verb_curr[2] == "walkto" then
 							come_out_door(noun1_curr, noun1_curr.target_door)
-						elseif verb_curr[1] == "open" then
+						elseif verb_curr[2] == "open" then
 							open_door(noun1_curr, noun1_curr.target_door)
-						elseif verb_curr[1] == "close" then
+						elseif verb_curr[2] == "close" then
 							close_door(noun1_curr, noun1_curr.target_door)
 						end
 					--end, false)
