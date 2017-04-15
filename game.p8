@@ -1,7 +1,7 @@
 pico-8 cartridge // http://www.pico-8.com
 version 9
 __lua__
--- scumm-8 game template
+-- scumm-8 (return of the scumm)
 -- paul nicholas
 
 -- 7004 tokens (5206 is engine!) - leaving 1188 tokens spare
