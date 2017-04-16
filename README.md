@@ -44,6 +44,8 @@ Please see the [SCUMM-8 Wiki](https://github.com/Liquidream/scumm-8/wiki) for de
 A big thanks to [Aric Wilmunder](http://www.wilmunder.com/Arics_World/Games.html) (ex-LucasArts developer) for sharing valuable SCUMM documentation. 
 Particularly the **SCUMM Tutorial **(1991), the example room from which was the first room I actually created in SCUMM-8 (minus the cool Sam & Max gfx, of course)
 
+Thanks also to Dan Sanderson for his [picotool](https://github.com/dansanderson/picotool) - specifically his minifying tool (luamin), which enabled me to squeeze MUCH more code under PICO-8's limits.
+
 Some other great SCUMM resources I found along the way include the following:
 - [Ron Gilbert's post about "SCUMM Script"](http://www.pagetable.com/?p=614)
 - [ScummC - A Scumm Compiler (by Alban Bedel)](https://github.com/AlbanBedel/scummc)
