@@ -46,6 +46,8 @@ Particularly the **SCUMM Tutorial **(1991), the example room from which was the 
 
 Thanks also to Dan Sanderson for his [picotool](https://github.com/dansanderson/picotool) - specifically his minifying tool (luamin), which enabled me to squeeze MUCH more code under PICO-8's limits.
 
+Shoutout to **PixelArtM**, whose [PICO-8 mockup](https://twitter.com/PixelArtM/status/758735822426284036) inspired me to wonder whether this could *actually* be pulled off within the virtual console's limits (SPOILER: it can... just about! :sweat_smile:)
+
 Some other great SCUMM resources I found along the way include the following:
 - [Ron Gilbert's post about "SCUMM Script"](http://www.pagetable.com/?p=614)
 - [The SCUMM Diary: Stories behind one of the greatest game engines ever made](http://www.gamasutra.com/view/feature/196009/the_scumm_diary_stories_behind_.php)
