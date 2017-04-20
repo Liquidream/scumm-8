@@ -8,6 +8,7 @@ function _init()
   base_cart_name = "game_base"
   disk_cart_name = "game_disk"
   num_extra_disks = 0    
+  is_dirty = false  -- has been modified since last "save"?
 
   -- global vars
   rooms = {}
