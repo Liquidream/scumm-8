@@ -24,13 +24,22 @@ function _init()
   -- packed game data (rooms/objects/actors)
   data = [[
 			id=1/map={0,16}
-      id=2/map={0,24,31,31}
-      id=3/map={32,24,55,31}/col_replace={5,2}
-      id=4/map={56,24,79,31}/trans_col=10/col_replace={7,4}/lighting=0.25
-      id=5/map={80,24,103,31}
-      id=6/map={104,24,127,31}
-      id=7/map={32,16,55,31}
-      id=8/map={64,16}
+      id=2/map={0,24,31,31}/objects={30,31,32,33,34,35}
+      id=3/map={32,24,55,31}/col_replace={5,2}/objects={}
+      id=4/map={56,24,79,31}/trans_col=10/col_replace={7,4}/lighting=0.25/objects={}
+      id=5/map={80,24,103,31}/objects={}
+      id=6/map={104,24,127,31}/objects={}
+      id=7/map={32,16,55,31}/objects={}
+      id=8/map={64,16}/objects={}
+			|
+			id=30/x=1/y=1/classes={class_untouchable}
+			id=31/state=state_here/x=80/y=24/w=1/h=2/state_here=47/trans_col=8/repeat_x=8/classes={class_untouchable}
+			id=32/state=state_here/x=176/y=24/w=1/h=2/state_here=47/trans_col=8/repeat_x=8/classes={class_untouchable}
+			id=33/name=front door/state=state_closed/x=152/y=8/w=1/h=3/state_closed=78/flip_x=true/classes={class_openable,class_door}/use_dir=face_back
+			id=34/name=bucket/state=state_open/x=208/y=48/w=1/h=1/state_closed=143/state_open=159/trans_col=15/use_with=true/classes={class_pickupable}
+			|
+			id=1000/name=humanoid/w=1/h=4/idle={193,197,199,197}/talk={218,219,220,219}/walk_anim_side={196,197,198,197}/walk_anim_front={194,193,195,193}/walk_anim_back={200,199,201,199}/col=12/trans_col=11/walk_speed=0.6/frame_delay=5/classes={class_actor}/face_dir=face_front
+			id=1001/name=purpletentacle/x=140/y=52/w=1/h=3/idle={154,154,154,154}/talk={171,171,171,171}/col=11/trans_col=15/walk_speed=0.4/frame_delay=5/classes={class_actor,class_talkable}/face_dir=face_front/use_pos=pos_left
 		]]
 
   -- unpack data to it's relevent target(s)
@@ -39,7 +48,7 @@ function _init()
   set_data_defaults()
 
   -- load gfx + map from current "disk" (e.g. base cart)
-  reload(0,0,0x2fff, base_cart_name..".p8")
+  reload(0,0,0x3000, base_cart_name..".p8")
 end
 
 function _draw()
@@ -124,28 +133,72 @@ function explode_data(data)
   
   -- unpack rooms + data
   local room_data = areas[1]
-
 	local lines=split(room_data, "\n")
 	for l in all(lines) do
     room = {}
 		--d("curr line = ["..l.."]")
     local properties=split(l, "/")
     for prop in all(properties) do
-      printh("curr prop = ["..prop.."]")
+      --printh("curr prop = ["..prop.."]")
       local pairs=split(prop, "=")
-      -- todo: check to see if value is an array?
-      -- now set actual values
-      --d(" > curr pair = ["..pairs[1].."]")
       if #pairs==2 then
-        --d("pair1=["..pairs[1].."]  pair2=["..pairs[2].."]")
         room[pairs[1]] = autotype(pairs[2])
       else
         printh("invalid data line")
       end
     end
-
-    add(rooms, room)
+		-- only add if something to add
+		if #properties > 0 then
+    	add(rooms, room)
+		end
+		--if (room.objects) printh("obj count:"..#room.objects)
 	end
+
+	-- unpack objects + data
+	local obj_data = areas[2]
+	local lines=split(obj_data, "\n")
+	for l in all(lines) do
+    obj = {}
+    local properties=split(l, "/")
+    for prop in all(properties) do
+      local pairs=split(prop, "=")
+      -- now set actual values
+      if #pairs==2 then
+        obj[pairs[1]] = autotype(pairs[2])
+      else
+        printh("invalid data line")
+      end
+    end
+		-- only add if something to add
+		if #properties > 0 then
+    	add(objects, obj)
+		end
+	end
+	--printh("objects:"..#objects)
+
+	-- unpack actors + data
+	local actor_data = areas[3]
+	local lines=split(actor_data, "\n")
+	for l in all(lines) do
+    actor = {}
+    local properties=split(l, "/")
+    for prop in all(properties) do
+			--printh("curr prop = ["..prop.."]")
+      local pairs=split(prop, "=")
+      -- now set actual values
+      if #pairs==2 then
+        actor[pairs[1]] = autotype(pairs[2])
+      else
+        printh("invalid data line")
+      end
+    end
+		-- only add if something to add
+		if #properties > 0 then
+    	add(actors, actor)
+		end
+	end
+
+	--printh("actors:"..#actors)
 end
 
 function split(s, delimiter)
