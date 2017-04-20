@@ -5,24 +5,213 @@ __lua__
 -- by paul nicholas
 
 function _init()
+  base_cart_name = "game_base"
+  disk_cart_name = "game_disk"
+  num_extra_disks = 0    
+
+  -- global vars
+  rooms = {}
+  objects = {}
+  actors = {}
+
+  stage_top = 16
+  cam_x = 0
+
+  room_index = 1
+
+
+  -- packed game data (rooms/objects/actors)
   data = [[
-			1/{0,16}
-      2/{0,24,31,31}
-      3/{32,24,55,31}/col_replace={5,2}
-      4/{56,24,79,31}/trans_col=10/col_replace={7,4}/lighting=0.25
-      5/{80,24,103,31}
-      6/{104,24,127,31}
-      7/{32,16,55,31}
-      8/{64,16}
+			id=1/map={0,16}
+      id=2/map={0,24,31,31}
+      id=3/map={32,24,55,31}/col_replace={5,2}
+      id=4/map={56,24,79,31}/trans_col=10/col_replace={7,4}/lighting=0.25
+      id=5/map={80,24,103,31}
+      id=6/map={104,24,127,31}
+      id=7/map={32,16,55,31}
+      id=8/map={64,16}
 		]]
+
+  -- unpack data to it's relevent target(s)
+  printh("------------------------------------")
+  explode_data(data)
+  set_data_defaults()
+
+  -- load gfx + map from current "disk" (e.g. base cart)
+  reload(0,0,0x2fff, base_cart_name..".p8")
 end
 
 function _draw()
+  cls()
+  -- reposition camera (account for shake, if active)
+	camera(cam_x,0)
+    
+  room_curr = rooms[room_index]
+  map(room_curr.map[1], room_curr.map[2], 0, stage_top, room_curr.map_w, 8)
 end
 
 function _update60()
+
+  -- handle player input
+  if btnp(2) then
+    room_index += 1
+  end
+  if btnp(3) then
+    room_index -= 1
+  end
+  if btn(1) then
+    cam_x += 1
+  end
+  if btn(0) then
+    cam_x -= 1
+  end
+  room_index = mid(1, room_index, #rooms)
+
+  room_curr = rooms[room_index]
+
+  cam_x = mid(0, cam_x, (room_curr.map_w*8)-127 -1)
 end
 
+
+
+
+
+
+-- pack/unpack related
+
+function set_data_defaults()
+  
+  -- init rooms
+	for room in all(rooms) do		
+		if (#room.map > 2) then
+			room.map_w = room.map[3] - room.map[1] + 1
+			room.map_h = room.map[4] - room.map[2] + 1
+		else
+			room.map_w = 16
+			room.map_h = 8
+		end
+
+		-- init objects (in room)
+		-- for obj in all(room.objects) do
+		-- 	explode_data(obj)
+		-- 	obj.in_room = room
+		-- 	obj.h = obj.h or 0
+		-- 	if obj.init then
+		-- 		obj.init(obj)
+		-- 	end
+		-- end
+	end
+
+	-- init actors with defaults
+	-- for ka,actor in pairs(actors) do
+	-- 	explode_data(actor)
+	-- 	actor.moving = 2 		-- 0=stopped, 1=walking, 2=arrived
+	-- 	actor.tmr = 1 		  -- internal timer for managing animation
+	-- 	actor.talk_tmr = 1
+	-- 	actor.anim_pos = 1 	-- used to track anim pos
+	-- 	actor.inventory = {
+	-- 		-- obj_switch_player,
+	-- 		-- obj_switch_tent
+	-- 	}
+	-- 	actor.inv_pos = 0 	-- pointer to the row to start displaying from
+	-- end
+end
+
+
+function explode_data(data)
+  local areas=split(data, "|")
+  
+  -- unpack rooms + data
+  local room_data = areas[1]
+
+	local lines=split(room_data, "\n")
+	for l in all(lines) do
+    room = {}
+		--d("curr line = ["..l.."]")
+    local properties=split(l, "/")
+    for prop in all(properties) do
+      printh("curr prop = ["..prop.."]")
+      local pairs=split(prop, "=")
+      -- todo: check to see if value is an array?
+      -- now set actual values
+      --d(" > curr pair = ["..pairs[1].."]")
+      if #pairs==2 then
+        --d("pair1=["..pairs[1].."]  pair2=["..pairs[2].."]")
+        room[pairs[1]] = autotype(pairs[2])
+      else
+        printh("invalid data line")
+      end
+    end
+
+    add(rooms, room)
+	end
+end
+
+function split(s, delimiter)
+	local retval = {}
+	local start_pos = 0
+	local last_char_pos = 0
+
+	for i=1,#s do
+		local curr_letter = sub(s,i,i)
+		if curr_letter == delimiter then
+			add(retval, sub(s,start_pos,last_char_pos))
+			start_pos = 0
+			last_char_pos = 0
+
+		elseif curr_letter != " "
+		 and curr_letter != "\t" then
+			-- curr letter is useful
+			last_char_pos = i
+			if start_pos == 0 then start_pos = i end
+		end
+	end
+	-- add remaining content?
+	if start_pos + last_char_pos > 0 then 	
+		add(retval, sub(s,start_pos,last_char_pos))
+	end
+	return retval
+end
+
+function autotype(str_value)
+	local first_letter = sub(str_value,1,1)
+	local retval = nil
+
+	if str_value == "true" then
+		retval = true
+	elseif str_value == "false" then
+		retval = false
+	elseif is_num_char(first_letter) then
+		-- must be number
+		if first_letter == "-" then
+			retval = sub(str_value,2,#str_value) * -1
+		else
+			retval = str_value + 0
+		end
+	elseif first_letter == "{" then
+		-- array - so split it
+		local temp = sub(str_value,2,#str_value-1)
+		retval = split(temp, ",")
+		retarray = {}
+		for val in all(retval) do
+			val = autotype(val)
+			add(retarray, val)
+		end
+		retval = retarray
+	else --if first_letter == "\"" then
+		-- string - so do nothing
+		retval = str_value
+	end
+	return retval
+end
+
+function is_num_char(c)
+	for d=1,13 do
+		if c==sub("0123456789.-+",d,d) then
+			return true
+		end
+	end
+end
 
 __gfx__
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
