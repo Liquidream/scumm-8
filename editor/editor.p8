@@ -29,6 +29,7 @@ function _init()
   draw_zplanes = {}		-- table of tables for each of the (8) zplanes for drawing depth
 	cursor_x, cursor_y, cursor_tmr, cursor_colpos = 63.5, 63.5, 0, 1
 	cursor_cols = {7,12,13,13,12,7}
+	curr_object = nil		-- currently selected object/actor (or room, if nil)
   room_index = 1
 
 
@@ -217,7 +218,7 @@ function input_control()
 		-- don't repeat action if same press/click
 		if stat(34) > 0 then
 			if not ismouseclicked then
---				input_button_pressed(stat(34))
+				input_button_pressed(stat(34))
 				ismouseclicked = true
 			end
 		else
@@ -232,6 +233,31 @@ function input_control()
 	cursor_x = mid(0, cursor_x, 127)
 	cursor_y = mid(0, cursor_y, 127)
 end
+
+-- 1 = z/lmb, 2 = x/rmb, (4=middle)
+function input_button_pressed(button_index)	
+
+	-- todo: check for modal dialog input first
+
+	-- check room-level interaction
+
+
+	if hover_curr_cmd then
+
+
+	elseif hover_curr_object then
+		-- select object
+		curr_object = hover_curr_object
+	
+	
+	
+	else
+		-- nothing clicked
+		curr_object = nil
+	end
+end
+
+
 
 -- ===========================================================================
 -- draw related
@@ -355,11 +381,14 @@ function draw_room()
 					end
 				end
 
-				if obj.bounds  
-					and (hover_curr_object == obj
-					or show_collision)
-				then 
-					rect(obj.bounds.x-1, obj.bounds.y-1, obj.bounds.x1+1, obj.bounds.y1+1, 8) 
+				if obj.bounds then
+					if curr_object == obj then
+						rect(obj.bounds.x-1, obj.bounds.y-1, obj.bounds.x1+1, obj.bounds.y1+1, cursor_cols[cursor_colpos]) 
+					elseif hover_curr_object == obj
+						or show_collision 
+					then
+						rect(obj.bounds.x-1, obj.bounds.y-1, obj.bounds.x1+1, obj.bounds.y1+1, 8)
+					end
 				end	
 			end
 		end		
