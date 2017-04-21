@@ -1,8 +1,18 @@
 pico-8 cartridge // http://www.pico-8.com
-version 8
+version 9
 __lua__
 -- scumm-8 editor (pus)
 -- by paul nicholas
+
+-- debugging
+show_debuginfo = true
+show_collision = false
+--show_pathfinding = true
+show_perfinfo = true
+enable_mouse = true
+d = printh
+
+
 
 function _init()
   base_cart_name = "game_base"
@@ -14,16 +24,17 @@ function _init()
   rooms = {}
   objects = {}
   actors = {}
-
   stage_top = 16
   cam_x = 0
-
+  draw_zplanes = {}		-- table of tables for each of the (8) zplanes for drawing depth
+	cursor_x, cursor_y, cursor_tmr, cursor_colpos = 63.5, 63.5, 0, 1
+	cursor_cols = {7,12,13,13,12,7}
   room_index = 1
 
 
   -- packed game data (rooms/objects/actors)
   data = [[
-			id=1/map={0,16}
+			id=1/map={0,16}/objects={}
       id=2/map={0,24,31,31}/objects={30,31,32,33,34,35}
       id=3/map={32,24,55,31}/col_replace={5,2}/objects={}
       id=4/map={56,24,79,31}/trans_col=10/col_replace={7,4}/lighting=0.25/objects={}
@@ -47,20 +58,135 @@ function _init()
   explode_data(data)
   set_data_defaults()
 
+		-- use mouse input?
+	if enable_mouse then poke(0x5f2d, 1) end
+
   -- load gfx + map from current "disk" (e.g. base cart)
   reload(0,0,0x3000, base_cart_name..".p8")
 end
 
 function _draw()
-  cls()
-  -- reposition camera (account for shake, if active)
-	camera(cam_x,0)
-    
-  room_curr = rooms[room_index]
-  map(room_curr.map[1], room_curr.map[2], 0, stage_top, room_curr.map_w, 8)
+	draw_editor()
 end
 
 function _update60()
+
+	update_room()
+
+	input_control()
+
+  room_index = mid(1, room_index, #rooms)
+
+  room_curr = rooms[room_index]
+
+  cam_x = mid(0, cam_x, (room_curr.map_w*8)-127 -1)
+
+	draw_cursor()
+end
+
+-- ===========================================================================
+-- update related
+--
+
+function update_room()
+	-- check for current room
+	if not room_curr then
+		return
+	end
+
+	-- reset hover collisions
+	hover_curr_object = nil
+
+ 	-- reset zplane info
+	reset_zplanes()
+
+	-- check room/object collisions
+	for obj in all(room_curr.objects) do
+
+		--printh("obj:"..obj.id)
+
+		-- capture bounds
+		if not has_flag(obj.classes, "class_untouchable") then
+			recalc_bounds(obj, obj.w*8, obj.h*8, cam_x, cam_y)
+		end
+
+		--d("obj-z:"..type(obj.z))
+		
+		-- mouse over?
+		if iscursorcolliding(obj) then
+
+			-- if highest (or first) object in hover "stack"
+			if not hover_curr_object
+			 or	(not obj.z and hover_curr_object.z and hover_curr_object.z < 0) 
+			 or	(obj.z and hover_curr_object.z and obj.z > hover_curr_object.z) 
+			then
+				hover_curr_object = obj
+			end
+		end
+		-- recalc z-plane
+		recalc_zplane(obj)
+	end
+
+end
+
+function reset_zplanes()
+	draw_zplanes = {}
+	for x = -64, 64 do
+		draw_zplanes[x] = {}
+	end
+end
+
+function recalc_zplane(obj)
+	-- calculate the correct z-plane
+	-- based on x,y pos + elevation
+	ypos = -1
+	if obj.offset_y then
+		ypos = obj.y
+	else
+		ypos = obj.y + (obj.h*8)
+	end
+	zplane = flr(ypos) --  - stage_top)
+
+	if obj.z then
+		zplane = obj.z
+	end
+
+	add(draw_zplanes[zplane],obj)
+end
+
+function iscursorcolliding(obj)
+	-- check params / not in cutscene
+	if not obj.bounds then 
+	 return false 
+	end
+	
+	bounds = obj.bounds
+	if (cursor_x + bounds.cam_off_x > bounds.x1 or cursor_x + bounds.cam_off_x < bounds.x) 
+	 or (cursor_y > bounds.y1 or cursor_y < bounds.y) then
+		return false
+	else
+		return true
+	end
+end
+
+-- handle button inputs
+function input_control()	
+
+	-- check for cutscene "skip/override"
+	-- (or that we have an actor to control!)
+	if cutscene_curr then
+		if btnp(4) and btnp(5) and cutscene_curr.override then 
+			-- skip cutscene!
+			cutscene_curr.thread = cocreate(cutscene_curr.override)
+			cutscene_curr.override = nil
+			--if (enable_mouse) then ismouseclicked = true end
+			return
+		end
+		-- either way - don't allow other user actions!
+		return
+	end
+
+	-- 
 
   -- handle player input
   if btnp(2) then
@@ -75,19 +201,345 @@ function _update60()
   if btn(0) then
     cam_x -= 1
   end
-  room_index = mid(1, room_index, #rooms)
+	-- if btn(0) then cursor_x -= 1 end
+	-- if btn(1) then cursor_x += 1 end
+	-- if btn(2) then cursor_y -= 1 end
+	-- if btn(3) then cursor_y += 1 end
 
-  room_curr = rooms[room_index]
+	-- if btnp(4) then input_button_pressed(1) end
+	-- if btnp(5) then input_button_pressed(2) end
 
-  cam_x = mid(0, cam_x, (room_curr.map_w*8)-127 -1)
+	-- only update position if mouse moved
+	if enable_mouse then	
+		mouse_x,mouse_y = stat(32)-1, stat(33)-1
+		if mouse_x != last_mouse_x then cursor_x = mouse_x end	-- mouse xpos
+		if mouse_y!= last_mouse_y then cursor_y = mouse_y end  -- mouse ypos
+		-- don't repeat action if same press/click
+		if stat(34) > 0 then
+			if not ismouseclicked then
+--				input_button_pressed(stat(34))
+				ismouseclicked = true
+			end
+		else
+			ismouseclicked = false
+		end
+		-- store for comparison next cycle
+		last_mouse_x = mouse_x
+		last_mouse_y = mouse_y
+	end
+
+	-- keep cursor within screen
+	cursor_x = mid(0, cursor_x, 127)
+	cursor_y = mid(0, cursor_y, 127)
+end
+
+-- ===========================================================================
+-- draw related
+--
+function draw_editor()
+	cls()
+
+  -- reposition camera (account for shake, if active)
+	camera(cam_x,0)
+
+	-- clip room bounds (also used for "iris" transition)
+	clip(0, stage_top, 128, 64)
+    
+	-- draw room (bg + objects + actors)
+	draw_room()
+
+	-- reset camera and clip bounds for "static" content (ui, etc.)
+	camera(0,0)
+	clip()
+
+	if show_perfinfo then 
+		print("cpu: "..flr(100*stat(1)).."%", 0, stage_top - 16, 8) 
+		print("mem: "..flr(stat(0)/1024*100).."%", 0, stage_top - 8, 8)
+	end
+	if show_debuginfo then 
+		print("x: "..flr(cursor_x+cam_x).." y:"..cursor_y-stage_top, 80, stage_top - 8, 8) 
+	end
+
+	draw_cursor()
+end
+
+function draw_room()
+	-- todo: factor in diff drawing modes?
+
+	 -- check for current room
+	if not room_curr then
+		print("-error-  no current room set",5+cam_x,5+stage_top,8,0)
+		return
+	end
+
+
+	-- set room background col (or black by default)
+	rectfill(0, stage_top, 127, stage_top+64, room_curr.bg_col or 0)
+
+
+	-- draw each zplane, from back to front
+	for z = -64,64 do
+
+		-- draw bg layer?
+		if z == 0 then			
+			-- replace colors?
+			replace_colors(room_curr)
+
+			if room_curr.trans_col then
+				set_trans_col(room_curr.trans_col, true)
+				-- palt(0, false)
+				-- palt(room_curr.trans_col, true)
+			end
+
+  		map(room_curr.map[1], room_curr.map[2], 0, stage_top, room_curr.map_w, 8)
+			--map(room_curr.map[1], room_curr.map[2], 0, stage_top, room_curr.map_w, room_curr.map_h)
+			
+			--reset palette
+			pal()		
+
+
+					-- ===============================================================
+					-- debug walkable areas
+					
+					-- if show_pathfinding then
+					-- 	actor_cell_pos = getcellpos(selected_actor)
+
+					-- 	celx = flr((cursor_x + cam_x + 0) /8) + room_curr.map[1]
+					-- 	cely = flr((cursor_y - stage_top + 0) /8 ) + room_curr.map[2]
+					-- 	target_cell_pos = { celx, cely }
+
+					-- 	path = find_path(actor_cell_pos, target_cell_pos)
+
+					-- 	-- finally, add our destination to list
+					-- 	click_cell = getcellpos({x=(cursor_x + cam_x), y=(cursor_y - stage_top)})
+					-- 	if is_cell_walkable(click_cell[1], click_cell[2]) then
+					-- 	--if (#path>0) then
+					-- 		add(path, click_cell)
+					-- 	end
+
+					-- 	for p in all(path) do
+					-- 		--d("  > "..p[1]..","..p[2])
+					-- 		rect(
+					-- 			(p[1]-room_curr.map[1])*8, 
+					-- 			stage_top+(p[2]-room_curr.map[2])*8, 
+					-- 			(p[1]-room_curr.map[1])*8+7, 
+					-- 			stage_top+(p[2]-room_curr.map[2])*8+7, 11)
+					-- 	end
+					-- end
+
+		else
+			-- draw other layers
+			zplane = draw_zplanes[z]
+		
+			-- draw all objs/actors in current zplane
+			for obj in all(zplane) do
+				-- object or actor?
+				if not has_flag(obj.classes, "class_actor") then
+					-- object
+					if obj.states	  -- object has a state?
+				    or (obj.state
+					   and obj[obj.state]
+					   and obj[obj.state] > 0)
+					 and (not obj.dependent_on 			-- object has a valid dependent state?
+						or obj.dependent_on.state == obj.dependent_on_state)
+					 and not obj.owner   						-- object is not "owned"
+					 or obj.draw
+					then
+						-- something to draw
+						object_draw(obj)
+					end
+				else
+					-- actor
+					if obj.in_room == room_curr then
+						actor_draw(obj)
+					end
+				end
+
+				if obj.bounds  
+					and (hover_curr_object == obj
+					or show_collision)
+				then 
+					rect(obj.bounds.x, obj.bounds.y, obj.bounds.x1, obj.bounds.y1, 8) 
+				end	
+			end
+		end		
+	end
+end
+
+function draw_cursor()
+	col = cursor_cols[cursor_colpos]
+	-- switch sprite color accordingly
+	pset(cursor_x, cursor_y, 8)
+	-- pal(7,col)
+	-- spr(1, cursor_x-4, cursor_y-3, 1, 1, 0)
+	-- pal() --reset palette
+
+	cursor_tmr += 1
+	if cursor_tmr > 7 then
+		--reset timer
+		cursor_tmr = 1
+		-- move to next color?
+		cursor_colpos += 1
+		if cursor_colpos > #cursor_cols then cursor_colpos = 1 end
+	end
+end
+
+function replace_colors(obj)
+	-- replace colors (where defined)
+	if obj.col_replace then
+		c = obj.col_replace
+		--for c in all(obj.col_replace) do
+			pal(c[1], c[2])
+		--end
+	end
+	-- also apply brightness (default to room-level, if not set)
+	if obj.lighting then
+		_fadepal(obj.lighting)
+	elseif obj.in_room 
+	 and obj.in_room.lighting then
+		_fadepal(obj.in_room.lighting)
+	end
 end
 
 
+function object_draw(obj)
+	-- replace colors?
+	replace_colors(obj)
+
+	-- check for custom draw
+	if obj.draw then
+		obj.draw(obj)
+		--return
+	else
+		-- allow for repeating
+		rx=1
+		if obj.repeat_x then rx = obj.repeat_x end
+		for h = 0, rx-1 do
+			-- draw object (in its state!)
+			local obj_spr = 0
+			if obj.states then
+				obj_spr = obj.states[obj.state]
+			else
+				obj_spr = obj[obj.state]
+			end
+			sprdraw(obj_spr, obj.x+(h*(obj.w*8)), obj.y, obj.w, obj.h, obj.trans_col, obj.flip_x)
+		end
+	end
+
+	--reset palette
+	pal() 
+end
+
+-- draw actor(s)
+function actor_draw(actor)
+
+	dirnum = face_dir_vals[actor.face_dir]
+
+	if actor.moving == 1
+	 and actor.walk_anim 
+	then
+		actor.tmr += 1
+		if actor.tmr > actor.frame_delay then
+			actor.tmr = 1
+			actor.anim_pos += 1
+			if actor.anim_pos > #actor.walk_anim then actor.anim_pos=1 end
+		end
+		-- choose walk anim frame
+		sprnum = actor.walk_anim[actor.anim_pos]	
+	else
+
+		-- idle
+		sprnum = actor.idle[dirnum]
+	end
+
+	-- replace colors?
+	replace_colors(actor)
+
+	sprdraw(sprnum, actor.offset_x, actor.offset_y, 
+		actor.w , actor.h, actor.trans_col, 
+		actor.flip, false)
+	
+	-- talking overlay
+	if talking_actor 
+	 and talking_actor == actor 
+	 and talking_actor.talk
+	then
+			if actor.talk_tmr < 7 then
+				sprnum = actor.talk[dirnum]
+				sprdraw(sprnum, actor.offset_x, actor.offset_y +8, 1, 1, 
+					actor.trans_col, actor.flip, false)
+			end
+			actor.talk_tmr += 1	
+			if actor.talk_tmr > 14 then actor.talk_tmr = 1 end
+	end
+
+	--reset palette
+	pal()
+end
+
+function draw_ui()
+	-- todo: factor in diff drawing modes?
+end
+
+function sprdraw(n, x, y, w, h, transcol, flip_x, flip_y)
+	-- switch transparency
+	set_trans_col(transcol, true)
+
+	-- draw sprite
+	spr(n, x, stage_top + y, w, h, flip_x, flip_y)
+
+	--pal() -- don't do, affects lighting!
+end
+
+function set_trans_col(transcol, enabled)
+	-- set transparency for specific col
+	palt(0, false)
+	palt(transcol, true)
+	
+	-- set status of default transparency
+	if transcol and transcol > 0 then
+		palt(0, false)
+	end
+end
+
+-- ===========================================================================
+-- data related
+--
+
+function has_flag(obj, value)
+	for f in all(obj) do
+	 if f == value then 
+	 	return true 
+	 end
+	end
+  --if band(obj, value) != 0 then return true end
+  return false
+end
+
+function recalc_bounds(obj, w, h, cam_off_x, cam_off_y)
+  x = obj.x
+	y = obj.y
+	-- offset for actors?
+	if has_flag(obj.classes, "class_actor") then
+		obj.offset_x = x - (obj.w *8) /2
+		obj.offset_y = y - (obj.h *8) +1		
+		x = obj.offset_x
+		y = obj.offset_y
+	end
+	obj.bounds = {
+		x = x,
+		y = y + stage_top,
+		x1 = x + w -1,
+		y1 = y + h + stage_top -1,
+		cam_off_x = cam_off_x,
+		cam_off_y = cam_off_y
+	}
+end
 
 
-
-
+-- ===========================================================================
 -- pack/unpack related
+--
 
 function set_data_defaults()
   
@@ -102,14 +554,21 @@ function set_data_defaults()
 		end
 
 		-- init objects (in room)
-		-- for obj in all(room.objects) do
-		-- 	explode_data(obj)
-		-- 	obj.in_room = room
-		-- 	obj.h = obj.h or 0
-		-- 	if obj.init then
-		-- 		obj.init(obj)
-		-- 	end
-		-- end
+		local obj_list = {}
+		for obj_id in all(room.objects) do
+			printh("obj id2: "..obj_id)
+			obj = objects[obj_id]
+			if obj then
+				obj.in_room = room
+				obj.h = obj.h or 0
+				-- if obj.init then
+				-- 	obj.init(obj)
+				-- end
+				add(obj_list, obj)
+			end
+		end
+		-- now replace room.objectids with .objects
+		room.objects = obj_list
 	end
 
 	-- init actors with defaults
@@ -138,18 +597,24 @@ function explode_data(data)
     room = {}
 		--d("curr line = ["..l.."]")
     local properties=split(l, "/")
+		local id = 0
     for prop in all(properties) do
       --printh("curr prop = ["..prop.."]")
       local pairs=split(prop, "=")
       if #pairs==2 then
-        room[pairs[1]] = autotype(pairs[2])
+				if pairs[1] == "id" then
+					id = autotype(pairs[2])
+				end
+				room[pairs[1]] = autotype(pairs[2])
       else
         printh("invalid data line")
       end
     end
 		-- only add if something to add
-		if #properties > 0 then
-    	add(rooms, room)
+		if #properties > 0 
+		 and id > 0 then
+			rooms[id] = room
+    	--add(rooms, room)
 		end
 		--if (room.objects) printh("obj count:"..#room.objects)
 	end
@@ -160,18 +625,24 @@ function explode_data(data)
 	for l in all(lines) do
     obj = {}
     local properties=split(l, "/")
+		local id = 0
     for prop in all(properties) do
       local pairs=split(prop, "=")
       -- now set actual values
       if #pairs==2 then
-        obj[pairs[1]] = autotype(pairs[2])
+				if pairs[1] == "id" then
+					id = autotype(pairs[2])
+				end
+				obj[pairs[1]] = autotype(pairs[2])
       else
         printh("invalid data line")
       end
     end
 		-- only add if something to add
-		if #properties > 0 then
-    	add(objects, obj)
+		if #properties > 0 
+		 and id > 0 then
+			objects[id] = obj
+    	--add(objects, room)
 		end
 	end
 	--printh("objects:"..#objects)
@@ -182,19 +653,25 @@ function explode_data(data)
 	for l in all(lines) do
     actor = {}
     local properties=split(l, "/")
+		local id = 0
     for prop in all(properties) do
 			--printh("curr prop = ["..prop.."]")
       local pairs=split(prop, "=")
       -- now set actual values
       if #pairs==2 then
-        actor[pairs[1]] = autotype(pairs[2])
+				if pairs[1] == "id" then
+					id = autotype(pairs[2])
+				end
+				actor[pairs[1]] = autotype(pairs[2])
       else
         printh("invalid data line")
       end
     end
 		-- only add if something to add
-		if #properties > 0 then
-    	add(actors, actor)
+		if #properties > 0 
+		 and id > 0 then
+			actors[id] = actor
+    	--add(actors, actor)
 		end
 	end
 
@@ -267,14 +744,15 @@ function is_num_char(c)
 	end
 end
 
+
 __gfx__
-00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00700700000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00077000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00077000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00700700000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000700000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000700000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00700700000700000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00077000777077700000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00077000000700000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00700700000700000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000700000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
