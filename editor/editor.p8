@@ -359,7 +359,7 @@ function draw_room()
 					and (hover_curr_object == obj
 					or show_collision)
 				then 
-					rect(obj.bounds.x, obj.bounds.y, obj.bounds.x1, obj.bounds.y1, 8) 
+					rect(obj.bounds.x-1, obj.bounds.y-1, obj.bounds.x1+1, obj.bounds.y1+1, 8) 
 				end	
 			end
 		end		
@@ -369,13 +369,19 @@ end
 function draw_cursor()
 	col = cursor_cols[cursor_colpos]
 	-- switch sprite color accordingly
-	pset(cursor_x, cursor_y, 8)
+
+	line(cursor_x-4, cursor_y,cursor_x-1, cursor_y, col)
+	line(cursor_x+1, cursor_y,cursor_x+4, cursor_y, col)
+	line(cursor_x, cursor_y-4,cursor_x, cursor_y-1, col)
+	line(cursor_x, cursor_y+1,cursor_x, cursor_y+4, col)
+
+	--pset(cursor_x, cursor_y, 8)
 	-- pal(7,col)
 	-- spr(1, cursor_x-4, cursor_y-3, 1, 1, 0)
 	-- pal() --reset palette
 
 	cursor_tmr += 1
-	if cursor_tmr > 7 then
+	if cursor_tmr > 14 then
 		--reset timer
 		cursor_tmr = 1
 		-- move to next color?
