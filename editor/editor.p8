@@ -42,6 +42,59 @@ gui_fg3 = 7
 -- gui_fg2 = 7
 
 
+-- list of properties (room/object/actor)
+-- types:
+--    1 = number
+--    2 = string
+--    3 = bool
+
+
+properties = {
+	{"","",type},
+	{"","",type},
+	{"","",type},
+	{"","",type},
+	{"","",type},
+	{"","",type},
+	{"","",type},
+	{"","",type},
+	{"","",type},
+	{"","",type},
+	{"","",type},
+	{"","",type},
+	{"","",type},
+	{"","",type},
+	{"","",type},
+	{"","",type},
+	{"","",type},
+	{"","",type},
+	{"","",type},
+	{"","",type},
+	{"","",type},
+	{"","",type},
+	{"","",type},
+	{"","",type},
+	{"","",type},
+	{"","",type},
+	{"","",type},
+	{"","",type},
+	{"","",type},
+
+
+
+	"x:255 y:016 z:",
+	"trans col:",
+	"col replace",
+	"lighting:",
+	"repeat x",
+	"state",
+	"states",
+	"classes",
+	"flip x",
+	"use with"
+}
+
+
 function _init()
   base_cart_name = "game_base"
   disk_cart_name = "game_disk"
@@ -448,19 +501,6 @@ function draw_gui()
 	-- properties (section)
 	rectfill(0,82,127,119,gui_fg3)
 
-	-- debug: fake list of properties
-	props = {
-		"x:255 y:016 z:",
-		"trans col:",
-		"col replace",
-		"lighting:",
-		"repeat x",
-		"state",
-		"states",
-		"classes",
-		"flip x",
-		"use with"
-	}
 	local px = 3
 	local py = 1
 	local yoff=0
@@ -472,13 +512,13 @@ function draw_gui()
 
 	-- status bar
 	rectfill(0,119,127,127,gui_bg1)
-	print("x:"..flr(cursor_x+cam_x).." y:"..cursor_y-stage_top, 
+	print("x:"..pad_3(cursor_x+cam_x).." y:"..pad_3(cursor_y-stage_top), 
 		3,121, gui_bg2) 
 
 	print("cpu:"..flr(100*stat(1)).."%", 
-		70, 121, gui_bg2) 
+		66, 121, gui_bg2) 
 	print("mem:"..flr(stat(0)/1024*100).."%", 
-		102, 121, gui_bg2)
+		98, 121, gui_bg2)
 
 end
 
@@ -886,7 +926,7 @@ function is_num_char(c)
 end
 
 function pad_3(number)
-	local strnum=""..number
+	local strnum=""..flr(number)
 	local z="000"
 	return sub(z,#strnum+1)..strnum
 end
