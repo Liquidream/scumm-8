@@ -12,12 +12,19 @@ show_perfinfo = true
 enable_mouse = true
 d = printh
 
--- "light blue" gui theme
-gui_bg1 = 12
+-- "dark blue" gui theme
+gui_bg1 = 1
 gui_bg2 = 5
 gui_bg3 = 6
-gui_fg1 = 5 --13
+gui_fg1 = 12
 gui_fg2 = 7
+
+-- "light blue" gui theme
+-- gui_bg1 = 12
+-- gui_bg2 = 5
+-- gui_bg3 = 6
+-- gui_fg1 = 5
+-- gui_fg2 = 7
 
 -- "green" gui theme
 -- gui_bg1 = 3
@@ -415,14 +422,14 @@ end
 function draw_gui()
 	-- header bar
 	rectfill(0,0,127,7,gui_bg1)
-	--pal(5,1)
+	pal(5,12)
 	spr(192,2,1)
 	spr(193,10,1)
 	spr(194,19,1)
 	--
-	pal(5,10)
+	pal(5,7)
 	spr(196,99,1)
-	pal(5,5)
+	pal(5,12)
 	spr(213,108,1)
 	spr(214,117,1)
 	
