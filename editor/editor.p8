@@ -20,52 +20,45 @@ gui_fg1 = 12
 gui_fg2 = 13
 gui_fg3 = 7
 
--- "light blue" gui theme
--- gui_bg1 = 12
--- gui_bg2 = 5
--- gui_bg3 = 6
--- gui_fg1 = 5
--- gui_fg2 = 7
-
--- "green" gui theme
--- gui_bg1 = 3
--- gui_bg2 = 5
--- gui_bg3 = 6
--- gui_fg1 = 11 --5 --13
--- gui_fg2 = 7
-
--- "violet" gui theme
--- gui_bg1 = 13 --12
--- gui_bg2 = 5
--- gui_bg3 = 6
--- gui_fg1 = 1 --5 --13
--- gui_fg2 = 7
-
 
 -- list of properties (room/object/actor)
 -- types:
---    1 = number
---    2 = string
---    3 = bool
+--   1 = number
+--   2 = string
+--   3 = bool
+--   4 = decimal (0..1)
 
+--  10 = state ref
+--  11 = states list (or numbers)
+--  12 = classes list 
+--  13 = color picker
+--  14 = color replace list (using pairs of color pickers)
+--  15 = 
+
+--  30 = use position (pos preset or specific pos)
+--  31 = use/face dir
+
+
+--  50 = 
 
 properties = {
-	{"","",type},
-	{"","",type},
-	{"","",type},
-	{"","",type},
-	{"","",type},
-	{"","",type},
-	{"","",type},
-	{"","",type},
-	{"","",type},
-	{"","",type},
-	{"","",type},
-	{"","",type},
-	{"","",type},
-	{"","",type},
-	{"","",type},
-	{"","",type},
+	-- shared props (room/object/actor)
+	{"name","name",2},
+	{"x","x",1},
+	{"y","y",1},
+	{"z","z",1},
+	{"w","w",1},
+	{"h","h",1},
+	{"state","state",10},
+	{"states","states",11},
+	{"classes","classes",12},
+	{"trans_col","trans col",13},
+	{"col_replace","col replace",14},
+	{"use_pos","use pos",30},
+	{"use_dir","use dir",31},
+	{"use_with","use with",3},
+	{"repeat_x","repeat_x",1},
+	{"lighting","lighting",4},
 	{"","",type},
 	{"","",type},
 	{"","",type},
@@ -80,10 +73,27 @@ properties = {
 	{"","",type},
 	{"","",type},
 
+	-- room-only props
+	{"map","map",type},
+	{"","",type},
+	{"","",type},
+	{"","",type},
+
+	-- actor-only props
+	{"","",type},
+	{"","",type},
+	{"","",type},
+	{"","",type},
+	{"","",type},
+	{"","",type},
+	{"","",type},
+	{"","",type},
+	{"","",type},
+	{"","",type},
+	{"","",type},
+	{"","",type},
 
 
-	"x:255 y:016 z:",
-	"trans col:",
 	"col replace",
 	"lighting:",
 	"repeat x",
