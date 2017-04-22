@@ -40,6 +40,7 @@ gui_fg3 = 7
 
 --  40 = single sprites (directional)
 --  41 = sprite anim sequence
+--  
 
 --  50 = object ref
 
@@ -77,22 +78,10 @@ properties = {
 	{"walk_anim_front","walk anim(front)",41},
 	{"walk_anim_back","walk anim(back)",41},
 	{"col","talk col",13},
-	{"","",type},
-	{"","",type},
-	{"","",type},
-	{"","",type},
-	{"","",type},
-	{"","",type},
-
-
-	"col replace",
-	"lighting:",
-	"repeat x",
-	"state",
-	"states",
-	"classes",
-	"flip x",
-	"use with"
+	{"walk_speed","walk speed",1},
+	{"frame_delay","anim speed",1},
+	{"face_dir","start dir",31},
+	
 }
 
 
