@@ -38,8 +38,10 @@ gui_fg3 = 7
 --  30 = use position (pos preset or specific pos)
 --  31 = use/face dir
 
+--  40 = single sprites (directional)
+--  41 = sprite anim sequence
 
---  50 = 
+--  50 = object ref
 
 properties = {
 	-- shared props (room/object/actor)
@@ -59,33 +61,22 @@ properties = {
 	{"use_with","use with",3},
 	{"repeat_x","repeat_x",1},
 	{"lighting","lighting",4},
-	{"","",type},
-	{"","",type},
-	{"","",type},
-	{"","",type},
-	{"","",type},
-	{"","",type},
-	{"","",type},
-	{"","",type},
-	{"","",type},
-	{"","",type},
-	{"","",type},
-	{"","",type},
-	{"","",type},
+	{"flip_x","flip x",3},
+
+	-- object/actor props
+	{"dependent_on","depends on",50},
+	{"dependent_on_state","state req",11},
 
 	-- room-only props
 	{"map","map",type},
-	{"","",type},
-	{"","",type},
-	{"","",type},
 
 	-- actor-only props
-	{"","",type},
-	{"","",type},
-	{"","",type},
-	{"","",type},
-	{"","",type},
-	{"","",type},
+	{"idle","idle frame",40},
+	{"talk","talk frame",40},
+	{"walk_anim_side","walk anim(side)",41},
+	{"walk_anim_front","walk anim(front)",41},
+	{"walk_anim_back","walk anim(back)",41},
+	{"col","talk col",13},
 	{"","",type},
 	{"","",type},
 	{"","",type},
