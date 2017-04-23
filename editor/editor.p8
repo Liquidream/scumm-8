@@ -12,6 +12,19 @@ show_perfinfo = true
 enable_mouse = true
 d = printh
 
+
+-- global vars
+rooms = {}
+objects = {}
+actors = {}
+stage_top = 8 --16
+cam_x = 100--0
+draw_zplanes = {}		-- table of tables for each of the (8) zplanes for drawing depth
+cursor_x, cursor_y, cursor_tmr, cursor_colpos = 63.5, 63.5, 0, 1
+cursor_cols = {7,12,13,13,12,7}
+curr_object = nil		-- currently selected object/actor (or room, if nil)
+room_index = 2--1
+
 -- "dark blue" gui theme
 gui_bg1 = 1
 gui_bg2 = 5
@@ -44,51 +57,45 @@ gui_fg3 = 7
 
 --  50 = object ref
 
--- prop applicable to (bitflags)
--- if has_flag(obj.class, class_talkable) then
-prop_object = 1
-prop_actor = 2
-prop_room = 4
-
-properties = {
+prop_definitions = {
 	-- shared props (room/object/actor)
-	{"trans_col", "trans col", 13, prop_room+prop_object+prop_actor},
-	{"col_replace", "col replace", 14, prop_room+prop_object+prop_actor},
-	{"lighting", "lighting", 4, prop_room+prop_object+prop_actor},
+	{"trans_col", "trans col", 13, {"class_room","class_object","class_actor"} },
+	{"col_replace", "col replace", 14, {"class_room","class_object","class_actor"} },
+	{"lighting", "lighting", 4, {"class_room","class_object","class_actor"} },
 
 	-- object/actor props
-	{"name", "name", 2, prop_object+prop_actor},
-	{"x", "x", 1, prop_object+prop_actor},
-	{"y", "y", 1, prop_object+prop_actor},
-	{"z", "z", 1, prop_object+prop_actor},
-	{"w", "w", 1, prop_object+prop_actor},
-	{"h", "h", 1, prop_object+prop_actor},
-	{"state", "state", 10, prop_object+prop_actor},
-	{"states", "states", 11, prop_object+prop_actor},
-	{"classes", "classes", 12, prop_object+prop_actor},
-	{"use_pos", "use pos", 30, prop_object+prop_actor},
-	{"use_dir", "use dir", 31, prop_object+prop_actor},
-	{"use_with", "use with", 3, prop_object+prop_actor},
-	{"repeat_x", "repeat_x", 1, prop_object+prop_actor},
-	{"flip_x", "flip x", 3, prop_object+prop_actor},
+	{"name", "name", 2, {"class_object","class_actor"} },
+	{"x", "x", 1, {"class_object","class_actor"} },
+	{"y", "y", 1, {"class_object","class_actor"} },
+	{"z", "z", 1, {"class_object","class_actor"} },
+	{"w", "w", 1, {"class_object","class_actor"} },
+	{"h", "h", 1, {"class_object","class_actor"} },
+	{"state", "state", 10, {"class_object","class_actor"} },
+	{"states", "states", 11, {"class_object","class_actor"} },
+	{"classes", "classes", 12, {"class_object","class_actor"} },
+	{"use_pos", "use pos", 30, {"class_object","class_actor"} },
+	{"use_dir", "use dir", 31, {"class_object","class_actor"} },
+	{"use_with", "use with", 3, {"class_object","class_actor"} },
+	{"repeat_x", "repeat_x", 1, {"class_object","class_actor"} },
+	{"flip_x", "flip x", 3, {"class_object","class_actor"} },
 
 	-- object props
-	{"dependent_on", "depends on", 50, prop_object},
-	{"dependent_on_state", "state req", 11, prop_object},
+	{"dependent_on", "depends on", 50, {"class_object"} },
+	{"dependent_on_state", "state req", 11, {"class_object"} },
 
 	-- room-only props
-	{"map", "map", type, prop_room,
+	{"map", "map", type, prop_room},
 
 	-- actor-only props
-	{"idle", "idle frame", 40, prop_actor},
-	{"talk", "talk frame", 40, prop_actor},
-	{"walk_anim_side", "walk anim(side)", 41, prop_actor},
-	{"walk_anim_front", "walk anim(front)", 41, prop_actor},
-	{"walk_anim_back", "walk anim(back)", 41, prop_actor},
-	{"col", "talk col", 13, prop_actor},
-	{"walk_speed", "walk speed", 1, prop_actor},
-	{"frame_delay", "anim speed", 1, prop_actor},
-	{"face_dir", "start dir", 31, prop_actor},
+	{"idle", "idle frame", 40, {"class_actor"} },
+	{"talk", "talk frame", 40, {"class_actor"} },
+	{"walk_anim_side", "walk anim(side)", 41, {"class_actor"} },
+	{"walk_anim_front", "walk anim(front)", 41, {"class_actor"} },
+	{"walk_anim_back", "walk anim(back)", 41, {"class_actor"} },
+	{"col", "talk col", 13, {"class_actor"} },
+	{"walk_speed", "walk speed", 1, {"class_actor"} },
+	{"frame_delay", "anim speed", 1, {"class_actor"} },
+	{"face_dir", "start dir", 31, {"class_actor"} },
 
 }
 
@@ -99,17 +106,6 @@ function _init()
   num_extra_disks = 0    
   is_dirty = false  -- has been modified since last "save"?
 
-  -- global vars
-  rooms = {}
-  objects = {}
-  actors = {}
-  stage_top = 8 --16
-  cam_x = 100--0
-  draw_zplanes = {}		-- table of tables for each of the (8) zplanes for drawing depth
-	cursor_x, cursor_y, cursor_tmr, cursor_colpos = 63.5, 63.5, 0, 1
-	cursor_cols = {7,12,13,13,12,7}
-	curr_object = nil		-- currently selected object/actor (or room, if nil)
-  room_index = 2--1
 
 
   -- packed game data (rooms/objects/actors)
