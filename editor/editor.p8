@@ -725,6 +725,12 @@ function recalc_bounds(obj, w, h, cam_off_x, cam_off_y)
 		x = obj.offset_x
 		y = obj.offset_y
 	end
+
+	-- adjust bounds for repeat-drawn sprites
+	if obj.repeat_x then 
+		w *= obj.repeat_x 
+	end
+
 	obj.bounds = {
 		x = x,
 		y = y + stage_top,
@@ -760,9 +766,9 @@ function set_data_defaults()
 			if obj then
 				obj.in_room = room
 				obj.h = obj.h or 0
-				obj.w = obj.w or obj.repeat_x or 0
-				-- if obj.init then
-				-- 	obj.init(obj)
+				obj.w = obj.w or 0
+				-- if obj.repeat_x  then
+				-- 	d("repeat:"..obj.repeat_x.." --- obj.w:"..obj.w)
 				-- end
 				add(obj_list, obj)
 			end
