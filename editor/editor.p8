@@ -186,9 +186,9 @@ function update_room()
 		--printh("obj:"..obj.id)
 
 		-- capture bounds
-		if not has_flag(obj.classes, "class_untouchable") then
-			recalc_bounds(obj, obj.w*8, obj.h*8, cam_x, cam_y)
-		end
+		-- if not has_flag(obj.classes, "class_untouchable") then
+		recalc_bounds(obj, obj.w*8, obj.h*8, cam_x, cam_y)
+		-- end
 
 		--d("obj-z:"..type(obj.z))
 		
@@ -488,7 +488,11 @@ function draw_gui()
 	
 	-- properties (bar)
 	rectfill(0,72,127,82,gui_bg2)
-	print("object:"..pad_3(1),10,74,gui_fg3)
+	if curr_selection then
+		print(
+			sub(curr_selection_class,7)..":"..pad_3(curr_selection.id)
+			,10,74,gui_fg3)
+	end
 
 	spr(204,96,74)
 	spr(221,104,74)
@@ -508,7 +512,7 @@ function draw_gui()
 		then
 			print(p[1], 3+xoff, 83+yoff, gui_bg2)
 			yoff += 6
-			if yoff > 115 then 
+			if yoff > 30 then 
 				yoff = 0
 				xoff += 60 
 			end
@@ -756,6 +760,7 @@ function set_data_defaults()
 			if obj then
 				obj.in_room = room
 				obj.h = obj.h or 0
+				obj.w = obj.w or obj.repeat_x or 0
 				-- if obj.init then
 				-- 	obj.init(obj)
 				-- end
