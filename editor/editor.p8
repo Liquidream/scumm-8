@@ -61,7 +61,7 @@ gui_fg3 = 7
 prop_definitions = {
 	-- shared props (room/object/actor)
 	{"trans_col", "trans col", 13, {"class_room","class_object","class_actor"} },
-	{"col_replace", "col replace", 14, {"class_room","class_object","class_actor"} },
+	{"col_replace", "col swap", 14, {"class_room","class_object","class_actor"} },
 	{"lighting", "lighting", 4, {"class_room","class_object","class_actor"} },
 
 	-- object/actor props
@@ -510,7 +510,7 @@ function draw_gui()
 		if curr_selection 
 		 and has_flag(p[4], curr_selection_class)
 		then
-			print(p[1], 3+xoff, 83+yoff, gui_bg2)
+			print(p[2], 3+xoff, 83+yoff, gui_bg2)
 			yoff += 6
 			if yoff > 30 then 
 				yoff = 0
