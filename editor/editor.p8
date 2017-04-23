@@ -528,7 +528,7 @@ function draw_gui()
 		if curr_selection 
 		 and has_flag(prop[4], curr_selection_class)
 		then
-			print(prop[2], 3+xoff, 83+yoff, gui_bg2)
+			print(prop[2]..":", 3+xoff, 83+yoff, gui_bg2)
 			yoff += 6
 			if yoff > 30 then 
 				yoff = 0
