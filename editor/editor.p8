@@ -24,6 +24,8 @@ cursor_x, cursor_y, cursor_tmr, cursor_colpos = 63.5, 63.5, 0, 1
 cursor_cols = {7,12,13,13,12,7}
 curr_selection = nil		-- currently selected object/actor (or room, if nil)
 curr_selection_class = nil
+prop_page_num = 0
+
 room_index = 2--1
 
 -- "dark blue" gui theme
@@ -509,11 +511,15 @@ function draw_gui()
 	-- find all properties for selected object (or room, if no obj/actor selected)
 	local xoff=0
 	local yoff=0
-	for p in all(prop_definitions) do
+	local start_pos = prop_page_num * 12 +1
+	for i = start_pos, min(start_pos+12-1, #prop_definitions) do
+		d("i="..i)
+	--for p in all(prop_definitions) do
+		local prop = prop_definitions[i]
 		if curr_selection 
-		 and has_flag(p[4], curr_selection_class)
+		 and has_flag(prop[4], curr_selection_class)
 		then
-			print(p[2], 3+xoff, 83+yoff, gui_bg2)
+			print(prop[2], 3+xoff, 83+yoff, gui_bg2)
 			yoff += 6
 			if yoff > 30 then 
 				yoff = 0
@@ -521,15 +527,6 @@ function draw_gui()
 			end
 		end
 	end
-
-	-- local px = 3
-	-- local py = 1
-	-- local yoff=0
-	-- for p in all(props) do
-	-- 	print(p,3,83+yoff,gui_bg2)
-	-- 	print(" 123",3+(4*#p),83+yoff, gui_fg1)
-	-- 	yoff += 6
-	-- end
 
 	-- status bar
 	rectfill(0,119,127,127,gui_bg1)
