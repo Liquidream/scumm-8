@@ -26,8 +26,6 @@ curr_selection = nil		-- currently selected object/actor (or room, if nil)
 curr_selection_class = nil
 prop_page_num = 0
 
-room_index = 2--1
-
 -- "dark blue" gui theme
 gui_bg1 = 1
 gui_bg2 = 5
@@ -109,6 +107,7 @@ function _init()
   num_extra_disks = 0    
   is_dirty = false  -- has been modified since last "save"?
 
+	room_index = 2--1
 
 
   -- packed game data (rooms/objects/actors)
@@ -160,6 +159,12 @@ function _update60()
   room_index = mid(1, room_index, #rooms)
 
   room_curr = rooms[room_index]
+
+	-- default first selection to current room
+	if not curr_selection then
+		curr_selection = room_curr
+		curr_selection_class = "class_room"
+	end
 
   cam_x = mid(0, cam_x, (room_curr.map_w*8)-127 -1)
 
@@ -275,9 +280,11 @@ function input_control()
   -- handle player input
   if btnp(2) then
     room_index += 1
+		curr_selection = nil
   end
   if btnp(3) then
     room_index -= 1
+		curr_selection = nil
   end
   if btn(1) then
     cam_x += 1
@@ -336,8 +343,9 @@ function input_button_pressed(button_index)
 	
 	
 	else
-		-- nothing clicked
-		curr_selection = nil
+		-- nothing clicked (so default to room selected)
+		curr_selection = room_curr
+		curr_selection_class = "class_room"
 	end
 end
 
