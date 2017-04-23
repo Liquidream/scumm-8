@@ -22,7 +22,8 @@ cam_x = 100--0
 draw_zplanes = {}		-- table of tables for each of the (8) zplanes for drawing depth
 cursor_x, cursor_y, cursor_tmr, cursor_colpos = 63.5, 63.5, 0, 1
 cursor_cols = {7,12,13,13,12,7}
-curr_object = nil		-- currently selected object/actor (or room, if nil)
+curr_selection = nil		-- currently selected object/actor (or room, if nil)
+curr_selection_class = nil
 room_index = 2--1
 
 -- "dark blue" gui theme
@@ -174,7 +175,7 @@ function update_room()
 	end
 
 	-- reset hover collisions
-	hover_curr_object = nil
+	hover_curr_selection = nil
 
  	-- reset zplane info
 	reset_zplanes()
@@ -195,11 +196,12 @@ function update_room()
 		if iscursorcolliding(obj) then
 
 			-- if highest (or first) object in hover "stack"
-			if not hover_curr_object
-			 or	(not obj.z and hover_curr_object.z and hover_curr_object.z < 0) 
-			 or	(obj.z and hover_curr_object.z and obj.z > hover_curr_object.z) 
+			if not hover_curr_selection
+			 or	(not obj.z and hover_curr_selection.z and hover_curr_selection.z < 0) 
+			 or	(obj.z and hover_curr_selection.z and obj.z > hover_curr_selection.z) 
 			then
-				hover_curr_object = obj
+				hover_curr_selection = obj
+				hover_curr_selection_class = "class_object"
 			end
 		end
 		-- recalc z-plane
@@ -323,15 +325,16 @@ function input_button_pressed(button_index)
 	if hover_curr_cmd then
 
 
-	elseif hover_curr_object then
+	elseif hover_curr_selection then
 		-- select object
-		curr_object = hover_curr_object
+		curr_selection = hover_curr_selection
+		curr_selection_class = hover_curr_selection_class
 	
 	
 	
 	else
 		-- nothing clicked
-		curr_object = nil
+		curr_selection = nil
 	end
 end
 
@@ -454,9 +457,9 @@ function draw_room()
 				end
 
 				if obj.bounds then
-					if curr_object == obj then
+					if curr_selection == obj then
 						rect(obj.bounds.x-1, obj.bounds.y-1, obj.bounds.x1+1, obj.bounds.y1+1, cursor_cols[cursor_colpos]) 
-					elseif hover_curr_object == obj
+					elseif hover_curr_selection == obj
 						or show_collision 
 					then
 						rect(obj.bounds.x-1, obj.bounds.y-1, obj.bounds.x1+1, obj.bounds.y1+1, 8)
@@ -495,14 +498,31 @@ function draw_gui()
 	-- properties (section)
 	rectfill(0,82,127,119,gui_fg3)
 
-	local px = 3
-	local py = 1
+
+	-- find all properties for selected object (or room, if no obj/actor selected)
+	local xoff=0
 	local yoff=0
-	for p in all(props) do
-		print(p,3,83+yoff,gui_bg2)
-		print(" 123",3+(4*#p),83+yoff, gui_fg1)
-		yoff += 6
+	for p in all(prop_definitions) do
+		if curr_selection 
+		 and has_flag(p[4], curr_selection_class)
+		then
+			print(p[1], 3+xoff, 83+yoff, gui_bg2)
+			yoff += 6
+			if yoff > 115 then 
+				yoff = 0
+				xoff += 60 
+			end
+		end
 	end
+
+	-- local px = 3
+	-- local py = 1
+	-- local yoff=0
+	-- for p in all(props) do
+	-- 	print(p,3,83+yoff,gui_bg2)
+	-- 	print(" 123",3+(4*#p),83+yoff, gui_fg1)
+	-- 	yoff += 6
+	-- end
 
 	-- status bar
 	rectfill(0,119,127,127,gui_bg1)
@@ -923,12 +943,6 @@ function pad_3(number)
 	local strnum=""..flr(number)
 	local z="000"
 	return sub(z,#strnum+1)..strnum
-end
-
-
-function has_flag(obj, value)
-  if band(obj, value) != 0 then return true end
-  return false
 end
 
 __gfx__
