@@ -44,44 +44,52 @@ gui_fg3 = 7
 
 --  50 = object ref
 
+-- prop applicable to (bitflags)
+-- if has_flag(obj.class, class_talkable) then
+prop_object = 1
+prop_actor = 2
+prop_room = 4
+
 properties = {
 	-- shared props (room/object/actor)
-	{"name","name",2},
-	{"x","x",1},
-	{"y","y",1},
-	{"z","z",1},
-	{"w","w",1},
-	{"h","h",1},
-	{"state","state",10},
-	{"states","states",11},
-	{"classes","classes",12},
-	{"trans_col","trans col",13},
-	{"col_replace","col replace",14},
-	{"use_pos","use pos",30},
-	{"use_dir","use dir",31},
-	{"use_with","use with",3},
-	{"repeat_x","repeat_x",1},
-	{"lighting","lighting",4},
-	{"flip_x","flip x",3},
+	{"trans_col", "trans col", 13, prop_room+prop_object+prop_actor},
+	{"col_replace", "col replace", 14, prop_room+prop_object+prop_actor},
+	{"lighting", "lighting", 4, prop_room+prop_object+prop_actor},
 
 	-- object/actor props
-	{"dependent_on","depends on",50},
-	{"dependent_on_state","state req",11},
+	{"name", "name", 2, prop_object+prop_actor},
+	{"x", "x", 1, prop_object+prop_actor},
+	{"y", "y", 1, prop_object+prop_actor},
+	{"z", "z", 1, prop_object+prop_actor},
+	{"w", "w", 1, prop_object+prop_actor},
+	{"h", "h", 1, prop_object+prop_actor},
+	{"state", "state", 10, prop_object+prop_actor},
+	{"states", "states", 11, prop_object+prop_actor},
+	{"classes", "classes", 12, prop_object+prop_actor},
+	{"use_pos", "use pos", 30, prop_object+prop_actor},
+	{"use_dir", "use dir", 31, prop_object+prop_actor},
+	{"use_with", "use with", 3, prop_object+prop_actor},
+	{"repeat_x", "repeat_x", 1, prop_object+prop_actor},
+	{"flip_x", "flip x", 3, prop_object+prop_actor},
+
+	-- object props
+	{"dependent_on", "depends on", 50, prop_object},
+	{"dependent_on_state", "state req", 11, prop_object},
 
 	-- room-only props
-	{"map","map",type},
+	{"map", "map", type, prop_room,
 
 	-- actor-only props
-	{"idle","idle frame",40},
-	{"talk","talk frame",40},
-	{"walk_anim_side","walk anim(side)",41},
-	{"walk_anim_front","walk anim(front)",41},
-	{"walk_anim_back","walk anim(back)",41},
-	{"col","talk col",13},
-	{"walk_speed","walk speed",1},
-	{"frame_delay","anim speed",1},
-	{"face_dir","start dir",31},
-	
+	{"idle", "idle frame", 40, prop_actor},
+	{"talk", "talk frame", 40, prop_actor},
+	{"walk_anim_side", "walk anim(side)", 41, prop_actor},
+	{"walk_anim_front", "walk anim(front)", 41, prop_actor},
+	{"walk_anim_back", "walk anim(back)", 41, prop_actor},
+	{"col", "talk col", 13, prop_actor},
+	{"walk_speed", "walk speed", 1, prop_actor},
+	{"frame_delay", "anim speed", 1, prop_actor},
+	{"face_dir", "start dir", 31, prop_actor},
+
 }
 
 
@@ -919,6 +927,12 @@ function pad_3(number)
 	local strnum=""..flr(number)
 	local z="000"
 	return sub(z,#strnum+1)..strnum
+end
+
+
+function has_flag(obj, value)
+  if band(obj, value) != 0 then return true end
+  return false
 end
 
 __gfx__
