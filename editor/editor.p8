@@ -569,14 +569,15 @@ function draw_cursor()
 	col = cursor_cols[cursor_colpos]
 	-- switch sprite color accordingly
 
-	line(cursor_x-4, cursor_y,cursor_x-1, cursor_y, col)
-	line(cursor_x+1, cursor_y,cursor_x+4, cursor_y, col)
-	line(cursor_x, cursor_y-4,cursor_x, cursor_y-1, col)
-	line(cursor_x, cursor_y+1,cursor_x, cursor_y+4, col)
+	-- game cursor
+	-- line(cursor_x-4, cursor_y,cursor_x-1, cursor_y, col)
+	-- line(cursor_x+1, cursor_y,cursor_x+4, cursor_y, col)
+	-- line(cursor_x, cursor_y-4,cursor_x, cursor_y-1, col)
+	-- line(cursor_x, cursor_y+1,cursor_x, cursor_y+4, col)
 
 	--pset(cursor_x, cursor_y, 8)
 	-- pal(7,col)
-	-- spr(1, cursor_x-4, cursor_y-3, 1, 1, 0)
+	spr(240, cursor_x, cursor_y, 1, 1)
 	-- pal() --reset palette
 
 	cursor_tmr += 1
