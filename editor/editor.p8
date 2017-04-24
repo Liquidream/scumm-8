@@ -370,7 +370,7 @@ function draw_editor()
 	camera(0,0)
 	clip()
 
-	draw_gui()
+	draw_ui()
 
 	draw_cursor()
 end
@@ -484,7 +484,9 @@ function draw_room()
 	end
 end
 
-function draw_gui()
+function draw_ui()
+	-- todo: factor in diff drawing modes (normal/modal)?
+
 	-- header bar
 	rectfill(0,0,127,7,gui_bg1)
 	pal(5,12)
@@ -525,10 +527,14 @@ function draw_gui()
 		d("i="..i)
 	--for p in all(prop_definitions) do
 		local prop = prop_definitions[i]
+		--local col_size = 0
 		if curr_selection 
 		 and has_flag(prop[4], curr_selection_class)
 		then
-			print(prop[2]..":", 3+xoff, 83+yoff, gui_bg2)
+			local label = prop[2]..":"
+			print(label, 3+xoff, 83+yoff, gui_bg2)
+			-- draw the 
+			draw_control(1, "val", 3+xoff+(#label*4), 83+yoff)
 			yoff += 6
 			if yoff > 30 then 
 				yoff = 0
@@ -547,6 +553,15 @@ function draw_gui()
 	print("mem:"..flr(stat(0)/1024*100).."%", 
 		98, 121, gui_bg2)
 
+end
+
+
+function draw_control(type, value, x, y)
+	-- string
+	if type == 1 then
+		print(value, x, y, gui_fg1)
+	else
+	end
 end
 
 
@@ -672,9 +687,6 @@ function actor_draw(actor)
 	pal()
 end
 
-function draw_ui()
-	-- todo: factor in diff drawing modes?
-end
 
 function sprdraw(n, x, y, w, h, transcol, flip_x, flip_y)
 	-- switch transparency

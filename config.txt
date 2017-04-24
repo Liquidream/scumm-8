@@ -1,0 +1,76 @@
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// Configuration for pico-8
+// 
+// config.txt is read on startup and saved on exit.
+// To generate the default config.txt, delete this file.
+// 
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+
+// :: Video Settings
+
+video_mode 580 540 // screen width, height
+show_fps 0 // Draw frames per second in the corner
+
+
+// :: Window Settings
+
+windowed 1 // 1 to start up in windowed mode
+window_position -1 -1 // x and y position of window, or -1, -1 to let the window manager decide
+frameless 0 // 1 to use a window with no frame
+fullscreen_method 1 // 0 maximized window (linux)  1 borderless desktop-sized window  2 fullscreen
+
+
+// :: System Settings
+
+frame_sleep_ms 5 // number of milli seconds to sleep each frame. To save laptop battery power, try 20
+sessions 1 // number of times program has been run
+
+// (scancode) hold this key down and left-click to simulate right-click
+rmb_key 0 // 0 for none  226 for LALT
+
+
+// :: Audio Settings
+
+sound_volume 256 // 0..256
+music_volume 256 // 0..256
+mix_buffer_size 1024 // usually 1024. Try 2048 if you get choppy sound
+
+
+// :: 
+
+version 0.1.10c
+
+
+// Location of pico-8's root folder
+root_path /Users/paul/ownCloud/Games/pico-8/carts/git_repos/scumm-8/carts/
+
+
+// Location of cartridge save data
+cdata_path /Users/paul/ownCloud/Games/pico-8/carts/git_repos/scumm-8/cdata/
+
+
+// Specify which player index joystick control begins at (0..7)
+joystick_index 0
+
+button_keys 0 0 0 0 0 0 0 0 0 0 0 0 0 
+
+// Play notes as they are plotted in frequency mode
+live_notes 0
+
+// iff 1: when using keyboard cursor, snap to closest pixel / map cel
+cursor_snap 0
+
+// maximum length of gif in seconds (1..120, default 8)
+gif_len 8
+
+// 0 classic  1 dark blue background in code editor
+gui_theme 0
+
+// scale of screenshots and gifs // 2 means 256x256
+screenshot_scale 3
+gif_scale 2
+
+// when 1 can enter glyphs using shift-A..Z
+shift_glyphs 1
+
