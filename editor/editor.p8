@@ -61,9 +61,9 @@ gui_fg3 = 7
 
 prop_definitions = {
 	-- shared props (room/object/actor)
-	{"trans_col", "trans col", 13, {"class_room","class_object","class_actor"} },
-	{"col_replace", "col swap", 14, {"class_room","class_object","class_actor"} },
-	{"lighting", "lighting", 4, {"class_room","class_object","class_actor"} },
+	{"trans_col", "trans col", 13, {"class_room","class_object","class_actor"} ,"transparent color" },
+	{"col_replace", "col swap", 14, {"class_room","class_object","class_actor"}, "color to replace" },
+	{"lighting", "lighting", 4, {"class_room","class_object","class_actor"} ,"lighting level" },
 
 	-- object/actor props
 	{"name", "name", 2, {"class_object","class_actor"} },
@@ -75,7 +75,7 @@ prop_definitions = {
 	{"state", "state", 10, {"class_object","class_actor"} },
 	{"states", "states", 11, {"class_object","class_actor"} },
 	{"classes", "classes", 12, {"class_object","class_actor"} },
-	{"use_pos", "use pos", 30, {"class_object","class_actor"} },
+	{"use_pos", "use pos", 30, {"class_object","class_actor"}, "use positions" },
 	{"use_dir", "use dir", 31, {"class_object","class_actor"} },
 	{"use_with", "use with", 3, {"class_object","class_actor"} },
 	{"repeat_x", "repeat_x", 1, {"class_object","class_actor"} },
@@ -146,8 +146,8 @@ function _init()
 
   --reload(0,0,0x3000, base_cart_name..".p8")
 
-	-- init widget library
-	gui = gui_root.new()
+	-- init widget library + controls
+	init_ui()
 end
 
 function _draw()
@@ -174,6 +174,26 @@ function _update60()
   cam_x = mid(0, cam_x, (room_curr.map_w*8)-127 -1)
 
 	gui:update()
+end
+
+-- =====================================
+-- init related
+--
+
+function init_ui()
+	-- init widget library
+	gui = gui_root.new()
+
+ -- status bar
+ local p=panel.new(128, 7, gui_bg1, false, 3)
+ gui:add_child(p, 0, 121)
+ 
+ local l=label.new(status_label, gui_bg2)
+ p:add_child(l, 2, 1)
+ 
+ l=label.new(cpu_label, gui_bg2)
+ p:add_child(l, 80, 1)
+ 
 end
 
 -- ===========================================================================
@@ -353,6 +373,13 @@ function input_button_pressed(button_index)
 	end
 end
 
+
+-- =================================================
+-- ui/widget related
+--
+
+
+
 -- build the current "page" of properties
 function create_ui_props(pagenum)
 	local xoff=0
@@ -363,13 +390,11 @@ function create_ui_props(pagenum)
 	-- look for existing panel
 	local pnl_prop = gui:find("properties")
 	if pnl_prop then
-		--d("remove exist")
 		-- remove existing controls
 		for w in all(pnl_prop.children) do
 			pnl_prop:remove_child(w)
 		end
 	else
-		--d("create new")
 		-- create panel to put controls on
 		pnl_prop = panel.new(127, 32, gui_fg3, false, 3)
 		pnl_prop.name = "properties"
@@ -377,20 +402,15 @@ function create_ui_props(pagenum)
 	end
 
 	for i = start_pos, min(start_pos+12-1, #prop_definitions) do
-		--d("i="..i)
-	--for p in all(prop_definitions) do
 		local prop = prop_definitions[i]
 		--local col_size = 0
-		--d("1")
 		if curr_selection 
 		 and has_flag(prop[4], curr_selection_class)
 		then
 			local lbltext = prop[2]..":"
 			local lbl=label.new(lbltext, gui_bg2)
  			pnl_prop:add_child(lbl, 3+xoff, 3+yoff)
-			--print(label, 3+xoff, 83+yoff, gui_bg2)
-			-- draw the 
-		--	draw_control(1, "val", 3+xoff+(#lbltext*4), 83+yoff)
+			create_control(1, "val", pnl_prop, 3+xoff+(#lbltext*4), 3+yoff, prop[5])
 			yoff += 6
 			if yoff > 30 then 
 				yoff = 0
@@ -398,6 +418,53 @@ function create_ui_props(pagenum)
 			end
 		end
 	end
+end
+
+
+function create_control(datatype, value, parent, x, y, tooltip)
+	-- string
+	if datatype == 1 then
+		local lbl=label.new(value, gui_fg1)
+		lbl.desc = tooltip
+		parent:add_child(lbl, x, y)
+	else
+		--- ...
+	end
+end
+
+function status_label()
+--  if msg and msg_time>0 then
+--   return msg
+--  end
+ 
+ if not gui:mouse_blocked() then
+  -- mouse is not over a panel
+  -- local c=flr(stat(32)/8)
+  -- local r=flr(stat(33)/8)
+  -- local pos=c..", "..r..": "
+  -- if r<0 or c<0 or r>=16 or c>=map_width then
+  --  return pos.."nothing!"
+  -- else
+  --  return pos.."tile "..mget(c, r)
+  -- end
+ else
+  -- mouse is over a panel
+  local w=gui.clicked_widget or gui.widget_under_mouse
+  if w and w.desc then
+   return w.desc
+  else
+   return ""
+  end
+ end
+
+ -- failover
+ return ""
+end
+
+
+function cpu_label()
+	return "cpu:"..flr(100*stat(1)).."% mem:"..flr(stat(0)/1024*100).."%"
+ --return "cpu: "..stat(1)
 end
 
 -- ===========================================================================
@@ -595,24 +662,15 @@ function draw_ui()
 	-- end
 
 	-- status bar
-	rectfill(0,119,127,127,gui_bg1)
-	print("x:"..pad_3(cursor_x+cam_x).." y:"..pad_3(cursor_y-stage_top), 
-		3,121, gui_bg2) 
+	-- rectfill(0,119,127,127,gui_bg1)
+	-- print("x:"..pad_3(cursor_x+cam_x).." y:"..pad_3(cursor_y-stage_top), 
+	-- 	3,121, gui_bg2) 
 
-	print("cpu:"..flr(100*stat(1)).."%", 
-		66, 121, gui_bg2) 
-	print("mem:"..flr(stat(0)/1024*100).."%", 
-		98, 121, gui_bg2)
+	-- print("cpu:"..flr(100*stat(1)).."%", 
+	-- 	66, 121, gui_bg2) 
+	-- print("mem:"..flr(stat(0)/1024*100).."%", 
+	-- 	98, 121, gui_bg2)
 
-end
-
-
-function draw_control(type, value, x, y)
-	-- string
-	if type == 1 then
-		print(value, x, y, gui_fg1)
-	else
-	end
 end
 
 
