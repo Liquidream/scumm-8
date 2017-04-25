@@ -113,14 +113,14 @@ function _init()
 
   -- packed game data (rooms/objects/actors)
   data = [[
-			id=1/map={0,16}/objects={}
-      id=2/map={0,24,31,31}/objects={30,31,32,33,34,35}
+			id=1/map={0,16}/objects={}/classes={class_room}
+      id=2/map={0,24,31,31}/objects={30,31,32,33,34,35}/classes={class_room}
       id=3/map={32,24,55,31}/col_replace={5,2}/objects={}
-      id=4/map={56,24,79,31}/trans_col=10/col_replace={7,4}/lighting=0.25/objects={}
-      id=5/map={80,24,103,31}/objects={}
-      id=6/map={104,24,127,31}/objects={}
-      id=7/map={32,16,55,31}/objects={}
-      id=8/map={64,16}/objects={}
+      id=4/map={56,24,79,31}/trans_col=10/col_replace={7,4}/lighting=0.25/objects={}/classes={class_room}
+      id=5/map={80,24,103,31}/objects={}/classes={class_room}
+      id=6/map={104,24,127,31}/objects={}/classes={class_room}
+      id=7/map={32,16,55,31}/objects={}/classes={class_room}
+      id=8/map={64,16}/objects={}/classes={class_room}
 			|
 			id=30/x=144/y=40/classes={class_untouchable}
 			id=31/state=state_here/x=80/y=24/w=1/h=2/state_here=47/trans_col=8/repeat_x=8/classes={class_untouchable}
@@ -168,11 +168,12 @@ function _update60()
 	if not curr_selection then
 		curr_selection = room_curr
 		curr_selection_class = "class_room"
+		create_ui_props(1)
 	end
 
   cam_x = mid(0, cam_x, (room_curr.map_w*8)-127 -1)
 
-	draw_cursor()
+	gui:update()
 end
 
 -- ===========================================================================
@@ -343,13 +344,12 @@ function input_button_pressed(button_index)
 		-- select object
 		curr_selection = hover_curr_selection
 		curr_selection_class = hover_curr_selection_class
-	
-	
-	
+		create_ui_props(1)
 	else
 		-- nothing clicked (so default to room selected)
 		curr_selection = room_curr
 		curr_selection_class = "class_room"
+		create_ui_props(1)
 	end
 end
 
@@ -362,28 +362,34 @@ function create_ui_props(pagenum)
 	
 	-- create panel to put controls on
 	local pnl_prop = panel.new(127, 32, gui_fg3, false, 3)
- 	gui:add_child(p, 0,82)
+ 	gui:add_child(pnl_prop, 0,82)
+
+	d("..>")
 
 	for i = start_pos, min(start_pos+12-1, #prop_definitions) do
-		d("i="..i)
+		--d("i="..i)
 	--for p in all(prop_definitions) do
 		local prop = prop_definitions[i]
 		--local col_size = 0
+		--d("1")
 		if curr_selection 
 		 and has_flag(prop[4], curr_selection_class)
 		then
+			d("b4")
 			local lbltext = prop[2]..":"
 			local lbl=label.new(lbltext, gui_bg2)
  			pnl_prop:add_child(lbl, 3+xoff, 3+yoff)
+			 d("added!")
 			--print(label, 3+xoff, 83+yoff, gui_bg2)
 			-- draw the 
-			draw_control(1, "val", 3+xoff+(#label*4), 83+yoff)
+		--	draw_control(1, "val", 3+xoff+(#lbltext*4), 83+yoff)
 			yoff += 6
 			if yoff > 30 then 
 				yoff = 0
 				xoff += 60 
 			end
 		end
+		d("no")
 	end
 end
 
@@ -554,6 +560,8 @@ function draw_ui()
 	-- properties (section)
 --	rectfill(0,82,127,119,gui_fg3)
 
+	-- draw widget library
+	gui:draw()
 
 	-- find all properties for selected object (or room, if no obj/actor selected)
 	-- local xoff=0
