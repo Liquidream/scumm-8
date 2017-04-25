@@ -360,11 +360,21 @@ function create_ui_props(pagenum)
 
 	local start_pos = pagenum * 12 +1
 	
-	-- create panel to put controls on
-	local pnl_prop = panel.new(127, 32, gui_fg3, false, 3)
- 	gui:add_child(pnl_prop, 0,82)
-
-	d("..>")
+	-- look for existing panel
+	local pnl_prop = gui:find("properties")
+	if pnl_prop then
+		--d("remove exist")
+		-- remove existing controls
+		for w in all(pnl_prop.children) do
+			pnl_prop:remove_child(w)
+		end
+	else
+		--d("create new")
+		-- create panel to put controls on
+		pnl_prop = panel.new(127, 32, gui_fg3, false, 3)
+		pnl_prop.name = "properties"
+		gui:add_child(pnl_prop, 0,82)
+	end
 
 	for i = start_pos, min(start_pos+12-1, #prop_definitions) do
 		--d("i="..i)
@@ -375,11 +385,9 @@ function create_ui_props(pagenum)
 		if curr_selection 
 		 and has_flag(prop[4], curr_selection_class)
 		then
-			d("b4")
 			local lbltext = prop[2]..":"
 			local lbl=label.new(lbltext, gui_bg2)
  			pnl_prop:add_child(lbl, 3+xoff, 3+yoff)
-			 d("added!")
 			--print(label, 3+xoff, 83+yoff, gui_bg2)
 			-- draw the 
 		--	draw_control(1, "val", 3+xoff+(#lbltext*4), 83+yoff)
@@ -389,7 +397,6 @@ function create_ui_props(pagenum)
 				xoff += 60 
 			end
 		end
-		d("no")
 	end
 end
 
