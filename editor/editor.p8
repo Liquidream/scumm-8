@@ -76,17 +76,17 @@ prop_definitions = {
 	{"states", "states", 11, {"class_object","class_actor"} },
 	{"classes", "classes", 12, {"class_object","class_actor"} },
 	{"use_pos", "use pos", 30, {"class_object","class_actor"}, "use positions" },
-	{"use_dir", "use dir", 31, {"class_object","class_actor"} },
-	{"use_with", "use with", 3, {"class_object","class_actor"} },
-	{"repeat_x", "repeat_x", 1, {"class_object","class_actor"} },
-	{"flip_x", "flip x", 3, {"class_object","class_actor"} },
+	{"use_dir", "use dir", 31, {"class_object","class_actor"}, "actor use direction" },
+	{"use_with", "use with", 3, {"class_object","class_actor"}, "can be used with..." },
+	{"repeat_x", "repeat_x", 1, {"class_object","class_actor"}, "repeat draw # times" },
+	{"flip_x", "flip x", 3, {"class_object","class_actor"}, "flip sprite(s) horiz" },
 
 	-- object props
-	{"dependent_on", "depends on", 50, {"class_object"} },
-	{"dependent_on_state", "state req", 11, {"class_object"} },
+	{"dependent_on", "depends on", 50, {"class_object"}, "depends on obj..." },
+	{"dependent_on_state", "state req", 11, {"class_object"}, "state of other obj" },
 
 	-- room-only props
-	{"map", "map", type, prop_room},
+	{"map", "map", type, prop_room, "map cels for room layout"},
 
 	-- actor-only props
 	{"idle", "idle frame", 40, {"class_actor"} },
@@ -186,12 +186,15 @@ function init_ui()
 
  -- status bar
  local p=panel.new(128, 7, gui_bg1, false, 3)
+ p.name="panel status"
  gui:add_child(p, 0, 121)
  
  local l=label.new(status_label, gui_bg2)
  p:add_child(l, 2, 1)
  
  l=label.new(cpu_label, gui_bg2)
+ l.name="cpu"
+ l.desc="cpu!!!!"
  p:add_child(l, 80, 1)
  
 end
@@ -409,6 +412,8 @@ function create_ui_props(pagenum)
 		then
 			local lbltext = prop[2]..":"
 			local lbl=label.new(lbltext, gui_bg2)
+			lbl.desc = prop[5]
+			lbl.wants_mouse = true
  			pnl_prop:add_child(lbl, 3+xoff, 3+yoff)
 			create_control(1, "val", pnl_prop, 3+xoff+(#lbltext*4), 3+yoff, prop[5])
 			yoff += 6
@@ -422,10 +427,16 @@ end
 
 
 function create_control(datatype, value, parent, x, y, tooltip)
+
+	if tooltip then
+		d("tooltip: "..tooltip)
+	end
+
 	-- string
 	if datatype == 1 then
 		local lbl=label.new(value, gui_fg1)
 		lbl.desc = tooltip
+		lbl.wants_mouse = true
 		parent:add_child(lbl, x, y)
 	else
 		--- ...
@@ -450,6 +461,7 @@ function status_label()
  else
   -- mouse is over a panel
   local w=gui.clicked_widget or gui.widget_under_mouse
+	--if w.desc then d("over: "..w.desc) end
   if w and w.desc then
    return w.desc
   else
