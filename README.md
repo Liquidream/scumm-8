@@ -57,3 +57,9 @@ Some other great SCUMM resources I found along the way include the following:
 - [ScummC - A Scumm Compiler (by Alban Bedel)](https://github.com/AlbanBedel/scummc)
   - (Particularly the OpenQuest example)
 - [Ron Gilbert's post about "Puzzle Dependency Charts"](http://grumpygamer.com/puzzle_dependency_charts)
+
+## Donation
+As you can imagine, this project has taken MANY HOURS of my spare time to develop.  
+So, if this project helped you out (and you're in a position to do so), feel free to buy me a drink! :coffee: :blush:
+
+[![paypal](https://www.paypalobjects.com/en_US/GB/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=334Y2ZXWUJMBQ)
