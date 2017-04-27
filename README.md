@@ -6,7 +6,7 @@ A playable sample game "Revenge of the SCUMM" can be [found here](http://www.lex
 
 ![SCUMM-8](http://i.imgur.com/FcE49f5.gif)  ![SCUMM-8](http://i.imgur.com/LO57HFN.gif)  ![SCUMM-8](http://i.imgur.com/3HiP7Jf.gif)
 
-While it is heavily "inspired" by the SCUMM engine, it isn't a true replica (for that you'll want good ol' [SCUMM-VM](https://en.wikipedia.org/wiki/ScummVM)).  However, SCUMM-8 attempts to stay as true as possible to the original SCUMM API.
+While it is heavily "inspired" by the SCUMM engine, it isn't a true replica (for that you'll want good ol' [SCUMM-VM](https://en.wikipedia.org/wiki/ScummVM)).  However, SCUMM-8 attempts to stay as true as possible to the [original SCUMM command reference](http://www.wilmunder.com/Arics_World/Games.html).
 > *"Cool, so does that mean I can play those old LucasArts games in PICO-8?!"*
 
 Er... no. SCUMM-8 cannot play those original games, just that it is intended to provide similar functionality within the (very limited) world of PICO-8.
