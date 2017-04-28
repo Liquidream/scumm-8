@@ -48,7 +48,8 @@ Particularly the **SCUMM Tutorial **(1991), the example room from which was the 
 
 Thanks also to Dan Sanderson for his [picotool](https://github.com/dansanderson/picotool) - specifically his minifying tool (luamin), which enabled me to squeeze MUCH more code under PICO-8's limits.
 
-Shoutout to **PixelArtM**, whose [PICO-8 mockup](https://twitter.com/PixelArtM/status/758735822426284036) inspired me to wonder whether this could *actually* be pulled off within the virtual console's limits (SPOILER: it can... just about! :sweat_smile:)
+Shoutout to **@PixelArtM**, whose [PICO-8 mockup](https://twitter.com/PixelArtM/status/758735822426284036) inspired me to wonder whether this could *actually* be pulled off within the virtual console's limits (SPOILER: it can... just about! :sweat_smile:).  
+**UPDATE**: "Life Imitates Art" as **@PixelArtM** uses SCUMM-8 to make said mockup [a reality!](https://twitter.com/PixelArtM/status/857193912229933056)
 
 Some other great SCUMM resources I found along the way include the following:
 - [Ron Gilbert's post about "SCUMM Script"](http://www.pagetable.com/?p=614)
