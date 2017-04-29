@@ -48,14 +48,13 @@ gui_fg3 = 7
 --  12 = classes list 
 --  13 = color picker
 --  14 = color replace list (using pairs of color pickers)
---  15 = 
+--  15 = room map cels
 
 --  30 = use position (pos preset or specific pos)
 --  31 = use/face dir
 
 --  40 = single sprites (directional)
 --  41 = sprite anim sequence
---  
 
 --  50 = object ref
 
@@ -86,7 +85,7 @@ prop_definitions = {
 	{"dependent_on_state", "state req", 11, {"class_object"}, "state of other obj" },
 
 	-- room-only props
-	{"map", "map", type, prop_room, "map cels for room layout"},
+	{"map", "map", 15, {"class_room"}, "map cels for room layout"},
 
 	-- actor-only props
 	{"idle", "idle frame", 40, {"class_actor"} },
@@ -114,7 +113,7 @@ function _init()
   -- packed game data (rooms/objects/actors)
   data = [[
 			id=1/map={0,16}/objects={}/classes={class_room}
-      id=2/map={0,24,31,31}/objects={30,31,32,33,34,35}/classes={class_room}
+      id=2/map={0,24,31,31}/col_replace={5,2}/objects={30,31,32,33,34,35}/classes={class_room}
       id=3/map={32,24,55,31}/col_replace={5,2}/objects={}
       id=4/map={56,24,79,31}/trans_col=10/col_replace={7,4}/lighting=0.25/objects={}/classes={class_room}
       id=5/map={80,24,103,31}/objects={}/classes={class_room}
@@ -168,7 +167,7 @@ function _update60()
 	if not curr_selection then
 		curr_selection = room_curr
 		curr_selection_class = "class_room"
-		create_ui_props(1)
+		create_ui_props(0)
 	end
 
   cam_x = mid(0, cam_x, (room_curr.map_w*8)-127 -1)
@@ -195,7 +194,7 @@ function init_ui()
  
  l=label.new(cpu_label, gui_bg2)
  l.name="perf"
- p:add_child(l, 80, 1)
+ p:add_child(l, 65, 1)
  
 end
 
@@ -367,12 +366,12 @@ function input_button_pressed(button_index)
 		-- select object
 		curr_selection = hover_curr_selection
 		curr_selection_class = hover_curr_selection_class
-		create_ui_props(1)
+		create_ui_props(0)
 	else
 		-- nothing clicked (so default to room selected)
 		curr_selection = room_curr
 		curr_selection_class = "class_room"
-		create_ui_props(1)
+		create_ui_props(0)
 	end
 end
 
@@ -405,9 +404,12 @@ function create_ui_props(pagenum)
 		gui:add_child(pnl_prop, 0,82)
 	end
 
+	d("=================================")
+
 	for i = start_pos, min(start_pos+12-1, #prop_definitions) do
 		local prop = prop_definitions[i]
 		--local col_size = 0
+		d("checking prop: "..prop[2])
 		if curr_selection 
 		 and has_flag(prop[4], curr_selection_class)
 		then
@@ -428,10 +430,6 @@ end
 
 
 function create_control(datatype, value, parent, x, y, tooltip)
-
-	if tooltip then
-		d("tooltip: "..tooltip)
-	end
 
 	-- string
 	if datatype == 1 then
@@ -863,11 +861,14 @@ end
 
 function has_flag(obj, value)
 	for f in all(obj) do
+	d("testing if "..f.." = "..value)
 	 if f == value then 
+	 	d(" > TRUE")
 	 	return true 
 	 end
 	end
   --if band(obj, value) != 0 then return true end
+	d(" > false")
   return false
 end
 
@@ -917,7 +918,7 @@ function set_data_defaults()
 		-- init objects (in room)
 		local obj_list = {}
 		for obj_id in all(room.objects) do
-			printh("obj id2: "..obj_id)
+			--printh("obj id2: "..obj_id)
 			obj = objects[obj_id]
 			if obj then
 				obj.in_room = room
