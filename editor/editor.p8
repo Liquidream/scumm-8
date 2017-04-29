@@ -422,8 +422,8 @@ function create_ui_props(pagenum)
 				local lbl=label.new(lbltext, gui_bg2)
 				lbl.desc = prop[5]
 				lbl.wants_mouse = true
-				pnl_prop:add_child(lbl, 3+xoff, 3+yoff)
-				create_control(1, "val", pnl_prop, 3+xoff+(#lbltext*4), 3+yoff, prop[5])
+				pnl_prop:add_child(lbl, 2+xoff, 2+yoff)
+				create_control(1, "val", pnl_prop, 2+xoff+(#lbltext*4), 2+yoff, prop[5])
 				yoff += 6
 				if yoff > 30 then 
 					yoff = 0
