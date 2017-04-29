@@ -386,8 +386,8 @@ end
 function create_ui_props(pagenum)
 	local xoff=0
 	local yoff=0
-
 	local start_pos = pagenum * 12 +1
+	local control_count = 0
 	
 	-- look for existing panel
 	local pnl_prop = gui:find("properties")
@@ -398,7 +398,7 @@ function create_ui_props(pagenum)
 		end
 	else
 		-- create panel to put controls on
-		pnl_prop = panel.new(127, 32, gui_fg3, false, 3)
+		pnl_prop = panel.new(127, 39, gui_fg3, false, 3)
 		pnl_prop.name = "properties"
 		pnl_prop.desc = ""
 		gui:add_child(pnl_prop, 0,82)
@@ -406,23 +406,30 @@ function create_ui_props(pagenum)
 
 	d("=================================")
 
-	for i = start_pos, min(start_pos+12-1, #prop_definitions) do
-		local prop = prop_definitions[i]
-		--local col_size = 0
-		d("checking prop: "..prop[2])
-		if curr_selection 
-		 and has_flag(prop[4], curr_selection_class)
+	-- go through all available properties
+	for i = 1, min(start_pos+12-1, #prop_definitions) do
+		-- if within the "page" to show
+		if i >= start_pos 
+		 and control_count < 12 --i <= start_pos+12-1 
 		then
-			local lbltext = prop[2]..":"
-			local lbl=label.new(lbltext, gui_bg2)
-			lbl.desc = prop[5]
-			lbl.wants_mouse = true
- 			pnl_prop:add_child(lbl, 3+xoff, 3+yoff)
-			create_control(1, "val", pnl_prop, 3+xoff+(#lbltext*4), 3+yoff, prop[5])
-			yoff += 6
-			if yoff > 30 then 
-				yoff = 0
-				xoff += 60 
+			local prop = prop_definitions[i]
+			--local col_size = 0
+			d("checking prop: "..prop[2])
+			if curr_selection 
+			and has_flag(prop[4], curr_selection_class)
+			then
+				local lbltext = prop[2]..":"
+				local lbl=label.new(lbltext, gui_bg2)
+				lbl.desc = prop[5]
+				lbl.wants_mouse = true
+				pnl_prop:add_child(lbl, 3+xoff, 3+yoff)
+				create_control(1, "val", pnl_prop, 3+xoff+(#lbltext*4), 3+yoff, prop[5])
+				yoff += 6
+				if yoff > 30 then 
+					yoff = 0
+					xoff += 60 
+				end
+				control_count += 1
 			end
 		end
 	end
