@@ -404,6 +404,7 @@ function create_ui_props(pagenum)
 		pnl_prop = panel.new(128, 39, gui_fg3, false, 4) --4=transparent!
 		pnl_prop.name = "properties"
 		pnl_prop.desc = ""
+		--pnl_prop.func = function() end
 		gui:add_child(pnl_prop, 0,82)
 	end
 
@@ -425,7 +426,10 @@ function create_ui_props(pagenum)
 				local lbl=label.new(lbltext, gui_bg2)
 				lbl.desc = prop[5]
 				lbl.wants_mouse = true
+				
 				lbl.w=60
+				lbl.func = function() end
+
 				pnl_prop:add_child(lbl, 2+xoff, 2+yoff)
 				create_control(prop[3], curr_selection[prop[1]], pnl_prop, 2+xoff+(#lbltext*4), 2+yoff, prop[5], curr_selection, prop[1])
 				yoff += 6
@@ -506,7 +510,7 @@ function create_control(datatype, value, parent, x, y, tooltip, bound_obj, bound
 		lbl.wants_mouse = true
 		parent:add_child(lbl, x, y)
 
-  -- decimal (lighting)
+	-- decimal (lighting)
 	elseif datatype == 4 then
 		value = value or 1	-- default nil to 1
 	d("datatype = "..datatype)
@@ -517,6 +521,16 @@ function create_control(datatype, value, parent, x, y, tooltip, bound_obj, bound
 		spin.desc = tooltip
 		parent:add_child(spin, x-2, y-2)
 
+  -- color picker
+	elseif datatype == 13 then
+		local bc=button.new("", 
+			function()
+				d("col clicked!")
+			end,
+			value)
+		bc.w=7
+		bc.h=7
+		parent:add_child(bc, x, y-1)
 	else
 		--- ...
 	end
