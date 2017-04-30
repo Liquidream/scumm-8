@@ -62,13 +62,13 @@ prop_definitions = {
 	-- shared props (room/object/actor)
 	{"trans_col", "trans col", 13, {"class_room","class_object","class_actor"} ,"transparent color" },
 	{"col_replace", "col swap", 14, {"class_room","class_object","class_actor"}, "color to replace" },
-	{"lighting", "lighting", 4, {"class_room","class_object","class_actor"} ,"lighting level" },
+	{"lighting", "light", 4, {"class_room","class_object","class_actor"} ,"lighting level" },
 
 	-- object/actor props
 	{"name", "name", 2, {"class_object","class_actor"} },
-	{"x", "x", 1, {"class_object","class_actor"} },
-	{"y", "y", 1, {"class_object","class_actor"} },
-	{"z", "z", 1, {"class_object","class_actor"} },
+	{"x", "x", 1, {"class_object","class_actor"}, "x position" },
+	{"y", "y", 1, {"class_object","class_actor"}, "y position"  },
+	{"z", "z", 1, {"class_object","class_actor"}, "z position"  },
 	{"w", "w", 1, {"class_object","class_actor"} },
 	{"h", "h", 1, {"class_object","class_actor"} },
 	{"state", "state", 10, {"class_object","class_actor"} },
@@ -430,7 +430,7 @@ function create_ui_props(pagenum)
 				yoff += 6
 				if yoff > 30 then 
 					yoff = 0
-					xoff += 60 
+					xoff += 63 
 				end
 				control_count += 1
 			end
@@ -441,9 +441,25 @@ end
 
 function set_bound_val(widget)
 	d("set_bound_val()")
+	d("  > "..widget.bound_prop.." = "..widget.value)
 	--if (widget.bound) d("bound not null!")
  widget.bound_obj[widget.bound_prop] = widget.value
 end
+
+function set_bound_val_decimal(widget)
+	d("set_bound_val_decimal()")
+	local val = round(widget.value, 2)
+	d("  > "..widget.bound_prop.." = "..val)
+	--if (widget.bound) d("bound not null!")
+ widget.bound_obj[widget.bound_prop] = val
+ 	widget.value = val
+end
+
+function round(num, numDecimalPlaces)
+  local mult = 10^(numDecimalPlaces or 0)
+  return flr(num * mult + 0.5) / mult
+end
+
 
 function create_control(datatype, value, parent, x, y, tooltip, bound_obj, bound_prop)
 	--   1 = number
@@ -466,6 +482,7 @@ function create_control(datatype, value, parent, x, y, tooltip, bound_obj, bound
 
 	--  50 = object ref
 
+	d("create_control()")
 
 	-- number
 	if datatype == 1 then
@@ -475,10 +492,9 @@ function create_control(datatype, value, parent, x, y, tooltip, bound_obj, bound
 		local spin = spinner.new(0, 1000, value, 1, set_bound_val)
 		spin.bound_obj = bound_obj
 		spin.bound_prop = bound_prop
-		-- spin.children[1].h -= 2
-		-- spin.children[1]
-		-- spin.children[2].h -= 2
+		spin.desc = tooltip
 		parent:add_child(spin, x-2, y-2)
+
 	-- string
 	elseif datatype == 2 then
 	
@@ -488,6 +504,18 @@ function create_control(datatype, value, parent, x, y, tooltip, bound_obj, bound
 		lbl.desc = tooltip
 		lbl.wants_mouse = true
 		parent:add_child(lbl, x, y)
+
+  -- decimal (lighting)
+	elseif datatype == 4 then
+		value = value or 1	-- default nil to 1
+	d("datatype = "..datatype)
+	d("value = "..value)
+		local spin = spinner.new(0, 1, value, 0.05, set_bound_val_decimal)
+		spin.bound_obj = bound_obj
+		spin.bound_prop = bound_prop
+		spin.desc = tooltip
+		parent:add_child(spin, x-2, y-2)
+
 	else
 		--- ...
 	end
