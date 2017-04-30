@@ -359,8 +359,11 @@ function input_button_pressed(button_index)
 	-- check room-level interaction
 
 
-	if hover_curr_cmd then
+	--if hover_curr_cmd then
 
+	if gui.clicked_widget or gui.widget_under_mouse then
+		
+		-- do nothing, leave it for widget library to handle
 
 	elseif hover_curr_selection then
 		-- select object
@@ -398,7 +401,7 @@ function create_ui_props(pagenum)
 		end
 	else
 		-- create panel to put controls on
-		pnl_prop = panel.new(127, 39, gui_fg3, false, 3)
+		pnl_prop = panel.new(128, 39, gui_fg3, false, 3)
 		pnl_prop.name = "properties"
 		pnl_prop.desc = ""
 		gui:add_child(pnl_prop, 0,82)
@@ -423,7 +426,7 @@ function create_ui_props(pagenum)
 				lbl.desc = prop[5]
 				lbl.wants_mouse = true
 				pnl_prop:add_child(lbl, 2+xoff, 2+yoff)
-				create_control(1, "val", pnl_prop, 2+xoff+(#lbltext*4), 2+yoff, prop[5])
+				create_control(prop[3], curr_selection[prop[1]], pnl_prop, 2+xoff+(#lbltext*4), 2+yoff, prop[5], curr_selection, prop[1])
 				yoff += 6
 				if yoff > 30 then 
 					yoff = 0
@@ -436,10 +439,51 @@ function create_ui_props(pagenum)
 end
 
 
-function create_control(datatype, value, parent, x, y, tooltip)
+function set_bound_val(widget)
+	d("set_bound_val()")
+	--if (widget.bound) d("bound not null!")
+ widget.bound_obj[widget.bound_prop] = widget.value
+end
 
-	-- string
+function create_control(datatype, value, parent, x, y, tooltip, bound_obj, bound_prop)
+	--   1 = number
+	--   2 = string
+	--   3 = bool
+	--   4 = decimal (0..1)
+
+	--  10 = state ref
+	--  11 = states list (or numbers)
+	--  12 = classes list 
+	--  13 = color picker
+	--  14 = color replace list (using pairs of color pickers)
+	--  15 = room map cels
+
+	--  30 = use position (pos preset or specific pos)
+	--  31 = use/face dir
+
+	--  40 = single sprites (directional)
+	--  41 = sprite anim sequence
+
+	--  50 = object ref
+
+
+	-- number
 	if datatype == 1 then
+		value = value or 0	-- default nil to 0?
+	d("datatype = "..datatype)
+	d("value = "..value)
+		local spin = spinner.new(0, 1000, value, 1, set_bound_val)
+		spin.bound_obj = bound_obj
+		spin.bound_prop = bound_prop
+		-- spin.children[1].h -= 2
+		-- spin.children[1]
+		-- spin.children[2].h -= 2
+		parent:add_child(spin, x-2, y-2)
+	-- string
+	elseif datatype == 2 then
+	
+	d("datatype = "..datatype)
+	d("value = "..value)
 		local lbl=label.new(value, gui_fg1)
 		lbl.desc = tooltip
 		lbl.wants_mouse = true
@@ -868,14 +912,11 @@ end
 
 function has_flag(obj, value)
 	for f in all(obj) do
-	d("testing if "..f.." = "..value)
-	 if f == value then 
-	 	d(" > TRUE")
+	 if f == value then
 	 	return true 
 	 end
 	end
   --if band(obj, value) != 0 then return true end
-	d(" > false")
   return false
 end
 
@@ -1533,15 +1574,15 @@ function spinner.new(minv, maxv, v, step, f)
  s.value=v or minv
  s.func=f
  local b=spinbtn.new("+", s, 1)
- s:add_child(b, 39, 0)
+ s:add_child(b, 15, 3)
  b=spinbtn.new("-", s, -1)
- s:add_child(b, 46, 0)
+ s:add_child(b, 22, 3)
  return s
 end
 
 function spinner:draw(x, y)
- rectfill(x, y, x+self.w-1, y+self.h-1, 7)
- print(self.value, x+2, y+2, 0)
+ --rectfill(x, y, x+self.w-1, y+self.h-1, 7)
+ print(self.value, x+2, y+2, gui_fg1) --0)
 end
 
 function spinner:adjust(amt)
@@ -1557,7 +1598,7 @@ function spinbtn.new(t, p, s)
  local b=widget.new()
  setmetatable(b, spinbtn)
  b.w=7
- b.h=9
+ b.h=5 --9
  b.text=t
  b.parent=p
  b.sign=s
@@ -1567,11 +1608,12 @@ end
 
 function spinbtn:draw(x, y)
  if self.clicked and self.under_mouse then
-  draw_concave_frame(x, y, x+self.w-1, y+self.h-1, 6)
+  draw_concave_frame(x, y-1, x+self.w-1, y+self.h-2, 6)
  else
-  draw_convex_frame(x, y, x+self.w-1, y+self.h-1, 6)
+  draw_convex_frame(x, y-1, x+self.w-1, y+self.h-2, 6)
  end
- print(self.text, x+2, y+2, 1)
+ print(self.text, x+2, y-1, 1)
+ --print(self.text, x+2, y+2, 1)
 end
 
 function spinbtn:update()
@@ -1701,6 +1743,9 @@ end
 
 
 
+-- tab control
+
+-- todo!
 
 
 -- color picker
