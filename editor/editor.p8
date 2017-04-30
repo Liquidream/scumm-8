@@ -502,7 +502,7 @@ function create_control(datatype, value, parent, x, y, tooltip, bound_obj, bound
 
 	-- string
 	elseif datatype == 2 then
-	
+		value = value or ""	-- default nil to ""?
 	d("datatype = "..datatype)
 	d("value = "..value)
 		local lbl=label.new(value, gui_fg1)
@@ -528,8 +528,8 @@ function create_control(datatype, value, parent, x, y, tooltip, bound_obj, bound
 				d("col clicked!")
 			end,
 			value)
-		bc.w=7
-		bc.h=7
+		bc.w=6
+		bc.h=6
 		parent:add_child(bc, x, y-1)
 	else
 		--- ...
@@ -733,9 +733,15 @@ function draw_ui()
 	-- properties (bar)
 	rectfill(0,72,127,82,gui_bg2)
 	if curr_selection then
+		-- draw obj? (1 sprite)
+		if curr_selection_class != "class_room" then
+			palt(0,false)
+			spr(curr_selection[curr_selection.state], 1, 73)
+			pal()
+		end
 		print(
 			sub(curr_selection_class,7)..":"..pad_3(curr_selection.id)
-			,10,74,gui_fg3)
+			,11,74,gui_fg3)
 	end
 
 	spr(204,96,74)
