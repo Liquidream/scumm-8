@@ -400,8 +400,8 @@ function create_ui_props(pagenum)
 			pnl_prop:remove_child(w)
 		end
 	else
-		-- create panel to put controls on
-		pnl_prop = panel.new(128, 39, gui_fg3, false, 3)
+		-- create (trans) panel to put controls on
+		pnl_prop = panel.new(128, 39, gui_fg3, false, 4) --4=transparent!
 		pnl_prop.name = "properties"
 		pnl_prop.desc = ""
 		gui:add_child(pnl_prop, 0,82)
@@ -425,6 +425,7 @@ function create_ui_props(pagenum)
 				local lbl=label.new(lbltext, gui_bg2)
 				lbl.desc = prop[5]
 				lbl.wants_mouse = true
+				lbl.w=60
 				pnl_prop:add_child(lbl, 2+xoff, 2+yoff)
 				create_control(prop[3], curr_selection[prop[1]], pnl_prop, 2+xoff+(#lbltext*4), 2+yoff, prop[5], curr_selection, prop[1])
 				yoff += 6
@@ -729,7 +730,7 @@ function draw_ui()
 	spr(223,120,74)
 
 	-- properties (section)
---	rectfill(0,82,127,119,gui_fg3)
+	rectfill(0,82,127,120,gui_fg3)
 
 	-- draw widget library
 	gui:draw()
@@ -1446,8 +1447,10 @@ function panel:draw(x, y)
   draw_convex_frame(x, y, x+self.w-1, y+self.h-1, self.c)
  elseif self.style==2 then
   draw_concave_frame(x, y, x+self.w-1, y+self.h-1, self.c)
- else
+ elseif self.style==3 then
   rectfill(x, y, x+self.w-1, y+self.h-1, self.c)
+ else
+  -- transparent
  end
 end
 
