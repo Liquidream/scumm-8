@@ -113,7 +113,7 @@ function _init()
   -- packed game data (rooms/objects/actors)
   data = [[
 			id=1/map={0,16}/objects={}/classes={class_room}
-      id=2/map={0,24,31,31}/col_replace={5,2}/objects={30,31,32,33,34,35}/classes={class_room}
+      id=2/map={0,24,31,31}/objects={30,31,32,33,34,35}/classes={class_room}
       id=3/map={32,24,55,31}/col_replace={5,2}/objects={}
       id=4/map={56,24,79,31}/trans_col=10/col_replace={7,4}/lighting=0.25/objects={}/classes={class_room}
       id=5/map={80,24,103,31}/objects={}/classes={class_room}
