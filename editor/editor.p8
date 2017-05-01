@@ -528,10 +528,7 @@ function create_control(datatype, value, parent, x, y, tooltip, bound_obj, bound
 		local bc=button.new("", 
 			function(w)
 				-- show color picker for this property
-				d("col clicked!"..w.c)
 				pick = color_picker.new(w.c, function(self)
-					printh("picked:"..self.value)
-					--d("type="..type(w.bound_obj))
 					w.bound_obj[w.bound_prop]=self.value
 					w.c=self.value
 					parent:remove_child(self)
@@ -545,6 +542,35 @@ function create_control(datatype, value, parent, x, y, tooltip, bound_obj, bound
 		bc.bound_obj = bound_obj
 		bc.bound_prop = bound_prop
 		parent:add_child(bc, x, y-1)
+	
+	-- color replace (using pairs of color pickers)
+	elseif datatype == 14 then
+		local xoff = 0
+		d("type = "..type(value))
+	 	for i = 1,2 do
+			local bc=button.new("", 
+				function(w)
+					-- show color picker for this property
+					pick = color_picker.new(w.c, function(self)
+						local array = w.bound_obj[w.bound_prop]
+						array = array or {}
+						array[w.bound_index]=self.value
+						w.bound_obj[w.bound_prop]=array
+						w.c=self.value
+						parent:remove_child(self)
+					end)
+					parent:add_child(pick,w.x,w.y)
+				end)
+			bc.w=6
+			bc.h=6
+			if (value) bc.c = value[i]
+			bc.desc = tooltip
+			bc.bound_obj = bound_obj
+			bc.bound_prop = bound_prop
+			bc.bound_index = i
+			parent:add_child(bc, x+xoff, y-1)
+			xoff += 8
+		end
 	else
 		--- ...
 	end
