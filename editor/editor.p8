@@ -505,8 +505,10 @@ function create_control(datatype, value, parent, x, y, tooltip, bound_obj, bound
 		value = value or ""	-- default nil to ""?
 	d("datatype = "..datatype)
 	d("value = "..value)
-		local lbl=label.new(value, gui_fg1)
-		lbl.desc = tooltip
+		local safe_value = value
+		if (#value > 9) safe_value = sub(value,1,7).."..."
+		local lbl=label.new(safe_value, gui_fg1)
+		lbl.desc = value
 		lbl.wants_mouse = true
 		parent:add_child(lbl, x, y)
 
@@ -524,12 +526,24 @@ function create_control(datatype, value, parent, x, y, tooltip, bound_obj, bound
   -- color picker
 	elseif datatype == 13 then
 		local bc=button.new("", 
-			function()
-				d("col clicked!")
+			function(w)
+				-- show color picker for this property
+				d("col clicked!"..w.c)
+				pick = color_picker.new(w.c, function(self)
+					printh("picked:"..self.value)
+					--d("type="..type(w.bound_obj))
+					w.bound_obj[w.bound_prop]=self.value
+					w.c=self.value
+					parent:remove_child(self)
+				end)
+				parent:add_child(pick,w.x,w.y)
 			end,
 			value)
 		bc.w=6
 		bc.h=6
+		bc.desc = tooltip
+		bc.bound_obj = bound_obj
+		bc.bound_prop = bound_prop
 		parent:add_child(bc, x, y-1)
 	else
 		--- ...
