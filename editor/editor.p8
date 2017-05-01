@@ -494,7 +494,7 @@ function create_control(datatype, value, parent, x, y, tooltip, bound_obj, bound
 		value = value or 0	-- default nil to 0?
 	d("datatype = "..datatype)
 	d("value = "..value)
-		local spin = spinner.new(0, 1000, value, 1, set_bound_val)
+		local spin = spinner.new(-64, 1000, value, 1, set_bound_val)
 		spin.bound_obj = bound_obj
 		spin.bound_prop = bound_prop
 		spin.desc = tooltip
