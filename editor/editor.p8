@@ -817,7 +817,7 @@ function draw_cursor()
 	-- line(cursor_x, cursor_y+1,cursor_x, cursor_y+4, col)
 
 	--pset(cursor_x, cursor_y, 8)
-	-- pal(7,col)
+	palt(0,true)
 	spr(240, cursor_x, cursor_y, 1, 1)
 	-- pal() --reset palette
 
