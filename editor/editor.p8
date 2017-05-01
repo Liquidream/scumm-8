@@ -356,25 +356,31 @@ function input_button_pressed(button_index)
 
 	-- todo: check for modal dialog input first
 
-	-- check room-level interaction
+	
 
 
 	--if hover_curr_cmd then
 
+  -- gui clicked?
 	if gui.clicked_widget or gui.widget_under_mouse then
 		
 		-- do nothing, leave it for widget library to handle
 
-	elseif hover_curr_selection then
-		-- select object
-		curr_selection = hover_curr_selection
-		curr_selection_class = hover_curr_selection_class
-		create_ui_props(0)
-	else
-		-- nothing clicked (so default to room selected)
-		curr_selection = room_curr
-		curr_selection_class = "class_room"
-		create_ui_props(0)
+	-- check room-level interaction
+	elseif cursor_y >= stage_top 
+	 and cursor_y < stage_top+64 then
+	 	-- stage clicked
+		if hover_curr_selection then
+			-- select object
+			curr_selection = hover_curr_selection
+			curr_selection_class = hover_curr_selection_class
+			create_ui_props(0)
+		else
+			-- nothing clicked (so default to room selected)
+			curr_selection = room_curr
+			curr_selection_class = "class_room"
+			create_ui_props(0)
+		end
 	end
 end
 
