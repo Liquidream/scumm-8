@@ -374,7 +374,7 @@ function input_button_pressed(button_index)
 			-- select object
 			curr_selection = hover_curr_selection
 			curr_selection_class = hover_curr_selection_class
-			create_ui_props(0)
+			create_ui_props(prop_page_num)
 		else
 			-- nothing clicked (so default to room selected)
 			curr_selection = room_curr
@@ -532,7 +532,19 @@ function create_control(datatype, value, parent, x, y, tooltip, bound_obj, bound
 	-- state ref
 	elseif datatype == 10 then
 		local btn_more = button.new(249, function(self)
-			d("more clicked!")
+			d("more state clicked!")
+		end)
+		btn_more.w=9
+		btn_more.h=5
+		btn_more.bound_obj = bound_obj
+		btn_more.bound_prop = bound_prop
+		btn_more.desc = tooltip
+		parent:add_child(btn_more, x, y)
+
+	-- states list (or numbers)
+	elseif datatype == 11 then
+		local btn_more = button.new(249, function(self)
+			d("more states clicked!")
 		end)
 		btn_more.w=9
 		btn_more.h=5
