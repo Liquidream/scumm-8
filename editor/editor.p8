@@ -405,8 +405,29 @@ function create_ui_states(mode)
 
 	d("states:")
 	-- go through all available properties
-	for state in all(curr_selection.states) do
-		d("   > "..state)
+	for i = 1,#curr_selection.states do
+		state = curr_selection.states[i]
+
+		-- state thumbnail
+		local stateicon = icon.new(state, nil, function(self)
+			d("selected:"..self.index)
+			curr_selection.state = self.index
+			-- close prop view/edit and go back to all properties
+			create_ui_props(prop_page_num)
+		end)
+		stateicon.index = i
+		stateicon.desc = "state:"..i
+		pnl_prop:add_child(stateicon, 2+xoff, 2+yoff)
+
+		-- label
+		local lbl=label.new(i, gui_fg1)
+		pnl_prop:add_child(lbl, 5+xoff, 11+yoff)
+
+		xoff += 10
+		if xoff > 110 then 
+			xoff = 0
+			yoff += 24
+		end
 	end
 end
 
