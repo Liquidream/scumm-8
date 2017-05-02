@@ -125,7 +125,7 @@ function _init()
 			id=31/state=state_here/x=80/y=24/w=1/h=2/state_here=47/trans_col=8/repeat_x=8/classes={class_untouchable}
 			id=32/state=state_here/x=176/y=24/w=1/h=2/state_here=47/trans_col=8/repeat_x=8/classes={class_untouchable}
 			id=33/name=front door/state=state_closed/x=152/y=8/w=1/h=3/state_closed=78/flip_x=true/classes={class_openable,class_door}/use_dir=face_back
-			id=34/name=bucket/state=state_open/x=208/y=48/w=1/h=1/state_closed=143/state_open=159/trans_col=15/use_with=true/classes={class_pickupable}
+			id=34/name=bucket/state=2/x=208/y=48/w=1/h=1/states={143,159}/trans_col=15/use_with=true/classes={class_pickupable}
 			|
 			id=1000/name=humanoid/w=1/h=4/idle={193,197,199,197}/talk={218,219,220,219}/walk_anim_side={196,197,198,197}/walk_anim_front={194,193,195,193}/walk_anim_back={200,199,201,199}/col=12/trans_col=11/walk_speed=0.6/frame_delay=5/classes={class_actor}/face_dir=face_front
 			id=1001/name=purpletentacle/x=140/y=52/w=1/h=3/idle={154,154,154,154}/talk={171,171,171,171}/col=11/trans_col=15/walk_speed=0.4/frame_delay=5/classes={class_actor,class_talkable}/face_dir=face_front/use_pos=pos_left
@@ -356,10 +356,12 @@ function input_button_pressed(button_index)
 
 	-- todo: check for modal dialog input first
 
-	
 
 
 	--if hover_curr_cmd then
+
+
+
 
   -- gui clicked?
 	if gui.clicked_widget or gui.widget_under_mouse then
@@ -389,15 +391,27 @@ end
 -- ui/widget related
 --
 
-
-
--- build the current "page" of properties
-function create_ui_props(pagenum)
+function create_ui_states(mode)
+	-- modes (1=select, 2=edit)
 	local xoff=0
 	local yoff=0
-	local start_pos = pagenum * 12 +1
-	local control_count = 0
-	
+
+	-- create container for controls
+	create_ui_bottom_panel()
+	local pnl_prop = gui:find("properties")
+
+	-- get current object states
+	--local states = curr_selection.states
+
+	d("states:")
+	-- go through all available properties
+	for state in all(curr_selection.states) do
+		d("   > "..state)
+	end
+end
+
+-- create/reuse panel for controls at bottom portion of screen
+function create_ui_bottom_panel()
 	-- look for existing panel
 	local pnl_prop = gui:find("properties")
 	if pnl_prop then
@@ -413,8 +427,18 @@ function create_ui_props(pagenum)
 		--pnl_prop.func = function() end
 		gui:add_child(pnl_prop, 0,82)
 	end
+end
 
-	d("=================================")
+-- build the current "page" of properties
+function create_ui_props(pagenum)
+	local xoff=0
+	local yoff=0
+	local start_pos = pagenum * 12 +1
+	local control_count = 0
+	
+	-- create container for controls
+	create_ui_bottom_panel()
+	local pnl_prop = gui:find("properties")
 
 	-- go through all available properties
 	for i = 1, min(start_pos+12-1, #prop_definitions) do
@@ -447,28 +471,6 @@ function create_ui_props(pagenum)
 			end
 		end
 	end
-end
-
-
-function set_bound_val(widget)
-	d("set_bound_val()")
-	d("  > "..widget.bound_prop.." = "..widget.value)
-	--if (widget.bound) d("bound not null!")
- widget.bound_obj[widget.bound_prop] = widget.value
-end
-
-function set_bound_val_decimal(widget)
-	d("set_bound_val_decimal()")
-	local val = round(widget.value, 2)
-	d("  > "..widget.bound_prop.." = "..val)
-	--if (widget.bound) d("bound not null!")
- widget.bound_obj[widget.bound_prop] = val
- 	widget.value = val
-end
-
-function round(num, numdecimalplaces)
-  local mult = 10^(numdecimalplaces or 0)
-  return flr(num * mult + 0.5) / mult
 end
 
 
@@ -545,6 +547,7 @@ function create_control(datatype, value, parent, x, y, tooltip, bound_obj, bound
 	elseif datatype == 11 then
 		local btn_more = button.new(249, function(self)
 			d("more states clicked!")
+			create_ui_states()
 		end)
 		btn_more.w=9
 		btn_more.h=5
@@ -606,6 +609,26 @@ function create_control(datatype, value, parent, x, y, tooltip, bound_obj, bound
 	end
 end
 
+
+-- event handlers
+function set_bound_val(widget)
+	d("set_bound_val()")
+	d("  > "..widget.bound_prop.." = "..widget.value)
+	--if (widget.bound) d("bound not null!")
+ widget.bound_obj[widget.bound_prop] = widget.value
+end
+
+function set_bound_val_decimal(widget)
+	d("set_bound_val_decimal()")
+	local val = round(widget.value, 2)
+	d("  > "..widget.bound_prop.." = "..val)
+	--if (widget.bound) d("bound not null!")
+ widget.bound_obj[widget.bound_prop] = val
+ 	widget.value = val
+end
+
+
+-- content functions (for labels, etc.)
 function status_label()
 --  if msg and msg_time>0 then
 --   return msg
@@ -806,7 +829,7 @@ function draw_ui()
 		-- draw obj? (1 sprite)
 		if curr_selection_class != "class_room" then
 			palt(0,false)
-			spr(curr_selection[curr_selection.state], 1, 73)
+			spr(curr_selection.states[curr_selection.state], 1, 73)
 			pal()
 		end
 		print(
@@ -1279,6 +1302,14 @@ function pad_3(number)
 	local z="000"
 	return sub(z,#strnum+1)..strnum
 end
+
+function round(num, numdecimalplaces)
+  local mult = 10^(numdecimalplaces or 0)
+  return flr(num * mult + 0.5) / mult
+end
+
+
+
 
 
 -- ====================================
@@ -1921,7 +1952,6 @@ function color_picker:on_mouse_press()
   if (self.func) self.func(self)
  end
 end
-
 
 
 
