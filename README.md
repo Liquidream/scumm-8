@@ -37,7 +37,7 @@ Wow, really? You still here?! OK, once again. Think of SCUMM-8 as an even more r
 - [x] Proximity (between Actors/Objects)
 
 ## Planned Features
-- [ ] Game Editor
+- [ ] Game Editor (WIP)
 - [ ] Game Save/Load
 
 ## Getting Started
