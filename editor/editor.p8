@@ -409,11 +409,17 @@ function create_ui_states(mode)
 		state = curr_selection.states[i]
 
 		-- state thumbnail
-		local stateicon = icon.new(state, nil, function(self)
-			d("selected:"..self.index)
-			curr_selection.state = self.index
-			-- close prop view/edit and go back to all properties
-			create_ui_props(prop_page_num)
+		local stateicon = icon.new(state, nil, function(self)			
+			if mode == 1 then
+				-- select mode
+				curr_selection.state = self.index
+				-- close prop view/edit and go back to all properties
+				create_ui_props(prop_page_num)			
+			elseif mode == 2 then
+				-- edit mode
+
+				-- todo: allow browse to pick/edit sprite number
+			end
 		end)
 		stateicon.index = i
 		stateicon.desc = "state:"..i
@@ -429,6 +435,20 @@ function create_ui_states(mode)
 			yoff += 24
 		end
 	end
+	
+	if mode == 2 then
+		-- show "add" button
+		local btn_add = button.new("+", function(self)
+			-- todo: allow browse to pick/edit sprite number
+		end)
+		btn_add.w=7
+		btn_add.h=5
+		btn_add.desc = "add state"
+		btn_add.children[1].y -= 2
+		btn_add.children[1].c = 1
+		pnl_prop:add_child(btn_add, xoff+2, yoff+4)
+	end
+
 end
 
 -- create/reuse panel for controls at bottom portion of screen
@@ -555,7 +575,8 @@ function create_control(datatype, value, parent, x, y, tooltip, bound_obj, bound
 	-- state ref
 	elseif datatype == 10 then
 		local btn_more = button.new(249, function(self)
-			d("more state clicked!")
+		  -- show "select state"
+			create_ui_states(1)
 		end)
 		btn_more.w=9
 		btn_more.h=5
@@ -567,8 +588,8 @@ function create_control(datatype, value, parent, x, y, tooltip, bound_obj, bound
 	-- states list (or numbers)
 	elseif datatype == 11 then
 		local btn_more = button.new(249, function(self)
-			d("more states clicked!")
-			create_ui_states()
+			-- show "edit states"
+			create_ui_states(2)
 		end)
 		btn_more.w=9
 		btn_more.h=5
