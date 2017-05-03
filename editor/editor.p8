@@ -422,12 +422,31 @@ function create_ui_states(mode)
 			end
 		end)
 		stateicon.index = i
-		stateicon.desc = "state:"..i
+		if mode == 1 then
+			stateicon.desc = "select state:"..i
+		else
+			stateicon.desc = "edit state:"..i
+		end
 		pnl_prop:add_child(stateicon, 2+xoff, 2+yoff)
 
-		-- label
-		local lbl=label.new(i, gui_fg1)
-		pnl_prop:add_child(lbl, 5+xoff, 11+yoff)
+		if mode == 1 then
+			-- label
+			local lbl=label.new(i, gui_fg1)
+			pnl_prop:add_child(lbl, 5+xoff, 11+yoff)
+		else
+			-- delete
+			local btn_del = button.new("\x97", function(self)
+				-- todo: delete state!
+				d("delete state!")
+			end, 8)
+			btn_del.w=5
+			btn_del.h=5
+			btn_del.desc = "delete state "..i
+			btn_del.children[1].x -= 3
+			btn_del.children[1].y -= 2
+			btn_del.children[1].c = 7
+			pnl_prop:add_child(btn_del, 3+xoff, 11+yoff)
+		end
 
 		xoff += 10
 		if xoff > 110 then 
