@@ -25,6 +25,7 @@ cursor_cols = {7,12,13,13,12,7}
 curr_selection = nil		-- currently selected object/actor (or room, if nil)
 curr_selection_class = nil
 prop_page_num = 0
+prop_panel_col = 7
 gui = nil	-- widget ui
 
 -- "dark blue" gui theme
@@ -122,10 +123,10 @@ function _init()
       id=8/map={64,16}/objects={}/classes={class_room}
 			|
 			id=30/x=144/y=40/classes={class_untouchable}
-			id=31/state=state_here/x=80/y=24/w=1/h=2/state_here=47/trans_col=8/repeat_x=8/classes={class_untouchable}
-			id=32/state=state_here/x=176/y=24/w=1/h=2/state_here=47/trans_col=8/repeat_x=8/classes={class_untouchable}
-			id=33/name=front door/state=state_closed/x=152/y=8/w=1/h=3/state_closed=78/flip_x=true/classes={class_openable,class_door}/use_dir=face_back
-			id=34/name=bucket/state=2/x=208/y=48/w=1/h=1/states={143,159}/trans_col=15/use_with=true/classes={class_pickupable}
+			id=31/state=1/states={47}/x=80/y=24/w=1/h=2/trans_col=8/repeat_x=8/classes={class_untouchable}
+			id=32/state=1/states={47}/x=176/y=24/w=1/h=2/trans_col=8/repeat_x=8/classes={class_untouchable}
+			id=33/name=front door/state=1/states={78}/x=152/y=8/w=1/h=3/flip_x=true/classes={class_openable,class_door}/use_dir=face_back
+			id=34/name=bucket/state=2/states={143,159}/x=208/y=48/w=1/h=1/trans_col=15/use_with=true/classes={class_pickupable}
 			|
 			id=1000/name=humanoid/w=1/h=4/idle={193,197,199,197}/talk={218,219,220,219}/walk_anim_side={196,197,198,197}/walk_anim_front={194,193,195,193}/walk_anim_back={200,199,201,199}/col=12/trans_col=11/walk_speed=0.6/frame_delay=5/classes={class_actor}/face_dir=face_front
 			id=1001/name=purpletentacle/x=140/y=52/w=1/h=3/idle={154,154,154,154}/talk={171,171,171,171}/col=11/trans_col=15/walk_speed=0.4/frame_delay=5/classes={class_actor,class_talkable}/face_dir=face_front/use_pos=pos_left
@@ -391,6 +392,36 @@ end
 -- ui/widget related
 --
 
+function create_ui_sprite_select(pagenum, func)
+	local xoff=8
+	local yoff=1
+
+	-- create container for controls
+	create_ui_bottom_panel()
+	local pnl_prop = gui:find("properties")
+	-- set prop panel bg to black
+	prop_panel_col = 0
+
+	-- todo: show current "page" of sprites
+	local startoff = (pagenum-1)*64
+	for i = 1+startoff, 64+startoff-1 do
+		
+		local sprite = icon.new(i, nil, func)
+		sprite.index = i
+		sprite.desc = "select sprite:"..i
+		pnl_prop:add_child(sprite, xoff, yoff)
+		--spr(i, xoff, yoff)	
+
+		xoff += 8
+		if xoff > 120 then 
+			xoff = 0
+			yoff += 8
+		end
+	end
+end
+
+
+
 function create_ui_states(mode)
 	-- modes (1=select, 2=edit)
 	local xoff=0
@@ -417,8 +448,13 @@ function create_ui_states(mode)
 				create_ui_props(prop_page_num)			
 			elseif mode == 2 then
 				-- edit mode
-
 				-- todo: allow browse to pick/edit sprite number
+				create_ui_sprite_select(1, function(self)		
+					d("sprite "..self.index.." selected!")
+					curr_selection.states[curr_selection.state] = self.index
+					-- close sprite view and go back to states view
+				create_ui_states(mode)
+				end)
 			end
 		end)
 		stateicon.index = i
@@ -459,6 +495,13 @@ function create_ui_states(mode)
 		-- show "add" button
 		local btn_add = button.new("+", function(self)
 			-- todo: allow browse to pick/edit sprite number
+			d("add state!")
+			create_ui_sprite_select(1, function(self)		
+				d("sprite "..self.index.." selected!")
+				add(curr_selection.states, self.index)
+				-- close sprite view and go back to states view
+				create_ui_states(mode)
+			end)
 		end)
 		btn_add.w=7
 		btn_add.h=5
@@ -487,6 +530,9 @@ function create_ui_bottom_panel()
 		--pnl_prop.func = function() end
 		gui:add_child(pnl_prop, 0,82)
 	end
+
+	-- default prop panel bg to white
+	prop_panel_col = 7
 end
 
 -- build the current "page" of properties
@@ -903,8 +949,9 @@ function draw_ui()
 	spr(222,112,74)
 	spr(223,120,74)
 
-	-- properties (section)
-	rectfill(0,82,127,120,gui_fg3)
+	-- properties (section)	
+	rectfill(0,82,127,120, prop_panel_col)
+	--rectfill(0,82,127,120,gui_fg3)
 
 	-- draw widget library
 	gui:draw()
