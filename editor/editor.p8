@@ -453,7 +453,7 @@ function create_ui_states(mode)
 					d("sprite "..self.index.." selected!")
 					curr_selection.states[curr_selection.state] = self.index
 					-- close sprite view and go back to states view
-				create_ui_states(mode)
+					create_ui_states(mode)
 				end)
 			end
 		end)
@@ -474,6 +474,12 @@ function create_ui_states(mode)
 			local btn_del = button.new("\x97", function(self)
 				-- todo: delete state!
 				d("delete state!")
+				d(">"..self.state)
+				d(#curr_selection.states)
+				del(curr_selection.states, self.state)
+				-- recreate states view
+				create_ui_states(mode)
+				d(#curr_selection.states)
 			end, 8)
 			btn_del.w=5
 			btn_del.h=5
@@ -481,6 +487,7 @@ function create_ui_states(mode)
 			btn_del.children[1].x -= 3
 			btn_del.children[1].y -= 2
 			btn_del.children[1].c = 7
+			btn_del.state = state
 			pnl_prop:add_child(btn_del, 3+xoff, 11+yoff)
 		end
 
