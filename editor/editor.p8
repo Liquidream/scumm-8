@@ -578,7 +578,7 @@ function create_ui_props(pagenum)
 	gui_tabs_value = pagenum+1
 
 	-- go through all available properties
-	for i = 1, min(start_pos+12-1, #prop_definitions) do
+	for i = 1,#prop_definitions do
 		-- if within the "page" to show
 		if i >= start_pos 
 		 and control_count < 12 --i <= start_pos+12-1 
