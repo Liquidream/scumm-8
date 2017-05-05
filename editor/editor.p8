@@ -26,21 +26,12 @@ curr_selection = nil		-- currently selected object/actor (or room, if nil)
 curr_selection_class = nil
 gui = nil	-- widget ui
 
---prop_page_num = 0
---prop_panel_col = 7
---gui_tabs_visible = false
---gui_tabs_value = 0
+prop_page_num = 0
+prop_panel_col = 7
+gui_tabs_visible = false
+gui_tabs_value = 0
 gui_tabs_start_hl = 204
 gui_tabs_start_dk = 220
-
--- prop panels (allows "nesting" of properties)
-prop_pages = {}
-props = {
-	heading = "object:034",
-	tabs_visible = true,
-	tabs_value = 0,
-	bg_col = 7
-}
 
 
 -- "dark blue" gui theme
