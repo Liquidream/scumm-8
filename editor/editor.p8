@@ -28,6 +28,7 @@ gui = nil	-- widget ui
 
 prop_page_num = 0
 prop_panel_col = 7
+prop_panel_header = "" 
 gui_tabs_visible = false
 gui_tabs_value = 0
 gui_tabs_start_hl = 204
@@ -413,6 +414,31 @@ end
 -- ui/widget related
 --
 
+function create_ui_classes()
+	local xoff=2
+	local yoff=2
+
+	-- create container for controls
+	create_ui_bottom_panel()
+	local pnl_prop = gui:find("properties")
+	-- set prop panel bg to black
+	prop_panel_col = 7
+
+	classes = { "class_room","class_object","class_actor","class_openable", "class_door", "class_untouchable", "class_pickupable", "class_talkable" } 
+
+	-- Add classes
+	for c in all(classes) do
+		local chk = checkbox.new(sub(c,7)) 
+		pnl_prop:add_child(chk, xoff, yoff)
+
+		yoff += 6
+		if yoff > 30 then 
+			yoff = 2
+			xoff += 63 
+		end
+	end
+end
+
 function create_ui_sprite_select(pagenum, func)
 	local xoff=8
 	local yoff=1
@@ -574,6 +600,8 @@ function create_ui_props(pagenum)
 	create_ui_bottom_panel()
 	local pnl_prop = gui:find("properties")
 
+	prop_panel_header = sub(curr_selection_class,7)..":"..pad_3(curr_selection.id) 
+
 	-- show tabs
 	gui_tabs_visible = true
 	gui_tabs_value = pagenum+1
@@ -670,29 +698,27 @@ function create_control(datatype, value, parent, x, y, tooltip, bound_obj, bound
 
 	-- state ref
 	elseif datatype == 10 then
-		local btn_more = button.new(249, function(self)
+		create_more_button(parent, tooltip, bound_obj, bound_prop, x, y, function(self)
 		  -- show "select state"
+			prop_panel_header = "select state" 
 			create_ui_states(1)
 		end)
-		btn_more.w=9
-		btn_more.h=5
-		btn_more.bound_obj = bound_obj
-		btn_more.bound_prop = bound_prop
-		btn_more.desc = tooltip
-		parent:add_child(btn_more, x, y)
 
 	-- states list (or numbers)
 	elseif datatype == 11 then
-		local btn_more = button.new(249, function(self)
+		create_more_button(parent, tooltip, bound_obj, bound_prop, x, y, function(self)
 			-- show "edit states"
+			prop_panel_header = "edit states" 
 			create_ui_states(2)
 		end)
-		btn_more.w=9
-		btn_more.h=5
-		btn_more.bound_obj = bound_obj
-		btn_more.bound_prop = bound_prop
-		btn_more.desc = tooltip
-		parent:add_child(btn_more, x, y)
+
+	-- classes list 
+	elseif datatype == 12 then
+		create_more_button(parent, tooltip, bound_obj, bound_prop, x, y, function(self)
+		  -- show "select classes"
+			prop_panel_header = "select classes" 
+			create_ui_classes()
+		end)
 
   -- color picker
 	elseif datatype == 13 then
@@ -745,6 +771,16 @@ function create_control(datatype, value, parent, x, y, tooltip, bound_obj, bound
 	else
 		--- ...
 	end
+end
+
+function create_more_button(parent, tooltip, bound_obj, bound_prop, x, y, func)
+	local btn_more = button.new(249, func)
+		btn_more.w=9
+		btn_more.h=5
+		btn_more.bound_obj = bound_obj
+		btn_more.bound_prop = bound_prop
+		btn_more.desc = tooltip
+		parent:add_child(btn_more, x, y)
 end
 
 
@@ -978,7 +1014,8 @@ function draw_ui()
 			pal()
 		end
 		print(
-			sub(curr_selection_class,7)..":"..pad_3(curr_selection.id)
+			prop_panel_header
+			--sub(curr_selection_class,7)..":"..pad_3(curr_selection.id)
 			,11,74,gui_fg3)
 	end
 
@@ -1966,6 +2003,9 @@ function checkbox.new(lbl, v, f)
  local c=widget.new()
  setmetatable(c, checkbox)
  local l=make_label(lbl)
+ 
+ l.c=gui_bg2
+
  c:add_child(l, 6, 0)
  c.w=l.w+6
  c.h=7
@@ -1975,10 +2015,11 @@ function checkbox.new(lbl, v, f)
 end
 
 function checkbox:draw(x, y)
- rectfill(x, y, x+4, y+4, 7)
+ rect(x, y, x+4, y+4, 6) --7
  if self.value then
-  line(x+1, y+1, x+3, y+3, 0)
-  line(x+1, y+3, x+3, y+1, 0)
+ 	rectfill(x+1, y+1, x+3, y+3, gui_fg1) --7
+  -- line(x+1, y+1, x+3, y+3, gui_fg1) -- 0
+  -- line(x+1, y+3, x+3, y+1, gui_fg1)
  end
 end
 
