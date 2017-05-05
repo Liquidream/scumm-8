@@ -1929,9 +1929,9 @@ function spinner.new(minv, maxv, v, step, f)
  s.value=v or minv
  s.func=f
  local b=spinbtn.new("+", s, 1)
- s:add_child(b, 15, 3)
+ s:add_child(b, 17, 3)
  b=spinbtn.new("-", s, -1)
- s:add_child(b, 22, 3)
+ s:add_child(b, 24, 3)
  return s
 end
 
