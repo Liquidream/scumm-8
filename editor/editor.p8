@@ -27,6 +27,11 @@ curr_selection_class = nil
 prop_page_num = 0
 prop_panel_col = 7
 gui = nil	-- widget ui
+gui_tabs_visible = false
+gui_tabs_value = 0
+gui_tabs_start_hl = 204
+gui_tabs_start_dk = 220
+
 
 -- "dark blue" gui theme
 gui_bg1 = 1
@@ -352,22 +357,19 @@ function input_control()
 	cursor_y = mid(0, cursor_y, 127)
 end
 
+
 -- 1 = z/lmb, 2 = x/rmb, (4=middle)
 function input_button_pressed(button_index)	
 
 	-- todo: check for modal dialog input first
 
-
-
 	--if hover_curr_cmd then
-
-
-
 
   -- gui clicked?
 	if gui.clicked_widget or gui.widget_under_mouse then
 		
 		-- do nothing, leave it for widget library to handle
+		d("widget clicked")
 
 	-- check room-level interaction
 	elseif cursor_y >= stage_top 
@@ -383,6 +385,20 @@ function input_button_pressed(button_index)
 			curr_selection = room_curr
 			curr_selection_class = "class_room"
 			create_ui_props(0)
+		end
+	
+	-- check for tab control interaction
+	elseif cursor_y > stage_top+64
+	 and cursor_y <= stage_top+72 then
+	 	-- in properties header
+		if cursor_x >= 96 and cursor_x <= 102 then
+			gui_tabs_value = 1
+		elseif cursor_x >= 104 and cursor_x <= 110 then
+			gui_tabs_value = 2
+		elseif cursor_x >= 112 and cursor_x <= 118 then
+			gui_tabs_value = 3
+		elseif cursor_x >= 120 and cursor_x <= 126 then
+			gui_tabs_value = 4
 		end
 	end
 end
@@ -552,6 +568,10 @@ function create_ui_props(pagenum)
 	-- create container for controls
 	create_ui_bottom_panel()
 	local pnl_prop = gui:find("properties")
+
+	-- show tabs
+	gui_tabs_visible = true
+	gui_tabs_value = 1
 
 	-- go through all available properties
 	for i = 1, min(start_pos+12-1, #prop_definitions) do
@@ -951,10 +971,20 @@ function draw_ui()
 			,11,74,gui_fg3)
 	end
 
-	spr(204,96,74)
-	spr(221,104,74)
-	spr(222,112,74)
-	spr(223,120,74)
+	-- tab control
+	if gui_tabs_visible then
+		for i = 1,4 do
+			if i == gui_tabs_value then
+				spr(gui_tabs_start_hl+(i-1), 96+((i-1)*8), 74)
+			else
+				spr(gui_tabs_start_dk+(i-1), 96+((i-1)*8), 74)
+			end
+			-- spr(204,96,74)
+			-- spr(221,104,74)
+			-- spr(222,112,74)
+			-- spr(223,120,74)
+		end
+	end
 
 	-- properties (section)	
 	rectfill(0,82,127,120, prop_panel_col)
