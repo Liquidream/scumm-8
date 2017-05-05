@@ -567,7 +567,7 @@ end
 function create_ui_props(pagenum)
 	local xoff=0
 	local yoff=0
-	local start_pos = pagenum * 12 +1
+	local start_pos = pagenum * 12 --+1
 	local control_count = 0
 	
 	-- create container for controls
@@ -580,15 +580,14 @@ function create_ui_props(pagenum)
 
 	-- go through all available properties
 	for i = 1,#prop_definitions do
-		-- if within the "page" to show
-		if i >= start_pos 
-		 and control_count < 12 --i <= start_pos+12-1 
+		local prop = prop_definitions[i]
+		d("checking prop: "..prop[2])
+		if curr_selection 
+		 and has_flag(prop[4], curr_selection_class)
 		then
-			local prop = prop_definitions[i]
-			--local col_size = 0
-			d("checking prop: "..prop[2])
-			if curr_selection 
-			and has_flag(prop[4], curr_selection_class)
+			-- if within the "page" to show
+			if control_count >= start_pos 
+				and control_count < start_pos + 12
 			then
 				local lbltext = prop[2]..":"
 				local lbl=label.new(lbltext, gui_bg2)
@@ -605,8 +604,8 @@ function create_ui_props(pagenum)
 					yoff = 0
 					xoff += 63 
 				end
-				control_count += 1
 			end
+			control_count += 1
 		end
 	end
 end
