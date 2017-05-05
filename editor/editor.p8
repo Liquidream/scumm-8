@@ -131,7 +131,7 @@ function _init()
 			|
 			id=30/x=144/y=40/classes={class_untouchable}
 			id=31/state=1/states={47}/x=80/y=24/w=1/h=2/trans_col=8/repeat_x=8/classes={class_untouchable}
-			id=32/state=1/states={47}/x=176/y=24/w=1/h=2/trans_col=8/repeat_x=8/classes={class_untouchable}
+			id=32/state=1/states={47}/x=176/y=24/w=1/h=2/trans_col=0/repeat_x=1/classes={class_untouchable}
 			id=33/name=front door/state=1/states={78}/x=152/y=8/w=1/h=3/flip_x=true/classes={class_openable,class_door}/use_dir=face_back
 			id=34/name=bucket/state=2/states={143,159}/x=208/y=48/w=1/h=1/trans_col=15/use_with=true/classes={class_pickupable}
 			|
@@ -449,6 +449,9 @@ function create_ui_sprite_select(pagenum, func)
 	-- set prop panel bg to black
 	prop_panel_col = 0
 
+-- hack!!! 
+	pagenum +=1
+
 	-- todo: show current "page" of sprites
 	local startoff = (pagenum-1)*64
 	for i = 1+startoff, 64+startoff-1 do
@@ -550,10 +553,14 @@ function create_ui_states(mode)
 		local btn_add = button.new("+", function(self)
 			-- todo: allow browse to pick/edit sprite number
 			d("add state!")
+			prop_panel_header = "select sprite" 
+			gui_tabs_visible = true
 			create_ui_sprite_select(1, function(self)		
 				d("sprite "..self.index.." selected!")
 				add(curr_selection.states, self.index)
 				-- close sprite view and go back to states view
+				gui_tabs_visible = false
+				prop_panel_header = "edit states" 
 				create_ui_states(mode)
 			end)
 		end)
@@ -701,6 +708,7 @@ function create_control(datatype, value, parent, x, y, tooltip, bound_obj, bound
 		create_more_button(parent, tooltip, bound_obj, bound_prop, x, y, function(self)
 		  -- show "select state"
 			prop_panel_header = "select state" 
+			gui_tabs_visible = false
 			create_ui_states(1)
 		end)
 
@@ -709,6 +717,7 @@ function create_control(datatype, value, parent, x, y, tooltip, bound_obj, bound
 		create_more_button(parent, tooltip, bound_obj, bound_prop, x, y, function(self)
 			-- show "edit states"
 			prop_panel_header = "edit states" 
+			gui_tabs_visible = false
 			create_ui_states(2)
 		end)
 
@@ -717,6 +726,7 @@ function create_control(datatype, value, parent, x, y, tooltip, bound_obj, bound
 		create_more_button(parent, tooltip, bound_obj, bound_prop, x, y, function(self)
 		  -- show "select classes"
 			prop_panel_header = "select classes" 
+			gui_tabs_visible = false
 			create_ui_classes()
 		end)
 
