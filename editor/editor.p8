@@ -194,7 +194,7 @@ function init_ui()
  p.name="panel status"
  gui:add_child(p, 0, 121)
  
- local l=label.new(status_label, gui_bg2)
+ local l=label.new(status_label, gui_fg1) --gui_bg2)
  l.name="info"
  p:add_child(l, 2, 1)
  
@@ -400,6 +400,10 @@ function input_button_pressed(button_index)
 		elseif cursor_x >= 120 and cursor_x <= 126 then
 			gui_tabs_value = 4
 		end
+
+		-- update property page number (temp!)
+		prop_page_num = gui_tabs_value -1
+		create_ui_props(prop_page_num)
 	end
 end
 
@@ -571,7 +575,7 @@ function create_ui_props(pagenum)
 
 	-- show tabs
 	gui_tabs_visible = true
-	gui_tabs_value = 1
+	gui_tabs_value = pagenum+1
 
 	-- go through all available properties
 	for i = 1, min(start_pos+12-1, #prop_definitions) do
@@ -769,7 +773,7 @@ function status_label()
 --  end
  
  if not gui:mouse_blocked() then
-  -- mouse is not over a panel
+  -- mouse is over stage view
 	if cursor_y-stage_top >= 0 
 	 and cursor_y-stage_top < 64 then
 		return "x:"..pad_3(cursor_x+cam_x).." y:"..pad_3(cursor_y-stage_top)
@@ -797,12 +801,19 @@ end
 
 
 function cpu_label()
+	
 	-- check no status text being displayed
-	local w=gui.clicked_widget or gui.widget_under_mouse
-	if w and w.desc then
-		return ""
-	else
+	--local w=gui.clicked_widget or gui.widget_under_mouse
+	-- if w and w.desc then
+	-- 	return ""
+	-- else
+
+	-- mouse is over stage view
+	if cursor_y-stage_top >= 0 
+	 and cursor_y-stage_top < 64 then
 		return "cpu:"..flr(100*stat(1)).."% mem:"..flr(stat(0)/1024*100).."%"
+	else
+ 		return ""
 	end
 end
 
