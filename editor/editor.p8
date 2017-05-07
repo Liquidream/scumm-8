@@ -31,6 +31,7 @@ prop_panel_col = 7
 prop_panel_header = "" 
 gui_tabs_visible = false
 gui_tabs_value = 0
+gui_tabs_func = nil
 gui_tabs_start_hl = 204
 gui_tabs_start_dk = 220
 
@@ -75,8 +76,8 @@ prop_definitions = {
 	-- object/actor props
 	{"name", "name", 2, {"class_object","class_actor"} },
 	{"x", "x pos", 1, {"class_object","class_actor"}, "x position" },
-	{"y", "y pos", 1, {"class_object","class_actor"}, "y position"  },
-	{"z", "z pos", 1, {"class_object","class_actor"}, "z plane/order"  },
+	{"y", "y pos", 1, {"class_object","class_actor"}, "y position" },
+	{"z", "z pos", 1, {"class_object","class_actor"}, "z plane/order" },
 	{"w", "width", 1, {"class_object","class_actor"}, "number of sprites wide" },
 	{"h", "height", 1, {"class_object","class_actor"}, "number of sprites high" },
 	{"state", "state", 10, {"class_object","class_actor"}, "selected state to display" },
@@ -394,18 +395,20 @@ function input_button_pressed(button_index)
 	 and cursor_y <= stage_top+72 then
 	 	-- in properties header
 		if cursor_x >= 96 and cursor_x <= 102 then
-			gui_tabs_value = 1
+			gui_tabs_value = 0
 		elseif cursor_x >= 104 and cursor_x <= 110 then
-			gui_tabs_value = 2
+			gui_tabs_value = 1
 		elseif cursor_x >= 112 and cursor_x <= 118 then
-			gui_tabs_value = 3
+			gui_tabs_value = 2
 		elseif cursor_x >= 120 and cursor_x <= 126 then
-			gui_tabs_value = 4
+			gui_tabs_value = 3
 		end
 
 		-- update property page number (temp!)
-		prop_page_num = gui_tabs_value -1
-		create_ui_props(prop_page_num)
+		--prop_page_num = gui_tabs_value -1
+		-- refresh content to new "page"
+		gui_tabs_func()
+		--create_ui_props(prop_page_num)
 	end
 end
 
@@ -450,7 +453,7 @@ function create_ui_classes()
 	end
 end
 
-function create_ui_sprite_select(pagenum, func)
+function create_ui_sprite_select() --pagenum, func)
 	local xoff=8
 	local yoff=1
 
@@ -462,12 +465,23 @@ function create_ui_sprite_select(pagenum, func)
 
 	prop_panel_header = "select sprite" 
 	gui_tabs_visible = true
+	gui_tabs_func = create_ui_sprite_select
 
 	-- todo: show current "page" of sprites
-	local startoff = (pagenum-1)*64
+	local startoff = gui_tabs_value*64
+	--local startoff = (pagenum-1)*64
 	for i = 1+startoff, 64+startoff-1 do
 		
-		local sprite = icon.new(i, nil, func)
+		local sprite = icon.new(i, nil, function(self)
+			d("sprite "..self.index.." selected!")
+			if sprite_select_mode == 1 then
+				curr_selection.states[sprite_select_index] = self.index
+			else
+				add(curr_selection.states, self.index)
+			end
+			-- close sprite view and go back to states view
+			create_ui_states()
+		end)
 		sprite.index = i
 		sprite.desc = "select sprite:"..i
 		pnl_prop:add_child(sprite, xoff, yoff)
@@ -483,7 +497,7 @@ end
 
 
 
-function create_ui_states(mode)
+function create_ui_states()
 	-- modes (1=select, 2=edit)
 	local xoff=0
 	local yoff=0
@@ -492,13 +506,14 @@ function create_ui_states(mode)
 	create_ui_bottom_panel()
 	local pnl_prop = gui:find("properties")
 	local tooltip
-	if mode == 1 then
+	if states_mode == 1 then
 		prop_panel_header = "select state" 
 		tooltip = "select state:"
 	else
 		prop_panel_header = "edit states" 
 		tooltip = "edit state:"
 	end
+
 	gui_tabs_visible = false
 
 	-- go through all available properties
@@ -507,20 +522,22 @@ function create_ui_states(mode)
 
 		-- state thumbnail
 		local stateicon = icon.new(state, nil, function(self)			
-			if mode == 1 then
+			if states_mode == 1 then
 				-- select mode
 				curr_selection.state = self.index
 				-- close prop view/edit and go back to all properties
 				create_ui_props(prop_page_num)			
-			elseif mode == 2 then
+			elseif states_mode == 2 then
 				-- edit mode
 				-- todo: allow browse to pick/edit sprite number
-				create_ui_sprite_select(1, function(self)		
-					d("sprite "..self.index.." selected!")
-					curr_selection.states[curr_selection.state] = self.index
-					-- close sprite view and go back to states view
-					create_ui_states(mode)
-				end)
+				sprite_select_mode = 1 -- change
+				sprite_select_index = self.index
+				create_ui_sprite_select() --1, function(self)		
+				-- 	d("sprite "..self.index.." selected!")
+				-- 	curr_selection.states[curr_selection.state] = self.index
+				-- 	-- close sprite view and go back to states view
+				-- 	create_ui_states(mode)
+				-- end)
 			end
 		end)
 
@@ -529,7 +546,7 @@ function create_ui_states(mode)
 
 		pnl_prop:add_child(stateicon, 2+xoff, 2+yoff)
 
-		if mode == 1 then
+		if states_mode == 1 then
 			-- label
 			local lbl=label.new(i, gui_fg1)
 			pnl_prop:add_child(lbl, 5+xoff, 11+yoff)
@@ -542,7 +559,7 @@ function create_ui_states(mode)
 				d(#curr_selection.states)
 				del(curr_selection.states, self.state)
 				-- recreate states view
-				create_ui_states(mode)
+				create_ui_states() --mode)
 				d(#curr_selection.states)
 			end, 8)
 			btn_del.w=5
@@ -562,17 +579,18 @@ function create_ui_states(mode)
 		end
 	end
 	
-	if mode == 2 then
+	if states_mode == 2 then
 		-- show "add" button
 		local btn_add = button.new("+", function(self)
 			-- todo: allow browse to pick/edit sprite number
 			d("add state!")
-			create_ui_sprite_select(1, function(self)		
-				d("sprite "..self.index.." selected!")
-				add(curr_selection.states, self.index)
-				-- close sprite view and go back to states view
-				create_ui_states(mode)
-			end)
+			sprite_select_mode = 2 -- add
+			create_ui_sprite_select() -- 1, function(self)		
+		-- 		d("sprite "..self.index.." selected!")
+		-- 		add(curr_selection.states, self.index)
+		-- 		-- close sprite view and go back to states view
+		-- 		create_ui_states(mode)
+		-- 	end)
 		end)
 		btn_add.w=7
 		btn_add.h=5
@@ -607,10 +625,10 @@ function create_ui_bottom_panel()
 end
 
 -- build the current "page" of properties
-function create_ui_props(pagenum)
+function create_ui_props() --pagenum)
 	local xoff=0
 	local yoff=0
-	local start_pos = pagenum * 12 --+1
+	local start_pos = gui_tabs_value * 12 --+1
 	local control_count = 0
 	
 	-- create container for controls
@@ -621,7 +639,8 @@ function create_ui_props(pagenum)
 
 	-- show tabs
 	gui_tabs_visible = true
-	gui_tabs_value = pagenum+1
+	gui_tabs_func = create_ui_props
+	--gui_tabs_value = pagenum+1
 
 	-- go through all available properties
 	for i = 1,#prop_definitions do
@@ -717,14 +736,16 @@ function create_control(datatype, value, parent, x, y, tooltip, bound_obj, bound
 	elseif datatype == 10 then
 		create_more_button(parent, tooltip, bound_obj, bound_prop, x, y, function(self)
 		  -- show "select state"
-			create_ui_states(1)
+			states_mode = 1
+			create_ui_states()
 		end)
 
 	-- states list (or numbers)
 	elseif datatype == 11 then
 		create_more_button(parent, tooltip, bound_obj, bound_prop, x, y, function(self)
 			-- show "edit states"
-			create_ui_states(2)
+			states_mode = 2
+			create_ui_states()
 		end)
 
 	-- classes list 
@@ -1037,11 +1058,11 @@ function draw_ui()
 
 	-- tab control
 	if gui_tabs_visible then
-		for i = 1,4 do
+		for i = 0,3 do
 			if i == gui_tabs_value then
-				spr(gui_tabs_start_hl+(i-1), 96+((i-1)*8), 74)
+				spr(gui_tabs_start_hl+i, 96+(i*8), 74)
 			else
-				spr(gui_tabs_start_dk+(i-1), 96+((i-1)*8), 74)
+				spr(gui_tabs_start_dk+i, 96+(i*8), 74)
 			end
 			-- spr(204,96,74)
 			-- spr(221,104,74)
