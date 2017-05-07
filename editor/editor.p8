@@ -427,11 +427,13 @@ function create_ui_classes()
 	prop_panel_header = "select classes" 
 	gui_tabs_visible = false
 
-	classes = { "class_room","class_object","class_actor","class_openable", "class_door", "class_untouchable", "class_pickupable", "class_talkable" } 
+	classes = { --"class_room","class_object","class_actor",
+	            "class_openable", "class_door", "class_untouchable", "class_pickupable", "class_talkable" } 
 
 	-- Add classes
 	for c in all(classes) do
-		local chk = checkbox.new(sub(c,7)) 
+	  local checked = has_flag(curr_selection.classes, c)
+		local chk = checkbox.new(sub(c,7), checked) 
 		pnl_prop:add_child(chk, xoff, yoff)
 
 		yoff += 6
@@ -1016,7 +1018,9 @@ function draw_ui()
 		-- draw obj? (1 sprite)
 		if curr_selection_class != "class_room" then
 			palt(0,false)
-			spr(curr_selection.states[curr_selection.state], 1, 73)
+			if curr_selection.states then
+				spr(curr_selection.states[curr_selection.state], 1, 73)
+			end
 			pal()
 		end
 		print(
