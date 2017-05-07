@@ -424,6 +424,9 @@ function create_ui_classes()
 	-- set prop panel bg to black
 	prop_panel_col = 7
 
+	prop_panel_header = "select classes" 
+	gui_tabs_visible = false
+
 	classes = { "class_room","class_object","class_actor","class_openable", "class_door", "class_untouchable", "class_pickupable", "class_talkable" } 
 
 	-- Add classes
@@ -449,8 +452,8 @@ function create_ui_sprite_select(pagenum, func)
 	-- set prop panel bg to black
 	prop_panel_col = 0
 
--- hack!!! 
-	pagenum +=1
+	prop_panel_header = "select sprite" 
+	gui_tabs_visible = true
 
 	-- todo: show current "page" of sprites
 	local startoff = (pagenum-1)*64
@@ -480,11 +483,16 @@ function create_ui_states(mode)
 	-- create container for controls
 	create_ui_bottom_panel()
 	local pnl_prop = gui:find("properties")
+	local tooltip
+	if mode == 1 then
+		prop_panel_header = "select state" 
+		tooltip = "select state:"
+	else
+		prop_panel_header = "edit states" 
+		tooltip = "edit state:"
+	end
+	gui_tabs_visible = false
 
-	-- get current object states
-	--local states = curr_selection.states
-
-	d("states:")
 	-- go through all available properties
 	for i = 1,#curr_selection.states do
 		state = curr_selection.states[i]
@@ -507,12 +515,10 @@ function create_ui_states(mode)
 				end)
 			end
 		end)
+
 		stateicon.index = i
-		if mode == 1 then
-			stateicon.desc = "select state:"..i
-		else
-			stateicon.desc = "edit state:"..i
-		end
+		stateicon.desc = tooltip..i
+
 		pnl_prop:add_child(stateicon, 2+xoff, 2+yoff)
 
 		if mode == 1 then
@@ -553,14 +559,10 @@ function create_ui_states(mode)
 		local btn_add = button.new("+", function(self)
 			-- todo: allow browse to pick/edit sprite number
 			d("add state!")
-			prop_panel_header = "select sprite" 
-			gui_tabs_visible = true
 			create_ui_sprite_select(1, function(self)		
 				d("sprite "..self.index.." selected!")
 				add(curr_selection.states, self.index)
 				-- close sprite view and go back to states view
-				gui_tabs_visible = false
-				prop_panel_header = "edit states" 
 				create_ui_states(mode)
 			end)
 		end)
@@ -707,8 +709,6 @@ function create_control(datatype, value, parent, x, y, tooltip, bound_obj, bound
 	elseif datatype == 10 then
 		create_more_button(parent, tooltip, bound_obj, bound_prop, x, y, function(self)
 		  -- show "select state"
-			prop_panel_header = "select state" 
-			gui_tabs_visible = false
 			create_ui_states(1)
 		end)
 
@@ -716,8 +716,6 @@ function create_control(datatype, value, parent, x, y, tooltip, bound_obj, bound
 	elseif datatype == 11 then
 		create_more_button(parent, tooltip, bound_obj, bound_prop, x, y, function(self)
 			-- show "edit states"
-			prop_panel_header = "edit states" 
-			gui_tabs_visible = false
 			create_ui_states(2)
 		end)
 
@@ -725,8 +723,6 @@ function create_control(datatype, value, parent, x, y, tooltip, bound_obj, bound
 	elseif datatype == 12 then
 		create_more_button(parent, tooltip, bound_obj, bound_prop, x, y, function(self)
 		  -- show "select classes"
-			prop_panel_header = "select classes" 
-			gui_tabs_visible = false
 			create_ui_classes()
 		end)
 
