@@ -433,7 +433,13 @@ function create_ui_classes()
 	-- Add classes
 	for c in all(classes) do
 	  local checked = has_flag(curr_selection.classes, c)
-		local chk = checkbox.new(sub(c,7), checked) 
+		local chk = checkbox.new(sub(c,7), checked, function(self)
+			if self.value then
+				set_flag(curr_selection.classes, c)
+			else
+				unset_flag(curr_selection.classes, c)
+			end
+		end) 
 		pnl_prop:add_child(chk, xoff, yoff)
 
 		yoff += 6
@@ -1263,6 +1269,15 @@ function has_flag(obj, value)
 	end
   --if band(obj, value) != 0 then return true end
   return false
+end
+
+function set_flag(obj, value)
+	unset_flag(obj, value)
+	add(obj, value)
+end
+
+function unset_flag(obj, value)
+	del(obj, value)
 end
 
 function recalc_bounds(obj, w, h, cam_off_x, cam_off_y)
