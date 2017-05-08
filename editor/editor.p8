@@ -176,7 +176,7 @@ function _update60()
 	if not curr_selection then
 		curr_selection = room_curr
 		curr_selection_class = "class_room"
-		create_ui_props(0)
+		create_ui_props()
 	end
 
   cam_x = mid(0, cam_x, (room_curr.map_w*8)-127 -1)
@@ -382,12 +382,12 @@ function input_button_pressed(button_index)
 			-- select object
 			curr_selection = hover_curr_selection
 			curr_selection_class = hover_curr_selection_class
-			create_ui_props(prop_page_num)
+			create_ui_props() --prop_page_num)
 		else
 			-- nothing clicked (so default to room selected)
 			curr_selection = room_curr
 			curr_selection_class = "class_room"
-			create_ui_props(0)
+			create_ui_props() --0)
 		end
 	
 	-- check for tab control interaction
@@ -416,6 +416,51 @@ end
 -- =================================================
 -- ui/widget related
 --
+
+function create_ui_listselect(items, b_multiselect, header, bound_obj, bound_prop)
+	local xoff=2
+	local yoff=2
+
+	-- create container for controls
+	create_ui_bottom_panel()
+	local pnl_prop = gui:find("properties")
+	-- set prop panel bg to white
+	prop_panel_col = 7
+
+	prop_panel_header = header
+	gui_tabs_visible = false
+
+	if bound_obj[bound_prop] then d(" >> "..bound_obj[bound_prop]) end
+
+	-- add items
+	for i in all(items) do
+		local checked
+		if b_multiselect then
+	    checked = has_flag(bound_obj[bound_prop], i)
+		else
+		  checked = (bound_obj[bound_prop] == i)
+		end
+		local chk = checkbox.new(i, checked, function(self)
+			if b_multiselect then
+				if self.value then
+					set_flag(curr_selection.classes, i)
+				else
+					unset_flag(curr_selection.classes, i)
+				end
+			else
+				bound_obj[bound_prop] = i 
+				create_ui_props() 
+			end
+		end) 
+		pnl_prop:add_child(chk, xoff, yoff)
+
+		yoff += 6
+		if yoff > 30 then 
+			yoff = 2
+			xoff += 63 
+		end
+	end
+end
 
 function create_ui_classes()
 	local xoff=2
@@ -528,7 +573,7 @@ function create_ui_states()
 				-- select mode
 				curr_selection.state = self.index
 				-- close prop view/edit and go back to all properties
-				create_ui_props(prop_page_num)			
+				create_ui_props() --prop_page_num)			
 			elseif states_mode == 2 
 			 and self.index > 0 then
 				-- edit mode
@@ -810,6 +855,19 @@ function create_control(datatype, value, parent, x, y, tooltip, bound_obj, bound
 			parent:add_child(bc, x+xoff, y-1)
 			xoff += 8
 		end
+
+	-- face_dir
+	elseif datatype == 31 then
+		create_more_button(parent, tooltip, bound_obj, bound_prop, x, y, function(self)
+		  -- show "select items"
+			create_ui_listselect(
+				{ "face_front", "face_left", "face_back", "face_right" },
+				false,
+				"select actor face direction",
+				bound_obj,
+				bound_prop
+			)
+		end)
 	else
 		--- ...
 	end
