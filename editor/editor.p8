@@ -516,8 +516,10 @@ function create_ui_states()
 
 	gui_tabs_visible = false
 
+
+
 	-- go through all available properties
-	for i = 1,#curr_selection.states do
+	for i = 0,#curr_selection.states do
 		state = curr_selection.states[i]
 
 		-- state thumbnail
@@ -527,17 +529,13 @@ function create_ui_states()
 				curr_selection.state = self.index
 				-- close prop view/edit and go back to all properties
 				create_ui_props(prop_page_num)			
-			elseif states_mode == 2 then
+			elseif states_mode == 2 
+			 and self.index > 0 then
 				-- edit mode
 				-- todo: allow browse to pick/edit sprite number
 				sprite_select_mode = 1 -- change
 				sprite_select_index = self.index
-				create_ui_sprite_select() --1, function(self)		
-				-- 	d("sprite "..self.index.." selected!")
-				-- 	curr_selection.states[curr_selection.state] = self.index
-				-- 	-- close sprite view and go back to states view
-				-- 	create_ui_states(mode)
-				-- end)
+				create_ui_sprite_select()
 			end
 		end)
 
@@ -545,13 +543,21 @@ function create_ui_states()
 		stateicon.desc = tooltip..i
 		stateicon.trans = 20 -- fake trans col to get all colors shown!
 
+		if i == 0 
+		 and states_mode == 2 
+		then
+			--  state 0 (can select, but not edit)
+			stateicon.desc = ""
+		end
+
 		pnl_prop:add_child(stateicon, 2+xoff, 2+yoff)
 
 		if states_mode == 1 then
 			-- label
 			local lbl=label.new(i, gui_fg1)
 			pnl_prop:add_child(lbl, 5+xoff, 11+yoff)
-		else
+
+		elseif i > 0 then -- only allow edit of proper states (not 0 = reserved for "no draw")
 			-- delete
 			local btn_del = button.new("\x97", function(self)
 				-- todo: delete state!
@@ -1360,9 +1366,11 @@ function set_data_defaults()
 				obj.in_room = room
 				obj.h = obj.h or 1
 				obj.w = obj.w or 1
-				-- if obj.repeat_x  then
-				-- 	d("repeat:"..obj.repeat_x.." --- obj.w:"..obj.w)
-				-- end
+				
+				-- set a state of 0 (no draw)
+				obj.states = obj.states or {}
+				obj.states[0] = 0
+
 				add(obj_list, obj)
 			end
 		end
