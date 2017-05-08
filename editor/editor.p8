@@ -858,7 +858,16 @@ function create_control(datatype, value, parent, x, y, tooltip, bound_obj, bound
 
 	-- face_dir
 	elseif datatype == 31 then
-		create_more_button(parent, tooltip, bound_obj, bound_prop, x, y, function(self)
+		local safe_value = bound_obj[bound_prop] or ""
+		if safe_value then 
+			safe_value = sub(safe_value,6)
+		end
+		local lbl=label.new(safe_value, gui_fg1)
+		lbl.desc = value
+		lbl.wants_mouse = true
+		parent:add_child(lbl, x, y)
+
+		create_more_button(parent, tooltip, bound_obj, bound_prop, x+15, y, function(self)
 		  -- show "select items"
 			create_ui_listselect(
 				{ "face_front", "face_left", "face_back", "face_right" },
