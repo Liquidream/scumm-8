@@ -86,7 +86,7 @@ prop_definitions = {
 	{"use_pos", "use pos", 30, {"class_object","class_actor"}, "use positions" },
 	{"use_dir", "use dir", 31, {"class_object","class_actor"}, "actor use direction" },
 	{"use_with", "use with", 3, {"class_object","class_actor"}, "can be used with..." },
-	{"repeat_x", "repeat_x", 1, {"class_object","class_actor"}, "repeat draw # times" },
+	{"repeat_x", "repeat x", 1, {"class_object","class_actor"}, "repeat draw # times" },
 	{"flip_x", "flip x", 3, {"class_object","class_actor"}, "flip sprite(s) horiz" },
 
 	-- object props
