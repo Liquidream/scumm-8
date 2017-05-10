@@ -878,8 +878,14 @@ function create_control(datatype, value, parent, x, y, tooltip, bound_obj, bound
 				bound_obj,
 				bound_prop
 			)
+			-- todo: also add a custom use pos option
+			local spin = spinner.new(-64, 1000, value, 1, function()
+				-- combine x & y to make: {x,y}
+			end)
+			spin.desc = "specific x position"
+			parent:add_child(spin, x+40, y-2)
 		end)
-		-- todo: also add a custom use pos option
+		
 
 
 	-- face_dir
