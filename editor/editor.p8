@@ -430,7 +430,7 @@ function create_ui_listselect(items, b_multiselect, header, bound_obj, bound_pro
 	prop_panel_header = header
 	gui_tabs_visible = false
 
-	if bound_obj[bound_prop] then d(" >> "..bound_obj[bound_prop]) end
+	--if bound_obj[bound_prop] then d(" >> "..bound_obj[bound_prop]) end
 
 	-- add items
 	for i in all(items) do
@@ -462,41 +462,41 @@ function create_ui_listselect(items, b_multiselect, header, bound_obj, bound_pro
 	end
 end
 
-function create_ui_classes()
-	local xoff=2
-	local yoff=2
+-- function create_ui_classes()
+-- 	local xoff=2
+-- 	local yoff=2
 
-	-- create container for controls
-	create_ui_bottom_panel()
-	local pnl_prop = gui:find("properties")
-	-- set prop panel bg to black
-	prop_panel_col = 7
+-- 	-- create container for controls
+-- 	create_ui_bottom_panel()
+-- 	local pnl_prop = gui:find("properties")
+-- 	-- set prop panel bg to black
+-- 	prop_panel_col = 7
 
-	prop_panel_header = "select classes" 
-	gui_tabs_visible = false
+-- 	prop_panel_header = "select classes" 
+-- 	gui_tabs_visible = false
 
-	classes = { --"class_room","class_object","class_actor",
-	            "class_openable", "class_door", "class_untouchable", "class_pickupable", "class_talkable" } 
+-- 	classes = { --"class_room","class_object","class_actor",
+-- 	            "class_openable", "class_door", "class_untouchable", "class_pickupable", "class_talkable" } 
 
-	-- add classes
-	for c in all(classes) do
-	  local checked = has_flag(curr_selection.classes, c)
-		local chk = checkbox.new(sub(c,7), checked, function(self)
-			if self.value then
-				set_flag(curr_selection.classes, c)
-			else
-				unset_flag(curr_selection.classes, c)
-			end
-		end) 
-		pnl_prop:add_child(chk, xoff, yoff)
+-- 	-- add classes
+-- 	for c in all(classes) do
+-- 	  local checked = has_flag(curr_selection.classes, c)
+-- 		local chk = checkbox.new(sub(c,7), checked, function(self)
+-- 			if self.value then
+-- 				set_flag(curr_selection.classes, c)
+-- 			else
+-- 				unset_flag(curr_selection.classes, c)
+-- 			end
+-- 		end) 
+-- 		pnl_prop:add_child(chk, xoff, yoff)
 
-		yoff += 6
-		if yoff > 30 then 
-			yoff = 2
-			xoff += 63 
-		end
-	end
-end
+-- 		yoff += 6
+-- 		if yoff > 30 then 
+-- 			yoff = 2
+-- 			xoff += 63 
+-- 		end
+-- 	end
+-- end
 
 function create_ui_sprite_select() --pagenum, func)
 	local xoff=8
@@ -804,7 +804,9 @@ function create_control(datatype, value, parent, x, y, tooltip, bound_obj, bound
 	elseif datatype == 12 then
 		create_more_button(parent, tooltip, bound_obj, bound_prop, x, y, function(self)
 		  -- show "select classes"
-			create_ui_classes()
+			classes = { "class_openable", "class_door", "class_untouchable", "class_pickupable", "class_talkable" } 
+			create_ui_listselect(classes, true, "select classes", bound_obj, bound_prop)
+			--create_ui_classes()
 		end)
 
   -- color picker
