@@ -1944,7 +1944,9 @@ function label:draw(x, y)
 end
 
 function label:on_mouse_press()
- self.func(self)
+ if self.func then
+  self.func(self)
+ end
 end
 
 -- icon
