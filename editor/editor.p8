@@ -773,6 +773,13 @@ function create_control(datatype, value, parent, x, y, tooltip, bound_obj, bound
 		lbl.wants_mouse = true
 		parent:add_child(lbl, x, y)
 
+	-- boolean
+	elseif datatype == 3 then
+		local chk = checkbox.new("", value, set_bound_val)
+		chk.bound_obj = bound_obj
+		chk.bound_prop = bound_prop
+		parent:add_child(chk, x, y)
+
 	-- decimal (lighting)
 	elseif datatype == 4 then
 		value = value or 1	-- default nil to 1
@@ -931,8 +938,8 @@ end
 
 -- event handlers
 function set_bound_val(widget)
-	d("set_bound_val()")
-	d("  > "..widget.bound_prop.." = "..widget.value)
+	--d("set_bound_val()")
+	--d("  > "..widget.bound_prop.." = "..widget.value)
 	--if (widget.bound) d("bound not null!")
  widget.bound_obj[widget.bound_prop] = widget.value
 end
