@@ -83,8 +83,8 @@ prop_definitions = {
 	{"state", "state", 10, {"class_object","class_actor"}, "selected state to display" },
 	{"states", "states", 11, {"class_object","class_actor"}, "list of sprite states" },
 	{"classes", "classes", 12, {"class_object","class_actor"}, "selected classes to apply" },
-	{"use_pos", "use pos", 30, {"class_object","class_actor"}, "use positions" },
-	{"use_dir", "use dir", 31, {"class_object","class_actor"}, "actor use direction" },
+	{"use_pos", "use pos", 30, {"class_object","class_actor"}, "actor's location when using" },
+	{"use_dir", "use dir", 31, {"class_object","class_actor"}, "actor's face dir when using" },
 	{"use_with", "use with", 3, {"class_object","class_actor"}, "can be used with..." },
 	{"repeat_x", "repeat x", 1, {"class_object","class_actor"}, "repeat draw # times" },
 	{"flip_x", "flip x", 3, {"class_object","class_actor"}, "flip sprite(s) horiz" },
@@ -134,7 +134,7 @@ function _init()
 			id=31/state=1/states={47}/x=80/y=24/w=1/h=2/trans_col=8/repeat_x=8/classes={class_untouchable}
 			id=32/state=1/states={47}/x=176/y=24/w=1/h=2/trans_col=0/repeat_x=1/classes={class_untouchable}
 			id=33/name=front door/state=1/states={78}/x=152/y=8/w=1/h=3/flip_x=true/classes={class_openable,class_door}/use_dir=face_back
-			id=34/name=bucket/state=2/states={143,159}/x=208/y=48/w=1/h=1/trans_col=15/use_with=true/classes={class_pickupable}
+			id=34/name=bucket/state=2/states={143,159}/x=208/y=48/w=1/h=1/trans_col=15/use_with=true/classes={class_pickupable}/use_pos=pos_left/use_dir=face_right
 			|
 			id=1000/name=humanoid/w=1/h=4/idle={193,197,199,197}/talk={218,219,220,219}/walk_anim_side={196,197,198,197}/walk_anim_front={194,193,195,193}/walk_anim_back={200,199,201,199}/col=12/trans_col=11/walk_speed=0.6/frame_delay=5/classes={class_actor}/face_dir=face_front
 			id=1001/name=purpletentacle/x=140/y=52/w=1/h=3/idle={154,154,154,154}/talk={171,171,171,171}/col=11/trans_col=15/walk_speed=0.4/frame_delay=5/classes={class_actor,class_talkable}/face_dir=face_front/use_pos=pos_left
@@ -857,6 +857,30 @@ function create_control(datatype, value, parent, x, y, tooltip, bound_obj, bound
 			parent:add_child(bc, x+xoff, y-1)
 			xoff += 8
 		end
+
+  -- use position (pos preset or specific pos)
+	elseif datatype == 30 then
+		local safe_value = bound_obj[bound_prop] or ""
+		if safe_value then 
+			safe_value = sub(safe_value,5)
+		end
+		local lbl=label.new(safe_value, gui_fg1)
+		lbl.desc = value
+		lbl.wants_mouse = true
+		parent:add_child(lbl, x, y)
+
+		create_more_button(parent, tooltip, bound_obj, bound_prop, x+15, y, function(self)
+		  -- show "select items"
+			create_ui_listselect(
+				{ "pos_left", "pos_right", "pos_above", "pos_infront", "pos_center"  },
+				false,
+				"select actor use direction",
+				bound_obj,
+				bound_prop
+			)
+		end)
+		-- todo: also add a custom use pos option
+
 
 	-- face_dir
 	elseif datatype == 31 then
