@@ -881,7 +881,7 @@ function create_control(datatype, value, parent, x, y, tooltip, bound_obj, bound
 			create_ui_listselect(
 				{ "pos_left", "pos_right", "pos_above", "pos_infront", "pos_center"  },
 				false,
-				"select actor use direction",
+				"select actor use position",
 				bound_obj,
 				bound_prop
 			)
