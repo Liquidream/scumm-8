@@ -314,27 +314,27 @@ function input_control()
 	-- 
 
   -- handle player input
-  if btnp(2) then
-    room_index += 1
-		curr_selection = nil
-  end
-  if btnp(3) then
-    room_index -= 1
-		curr_selection = nil
-  end
-  if btn(1) then
-    cam_x += 1
-  end
-  if btn(0) then
-    cam_x -= 1
-  end
-	-- if btn(0) then cursor_x -= 1 end
-	-- if btn(1) then cursor_x += 1 end
-	-- if btn(2) then cursor_y -= 1 end
-	-- if btn(3) then cursor_y += 1 end
+  -- if btnp(2) then
+  --   room_index += 1
+	-- 	curr_selection = nil
+  -- end
+  -- if btnp(3) then
+  --   room_index -= 1
+	-- 	curr_selection = nil
+  -- end
+  -- if btn(1) then
+  --   cam_x += 1
+  -- end
+  -- if btn(0) then
+  --   cam_x -= 1
+  -- end
+	if btn(0) then cursor_x -= 1 end
+	if btn(1) then cursor_x += 1 end
+	if btn(2) then cursor_y -= 1 end
+	if btn(3) then cursor_y += 1 end
 
-	-- if btnp(4) then input_button_pressed(1) end
-	-- if btnp(5) then input_button_pressed(2) end
+	if btnp(4) then input_button_pressed(1) end
+	if btnp(5) then input_button_pressed(2) end
 
 	-- only update position if mouse moved
 	if enable_mouse then	
@@ -1826,11 +1826,11 @@ function gui_root.new()
 end
 
 function gui_root:update()
- local x=stat(32)
- local y=stat(33)
+ local x=cursor_x --stat(32)
+ local y=cursor_y --stat(33)
  local dx=x-self.lastx
  local dy=y-self.lasty
- local bt=band(stat(34), 1)==1
+ local bt=band(stat(34), 1)==1 or btnp(4) --pn
  
  local wum=self:get_under_mouse(x, y)
  if wum!=self.widget_under_mouse then
@@ -1879,8 +1879,8 @@ end
 
 function gui_root:mouse_blocked()
  if self.visible then
-  local x=stat(32)
-  local y=stat(33)
+  local x=cursor_x --stat(32)
+  local y=cursor_y --stat(33)
   for c in all(self.children) do
    if c.visible and x>=c.x and x<c.x+c.w and y>=c.y and y<c.y+c.h then
     return true
@@ -2309,8 +2309,10 @@ function color_picker:on_mouse_press()
  -- as arguments, but this will
  -- do...
  --printh("::"..self:abs_x())
- local mx=stat(32)-self:abs_x()-1
- local my=stat(33)-self:abs_y()-1
+ local mx=cursor_x-self:abs_x()-1
+ local my=cursor_y-self:abs_y()-1
+--  local mx=stat(32)-self:abs_x()-1
+--  local my=stat(33)-self:abs_y()-1
  local cx=flr(mx/4)
  local cy=flr(my/4)
  if cx>=0 and cx<4 and cy>=0 and cy<4 then
