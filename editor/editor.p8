@@ -358,6 +358,13 @@ function input_control()
 	-- keep cursor within screen
 	cursor_x = mid(0, cursor_x, 127)
 	cursor_y = mid(0, cursor_y, 127)
+
+	-- scroll screen edges
+	if cursor_x < 20 then 
+		cam_x -= 1
+	elseif cursor_x > 100 then 
+		cam_x += 1
+	end
 end
 
 
