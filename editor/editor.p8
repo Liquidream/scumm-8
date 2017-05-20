@@ -156,6 +156,9 @@ function _init()
 
 	-- init widget library + controls
 	init_ui()
+
+	-- default to current room
+	default_select_room()
 end
 
 function _draw()
@@ -172,12 +175,8 @@ function _update60()
 
   room_curr = rooms[room_index]
 
-	-- default first selection to current room
-	if not curr_selection then
-		curr_selection = room_curr
-		curr_selection_class = "class_room"
-		create_ui_props()
-	end
+	-- if nothign select, default to current room
+	default_select_room()
 
   cam_x = mid(0, cam_x, (room_curr.map_w*8)-127 -1)
 
@@ -205,6 +204,16 @@ function init_ui()
  l.name="perf"
  p:add_child(l, 65, 1)
  
+end
+
+function default_select_room()
+	-- default first selection to current room
+	if not curr_selection then
+		room_curr = rooms[room_index]
+		curr_selection = room_curr
+		curr_selection_class = "class_room"
+		create_ui_props()
+	end
 end
 
 -- ===========================================================================
@@ -359,11 +368,15 @@ function input_control()
 	cursor_x = mid(0, cursor_x, 127)
 	cursor_y = mid(0, cursor_y, 127)
 
-	-- scroll screen edges
-	if cursor_x < 20 then 
-		cam_x -= 1
-	elseif cursor_x > 100 then 
-		cam_x += 1
+	-- scroll screen edges?
+	if cursor_y >= stage_top 
+	 and cursor_y < stage_top+64 
+	then
+		if cursor_x < 10 then 
+			cam_x -= 1
+		elseif cursor_x > 110 then 
+			cam_x += 1
+		end
 	end
 end
 
@@ -469,41 +482,6 @@ function create_ui_listselect(items, b_multiselect, header, bound_obj, bound_pro
 	end
 end
 
--- function create_ui_classes()
--- 	local xoff=2
--- 	local yoff=2
-
--- 	-- create container for controls
--- 	create_ui_bottom_panel()
--- 	local pnl_prop = gui:find("properties")
--- 	-- set prop panel bg to black
--- 	prop_panel_col = 7
-
--- 	prop_panel_header = "select classes" 
--- 	gui_tabs_visible = false
-
--- 	classes = { --"class_room","class_object","class_actor",
--- 	            "class_openable", "class_door", "class_untouchable", "class_pickupable", "class_talkable" } 
-
--- 	-- add classes
--- 	for c in all(classes) do
--- 	  local checked = has_flag(curr_selection.classes, c)
--- 		local chk = checkbox.new(sub(c,7), checked, function(self)
--- 			if self.value then
--- 				set_flag(curr_selection.classes, c)
--- 			else
--- 				unset_flag(curr_selection.classes, c)
--- 			end
--- 		end) 
--- 		pnl_prop:add_child(chk, xoff, yoff)
-
--- 		yoff += 6
--- 		if yoff > 30 then 
--- 			yoff = 2
--- 			xoff += 63 
--- 		end
--- 	end
--- end
 
 function create_ui_sprite_select() --pagenum, func)
 	local xoff=8
@@ -713,12 +691,12 @@ function create_ui_props() --pagenum)
 				and control_count < start_pos + 12
 			then
 				local lbltext = prop[2]..":"
-				local lbl=label.new(lbltext, gui_bg2)
-				lbl.desc = prop[5]
-				lbl.wants_mouse = true
-				
-				lbl.w=60
-				lbl.func = function() end
+				local lbl = create_label(lbltext, prop[5])
+				-- local lbl=label.new(lbltext, gui_bg2)
+				-- lbl.desc = prop[5]
+				-- lbl.wants_mouse = true
+				-- lbl.w=60
+				-- lbl.func = function() end
 
 				pnl_prop:add_child(lbl, 2+xoff, 2+yoff)
 				create_control(prop[3], curr_selection[prop[1]], pnl_prop, 2+xoff+(#lbltext*4), 2+yoff, prop[5], curr_selection, prop[1])
@@ -733,6 +711,14 @@ function create_ui_props() --pagenum)
 	end
 end
 
+function create_label(caption, tooltip, func)
+	local lbl=label.new(caption, gui_bg2)
+	lbl.desc = tooltip
+	lbl.wants_mouse = true
+	lbl.w=60
+	lbl.func = func or function() end
+	return lbl
+end
 
 function create_control(datatype, value, parent, x, y, tooltip, bound_obj, bound_prop)
 	--   1 = number
@@ -892,12 +878,15 @@ function create_control(datatype, value, parent, x, y, tooltip, bound_obj, bound
 				bound_obj,
 				bound_prop
 			)
-			-- todo: also add a custom use pos option
-			local spin = spinner.new(-64, 1000, value, 1, function()
-				-- combine x & y to make: {x,y}
-			end)
-			spin.desc = "specific x position"
-			parent:add_child(spin, x+40, y-2)
+			-- -- todo: also add a custom use pos option
+			-- local lblx = create_label("x pos:", "x use position")
+			-- local lbly = create_label("y pos:", "y use position")
+			-- parent:add_child(lblx, 64, 8)
+			-- local spin = spinner.new(-64, 1000, 0, 1, function()
+			-- 	-- combine x & y to make: {x,y}
+			-- end)
+			-- spin.desc = "specific x position"
+			-- parent:add_child(spin, 86, 6)
 		end)
 		
 
