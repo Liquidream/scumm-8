@@ -161,7 +161,8 @@ function _init()
 	default_select_room()
 
 	-- gfx storage
-	cstore(0x3b00,0x1800,0x800) -- gfx (last page) > sfx (last 1/2)
+	reload(0,0x3b00,0x800)  -- LOAD gfx (1 page) from sfx (last 1/2)
+	--cstore(0x3b00,0x1800,0x800) -- SAVE gfx (last page) > sfx (last 1/2)
 end
 
 function _draw()
