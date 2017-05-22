@@ -172,15 +172,19 @@ function _draw()
 	draw_editor()
 
 	-- test load sprite from cart (sfx)
-	--memcpy(0, 0x3b00, 0x20) -- whole line, not helpful
-	local mem_offset = 0
-	for i=1,8 do
-		memcpy(mem_offset, 0x3b00+mem_offset, 7)
-		mem_offset += 0x40
-	end
-	--memcpy(0x40, 0x3b40, 7)
-	spr(0,110,110)
+	draw_from_mem(1, 110, 110)
 end
+
+-- draw sprite from cart (sfx)
+function draw_from_mem(spritenum, x, y)
+	local start_add = 0x3b00
+	local add_offset = 8
+	for i=0,7 do
+		memcpy(i*64, start_add+add_offset+i*64, 7)
+	end
+	spr(0,x,y)
+end
+
 
 function _update60()
 
