@@ -32,8 +32,8 @@ prop_panel_header = ""
 gui_tabs_visible = false
 gui_tabs_value = 0
 gui_tabs_func = nil
-gui_tabs_start_hl = 204
-gui_tabs_start_dk = 220
+gui_tabs_start_hl = 12--204
+gui_tabs_start_dk = 28--220
 
 
 -- "dark blue" gui theme
@@ -170,9 +170,6 @@ end
 
 function _draw()
 	draw_editor()
-
-	-- test load sprite from cart (sfx)
-	draw_from_mem(16, 110, 110)
 end
 
 -- draw sprite from cart (sfx)
@@ -1165,15 +1162,15 @@ function draw_ui()
 	-- header bar
 	rectfill(0,0,127,7,gui_bg1)
 	pal(5,12)
-	spr(192,3,1)
-	spr(193,12,1)
-	spr(194,22,1)
+	draw_from_mem(0,3,1)
+	draw_from_mem(1,12,1)
+	draw_from_mem(2,22,1)
 	--
 	pal(5,7)
-	spr(195,101,1)
+	draw_from_mem(3,101,1)
 	pal(5,12)
-	spr(196,110,1)
-	spr(197,119,1)
+	draw_from_mem(4,110,1)
+	draw_from_mem(5,119,1)
 	
 	pal()
 	
@@ -1198,9 +1195,9 @@ function draw_ui()
 	if gui_tabs_visible then
 		for i = 0,3 do
 			if i == gui_tabs_value then
-				spr(gui_tabs_start_hl+i, 96+(i*8), 74)
+				draw_from_mem(gui_tabs_start_hl+i, 96+(i*8), 74)
 			else
-				spr(gui_tabs_start_dk+i, 96+(i*8), 74)
+				draw_from_mem(gui_tabs_start_dk+i, 96+(i*8), 74)
 			end
 			-- spr(204,96,74)
 			-- spr(221,104,74)
@@ -1267,7 +1264,8 @@ function draw_cursor()
 
 	--pset(cursor_x, cursor_y, 8)
 	palt(0,true)
-	spr(208, cursor_x, cursor_y, 1, 1)
+	draw_from_mem(16, cursor_x, cursor_y)
+	--spr(208, cursor_x, cursor_y, 1, 1)
 	-- pal() --reset palette
 
 	cursor_tmr += 1
