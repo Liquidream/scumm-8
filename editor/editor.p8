@@ -677,6 +677,18 @@ end
 
 -- create/reuse panel for controls at bottom portion of screen
 function create_ui_bottom_panel()
+	-- (header panel)
+	local pnl_prop_header = gui:find("prop_header")
+	if not pnl_prop_header then
+		-- create (trans) panel to put controls on
+		pnl_prop_header = panel.new(90, 10, gui_bg1, false, 4) --4=transparent!
+		pnl_prop_header.name = "prop_header"
+		pnl_prop_header.desc = ""
+		--pnl_prop.func = function() end
+		gui:add_child(pnl_prop_header, 0,72)
+	end
+
+	-- (properties panel)
 	-- look for existing panel
 	local pnl_prop = gui:find("properties")
 	if pnl_prop then
@@ -707,8 +719,14 @@ function create_ui_props() --pagenum)
 	-- create container for controls
 	create_ui_bottom_panel()
 	local pnl_prop = gui:find("properties")
+	local pnl_prop_header = gui:find("prop_header")
 
-	prop_panel_header = sub(curr_selection_class,7)..":"..pad_3(curr_selection.id) 
+	-- create header section
+	local lbl_prop_header = create_label(
+		                      sub(curr_selection_class,7)..":"..pad_3(curr_selection.id))
+  lbl_prop_header.c = 7
+	pnl_prop_header:add_child(lbl_prop_header, 2, 2)
+	--prop_panel_header = sub(curr_selection_class,7)..":"..pad_3(curr_selection.id) 
 
 	-- show tabs
 	gui_tabs_visible = true
