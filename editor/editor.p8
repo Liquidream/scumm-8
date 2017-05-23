@@ -191,7 +191,7 @@ function spr_ex(spritenum, x, y)
 			add_offset += (7*64)
 		end	
 		for i=0,7 do
-			memcpy(i*64, start_add+add_offset+i*64, 7)
+			memcpy(i*64, start_add+add_offset+i*64, 4)
 		end
 		spr(0,x,y)
 	end
@@ -405,9 +405,9 @@ function input_control()
 	if cursor_y >= stage_top 
 	 and cursor_y < stage_top+64 
 	then
-		if cursor_x < 10 then 
+		if cursor_x < 5 then 
 			cam_x -= 1
-		elseif cursor_x > 110 then 
+		elseif cursor_x > 115 then 
 			cam_x += 1
 		end
 	end
