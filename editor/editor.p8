@@ -755,17 +755,23 @@ function create_ui_props() --pagenum)
 	-- room nav buttons
   if curr_selection_class == "class_room" then
 		-- prev button
-		local btn_prev = icon.new(262, 0, function(widget)
-			room_index -= 1
-			curr_selection = nil
-		end)
-		pnl_prop_header:add_child(btn_prev, 11, 2)
+		if room_index > 1 then
+			local btn_prev = icon.new(262, 0, function(widget)
+				room_index -= 1
+				curr_selection = nil
+			end)
+			btn_prev.desc = "go to previous room"
+			pnl_prop_header:add_child(btn_prev, 11, 2)
+		end
 		-- next button
-		local btn_next = icon.new(263, 0, function(widget)
-			room_index += 1
-			curr_selection = nil
-		end)
-		pnl_prop_header:add_child(btn_next, 51, 2)
+		if room_index < #rooms then
+			local btn_next = icon.new(263, 0, function(widget)
+				room_index += 1
+				curr_selection = nil
+			end)
+			btn_next.desc = "go to next room"
+			pnl_prop_header:add_child(btn_next, 51, 2)
+		end
 	end
 	
 	-- show tabs
@@ -1248,20 +1254,6 @@ function draw_ui()
 	
 	-- properties (bar)
 	 rectfill(0,72,127,82,gui_bg2)
-	-- if curr_selection then
-	-- 	-- draw obj? (1 sprite)
-	-- 	if curr_selection_class != "class_room" then
-	-- 		palt(0,false)
-	-- 		if curr_selection.states then
-	-- 			spr_ex(curr_selection.states[curr_selection.state], 1, 73)
-	-- 		end
-	-- 		pal()
-	-- 	end
-	-- 	-- print(
-	-- 	-- 	prop_panel_header
-	-- 	-- 	--sub(curr_selection_class,7)..":"..pad_3(curr_selection.id)
-	-- 	-- 	,11,74,gui_fg3)
-	-- end
 
 	-- tab control
 	if gui_tabs_visible then
@@ -1271,77 +1263,24 @@ function draw_ui()
 			else
 				spr_ex(gui_tabs_start_dk+i, 96+(i*8), 74)
 			end
-			-- spr(204,96,74)
-			-- spr(221,104,74)
-			-- spr(222,112,74)
-			-- spr(223,120,74)
 		end
 	end
 
 	-- properties (section)	
 	rectfill(0,82,127,120, prop_panel_col)
-	--rectfill(0,82,127,120,gui_fg3)
-
---	palt(0,false)
 
 	-- draw widget library
 	gui:draw()
-
-	-- find all properties for selected object (or room, if no obj/actor selected)
-	-- local xoff=0
-	-- local yoff=0
-	-- local start_pos = prop_page_num * 12 +1
-	-- for i = start_pos, min(start_pos+12-1, #prop_definitions) do
-	-- 	d("i="..i)
-	-- --for p in all(prop_definitions) do
-	-- 	local prop = prop_definitions[i]
-	-- 	--local col_size = 0
-	-- 	if curr_selection 
-	-- 	 and has_flag(prop[4], curr_selection_class)
-	-- 	then
-	-- 		local label = prop[2]..":"
-	-- 		print(label, 3+xoff, 83+yoff, gui_bg2)
-	-- 		-- draw the 
-	-- 		draw_control(1, "val", 3+xoff+(#label*4), 83+yoff)
-	-- 		yoff += 6
-	-- 		if yoff > 30 then 
-	-- 			yoff = 0
-	-- 			xoff += 60 
-	-- 		end
-	-- 	end
-	-- end
-
-	-- status bar
-	-- rectfill(0,119,127,127,gui_bg1)
-	-- print("x:"..pad_3(cursor_x+cam_x).." y:"..pad_3(cursor_y-stage_top), 
-	-- 	3,121, gui_bg2) 
-
-	-- print("cpu:"..flr(100*stat(1)).."%", 
-	-- 	66, 121, gui_bg2) 
-	-- print("mem:"..flr(stat(0)/1024*100).."%", 
-	-- 	98, 121, gui_bg2)
-
 end
 
 
 function draw_cursor()
-	col = cursor_cols[cursor_colpos]
-	-- switch sprite color accordingly
-
-	-- game cursor
-	-- line(cursor_x-4, cursor_y,cursor_x-1, cursor_y, col)
-	-- line(cursor_x+1, cursor_y,cursor_x+4, cursor_y, col)
-	-- line(cursor_x, cursor_y-4,cursor_x, cursor_y-1, col)
-	-- line(cursor_x, cursor_y+1,cursor_x, cursor_y+4, col)
-
-	--pset(cursor_x, cursor_y, 8)
 	palt(0,true)
 	spr_ex(272, cursor_x, cursor_y)
-	--spr(208, cursor_x, cursor_y, 1, 1)
-	-- pal() --reset palette
 
+	-- update selection "flash"
 	cursor_tmr += 1
-	if cursor_tmr > 14 then
+	if cursor_tmr > 8 then
 		--reset timer
 		cursor_tmr = 1
 		-- move to next color?
