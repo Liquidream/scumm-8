@@ -580,6 +580,9 @@ function create_ui_states()
 		tooltip = "edit state:"
 	end
 
+	-- header label
+	create_prop_header_label(prop_panel_header)
+
 	gui_tabs_visible = false
 
 
@@ -746,11 +749,12 @@ function create_ui_props() --pagenum)
 	ico_selected.trans = ico_trans
 	pnl_prop_header:add_child(ico_selected, 1, 1)
 
-		-- header label
-	local lbl_prop_header = create_label(
-		                      sub(curr_selection_class,7)..":"..pad_3(curr_selection.id))
-  lbl_prop_header.c = 7
-	pnl_prop_header:add_child(lbl_prop_header, 17, 2)
+	-- header label
+	create_prop_header_label()
+	-- local lbl_prop_header = create_label(
+	-- 	                      sub(curr_selection_class,7)..":"..pad_3(curr_selection.id))
+  -- lbl_prop_header.c = 7
+	-- pnl_prop_header:add_child(lbl_prop_header, 17, 2)
 
 	-- room nav buttons
   if curr_selection_class == "class_room" then
@@ -809,6 +813,15 @@ function create_ui_props() --pagenum)
 			control_count += 1
 		end
 	end
+end
+
+function create_prop_header_label(text)
+	local pnl_prop_header = gui:find("prop_header")
+	-- use text specified (or default to current selection)
+	local caption = text or sub(curr_selection_class,7)..":"..pad_3(curr_selection.id)
+	local lbl_prop_header = create_label(caption)
+  lbl_prop_header.c = 7
+	pnl_prop_header:add_child(lbl_prop_header, 17, 2)
 end
 
 function create_label(caption, tooltip, func)
