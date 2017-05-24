@@ -746,28 +746,28 @@ function create_ui_props() --pagenum)
 	ico_selected.trans = ico_trans
 	pnl_prop_header:add_child(ico_selected, 1, 1)
 
-	-- prev button
-	local btn_prev = icon.new(262, 0, function(widget)
-		room_index -= 1
-		curr_selection = nil
-	end)
-	pnl_prop_header:add_child(btn_prev, 11, 2)
-
-	-- header label
+		-- header label
 	local lbl_prop_header = create_label(
 		                      sub(curr_selection_class,7)..":"..pad_3(curr_selection.id))
   lbl_prop_header.c = 7
 	pnl_prop_header:add_child(lbl_prop_header, 17, 2)
 
-	-- next button
-	local btn_next = icon.new(263, 0, function(widget)
-		room_index += 1
-		curr_selection = nil
-	end)
-	pnl_prop_header:add_child(btn_next, 59, 2)
-
-	--prop_panel_header = sub(curr_selection_class,7)..":"..pad_3(curr_selection.id) 
-
+	-- room nav buttons
+  if curr_selection_class == "class_room" then
+		-- prev button
+		local btn_prev = icon.new(262, 0, function(widget)
+			room_index -= 1
+			curr_selection = nil
+		end)
+		pnl_prop_header:add_child(btn_prev, 11, 2)
+		-- next button
+		local btn_next = icon.new(263, 0, function(widget)
+			room_index += 1
+			curr_selection = nil
+		end)
+		pnl_prop_header:add_child(btn_next, 51, 2)
+	end
+	
 	-- show tabs
 	gui_tabs_visible = true
 	gui_tabs_func = create_ui_props
