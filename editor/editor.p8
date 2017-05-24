@@ -731,25 +731,37 @@ function create_ui_props() --pagenum)
 
 	-- [create header section]
 
+	-- icon (obj preview - 1 sprite)
+	if curr_selection_class != "class_room" then
+		--palt(0,false)
+		if curr_selection.states then
+			local ico_selected = icon.new(curr_selection.states[curr_selection.state], nil)
+			ico_selected.num = ico_selected.num or 281
+			ico_selected.trans = 20 -- fake trans col to get all colors shown!
+			pnl_prop_header:add_child(ico_selected, 1, 1)
+		end
+		--pal()
+	end
+
 	-- prev button
 	local btn_prev = icon.new(262, 0, function(widget)
 		room_index -= 1
 		curr_selection = nil
 	end)
-	pnl_prop_header:add_child(btn_prev, 2, 2)
+	pnl_prop_header:add_child(btn_prev, 11, 2)
 
 	-- header label
 	local lbl_prop_header = create_label(
 		                      sub(curr_selection_class,7)..":"..pad_3(curr_selection.id))
   lbl_prop_header.c = 7
-	pnl_prop_header:add_child(lbl_prop_header, 8, 2)
+	pnl_prop_header:add_child(lbl_prop_header, 17, 2)
 
 	-- next button
 	local btn_next = icon.new(263, 0, function(widget)
 		room_index += 1
 		curr_selection = nil
 	end)
-	pnl_prop_header:add_child(btn_next, 42, 2)
+	pnl_prop_header:add_child(btn_next, 59, 2)
 
 	--prop_panel_header = sub(curr_selection_class,7)..":"..pad_3(curr_selection.id) 
 
@@ -1232,21 +1244,21 @@ function draw_ui()
 	pal()
 	
 	-- properties (bar)
-	rectfill(0,72,127,82,gui_bg2)
-	if curr_selection then
-		-- draw obj? (1 sprite)
-		if curr_selection_class != "class_room" then
-			palt(0,false)
-			if curr_selection.states then
-				spr_ex(curr_selection.states[curr_selection.state], 1, 73)
-			end
-			pal()
-		end
-		-- print(
-		-- 	prop_panel_header
-		-- 	--sub(curr_selection_class,7)..":"..pad_3(curr_selection.id)
-		-- 	,11,74,gui_fg3)
-	end
+	 rectfill(0,72,127,82,gui_bg2)
+	-- if curr_selection then
+	-- 	-- draw obj? (1 sprite)
+	-- 	if curr_selection_class != "class_room" then
+	-- 		palt(0,false)
+	-- 		if curr_selection.states then
+	-- 			spr_ex(curr_selection.states[curr_selection.state], 1, 73)
+	-- 		end
+	-- 		pal()
+	-- 	end
+	-- 	-- print(
+	-- 	-- 	prop_panel_header
+	-- 	-- 	--sub(curr_selection_class,7)..":"..pad_3(curr_selection.id)
+	-- 	-- 	,11,74,gui_fg3)
+	-- end
 
 	-- tab control
 	if gui_tabs_visible then
