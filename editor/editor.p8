@@ -1040,7 +1040,11 @@ function create_control(datatype, value, parent, x, y, tooltip, bound_obj, bound
 
 	-- object ref
 	elseif datatype == 50 then
-		create_more_button(parent, tooltip, bound_obj, bound_prop, x, y, function(self)
+		local safe_value = bound_obj[bound_prop] or ""
+		local lbl = create_label(safe_value)
+		parent:add_child(lbl, x, y)
+
+		create_more_button(parent, tooltip, bound_obj, bound_prop, x+10, y, function(self)
 			-- default to no object selected (ready for choice)
 			create_ui_bottom_panel()
 			local pnl_prop = gui:find("properties")
