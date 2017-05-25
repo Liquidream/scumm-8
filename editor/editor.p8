@@ -24,7 +24,13 @@ cursor_x, cursor_y, cursor_tmr, cursor_colpos = 63.5, 63.5, 0, 1
 cursor_cols = {7,12,13,13,12,7}
 curr_selection = nil		-- currently selected object/actor (or room, if nil)
 curr_selection_class = nil
+curr_selection_prop = nil -- prop being edited (for complicated properties such as "pickers")
 gui = nil	-- widget ui
+
+-- 0 = Normal mode
+-- 1 = Object "picker"/selection mode
+edit_mode = 0
+
 
 prop_page_num = 0
 prop_panel_col = 7
@@ -270,16 +276,9 @@ function update_room()
 
 	-- check room/object collisions
 	for obj in all(room_curr.objects) do
-
-		--printh("obj:"..obj.id)
-
 		-- capture bounds
-		-- if not has_flag(obj.classes, "class_untouchable") then
 		recalc_bounds(obj, obj.w*8, obj.h*8, cam_x, cam_y)
-		-- end
 
-		--d("obj-z:"..type(obj.z))
-		
 		-- mouse over?
 		if iscursorcolliding(obj) then
 
@@ -432,19 +431,32 @@ function input_button_pressed(button_index)
 
 	-- check room-level interaction
 	elseif cursor_y >= stage_top 
-	 and cursor_y < stage_top+64 then
+	 and cursor_y < stage_top+64 then	 	
 	 	-- stage clicked
-		if hover_curr_selection then
+
+		-- normal edit mode
+		if edit_mode == 0 then
+			if hover_curr_selection then		
+				-- select object
+				curr_selection = hover_curr_selection
+				curr_selection_class = hover_curr_selection_class
+				create_ui_props() --prop_page_num)
+			else
+				-- nothing clicked (so default to room selected)
+				curr_selection = room_curr
+				curr_selection_class = "class_room"
+				create_ui_props() --0)
+			end	
+		-- object "picker" mode
+		elseif edit_mode == 1 then
 			-- select object
-			curr_selection = hover_curr_selection
-			curr_selection_class = hover_curr_selection_class
-			create_ui_props() --prop_page_num)
-		else
-			-- nothing clicked (so default to room selected)
-			curr_selection = room_curr
-			curr_selection_class = "class_room"
-			create_ui_props() --0)
+			curr_selection[curr_selection_prop] = hover_curr_selection
+			-- switch to normal edit mode
+			edit_mode = 0
+			-- redraw properties
+			create_ui_props()
 		end
+		
 	
 	-- check for tab control interaction
 	elseif cursor_y > stage_top+64
@@ -1025,6 +1037,31 @@ function create_control(datatype, value, parent, x, y, tooltip, bound_obj, bound
 				bound_prop
 			)
 		end)
+
+	-- object ref
+	elseif datatype == 50 then
+		create_more_button(parent, tooltip, bound_obj, bound_prop, x, y, function(self)
+			-- default to no object selected (ready for choice)
+			create_ui_bottom_panel()
+			local pnl_prop = gui:find("properties")
+			prop_panel_col = 7
+			prop_panel_header = header
+			gui_tabs_visible = false
+
+		  -- show "select object picker"
+			local lbl = create_label("select an object in main window")
+			parent:add_child(lbl, 2, 2)
+
+			local btn_cancel = button.new("cancel", function(widget)
+				-- switch to normal edit mode
+				edit_mode = 0
+				-- redraw properties
+				create_ui_props()
+			end)
+			parent:add_child(btn_cancel, 80, 20)
+
+			
+		end)
 	else
 		--- ...
 	end
@@ -1162,12 +1199,9 @@ function draw_room()
 
 			if room_curr.trans_col then
 				set_trans_col(room_curr.trans_col, true)
-				-- palt(0, false)
-				-- palt(room_curr.trans_col, true)
 			end
 
   		map(room_curr.map[1], room_curr.map[2], 0, stage_top, room_curr.map_w, 8)
-			--map(room_curr.map[1], room_curr.map[2], 0, stage_top, room_curr.map_w, room_curr.map_h)
 			
 			--reset palette
 			pal()		
@@ -1209,19 +1243,9 @@ function draw_room()
 			-- draw all objs/actors in current zplane
 			for obj in all(zplane) do
 				-- object or actor?
-					--d("object_zplane:"..obj.id)
-
 				if not has_flag(obj.classes, "class_actor") then
 					-- object
-					-- if obj.states	  -- object has a state?
-				  --   or (obj.state
-					--    and obj[obj.state]
-					--    and obj[obj.state] > 0)
-					--  and (not obj.dependent_on 			-- object has a valid dependent state?
-					-- 	or obj.dependent_on.state == obj.dependent_on_state)
-					--  and not obj.owner   						-- object is not "owned"
-					--  or obj.draw
-					-- then
+
 						-- something to draw
 						object_draw(obj)
 					--end
@@ -1239,7 +1263,6 @@ function draw_room()
 						or show_collision 
 					then
 						rect(obj.bounds.x-1, obj.bounds.y-1, obj.bounds.x1+1, obj.bounds.y1+1, 8)
-						--rect(obj.bounds.x-2, obj.bounds.y-2, obj.bounds.x1+2, obj.bounds.y1+2, 2)
 					end
 				end	
 			end
