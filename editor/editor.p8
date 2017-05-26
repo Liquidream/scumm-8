@@ -97,7 +97,7 @@ prop_definitions = {
 
 	-- object props
 	{"dependent_on", "depends on", 50, {"class_object"}, "depends on obj..." },
-	{"dependent_on_state", "state req", 11, {"class_object"}, "state of other obj" },
+	{"dependent_on_state", "state req", 51, {"class_object"}, "state of other obj" },
 
 	-- room-only props
 	{"map", "map", 15, {"class_room"}, "map cels for room layout"},
@@ -449,7 +449,7 @@ function input_button_pressed(button_index)
 			end	
 		-- object "picker" mode
 		elseif edit_mode == 1 then
-			-- select object
+			-- set object as prop value
 			curr_selection[curr_selection_prop] = hover_curr_selection
 			-- switch to normal edit mode
 			edit_mode = 0
@@ -575,16 +575,19 @@ end
 
 
 
-function create_ui_states()
-	-- modes (1=select, 2=edit)
+function create_ui_states(obj)
+	-- modes (1=select, 2=edit, 3=obj_ref_state_select)
 	local xoff=0
 	local yoff=0
+
+	-- check params
+	obj = obj or curr_selection
 
 	-- create container for controls
 	create_ui_bottom_panel()
 	local pnl_prop = gui:find("properties")
 	local tooltip
-	if states_mode == 1 then
+	if states_mode == 1 or states_mode == 3 then
 		prop_panel_header = "select state" 
 		tooltip = "select state:"
 	else
@@ -600,26 +603,31 @@ function create_ui_states()
 
 
 	-- go through all available properties
-	for i = 0,#curr_selection.states do
-		state = curr_selection.states[i]
+	for i = 0,#obj.states do
+		state = obj.states[i]
 
 		-- push default "blank" sprite into slot 0
 		spr_ex(284,-10,-10)
 
 		-- state thumbnail
-		local stateicon = icon.new(state, nil, function(self)			
+		local stateicon = icon.new(state, nil, function(self)
 			if states_mode == 1 then
 				-- select mode
-				curr_selection.state = self.index
+				obj.state = self.index
 				-- close prop view/edit and go back to all properties
-				create_ui_props() --prop_page_num)			
+				create_ui_props()			
 			elseif states_mode == 2 
-			 and self.index > 0 then
+			and self.index > 0 then
 				-- edit mode
 				-- todo: allow browse to pick/edit sprite number
 				sprite_select_mode = 1 -- change
 				sprite_select_index = self.index
 				create_ui_sprite_select()
+			elseif states_mode == 3 then
+				-- obj ref state select mode
+				curr_selection[curr_selection_prop] = self.index
+				-- close prop view/edit and go back to all properties
+				create_ui_props()	
 			end
 		end)
 
@@ -636,7 +644,7 @@ function create_ui_states()
 
 		pnl_prop:add_child(stateicon, 2+xoff, 2+yoff)
 
-		if states_mode == 1 then
+		if states_mode == 1 or states_mode == 3 then
 			-- label
 			local lbl=label.new(i, gui_fg1)
 			pnl_prop:add_child(lbl, 5+xoff, 11+yoff)
@@ -647,11 +655,11 @@ function create_ui_states()
 				-- todo: delete state!
 				d("delete state!")
 				d(">"..self.state)
-				d(#curr_selection.states)
-				del(curr_selection.states, self.state)
+				d(#obj.states)
+				del(obj.states, self.state)
 				-- recreate states view
-				create_ui_states() --mode)
-				d(#curr_selection.states)
+				create_ui_states(obj) --mode)
+				d(#obj.states)
 			end, 8)
 			btn_del.w=5
 			btn_del.h=5
@@ -836,8 +844,8 @@ function create_prop_header_label(text)
 	pnl_prop_header:add_child(lbl_prop_header, 17, 2)
 end
 
-function create_label(caption, tooltip, func)
-	local lbl=label.new(caption, gui_bg2)
+function create_label(caption, tooltip, func, col)
+	local lbl=label.new(caption, col or gui_bg2)
 	lbl.desc = tooltip
 	lbl.wants_mouse = true
 	lbl.w=60
@@ -865,6 +873,7 @@ function create_control(datatype, value, parent, x, y, tooltip, bound_obj, bound
 	--  41 = sprite anim sequence
 
 	--  50 = object ref
+	--  51 = obj ref state ref
 
 	d("create_control()")
 
@@ -914,7 +923,7 @@ function create_control(datatype, value, parent, x, y, tooltip, bound_obj, bound
 		create_more_button(parent, tooltip, bound_obj, bound_prop, x, y, function(self)
 		  -- show "select state"
 			states_mode = 1
-			create_ui_states()
+			create_ui_states(bound_obj)
 		end)
 
 	-- states list (or numbers)
@@ -922,7 +931,7 @@ function create_control(datatype, value, parent, x, y, tooltip, bound_obj, bound
 		create_more_button(parent, tooltip, bound_obj, bound_prop, x, y, function(self)
 			-- show "edit states"
 			states_mode = 2
-			create_ui_states()
+			create_ui_states(bound_obj)
 		end)
 
 	-- classes list 
@@ -1040,8 +1049,12 @@ function create_control(datatype, value, parent, x, y, tooltip, bound_obj, bound
 
 	-- object ref
 	elseif datatype == 50 then
-		local safe_value = bound_obj[bound_prop] or ""
+		local safe_value = ""
+		if bound_obj[bound_prop] then
+			safe_value = bound_obj[bound_prop].id 
+		end
 		local lbl = create_label(safe_value)
+		lbl.c = gui_fg1
 		parent:add_child(lbl, x, y)
 
 		create_more_button(parent, tooltip, bound_obj, bound_prop, x+10, y, function(self)
@@ -1064,8 +1077,27 @@ function create_control(datatype, value, parent, x, y, tooltip, bound_obj, bound
 			end)
 			parent:add_child(btn_cancel, 80, 20)
 
-			
+			edit_mode = 1
+			curr_selection_prop = bound_prop
 		end)
+
+	-- obj ref state ref
+	elseif datatype == 51 then
+		local safe_value = ""
+		if bound_obj[bound_prop] then
+			safe_value = bound_obj[bound_prop]
+		end
+		local lbl = create_label(safe_value)
+		lbl.c = gui_fg1
+		parent:add_child(lbl, x, y)
+		
+		create_more_button(parent, tooltip, bound_obj, bound_prop, x+10, y, function(self)
+		  -- show "select state"
+			states_mode = 3
+			curr_selection_prop = bound_prop
+			create_ui_states(bound_obj["dependent_on"])
+		end)
+
 	else
 		--- ...
 	end
