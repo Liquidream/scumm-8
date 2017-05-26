@@ -445,7 +445,8 @@ function input_button_pressed(button_index)
 				-- nothing clicked (so default to room selected)
 				curr_selection = room_curr
 				curr_selection_class = "class_room"
-				create_ui_props() --0)
+				gui_tabs_value = 0 -- reset tabs too
+				create_ui_props()
 			end	
 		-- object "picker" mode
 		elseif edit_mode == 1 then
