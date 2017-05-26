@@ -176,7 +176,8 @@ function _init()
 
 	-- default to current room
 	default_select_room()
-
+	-- show room props
+	create_ui_props()
 	
 end
 
@@ -218,7 +219,11 @@ function _update60()
   room_curr = rooms[room_index]
 
 	-- if nothign select, default to current room
-	default_select_room()
+	--default_select_room()
+	-- show room props (if not in "object select" mode)
+	-- if edit_mode == 1 then
+	-- 	create_ui_props()
+	-- end
 
   cam_x = mid(0, cam_x, (room_curr.map_w*8)-127 -1)
 
@@ -248,13 +253,13 @@ function init_ui()
  
 end
 
-function default_select_room()
+function default_select_room(force)
 	-- default first selection to current room
-	if not curr_selection then
+	if not curr_selection or force then
 		room_curr = rooms[room_index]
 		curr_selection = room_curr
 		curr_selection_class = "class_room"
-		create_ui_props()
+		--create_ui_props()
 	end
 end
 
@@ -449,7 +454,7 @@ function input_button_pressed(button_index)
 				create_ui_props()
 			end	
 		-- object "picker" mode
-		elseif edit_mode == 1 then
+		elseif edit_mode == 1 and hover_curr_selection then
 			-- set object as prop value
 			curr_selection[curr_selection_prop] = hover_curr_selection
 			-- switch to normal edit mode
@@ -741,6 +746,31 @@ function create_ui_bottom_panel()
 	prop_panel_col = 7
 end
 
+-- build the room navigation (inside property header)
+function create_ui_room_nav()
+	local pnl_prop_header = gui:find("prop_header")
+	
+	-- prev button
+	if room_index > 1 then
+		local btn_prev = icon.new(262, 0, function(widget)
+			room_index -= 1
+			curr_selection = nil
+		end)
+		btn_prev.desc = "go to previous room"
+		pnl_prop_header:add_child(btn_prev, 11, 2)
+	end
+
+	-- next button
+	if room_index < #rooms then
+		local btn_next = icon.new(263, 0, function(widget)
+			room_index += 1
+			curr_selection = nil
+		end)
+		btn_next.desc = "go to next room"
+		pnl_prop_header:add_child(btn_next, 51, 2)
+	end
+end
+
 -- build the current "page" of properties
 function create_ui_props() --pagenum)
 	local xoff=0
@@ -772,31 +802,10 @@ function create_ui_props() --pagenum)
 
 	-- header label
 	create_prop_header_label()
-	-- local lbl_prop_header = create_label(
-	-- 	                      sub(curr_selection_class,7)..":"..pad_3(curr_selection.id))
-  -- lbl_prop_header.c = 7
-	-- pnl_prop_header:add_child(lbl_prop_header, 17, 2)
 
 	-- room nav buttons
   if curr_selection_class == "class_room" then
-		-- prev button
-		if room_index > 1 then
-			local btn_prev = icon.new(262, 0, function(widget)
-				room_index -= 1
-				curr_selection = nil
-			end)
-			btn_prev.desc = "go to previous room"
-			pnl_prop_header:add_child(btn_prev, 11, 2)
-		end
-		-- next button
-		if room_index < #rooms then
-			local btn_next = icon.new(263, 0, function(widget)
-				room_index += 1
-				curr_selection = nil
-			end)
-			btn_next.desc = "go to next room"
-			pnl_prop_header:add_child(btn_next, 51, 2)
-		end
+		create_ui_room_nav()
 	end
 	
 	-- show tabs
@@ -1059,11 +1068,20 @@ function create_control(datatype, value, parent, x, y, tooltip, bound_obj, bound
 		parent:add_child(lbl, x, y)
 
 		create_more_button(parent, tooltip, bound_obj, bound_prop, x+10, y, function(self)
-			-- default to no object selected (ready for choice)
+			-- default to no object selected (ready for choice)			
+			--printh("!!!!!!!!!")
+			default_select_room(true)
+			
 			create_ui_bottom_panel()
-			local pnl_prop = gui:find("properties")
+
+			-- room nav buttons
+			create_ui_room_nav()
+			
+			-- header label
+			create_prop_header_label()
+
 			prop_panel_col = 7
-			prop_panel_header = header
+			--prop_panel_header = header
 			gui_tabs_visible = false
 
 		  -- show "select object picker"
