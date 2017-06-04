@@ -259,7 +259,7 @@ function default_select_room(force)
 		room_curr = rooms[room_index]
 		curr_selection = room_curr
 		curr_selection_class = "class_room"
-		--create_ui_props()
+		create_ui_props()
 	end
 end
 
@@ -711,9 +711,7 @@ function create_ui_states(obj)
 
 end
 
--- create/reuse panel for controls at bottom portion of screen
-function create_ui_bottom_panel()
-	-- (header panel)
+function create_header()
 	local pnl_prop_header = gui:find("prop_header")
 	if pnl_prop_header then
 		-- remove existing controls
@@ -728,6 +726,13 @@ function create_ui_bottom_panel()
 		--pnl_prop.func = function() end
 		gui:add_child(pnl_prop_header, 0,72)
 	end
+end
+
+-- create/reuse panel for controls at bottom portion of screen
+function create_ui_bottom_panel()
+	-- (header panel)
+	create_header()
+	local pnl_prop_header = gui:find("prop_header")
 
 	-- (properties panel)
 	-- look for existing panel
@@ -758,7 +763,16 @@ function create_ui_room_nav()
 	if room_index > 1 then
 		local btn_prev = icon.new(262, 0, function(widget)
 			room_index -= 1
-			--curr_selection = nil
+			if edit_mode == 0 then
+			  curr_selection = nil
+				default_select_room()
+			else
+				room_curr = rooms[room_index]
+				create_header()
+				create_prop_header_label()
+				create_ui_room_nav()
+			end
+			
 		end)
 		btn_prev.desc = "go to previous room"
 		pnl_prop_header:add_child(btn_prev, 11, 2)
@@ -768,7 +782,15 @@ function create_ui_room_nav()
 	if room_index < #rooms then
 		local btn_next = icon.new(263, 0, function(widget)
 			room_index += 1
-			--curr_selection = nil
+			if edit_mode == 0 then
+			  curr_selection = nil
+				default_select_room()
+			else
+				room_curr = rooms[room_index]
+				create_header()
+				create_prop_header_label()
+				create_ui_room_nav()
+			end
 		end)
 		btn_next.desc = "go to next room"
 		pnl_prop_header:add_child(btn_next, 51, 2)
@@ -1088,11 +1110,14 @@ function create_control(datatype, value, parent, x, y, tooltip, bound_obj, bound
 			
 			create_ui_bottom_panel()
 
-			-- room nav buttons
+			-- room nav buttons/label
+			create_header()
+			create_prop_header_label()
 			create_ui_room_nav()
+			--create_ui_room_nav()
 			
 			-- header label
-			create_prop_header_label()
+			--create_prop_header_label()
 
 			prop_panel_col = 7
 			--prop_panel_header = header
