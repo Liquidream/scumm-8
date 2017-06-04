@@ -455,8 +455,12 @@ function input_button_pressed(button_index)
 			end	
 		-- object "picker" mode
 		elseif edit_mode == 1 and hover_curr_selection then
+		d(">>>>1:"..curr_selection.id)
 			-- set object as prop value
 			curr_selection[curr_selection_prop] = hover_curr_selection
+
+			d(">>>>2:"..curr_selection[curr_selection_prop].id)
+
 			-- switch to normal edit mode
 			edit_mode = 0
 			-- redraw properties
@@ -754,7 +758,7 @@ function create_ui_room_nav()
 	if room_index > 1 then
 		local btn_prev = icon.new(262, 0, function(widget)
 			room_index -= 1
-			curr_selection = nil
+			--curr_selection = nil
 		end)
 		btn_prev.desc = "go to previous room"
 		pnl_prop_header:add_child(btn_prev, 11, 2)
@@ -764,7 +768,7 @@ function create_ui_room_nav()
 	if room_index < #rooms then
 		local btn_next = icon.new(263, 0, function(widget)
 			room_index += 1
-			curr_selection = nil
+			--curr_selection = nil
 		end)
 		btn_next.desc = "go to next room"
 		pnl_prop_header:add_child(btn_next, 51, 2)
@@ -848,7 +852,13 @@ end
 function create_prop_header_label(text)
 	local pnl_prop_header = gui:find("prop_header")
 	-- use text specified (or default to current selection)
-	local caption = text or sub(curr_selection_class,7)..":"..pad_3(curr_selection.id)
+	local caption = ""
+	d(">>>>>edit mode:"..edit_mode)
+	if edit_mode == 0 then
+		caption = text or sub(curr_selection_class,7)..":"..pad_3(curr_selection.id)
+	elseif edit_mode == 1 then
+		caption = text or "room:"..pad_3(room_curr.id)
+	end
 	local lbl_prop_header = create_label(caption)
   lbl_prop_header.c = 7
 	pnl_prop_header:add_child(lbl_prop_header, 17, 2)
@@ -1062,6 +1072,8 @@ function create_control(datatype, value, parent, x, y, tooltip, bound_obj, bound
 		local safe_value = ""
 		if bound_obj[bound_prop] then
 			safe_value = bound_obj[bound_prop].id 
+		else
+			d(">>>>> NIL!!!:"..bound_obj.id)
 		end
 		local lbl = create_label(safe_value)
 		lbl.c = gui_fg1
@@ -1069,8 +1081,10 @@ function create_control(datatype, value, parent, x, y, tooltip, bound_obj, bound
 
 		create_more_button(parent, tooltip, bound_obj, bound_prop, x+10, y, function(self)
 			-- default to no object selected (ready for choice)			
-			--printh("!!!!!!!!!")
-			default_select_room(true)
+			d("!!!!!!!!!")
+			--default_select_room(true)
+
+			edit_mode = 1
 			
 			create_ui_bottom_panel()
 
@@ -1096,7 +1110,7 @@ function create_control(datatype, value, parent, x, y, tooltip, bound_obj, bound
 			end)
 			parent:add_child(btn_cancel, 80, 20)
 
-			edit_mode = 1
+			
 			curr_selection_prop = bound_prop
 		end)
 
