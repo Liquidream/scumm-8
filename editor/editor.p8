@@ -1045,11 +1045,17 @@ function create_control(datatype, value, parent, x, y, tooltip, bound_obj, bound
 			create_ui_props()
 		end
 	  -- pos information
-		local str_map_pos = "pos("..room_curr.map[1]..","..room_curr.map[2]..")".."  width="..room_curr.map[3]-room_curr.map[1]
+		local width = room_curr.map_w --16
+		local str_map_pos = "pos="..room_curr.map[1]..","..room_curr.map[2]
 		local lbl=label.new(str_map_pos, gui_fg1)
 		lbl.desc = "top-left map position of room"
 		lbl.wants_mouse = true
 		parent:add_child(lbl, x, y)
+		-- width
+		lbl=label.new("width=", gui_fg1)
+		lbl.desc = "width of room"
+		lbl.wants_mouse = true
+		parent:add_child(lbl, x+50, y)
 		-- move left
 		local btn_lt = icon.new(262, 0, function()
 			move_map(1, -1)
@@ -1061,7 +1067,7 @@ function create_control(datatype, value, parent, x, y, tooltip, bound_obj, bound
 			move_map(2, -1)
 		end)
 		btn_up.desc = "move room map up"
-		parent:add_child(btn_up, x+4, y+6)
+		parent:add_child(btn_up, x+4, y+7)
 		-- move right
 		local btn_rt = icon.new(263, 0, function()
 			move_map(1, 1)
@@ -1073,7 +1079,16 @@ function create_control(datatype, value, parent, x, y, tooltip, bound_obj, bound
 			move_map(2, 1)
 		end)
 		btn_dn.desc = "move room map down"
-		parent:add_child(btn_dn, x+4, y+16)
+		parent:add_child(btn_dn, x+4, y+15)
+
+		-- control width
+		local spin_add = spinner.new(-64, 1000, width, 1, function(widget)
+			d("widget.value="..widget.value)
+			room_curr.map_w = room_curr.map[1] + widget.value
+			room_curr.map[4] = 7
+		end)
+		spin_add.desc = "increase/decrease room width"
+		parent:add_child(spin_add, x+72, y-2)
 
   -- use position (pos preset or specific pos)
 	elseif datatype == 30 then
@@ -1241,14 +1256,6 @@ function status_label()
 	 and cursor_y-stage_top < 64 then
 		return "x:"..pad_3(cursor_x+cam_x).." y:"..pad_3(cursor_y-stage_top)
 	end
-  -- local c=flr(stat(32)/8)
-  -- local r=flr(stat(33)/8)
-  -- local pos=c..", "..r..": "
-  -- if r<0 or c<0 or r>=16 or c>=map_width then
-  --  return pos.."nothing!"
-  -- else
-  --  return pos.."tile "..mget(c, r)
-  -- end
  else
   -- mouse is over a panel
   local w=gui.clicked_widget or gui.widget_under_mouse
