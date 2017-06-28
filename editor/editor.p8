@@ -34,7 +34,7 @@ edit_mode = 0
 
 prop_page_num = 0
 prop_panel_col = 7
-prop_panel_header = "" 
+--prop_panel_header = "" --(no longer global, done in function)
 gui_tabs_visible = false
 gui_tabs_value = 0
 gui_tabs_func = nil
@@ -505,7 +505,8 @@ function create_ui_listselect(items, b_multiselect, header, bound_obj, bound_pro
 	-- set prop panel bg to white
 	prop_panel_col = 7
 
-	prop_panel_header = header
+	-- header label
+	create_prop_header_label(header)
 	gui_tabs_visible = false
 
 	--if bound_obj[bound_prop] then d(" >> "..bound_obj[bound_prop]) end
@@ -551,7 +552,9 @@ function create_ui_sprite_select() --pagenum, func)
 	-- set prop panel bg to black
 	prop_panel_col = 0
 
-	prop_panel_header = "select sprite" 
+	-- header label
+	create_prop_header_label("select sprite" )
+	--prop_panel_header = "select sprite" 
 	gui_tabs_visible = true
 	gui_tabs_func = create_ui_sprite_select
 
