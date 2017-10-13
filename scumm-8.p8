@@ -1288,6 +1288,7 @@ cutscene_cooloff = 0
 -- game loop
 
 function _init()
+	--cstore(0,0,0x800,"test.scm") -- sfx (just b4 last 1/2)
 
 	-- reload(0,0,0x800,"mi_temp.p8") -- gfx pg1
 	-- cstore(0x3b00,0,0x800) -- sfx (last 1/2)
