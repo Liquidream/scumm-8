@@ -306,7 +306,6 @@ end
 -- (you should not need to modify anything below here!)
 
 
-
 function shake(bq) if bq then
 br=1 end bs=bq end function bt(bu) local bv=nil if has_flag(bu.classes,"class_talkable") then
 bv="talkto"elseif has_flag(bu.classes,"class_openable") then if bu.state=="state_closed"then
@@ -371,7 +370,7 @@ ci.flip=(fq<0) if abs(fq)<0.4 then
 if fr>0 then
 ci.fs=ci.walk_anim_front ci.face_dir="face_front"else ci.fs=ci.walk_anim_back ci.face_dir="face_back"end else ci.fs=ci.walk_anim_side ci.face_dir="face_right"if ci.flip then ci.face_dir="face_left"end
 end for ex=0,fp/ci.walk_speed do ci.x+=fq ci.y+=fr yield() end end end ci.fe=2 end function wait_for_actor(ci) ci=ci or selected_actor while ci.fe!=2 do yield() end end function proximity(ca,cb) if ca.in_room==cb.in_room then
-local fp=sqrt((ca.x-cb.x)^2+(ca.y-cb.y)^2) return fp else return 1000 end end ft=16 ce,cg,cj,br=0,nil,nil,0 fu,fv,fw,fx=63.5,63.5,0,1 fy={7,12,13,13,12,7} fz={{spr=208,x=75,y=ft+60},{spr=240,x=75,y=ft+72}} dm={face_front=1,face_left=2,face_back=3,face_right=4} function ga(bu) local gb={} for el,bw in pairs(bu) do add(gb,el) end return gb end function get_verb(bu) local bz={} local gb=ga(bu[1]) add(bz,gb[1]) add(bz,bu[1][gb[1]]) add(bz,bu.text) return bz end function ed() gc=get_verb(verb_default) gd,ge,o,gf,gg=nil,nil,nil,false,""end ed() eo=nil cu=nil cs=nil es=nil ej={} ec={} cr={} gh={} ea,ea=0,0 gi=0 function _init() if enable_mouse then poke(0x5f2d,1) end
+local fp=sqrt((ca.x-cb.x)^2+(ca.y-cb.y)^2) return fp else return 1000 end end ft=16 ce,cg,cj,br=0,nil,nil,0 fu,fv,fw,fx=63.5,63.5,0,1 fy={7,12,13,13,12,7} fz={{spr=208,x=75,y=ft+60},{spr=240,x=75,y=ft+72}} dm={face_front=1,face_left=2,face_back=3,face_right=4} function ga(bu) local gb={} for el,bw in pairs(bu) do add(gb,el) end return gb end function get_verb(bu) local bz={} local gb=ga(bu[1]) add(bz,gb[1]) add(bz,bu[1][gb[1]]) add(bz,bu.text) return bz end function ed() gc=get_verb(verb_default) gd,ge,o,gf,gg=nil,nil,nil,false,""end ed() eo=nil cu=nil cs=nil es=nil ej={} ec={} cr={} gh={} ea,ea=0,0 gi=0 function _init() cstore(0,0,0x800,"test.scm") if enable_mouse then poke(0x5f2d,1) end
 gj() start_script(startup_script,true) end function _update60() gk() end function _draw() gl() end function gk() if selected_actor and selected_actor.co
 and not coresume(selected_actor.co) then selected_actor.co=nil end gm(ej) if cs then
 if cs.co
@@ -453,12 +452,12 @@ ci.ik=1 ci.il+=1 if ci.il>#ci.fs then ci.il=1 end
 end im=ci.fs[ci.il] else im=ci.idle[ij] end hx(ci) ii(im,ci.df,ci.hu,ci.w,ci.h,ci.trans_col,ci.flip,false) if es
 and es==ci and es.talk then if ci.io<7 then
 im=ci.talk[ij] ii(im,ci.df,ci.hu+8,1,1,ci.trans_col,ci.flip,false) end ci.io+=1 if ci.io>14 then ci.io=1 end
-end pal() end function gv() ip=""iq=12 ir=gc[2] if gc then
+end pal() end function gv() ip=""iq=verb_maincol ir=gc[2] if gc then
 ip=gc[3] end if gd then
 ip=ip.." "..gd.name if ir=="use"then
 ip=ip.." with"elseif ir=="give"then ip=ip.." to"end end if ge then
 ip=ip.." "..ge.name elseif hh and hh.name!=""and(not gd or(gd!=hh)) and(not hh.owner or ir!=get_verb(verb_default)[2]) then ip=ip.." "..hh.name end gg=ip if gf then
-ip=gg iq=7 end print(is(ip),it(ip),ft+66,iq) end function gs() if eo then
+ip=gg iq=verb_hovcol end print(is(ip),it(ip),ft+66,iq) end function gs() if eo then
 iu=0 for iv in all(eo.fa) do iw=0 if eo.et==1 then
 iw=((eo.dc*4)-(#iv*4))/2 end ix(iv,eo.x+iw,eo.y+iu,eo.col,0,eo.ep) iu+=6 end eo.fb-=1 if eo.fb<=0 then
 stop_talking() end end end function gw() ez,er,iy=0,75,0 for bw in all(verbs) do iz=verb_maincol if hi
@@ -466,7 +465,7 @@ and bw==hi then iz=verb_defcol end if bw==hg then iz=verb_hovcol end
 bx=get_verb(bw) print(bx[3],ez,er+ft+1,verb_shadcol) print(bx[3],ez,er+ft,iz) bw.x=ez bw.y=er hp(bw,#bx[3]*4,5,0,0) ic(bw) if#bx[3]>iy then iy=#bx[3] end
 er+=8 if er>=95 then
 er=75 ez+=(iy+1.0)*4 iy=0 end end if selected_actor then
-ez,er=86,76 ja=selected_actor.hk*4 jb=min(ja+8,#selected_actor.bo) for jc=1,8 do rectfill(ez-1,ft+er-1,ez+8,ft+er+8,1) bu=selected_actor.bo[ja+jc] if bu then
+ez,er=86,76 ja=selected_actor.hk*4 jb=min(ja+8,#selected_actor.bo) for jc=1,8 do rectfill(ez-1,ft+er-1,ez+8,ft+er+8,verb_shadcol) bu=selected_actor.bo[ja+jc] if bu then
 bu.x,bu.y=ez,er ia(bu) hp(bu,bu.w*8,bu.h*8,0,0) ic(bu) end ez+=11 if ez>=125 then
 er+=12 ez=86 end jc+=1 end for ex=1,2 do jd=fz[ex] if hj==jd then pal(verb_maincol,7) end
 ii(jd.spr,jd.x,jd.y,1,1,0) hp(jd,8,7,0,0) ic(jd) pal() end end end function gt() ez,er=0,70 for ek in all(cu.cv) do if ek.dc>0 then
@@ -512,7 +511,6 @@ id=not id elseif ht=="~"then if ky then a=a..ht end
 ky,iv=not ky,not iv else if id==iv and ht>="a"and ht<="z"then
 for jo=1,26 do if ht==sub("abcdefghijklmnopqrstuvwxyz",jo,jo) then
 ht=sub("\65\66\67\68\69\70\71\72\73\74\75\76\77\78\79\80\81\82\83\84\85\86\87\88\89\90\91\92",jo,jo) break end end end a=a..ht id,ky=false,false end end return a end
-
 
 
 

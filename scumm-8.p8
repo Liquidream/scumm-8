@@ -1995,7 +1995,7 @@ end
 function command_draw()
 	-- draw current command
 	command = ""
-	cmd_col = 12
+	cmd_col = verb_maincol
 	verb_curr_ref = verb_curr[2] 
 
 	if verb_curr then
@@ -2026,7 +2026,7 @@ function command_draw()
 	if executing_cmd then
 		-- highlight active command
 		command = cmd_curr
-		cmd_col = 7
+		cmd_col = verb_hovcol
 	end
 
 	print( smallcaps(command), hcenter(command), stage_top + 66, cmd_col )
@@ -2109,7 +2109,7 @@ function ui_draw()
 
 		for ipos = 1,8 do
 			-- draw inventory bg
-			rectfill(xpos-1, stage_top+ypos-1, xpos+8, stage_top+ypos+8, 1)
+			rectfill(xpos-1, stage_top+ypos-1, xpos+8, stage_top+ypos+8, verb_shadcol)
 
 			obj = selected_actor.inventory[start_pos+ipos]
 			if obj then
