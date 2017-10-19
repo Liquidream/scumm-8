@@ -18,6 +18,7 @@ show_collision = false
 --show_pathfinding = true
 show_perfinfo = true
 enable_mouse = true
+enable_diag_squeeze = false	-- allow squeeze through diag gap?
 d = printh
 
 
@@ -2438,7 +2439,8 @@ function find_path(start, goal)
 				-- squeeze check for corners
 				 and ((abs(x) != abs(y)) 
 						or is_cell_walkable(chk_x, current[2]) 
-						or is_cell_walkable(chk_x - x, chk_y)) 
+						or is_cell_walkable(chk_x - x, chk_y)
+						or enable_diag_squeeze) 
 				then
 					-- add as valid neighbour
 					add( neighbours, {chk_x, chk_y, cost} )
