@@ -1027,7 +1027,7 @@ function wait_for_message()
 end
 
 -- uses actor's position and color
-function say_line(actor, msg, use_caps, dont_wait_msg)
+function say_line(actor, msg, use_caps, duration)
 	-- check for missing actor
 	if type(actor) == "string" then
 		-- assume actor ommitted and default to current
@@ -1040,7 +1040,7 @@ function say_line(actor, msg, use_caps, dont_wait_msg)
 	-- trigger actor's talk anim
 	talking_actor = actor
 	-- call the base print_line to show actor line
-	print_line(msg, actor.x, ypos, actor.col, 1, use_caps, dont_wait_msg)
+	print_line(msg, actor.x, ypos, actor.col, 1, use_caps, duration)
 end
 
 -- stop everyone talking & remove displayed text
@@ -1049,7 +1049,7 @@ function stop_talking()
 end
 
 
-function print_line(msg, x, y, col, align, use_caps, dont_wait_msg)
+function print_line(msg, x, y, col, align, use_caps, duration)
   -- punctuation...
 	--  > ":" new line, shown after text prior expires
 	--  > ";" new line, shown immediately
@@ -1104,7 +1104,7 @@ function print_line(msg, x, y, col, align, use_caps, dont_wait_msg)
 		y = ypos,
 		col = col,
 		align = align,
-		time_left = (#msg)*8,
+		time_left = duration or (#msg)*8,
 		char_width = longest_line,
 		use_caps = use_caps
 	}
@@ -1117,9 +1117,9 @@ function print_line(msg, x, y, col, align, use_caps, dont_wait_msg)
 	end
 
 	-- and wait for message?
-	if not dont_wait_msg then
+	--if not dont_wait_msg then
 		wait_for_message()
-	end
+	--end
 end
 
 function put_at(obj, x, y, room)
@@ -2558,7 +2558,7 @@ function explode_data(obj)
 			--d("pair1=["..pairs[1].."]  pair2=["..pairs[2].."]")
 			obj[pairs[1]] = autotype(pairs[2])
 		else
-			printh("invalid data line")
+			printh(" > invalid data: ["..pairs[1].."]") -- = ["..pairs[2].."]")
 		end
 	end
 end
