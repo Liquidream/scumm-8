@@ -1487,7 +1487,8 @@ function playercontrol()
 	-- check for cutscene "skip/override"
 	-- (or that we have an actor to control!)
 	if cutscene_curr then
-		if btnp(4) and btnp(5) and cutscene_curr.override then 
+		if (btnp(5) or stat(34)>0)
+		 and cutscene_curr.override then 
 			-- skip cutscene!
 			cutscene_curr.thread = cocreate(cutscene_curr.override)
 			cutscene_curr.override = nil
