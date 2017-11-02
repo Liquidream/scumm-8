@@ -2136,7 +2136,7 @@ function ui_draw()
 		-- draw arrows
 		for i = 1,2 do
 			arrow = ui_arrows[i]
-			if hover_curr_arrow == arrow then pal(verb_maincol,7) end
+			if hover_curr_arrow == arrow then pal(verb_maincol, verb_hovcol) end
 			sprdraw(arrow.spr, arrow.x, arrow.y, 1, 1, 0)
 			-- capture bounds
 			recalc_bounds(arrow, 8, 7, 0, 0)
