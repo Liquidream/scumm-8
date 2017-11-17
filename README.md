@@ -4,6 +4,8 @@ SCUMM-8 is a "demake" of the [SCUMM](https://en.wikipedia.org/wiki/SCUMM) engine
 
 A playable sample game "Return of the SCUMM" can be [found here](http://www.lexaloffle.com/bbs/?tid=29176).
 
+Another example game can "H A L L O W EƎ N" be [found here](https://liquidream.itch.io/hallowe3n).
+
 ![SCUMM-8](http://i.imgur.com/FcE49f5.gif)  ![SCUMM-8](http://i.imgur.com/LO57HFN.gif)  ![SCUMM-8](http://i.imgur.com/3HiP7Jf.gif)
 
 While it is heavily "inspired" by the SCUMM engine, it isn't a true replica (for that you'll want good ol' [SCUMM-VM](https://en.wikipedia.org/wiki/ScummVM)).  However, SCUMM-8 attempts to stay as true as possible to the [original SCUMM command reference](http://www.wilmunder.com/Arics_World/Games.html).
@@ -20,7 +22,7 @@ Wow, really? You still here?! OK, once again. Think of SCUMM-8 as an even more r
 \*sigh\* . . .  "Look behind you! It's a three-headed monkey!" . . . \*runs away\*
 
 ## Current Features
-- [x] Multiple Rooms (up to 32, technically)
+- [x] Multiple Rooms (32+, technically)
 - [x] Pathfinding for walking
 - [x] Dialogs between Actors
 - [x] Cut-scenes
@@ -37,7 +39,7 @@ Wow, really? You still here?! OK, once again. Think of SCUMM-8 as an even more r
 - [x] Proximity (between Actors/Objects)
 
 ## Planned Features
-- [ ] Game Editor (*In Progress...*)
+- [ ] Game Editor?
 - [ ] Game Save/Load
 
 ## Getting Started
