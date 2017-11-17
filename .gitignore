@@ -3,3 +3,4 @@
 *.pyxel
 *.png
 .vscode/*
+test.scm

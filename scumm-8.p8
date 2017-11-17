@@ -18,6 +18,7 @@ show_collision = false
 --show_pathfinding = true
 show_perfinfo = true
 enable_mouse = true
+enable_diag_squeeze = false	-- allow squeeze through diag gap?
 d = printh
 
 
@@ -1026,7 +1027,7 @@ function wait_for_message()
 end
 
 -- uses actor's position and color
-function say_line(actor, msg, use_caps, dont_wait_msg)
+function say_line(actor, msg, use_caps, duration)
 	-- check for missing actor
 	if type(actor) == "string" then
 		-- assume actor ommitted and default to current
@@ -1039,7 +1040,7 @@ function say_line(actor, msg, use_caps, dont_wait_msg)
 	-- trigger actor's talk anim
 	talking_actor = actor
 	-- call the base print_line to show actor line
-	print_line(msg, actor.x, ypos, actor.col, 1, use_caps, dont_wait_msg)
+	print_line(msg, actor.x, ypos, actor.col, 1, use_caps, duration)
 end
 
 -- stop everyone talking & remove displayed text
@@ -1048,7 +1049,7 @@ function stop_talking()
 end
 
 
-function print_line(msg, x, y, col, align, use_caps, dont_wait_msg)
+function print_line(msg, x, y, col, align, use_caps, duration)
   -- punctuation...
 	--  > ":" new line, shown after text prior expires
 	--  > ";" new line, shown immediately
@@ -1103,7 +1104,7 @@ function print_line(msg, x, y, col, align, use_caps, dont_wait_msg)
 		y = ypos,
 		col = col,
 		align = align,
-		time_left = (#msg)*8,
+		time_left = duration or (#msg)*8,
 		char_width = longest_line,
 		use_caps = use_caps
 	}
@@ -1116,9 +1117,9 @@ function print_line(msg, x, y, col, align, use_caps, dont_wait_msg)
 	end
 
 	-- and wait for message?
-	if not dont_wait_msg then
+	--if not dont_wait_msg then
 		wait_for_message()
-	end
+	--end
 end
 
 function put_at(obj, x, y, room)
@@ -1288,6 +1289,7 @@ cutscene_cooloff = 0
 -- game loop
 
 function _init()
+	--cstore(0,0,0x800,"test.scm") -- sfx (just b4 last 1/2)
 
 	-- reload(0,0,0x800,"mi_temp.p8") -- gfx pg1
 	-- cstore(0x3b00,0,0x800) -- sfx (last 1/2)
@@ -1485,7 +1487,8 @@ function playercontrol()
 	-- check for cutscene "skip/override"
 	-- (or that we have an actor to control!)
 	if cutscene_curr then
-		if btnp(4) and btnp(5) and cutscene_curr.override then 
+		if (btnp(5) or stat(34)>0)
+		 and cutscene_curr.override then 
 			-- skip cutscene!
 			cutscene_curr.thread = cocreate(cutscene_curr.override)
 			cutscene_curr.override = nil
@@ -1995,7 +1998,7 @@ end
 function command_draw()
 	-- draw current command
 	command = ""
-	cmd_col = 12
+	cmd_col = verb_maincol
 	verb_curr_ref = verb_curr[2] 
 
 	if verb_curr then
@@ -2026,7 +2029,7 @@ function command_draw()
 	if executing_cmd then
 		-- highlight active command
 		command = cmd_curr
-		cmd_col = 7
+		cmd_col = verb_hovcol
 	end
 
 	print( smallcaps(command), hcenter(command), stage_top + 66, cmd_col )
@@ -2109,7 +2112,7 @@ function ui_draw()
 
 		for ipos = 1,8 do
 			-- draw inventory bg
-			rectfill(xpos-1, stage_top+ypos-1, xpos+8, stage_top+ypos+8, 1)
+			rectfill(xpos-1, stage_top+ypos-1, xpos+8, stage_top+ypos+8, verb_shadcol)
 
 			obj = selected_actor.inventory[start_pos+ipos]
 			if obj then
@@ -2133,7 +2136,7 @@ function ui_draw()
 		-- draw arrows
 		for i = 1,2 do
 			arrow = ui_arrows[i]
-			if hover_curr_arrow == arrow then pal(verb_maincol,7) end
+			if hover_curr_arrow == arrow then pal(verb_maincol, verb_hovcol) end
 			sprdraw(arrow.spr, arrow.x, arrow.y, 1, 1, 0)
 			-- capture bounds
 			recalc_bounds(arrow, 8, 7, 0, 0)
@@ -2437,7 +2440,8 @@ function find_path(start, goal)
 				-- squeeze check for corners
 				 and ((abs(x) != abs(y)) 
 						or is_cell_walkable(chk_x, current[2]) 
-						or is_cell_walkable(chk_x - x, chk_y)) 
+						or is_cell_walkable(chk_x - x, chk_y)
+						or enable_diag_squeeze) 
 				then
 					-- add as valid neighbour
 					add( neighbours, {chk_x, chk_y, cost} )
@@ -2555,7 +2559,7 @@ function explode_data(obj)
 			--d("pair1=["..pairs[1].."]  pair2=["..pairs[2].."]")
 			obj[pairs[1]] = autotype(pairs[2])
 		else
-			printh("invalid data line")
+			printh(" > invalid data: ["..pairs[1].."]") -- = ["..pairs[2].."]")
 		end
 	end
 end
