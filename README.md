@@ -57,7 +57,7 @@ Or if you're on a system that uses Python 2 by default:
 python3 build.py
 ```
 
-This will output scumm-8_fmt.p8, containing the minified engine code which you can copy to your own cart.
+This will output scumm-8.min.lua, containing the minified engine code which you can copy to your own cart.
 
 ## Thanks & Useful Resources
 A big thanks to [Aric Wilmunder](http://www.wilmunder.com/Arics_World/Games.html) (ex-LucasArts developer) for sharing valuable SCUMM documentation. 
