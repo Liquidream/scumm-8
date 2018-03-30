@@ -1,7 +1,9 @@
 
+-- ==============================
 -- scumm-8 public api functions
 -- 
 -- (you should not need to modify anything below here!)
+
 
 function shake(bq) if bq then
 br=1 end bs=bq end function bt(bu) local bv=nil if has_flag(bu.classes,"class_talkable") then
@@ -191,8 +193,7 @@ or h<kd then kd=h ke=ko kr=kn end end end end local fj={} ki=kb[kg(jz)] if ki th
 add(fj,jz) elseif ke then ki=kb[ke] add(fj,kr) end if ki then
 local ks=kg(ki) local kt=kg(jy) while ks!=kt do add(fj,ki) ki=kb[ks] ks=kg(ki) end for ew=1,#fj/2 do local ku=fj[ew] local kv=#fj-(ew-1) fj[ew]=fj[kv] fj[kv]=ku end end return fj end function kf(kw,cd,fl) if#kw>=1 then
 add(kw,{}) for ew=(#kw),2,-1 do local kn=kw[ew-1] if fl<kn[2] then
-kw[ew]={cd,fl} return else kw[ew]=kn end end kw[1]={cd,fl} else add(kw,{cd,fl}) end end function kg(kx) return((kx[1]+1)*16)+kx[2] end function ds(msg) print_line("-error-;"..msg,5+cam_x,5,8,0) end function jf(bu) local cw=ky(bu.data,"\
-") for iu in all(cw) do local pairs=ky(iu,"=") if#pairs==2 then
+kw[ew]={cd,fl} return else kw[ew]=kn end end kw[1]={cd,fl} else add(kw,{cd,fl}) end end function kg(kx) return((kx[1]+1)*16)+kx[2] end function ds(msg) print_line("-error-;"..msg,5+cam_x,5,8,0) end function jf(bu) local cw=ky(bu.data,"\n") for iu in all(cw) do local pairs=ky(iu,"=") if#pairs==2 then
 bu[pairs[1]]=kz(pairs[2]) else printh(" > invalid data: ["..pairs[1].."]") end end end function ky(ej,la) local lb={} local iy=0 local lc=0 for ew=1,#ej do local ld=sub(ej,ew,ew) if ld==la then
 add(lb,sub(ej,iy,lc)) iy=0 lc=0 elseif ld!=" "and ld!="\t"then lc=ew if iy==0 then iy=ew end
 end end if iy+lc>0 then
