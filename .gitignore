@@ -4,3 +4,4 @@
 *.png
 .vscode/*
 test.scm
+scumm-8_fmt.p8
