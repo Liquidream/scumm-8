@@ -4,5 +4,3 @@
 *.png
 .vscode/*
 test.scm
-scumm-8_fmt.p8
-scumm-8.min.lua
