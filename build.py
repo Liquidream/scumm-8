@@ -4,13 +4,16 @@ import sys
 import os
 from subprocess import call
 
+source_filename = 'scumm-8.p8'
 picotool_build_filename = 'scumm-8_fmt.p8'
 minified_lua_filedname = 'scumm-8.min.lua'
 lib_header = \
 """
+-- ==============================
 -- scumm-8 public api functions
 --
 -- (you should not need to modify anything below here!)
+
 
 """
 lib_start_pattern = 'function shake'
@@ -20,7 +23,7 @@ if __name__ == '__main__':
   call(['git', 'submodule', 'init'])
   call(['git', 'submodule', 'update'])
   from picotool_scumm8.pico8 import tool
-  tool.main(['luamin', 'scumm-8.p8'])
+  tool.main(['luamin', source_filename])
   contents = open(picotool_build_filename).read()
   lib_only = \
     lib_header + \
