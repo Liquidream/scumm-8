@@ -305,6 +305,7 @@ end
 -- 
 -- (you should not need to modify anything below here!)
 
+
 function shake(bq) if bq then
 br=1 end bs=bq end function bt(bu) local bv=nil if has_flag(bu.classes,"class_talkable") then
 bv="talkto"elseif has_flag(bu.classes,"class_openable") then if bu.state=="state_closed"then

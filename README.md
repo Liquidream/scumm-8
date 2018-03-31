@@ -45,6 +45,22 @@ Wow, really? You still here?! OK, once again. Think of SCUMM-8 as an even more r
 ## Getting Started
 Please see the [SCUMM-8 Wiki](https://github.com/Liquidream/scumm-8/wiki) for details on how to get started creating your own SCUMM-8 game, as well as the the full API reference.
 
+## Building
+
+Using Python 3:
+```console
+python3 build.py
+```
+
+This will output scumm-8.min.lua, containing the minified engine code which you can copy to your own cart. It will also output new copies of game.p8 and template.p8, which should be committed to the repository.
+
+**Note:** At the moment there is no way to automatically generate a new template.p8.png file, so that must be generated via the PICO-8 editor:
+
+```console
+load template.p8
+save template.p8.png
+```
+
 ## Thanks & Useful Resources
 A big thanks to [Aric Wilmunder](http://www.wilmunder.com/Arics_World/Games.html) (ex-LucasArts developer) for sharing valuable SCUMM documentation. 
 Particularly the **SCUMM Tutorial **(1991), the example room from which was the first room I actually created in SCUMM-8 (minus the cool Sam & Max gfx, of course)
