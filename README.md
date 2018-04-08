@@ -4,9 +4,9 @@ SCUMM-8 is a "demake" of the [SCUMM](https://en.wikipedia.org/wiki/SCUMM) engine
 
 A playable sample game "Return of the SCUMM" can be [found here](http://www.lexaloffle.com/bbs/?tid=29176).
 
-![SCUMM-8](http://i.imgur.com/FcE49f5.gif)  ![SCUMM-8](http://i.imgur.com/LO57HFN.gif)  ![SCUMM-8](http://i.imgur.com/3HiP7Jf.gif)
-
 Another example game "H A L L O W EƎ N" can be [found here](https://liquidream.itch.io/hallowe3n).
+
+![SCUMM-8](http://i.imgur.com/FcE49f5.gif)  ![SCUMM-8](http://i.imgur.com/LO57HFN.gif)  ![SCUMM-8](http://i.imgur.com/3HiP7Jf.gif)
 
 While it is heavily "inspired" by the SCUMM engine, it isn't a true replica (for that you'll want good ol' [SCUMM-VM](https://en.wikipedia.org/wiki/ScummVM)).  However, SCUMM-8 attempts to stay as true as possible to the [original SCUMM command reference](http://www.wilmunder.com/Arics_World/Games.html).
 > *"Cool, so does that mean I can play those old LucasArts games in PICO-8?!"*
@@ -37,10 +37,6 @@ Wow, really? You still here?! OK, once again. Think of SCUMM-8 as an even more r
 - [x] Adjustable Room Brightness Levels
 - [x] Screen "shake" effect
 - [x] Proximity (between Actors/Objects)
-
-## Planned Features
-- [ ] Game Editor?
-- [ ] Game Save/Load
 
 ## Getting Started
 Please see the [SCUMM-8 Wiki](https://github.com/Liquidream/scumm-8/wiki) for details on how to get started creating your own SCUMM-8 game, as well as the the full API reference.
