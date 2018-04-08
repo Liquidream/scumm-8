@@ -1,4 +1,4 @@
-# SCUMM-8
+![SCUMM-8](https://i2.wp.com/www.liquidream.co.uk/wp-content/uploads/2017/09/slide-scumm8-v2.png) 
 ## What is SCUMM-8?
 SCUMM-8 is a "demake" of the [SCUMM](https://en.wikipedia.org/wiki/SCUMM) engine (which powered most of the classic LucasArts adventure games, such as Monkey Island and Maniac Mansion) for the [PICO-8 Fantasy Console](http://www.lexaloffle.com/pico-8.php).  
 
@@ -52,12 +52,11 @@ This will output scumm-8.min.lua, containing the minified engine code which you 
 
 ## Thanks & Useful Resources
 A big thanks to [Aric Wilmunder](http://www.wilmunder.com/Arics_World/Games.html) (ex-LucasArts developer) for sharing valuable SCUMM documentation. 
-Particularly the **SCUMM Tutorial **(1991), the example room from which was the first room I actually created in SCUMM-8 (minus the cool Sam & Max gfx, of course)
+Particularly the **SCUMM Tutorial** (1991), the example room from which was the first room I actually created in SCUMM-8 (minus the cool Sam & Max gfx, of course)
 
 Thanks also to Dan Sanderson for his [picotool](https://github.com/dansanderson/picotool) - specifically his minifying tool (luamin), which enabled me to squeeze MUCH more code under PICO-8's limits.
 
-Shoutout to **@PixelArtM**, whose [PICO-8 mockup](https://twitter.com/PixelArtM/status/758735822426284036) inspired me to wonder whether this could *actually* be pulled off within the virtual console's limits (SPOILER: it can... just about!).  
-**UPDATE**: "Life Imitates Art" as **@PixelArtM** uses SCUMM-8 to make said mockup [a reality!](https://twitter.com/PixelArtM/status/857193912229933056)
+Shoutout to **@PixelArtM**, whose [PICO-8 mockup](https://twitter.com/PixelArtM/status/758735822426284036) inspired me to wonder whether this could *actually* be pulled off within the virtual console's limits (and then later used SCUMM-8 to make said mockup [a reality!](https://twitter.com/PixelArtM/status/857193912229933056))
 
 Some other great SCUMM resources I found along the way include the following:
 - [Ron Gilbert's post about "SCUMM Script"](http://www.pagetable.com/?p=614)
