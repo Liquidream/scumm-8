@@ -42,8 +42,15 @@ function reset_ui()
 	verb_hovcol = 7    -- hover color (white)
 	verb_shadcol = 1   -- shadow (dk blue)
 	verb_defcol = 10   -- default action (yellow)
+ ui_cursorspr = 96  -- default cursor sprite
+ ui_uparrowspr = 80 -- default up arrow sprite
+ ui_dnarrowspr = 112-- default up arrow sprite
+ -- default cols to use when animating cursor
+ ui_cursor_cols = {7,12,13,13,12,7}
 end
 
+-- perform initial ui setup
+reset_ui()
 
 
 -- 
@@ -1223,13 +1230,11 @@ end
 -- global vars
 stage_top = 16
 cam_x, cam_pan_to_x, cam_script, cam_shake_amount = 0, nil, nil, 0
-
 cursor_x, cursor_y, cursor_tmr, cursor_colpos = 63.5, 63.5, 0, 1
-cursor_cols = {7,12,13,13,12,7}
 
 ui_arrows = {
-	{ spr = 208, x = 75, y = stage_top + 60 },
-	{ spr = 240, x = 75, y = stage_top + 72 }
+	{ spr = ui_uparrowspr, x = 75, y = stage_top + 60 },
+	{ spr = ui_dnarrowspr, x = 75, y = stage_top + 72 }
 }
 
 face_dir_vals = { 
@@ -2171,10 +2176,10 @@ end
 
 -- draw cursor
 function cursor_draw()
-	col = cursor_cols[cursor_colpos]
+	col = ui_cursor_cols[cursor_colpos]
 	-- switch sprite color accordingly
 	pal(7,col)
-	spr(224, cursor_x-4, cursor_y-3, 1, 1, 0)
+	spr(ui_cursorspr, cursor_x-4, cursor_y-3, 1, 1, 0)
 	pal() --reset palette
 
 	cursor_tmr += 1
@@ -2183,7 +2188,7 @@ function cursor_draw()
 		cursor_tmr = 1
 		-- move to next color?
 		cursor_colpos += 1
-		if cursor_colpos > #cursor_cols then cursor_colpos = 1 end
+		if cursor_colpos > #ui_cursor_cols then cursor_colpos = 1 end
 	end
 end
 
