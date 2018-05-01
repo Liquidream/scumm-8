@@ -1155,7 +1155,7 @@ function walk_to(actor, x, y)
 		actor.moving = 1
 
   -- auto-adjust y-speed for depth?
-  local y_speed = max(0.3, (actor.walk_speed * min(y/16, 1)) / 2)
+  local y_speed = actor.walk_speed/2 --max(0.3, (actor.walk_speed * min(y/16, 1)) / 2)
 
 		for p in all(path) do
 			local px = (p[1]-room_curr.map[1])*8 + 4
@@ -1977,7 +1977,7 @@ function actor_draw(actor)
 	replace_colors(actor)
 
  -- auto-scaling for depth?
- local zoom = mid(0.15, y/16, 1)
+ local zoom = mid(0.15, (y+stage_top)/32, 1)
 	sprdraw(sprnum, actor.offset_x, actor.offset_y, 
 		actor.w , actor.h, actor.trans_col, 
 		actor.flip, false, zoom)
