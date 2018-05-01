@@ -382,7 +382,7 @@ rooms = {
 			walk_anim_back = { 200, 199, 201, 199 }
 			col = 12
 			trans_col = 11
-			walk_speed = 0.6
+			walk_speed = 0.5
 			frame_delay = 5
 			classes = {class_actor}
 			face_dir = face_front
@@ -1973,9 +1973,11 @@ function actor_draw(actor)
 	-- replace colors?
 	replace_colors(actor)
 
+ -- auto-scaling for depth?
+ local zoom = min(y/16, 1)
 	sprdraw(sprnum, actor.offset_x, actor.offset_y, 
 		actor.w , actor.h, actor.trans_col, 
-		actor.flip, false)
+		actor.flip, false, zoom)
 	
 	-- talking overlay
 	if talking_actor 
@@ -2192,22 +2194,25 @@ function cursor_draw()
 	end
 end
 
-function sprdraw(n, x, y, w, h, transcol, flip_x, flip_y)
+function sprdraw(n, x, y, w, h, transcol, flip_x, flip_y, zoom)
 	-- switch transparency
 	set_trans_col(transcol, true)
 
- 	-- palt(0, false)
- 	-- palt(transcol, true)
-	
-	-- draw sprite
-	spr(n, x, stage_top + y, w, h, flip_x, flip_y) --
-	
-	-- -- restore default trans	
-	-- set_trans_col(transcol, false)
- 	
-	-- palt(transcol, false)
-	-- palt(0, true)
-	
+	-- draw zoomed sprite
+ --https://www.lexaloffle.com/bbs/?tid=2429
+ local sx = 8 * (n % 16)
+ local sy = 8 * flr(n / 16)
+ local sw = 8 * w
+ local sh = 8 * h
+ local dz = zoom or 1
+ local dw = sw * dz
+ local dh = sh * dz
+ sspr(sx, sy, sw, sh, x, stage_top + y +(sh-dh), dw, dh, flip_x, flip_y)
+
+  --zspr(n, w, h, x, stage_top + y, zoom or 1, flip_x, flip_y)
+ --zspr(n, w, h, x, stage_top + y, y/32, flip_x, flip_y)
+	--spr(n, x, stage_top + y, w, h, flip_x, flip_y) --
+
 	--pal() -- don't do, affects lighting!
 end
 
