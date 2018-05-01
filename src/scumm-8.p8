@@ -385,7 +385,7 @@ rooms = {
 			walk_speed = 0.5
 			frame_delay = 5
 			classes = {class_actor}
-			face_dir = face_front
+			face_dir = face_front   
 		]],
 		-- sprites for directions (front, left, back, right) - note: right=left-flipped
 		inventory = {
@@ -1943,7 +1943,7 @@ function object_draw(obj)
 			else
 				obj_spr = obj[obj.state]
 			end
-			sprdraw(obj_spr, obj.x+(h*(obj.w*8)), obj.y, obj.w, obj.h, obj.trans_col, obj.flip_x)
+			sprdraw(obj_spr, obj.x+(h*(obj.w*8)), obj.y, obj.w, obj.h, obj.trans_col, obj.flip_x, obj.scale)
 		end
 	end
 
@@ -1977,10 +1977,10 @@ function actor_draw(actor)
 	replace_colors(actor)
 
  -- auto-scaling for depth?
- local zoom = mid(0.15, (y+stage_top)/32, 1)
+ local auto_scale = mid(0.15, (y+stage_top)/32, 1)
 	sprdraw(sprnum, actor.offset_x, actor.offset_y, 
 		actor.w , actor.h, actor.trans_col, 
-		actor.flip, false, zoom)
+		actor.flip, false, actor.scale or auto_scale)
 	
 	-- talking overlay
 	if talking_actor 
@@ -1990,7 +1990,7 @@ function actor_draw(actor)
 			if actor.talk_tmr < 7 then
 				sprnum = actor.talk[dirnum]
 				sprdraw(sprnum, actor.offset_x, actor.offset_y +8, 1, 1, 
-					actor.trans_col, actor.flip, false)
+					actor.trans_col, actor.flip, false, actor.scale)
 			end
 			actor.talk_tmr += 1	
 			if actor.talk_tmr > 14 then actor.talk_tmr = 1 end
@@ -2197,7 +2197,7 @@ function cursor_draw()
 	end
 end
 
-function sprdraw(n, x, y, w, h, transcol, flip_x, flip_y, zoom)
+function sprdraw(n, x, y, w, h, transcol, flip_x, flip_y, scale)
 	-- switch transparency
 	set_trans_col(transcol, true)
 
@@ -2207,14 +2207,12 @@ function sprdraw(n, x, y, w, h, transcol, flip_x, flip_y, zoom)
  local sy = 8 * flr(n / 16)
  local sw = 8 * w
  local sh = 8 * h
- local dz = zoom or 1
+ local dz = scale or 1
  local dw = sw * dz
  local dh = sh * dz
  sspr(sx, sy, sw, sh, x, stage_top + y +(sh-dh), dw, dh, flip_x, flip_y)
 
-  --zspr(n, w, h, x, stage_top + y, zoom or 1, flip_x, flip_y)
- --zspr(n, w, h, x, stage_top + y, y/32, flip_x, flip_y)
-	--spr(n, x, stage_top + y, w, h, flip_x, flip_y) --
+	--spr(n, x, stage_top + y, w, h, flip_x, flip_y) -- orig method (pre-scale)
 
 	--pal() -- don't do, affects lighting!
 end
