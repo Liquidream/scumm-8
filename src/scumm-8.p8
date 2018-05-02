@@ -10,7 +10,7 @@ __lua__
 -- debugging
 show_debuginfo = true
 show_collision = false
---show_pathfinding = true
+show_pathfinding = true
 show_perfinfo = true
 enable_mouse = true
 enable_diag_squeeze = false	-- allow squeeze through diag gap?
@@ -1845,31 +1845,31 @@ function room_draw()
 					-- ===============================================================
 					-- debug walkable areas
 					
-					-- if show_pathfinding then
-					-- 	actor_cell_pos = getcellpos(selected_actor)
+					if show_pathfinding then
+						actor_cell_pos = getcellpos(selected_actor)
 
-					-- 	celx = flr((cursor_x + cam_x + 0) /8) + room_curr.map[1]
-					-- 	cely = flr((cursor_y - stage_top + 0) /8 ) + room_curr.map[2]
-					-- 	target_cell_pos = { celx, cely }
+						celx = flr((cursor_x + cam_x + 0) /8) + room_curr.map[1]
+						cely = flr((cursor_y - stage_top + 0) /8 ) + room_curr.map[2]
+						target_cell_pos = { celx, cely }
 
-					-- 	path = find_path(actor_cell_pos, target_cell_pos)
+						path = find_path(actor_cell_pos, target_cell_pos)
 
-					-- 	-- finally, add our destination to list
-					-- 	click_cell = getcellpos({x=(cursor_x + cam_x), y=(cursor_y - stage_top)})
-					-- 	if is_cell_walkable(click_cell[1], click_cell[2]) then
-					-- 	--if (#path>0) then
-					-- 		add(path, click_cell)
-					-- 	end
+						-- finally, add our destination to list
+						click_cell = getcellpos({x=(cursor_x + cam_x), y=(cursor_y - stage_top)})
+						if is_cell_walkable(click_cell[1], click_cell[2]) then
+						--if (#path>0) then
+							add(path, click_cell)
+						end
 
-					-- 	for p in all(path) do
-					-- 		--d("  > "..p[1]..","..p[2])
-					-- 		rect(
-					-- 			(p[1]-room_curr.map[1])*8, 
-					-- 			stage_top+(p[2]-room_curr.map[2])*8, 
-					-- 			(p[1]-room_curr.map[1])*8+7, 
-					-- 			stage_top+(p[2]-room_curr.map[2])*8+7, 11)
-					-- 	end
-					-- end
+						for p in all(path) do
+							--d("  > "..p[1]..","..p[2])
+							rect(
+								(p[1]-room_curr.map[1])*8, 
+								stage_top+(p[2]-room_curr.map[2])*8, 
+								(p[1]-room_curr.map[1])*8+7, 
+								stage_top+(p[2]-room_curr.map[2])*8+7, 11)
+						end
+					end
 
 		else
 			-- draw other layers
@@ -1947,6 +1947,11 @@ function object_draw(obj)
 		end
 	end
 
+  -- debug
+ if show_debuginfo then
+  pset(obj.x, obj.y+stage_top, 8)
+ end
+
 	--reset palette
 	pal() 
 end
@@ -1995,6 +2000,12 @@ function actor_draw(actor)
 			actor.talk_tmr += 1	
 			if actor.talk_tmr > 14 then actor.talk_tmr = 1 end
 	end
+
+ -- debug
+ if show_debuginfo then
+  pset(actor.x, actor.y, 8)
+  pset(actor.offset_x, actor.offset_y+stage_top, 11)
+ end
 
 	--reset palette
 	pal()
@@ -2396,8 +2407,10 @@ function recalc_bounds(obj, w, h, cam_off_x, cam_off_y)
 	y = obj.y
 	-- offset for actors?
 	if has_flag(obj.classes, "class_actor") then
+  printh("y = "..obj.y)  
 		obj.offset_x = x - (obj.w *8) /2
-		obj.offset_y = y - (obj.h *8) +1		
+		obj.offset_y = y - (obj.h *8) +1 - stage_top		
+  printh("offset_y = "..obj.offset_y)
 		x = obj.offset_x
 		y = obj.offset_y
 	end
