@@ -1848,6 +1848,9 @@ function room_draw()
 					if show_pathfinding then
 						actor_cell_pos = getcellpos(selected_actor)
 
+     ## need to correct this offset (in code above)
+     --actor_cell_pos[2] -= 2
+
 						celx = flr((cursor_x + cam_x + 0) /8) + room_curr.map[1]
 						cely = flr((cursor_y - stage_top + 0) /8 ) + room_curr.map[2]
 						target_cell_pos = { celx, cely }
