@@ -133,13 +133,14 @@ reset_ui()
 				data = [[
 					name=spinning top
 					x=16
-					y=48
+					y=56
 					w=1
 					h=1
 					state=1
 					states={158,174,190}
 					col_replace={12,7}
 					trans_col=15
+     use_dir = face_front
 				]],
 				verbs = {
 					use = function(me)
@@ -1848,7 +1849,7 @@ function room_draw()
 					if show_pathfinding then
 						actor_cell_pos = getcellpos(selected_actor)
 
-     ## need to correct this offset (in code above)
+     --## need to correct this offset (in code above)
      --actor_cell_pos[2] -= 2
 
 						celx = flr((cursor_x + cam_x + 0) /8) + room_curr.map[1]
@@ -1985,8 +1986,9 @@ function actor_draw(actor)
 	replace_colors(actor)
 
  -- auto-scaling for depth?
- local auto_scale = mid(0.15, (y+stage_top)/32, 1)
-	sprdraw(sprnum, actor.offset_x, actor.offset_y, 
+ local auto_scale = max(0.15, (y+stage_top*3)/58)
+ --local auto_scale = mid(0.15, (y+stage_top)/16, 1)
+	sprdraw(sprnum, actor.offset_x, actor.offset_y + stage_top, 
 		actor.w , actor.h, actor.trans_col, 
 		actor.flip, false, actor.scale or auto_scale)
 	
@@ -1997,8 +1999,8 @@ function actor_draw(actor)
 	then
 			if actor.talk_tmr < 7 then
 				sprnum = actor.talk[dirnum]
-				sprdraw(sprnum, actor.offset_x, actor.offset_y +8, 1, 1, 
-					actor.trans_col, actor.flip, false, actor.scale)
+				sprdraw(sprnum, actor.offset_x, actor.offset_y + stage_top +(8* (actor.scale or auto_scale)), 1, 1, 
+					actor.trans_col, actor.flip, false, actor.scale or auto_scale)
 			end
 			actor.talk_tmr += 1	
 			if actor.talk_tmr > 14 then actor.talk_tmr = 1 end
@@ -2006,7 +2008,7 @@ function actor_draw(actor)
 
  -- debug
  if show_debuginfo then
-  pset(actor.x, actor.y, 8)
+  pset(actor.x, actor.y + stage_top, 8)
   pset(actor.offset_x, actor.offset_y+stage_top, 11)
  end
 
