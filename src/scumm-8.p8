@@ -386,8 +386,7 @@ rooms = {
 			walk_speed = 0.5
 			frame_delay = 5
 			classes = {class_actor}
-			face_dir = face_front   
-   scale = 1
+			face_dir = face_front
 		]],
 		-- sprites for directions (front, left, back, right) - note: right=left-flipped
 		inventory = {
@@ -1156,17 +1155,23 @@ function walk_to(actor, x, y)
 
 		actor.moving = 1
 
-  -- auto-adjust y-speed for depth?
-  local y_speed = actor.walk_speed/2 --max(0.3, (actor.walk_speed * min(y/16, 1)) / 2)
 
 		for p in all(path) do
+
+  -- auto-adjust walk-speed for depth?
+  local auto_scale = mid(0.15, actor.y/40, 1) -- nice and gradual
+  printh("auto_scale:"..auto_scale)
+  local scaled_speed = actor.walk_speed * (actor.scale or auto_scale)
+  printh("scaled_speed:"..scaled_speed)
+  --local y_speed = actor.walk_speed/2
+
 			local px = (p[1]-room_curr.map[1])*8 + 4
 			local py = (p[2]-room_curr.map[2])*8 + 4
 
 			local distance = sqrt((px - actor.x) ^ 2 + (py - actor.y) ^ 2)
-			local step_x = actor.walk_speed * (px - actor.x) / distance
-			local step_y = y_speed * (py - actor.y) / distance
-
+			local step_x = scaled_speed * (px - actor.x) / distance
+			local step_y = scaled_speed * (py - actor.y) / distance
+  printh("step_x:"..step_x)
 			-- abort if actor stopped
 			if actor.moving == 0 then
 				return
@@ -1198,7 +1203,7 @@ function walk_to(actor, x, y)
 					if actor.flip then actor.face_dir = "face_left" end
 				end
 
-				for i = 0, distance/y_speed do
+				for i = 0, distance/scaled_speed do
 					actor.x += step_x
 					actor.y += step_y
 					yield()
@@ -2439,11 +2444,9 @@ function recalc_bounds(obj, w, h, cam_off_x, cam_off_y)
 	y = obj.y
 	-- offset for actors?
 	if has_flag(obj.classes, "class_actor") then
-  printh("y = "..obj.y)  
-		obj.offset_x = x - (obj.w *8) /2
+  obj.offset_x = x - (obj.w *8) /2
 		obj.offset_y = y - (obj.h *8) +1 - stage_top		
-  printh("offset_y = "..obj.offset_y)
-		x = obj.offset_x
+  x = obj.offset_x
 		y = obj.offset_y
 	end
 	obj.bounds = {
