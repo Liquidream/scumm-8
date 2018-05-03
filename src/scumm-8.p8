@@ -1163,7 +1163,7 @@ function walk_to(actor, x, y)
   local auto_scale = mid(0.15, actor.y/40, 1) -- nice and gradual
   printh("auto_scale:"..auto_scale)
   local scaled_speed = actor.walk_speed * (actor.scale or auto_scale)
-  printh("scaled_speed:"..scaled_speed)
+  
   --local y_speed = actor.walk_speed/2
 
 			local px = (p[1]-room_curr.map[1])*8 + 4
@@ -1171,8 +1171,7 @@ function walk_to(actor, x, y)
 
 			local distance = sqrt((px - actor.x) ^ 2 + (py - actor.y) ^ 2)
 			local step_x = scaled_speed * (px - actor.x) / distance
-			local step_y = scaled_speed * (py - actor.y) / distance
-  printh("step_x:"..step_x)
+			local step_y = scaled_speed * (py - actor.y) / distance  
 			-- abort if actor stopped
 			if actor.moving == 0 then
 				return
@@ -1185,8 +1184,11 @@ function walk_to(actor, x, y)
 				actor.flip = (step_x<0)
 
 				-- choose walk anim based on dir
-				if abs(step_x) < 0.4 then
+    printh("step_x:"..step_x)
+    printh("scaled_speed:"..scaled_speed)
+				if abs(step_x) < scaled_speed/2 then
 					-- vertical walk, which way?
+     printh("vert walk")
 					if step_y > 0 then
 						-- towards us
 						actor.walk_anim = actor.walk_anim_front
@@ -1198,6 +1200,7 @@ function walk_to(actor, x, y)
 					end
 				else
 					-- horizontal walk
+     printh("horz walk")
 					actor.walk_anim = actor.walk_anim_side
 					-- face dir (at end of walk)
 					actor.face_dir = "face_right"
