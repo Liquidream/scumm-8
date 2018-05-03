@@ -166,7 +166,8 @@ reset_ui()
 			},
 			enter = function(me)
 				selected_actor = main_actor
-				put_at(selected_actor,60,60,rm_hall)
+    put_at(selected_actor, 30, 55, rm_hall)
+				--put_at(selected_actor,60,60,rm_hall)
 				camera_follow(selected_actor)
 			end,
 			exit = function(me)
@@ -1333,8 +1334,8 @@ function _update60()  -- _update()
 	game_update()
 
   -- debug
- -- talking_actor = selected_actor
- -- selected_actor.talking = true
+ talking_actor = selected_actor
+ selected_actor.talking = true
 end
 
 function _draw()
@@ -1995,7 +1996,8 @@ function actor_draw(actor)
 	replace_colors(actor)
 
  -- auto-scaling for depth?
- local auto_scale = max(0.15, (y+stage_top*3)/58) -- nice and gradual
+ local auto_scale = mid(0.15, (y+2+stage_top*3)/58, 1) -- nice and gradual
+ --local auto_scale = max(0.15, (y+stage_top*3)/58) -- nice and gradual
  --local auto_scale = mid(0.15, (y+stage_top)/16, 1) -- too sudden
 
  -- calc scaling offset (to align to bottom-centered)
@@ -2018,9 +2020,9 @@ function actor_draw(actor)
 				sprnum = actor.talk[dirnum]
 
     -- works (when scaling from top-left)
-    sprdraw(sprnum, actor.offset_x + flr(scaleoffset_x/2), actor.offset_y + stage_top+flr(8*(actor.scale or auto_scale)) + scaleoffset_y, 
+    sprdraw(sprnum, actor.offset_x + flr(scaleoffset_x/2), actor.offset_y + stage_top + flr(8*(actor.scale or auto_scale)) + scaleoffset_y, 
      1, 1, actor.trans_col, 
-     actor.flip, false, actor.scale or auto_scale)
+     actor.flip, false, scale)
  
     -- sprdraw(sprnum, actor.offset_x, actor.offset_y + stage_top+8, 1, 1, 
 				-- 	actor.trans_col, actor.flip, false, actor.scale or auto_scale)
@@ -2851,15 +2853,15 @@ b00030b055555555ddddddddbbbbbbbb666666665555555599500000cccccccc677777777ccccccc
 00000000444044494440444944404449494444494944444949444449944444499444444994444449000000000000000000000000000000000000000000000000
 00000000404000044040000440400004494400044944000449440004944444449444444494444444000000000000000000000000000000000000000000000000
 0000000004ffff0004ffff0004ffff000440fffb0440fffb0440fffb444444444444444444444444000000000000000000000000000000000000000000000000
-000000000f9ff9f00f9ff9f00f9ff9f004f0f9fb04f0f9fb04f0f9fb444444444444444444444444000000000000000000000000000000000000000000000000
-000770000f5ff5f00f5ff5f00f5ff5f000fff5fb00fff5fb00fff5fb4444444044444440444444400f5ff5f000fff5fb44444440000000000000000000000000
-007557004ffffff44ffffff44ffffff440ffffff40ffffff40ffffff0444444404444444044444444ffffff440ffffff04444444000000000000000000000000
-07500570bff44ffbbff44ffbbff44ffbb0fffff4b0fffff4b0fffff4b044444bb044444bb044444bbff44ffbb0fffff4b044444b000000000000000000000000
-77700777b6ffff6bb6ffff6bb6ffff6bb6fffffbb6fffffbb6fffffbb044444bb044444bb044444bb6ffff6bb6fffffbb044444b000000000000000000000000
-00700700bbfddfbbbbfddfbbbbfddfbbbb6fffdbbb6fffdbbb6fffdbbb0000bbbb0000bbbb0000bbbbf00fbbbb6ff00bbb0000bb000000000000000000000000
-00700700bbbffbbbbbbffbbbbbbffbbbbbbffbbbbbbffbbbbbbffbbbbbbffbbbbbbffbbbbbbffbbbbbf00fbbbbbff00bbbbffbbb000000000000000000000000
-00777700bdc55cdbbdc55cdbbdc55cdbbbddcbbbbbbddbbbbbddcbbbbddddddbbddddddbbddddddbbbbffbbbbbbbbffbbddddddb000000000000000000000000
-00555500dcc55ccddcc55ccddcc55ccdb1ccdcbbbb1ccdbbb1ccdcbbdccccccddccccccddccccccdbbbbbbbbbbbbbbbbdccccccd000000000000000000000000
+000000000fdffdf00fdffdf00fdffdf004f0fdfb04f0fdfb04f0fdfb444444444444444444444444000000000000000000000000000000000000000000000000
+000770000f5ff5f00f5ff5f00f5ff5f000fff5fb00fff5fb00fff5fb444444404444444044444440bbbbbbbbbbbbbbbbbbbbbbbb000000000000000000000000
+007557004ffffff44ffffff44ffffff440ffffff40ffffff40ffffff044444440444444404444444bffffffbbbbbbbbbbbbbbbbb000000000000000000000000
+07500570bff44ffbbff44ffbbff44ffbb0fffff4b0fffff4b0fffff4b044444bb044444bb044444bbff44ffbbbfffffbbbbbbbbb000000000000000000000000
+77700777b6ffff6bb6ffff6bb6ffff6bb6fffffbb6fffffbb6fffffbb044444bb044444bb044444bb6ffff6bbbfffffbbbbbbbbb000000000000000000000000
+00700700bbfddfbbbbfddfbbbbfddfbbbb6fffdbbb6fffdbbb6fffdbbb0000bbbb0000bbbb0000bbbbf00fbbbb6ff00bbbbbbbbb000000000000000000000000
+00700700bbbffbbbbbbffbbbbbbffbbbbbbffbbbbbbffbbbbbbffbbbbbbffbbbbbbffbbbbbbffbbbbbf00fbbbbbff00bbbbbbbbb000000000000000000000000
+00777700bdc55cdbbdc55cdbbdc55cdbbbddcbbbbbbddbbbbbddcbbbbddddddbbddddddbbddddddbbbbffbbbbbbbfffbbbbbbbbb000000000000000000000000
+00555500dcc55ccddcc55ccddcc55ccdb1ccdcbbbb1ccdbbb1ccdcbbdccccccddccccccddccccccdbbbbbbbbbbbbbbbbbbbbbbbb000000000000000000000000
 00070000c1c66c1cc1c66c1dd1c66c1cb1ccdcbbbb1ccdbbb1ccdcbbc1cccc1cc1cccc1dd1cccc1c000000000000000000000000000000000000000000000000
 00070000c1c55c1cc1c55c1dd1c55c1cb1ccdcbbbb1ccdbbb1ccdcbbc1cccc1cc1cccc1dd1cccc1c000000000000000000000000000000000000000000000000
 00070000c1c55c1ccc155c1dd1c551ccb1ccdcbbbb1ccdbbb1ccdcbbc1cccc1ccc1ccc1dd1ccc1cc000000000000000000000000000000000000000000000000
