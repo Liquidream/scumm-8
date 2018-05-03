@@ -8,9 +8,9 @@ __lua__
 --	"\65\66\67\68\69\70\71\72\73\74\75\76\77\78\79\80\81\82\83\84\85\86\87\88\89\90\91\92"
 
 -- debugging
-show_debuginfo = true
+show_debuginfo = false
 show_collision = false
-show_pathfinding = false
+--show_pathfinding = false
 show_perfinfo = true
 enable_mouse = true
 enable_diag_squeeze = true	-- allow squeeze through diag gap?
@@ -132,8 +132,8 @@ reset_ui()
 			obj_spinning_top = {		
 				data = [[
 					name=spinning top
-					x=16
-					y=56
+					x=36
+					y=36
 					w=1
 					h=1
 					state=1
@@ -1184,11 +1184,8 @@ function walk_to(actor, x, y)
 				actor.flip = (step_x<0)
 
 				-- choose walk anim based on dir
-    printh("step_x:"..step_x)
-    printh("scaled_speed:"..scaled_speed)
 				if abs(step_x) < scaled_speed/2 then
 					-- vertical walk, which way?
-     printh("vert walk")
 					if step_y > 0 then
 						-- towards us
 						actor.walk_anim = actor.walk_anim_front
@@ -1200,7 +1197,6 @@ function walk_to(actor, x, y)
 					end
 				else
 					-- horizontal walk
-     printh("horz walk")
 					actor.walk_anim = actor.walk_anim_side
 					-- face dir (at end of walk)
 					actor.face_dir = "face_right"
@@ -1336,15 +1332,6 @@ end
 
 function _update60()  -- _update()
 	game_update()
-
- -- debug
- if btnp(2) then
-  selected_actor.scale += 0.05
- elseif btnp(3) then
-  selected_actor.scale -= 0.05
- end
- talking_actor = selected_actor
- selected_actor.talking = true
 end
 
 function _draw()
@@ -1865,34 +1852,34 @@ function room_draw()
 					-- ===============================================================
 					-- debug walkable areas
 					
-					if show_pathfinding then
-						actor_cell_pos = getcellpos(selected_actor)
+					-- if show_pathfinding then
+					-- 	actor_cell_pos = getcellpos(selected_actor)
 
-     --## need to correct this offset (in code above)
-     --actor_cell_pos[2] -= 2
+     -- --## need to correct this offset (in code above)
+     -- --actor_cell_pos[2] -= 2
 
-						celx = flr((cursor_x + cam_x + 0) /8) + room_curr.map[1]
-						cely = flr((cursor_y - stage_top + 0) /8 ) + room_curr.map[2]
-						target_cell_pos = { celx, cely }
+					-- 	celx = flr((cursor_x + cam_x + 0) /8) + room_curr.map[1]
+					-- 	cely = flr((cursor_y - stage_top + 0) /8 ) + room_curr.map[2]
+					-- 	target_cell_pos = { celx, cely }
 
-						path = find_path(actor_cell_pos, target_cell_pos)
+					-- 	path = find_path(actor_cell_pos, target_cell_pos)
 
-						-- finally, add our destination to list
-						click_cell = getcellpos({x=(cursor_x + cam_x), y=(cursor_y - stage_top)})
-						if is_cell_walkable(click_cell[1], click_cell[2]) then
-						--if (#path>0) then
-							add(path, click_cell)
-						end
+					-- 	-- finally, add our destination to list
+					-- 	click_cell = getcellpos({x=(cursor_x + cam_x), y=(cursor_y - stage_top)})
+					-- 	if is_cell_walkable(click_cell[1], click_cell[2]) then
+					-- 	--if (#path>0) then
+					-- 		add(path, click_cell)
+					-- 	end
 
-						for p in all(path) do
-							--d("  > "..p[1]..","..p[2])
-							rect(
-								(p[1]-room_curr.map[1])*8, 
-								stage_top+(p[2]-room_curr.map[2])*8, 
-								(p[1]-room_curr.map[1])*8+7, 
-								stage_top+(p[2]-room_curr.map[2])*8+7, 11)
-						end
-					end
+					-- 	for p in all(path) do
+					-- 		--d("  > "..p[1]..","..p[2])
+					-- 		rect(
+					-- 			(p[1]-room_curr.map[1])*8, 
+					-- 			stage_top+(p[2]-room_curr.map[2])*8, 
+					-- 			(p[1]-room_curr.map[1])*8+7, 
+					-- 			stage_top+(p[2]-room_curr.map[2])*8+7, 11)
+					-- 	end
+					-- end
 
 		else
 			-- draw other layers
@@ -1971,9 +1958,9 @@ function object_draw(obj)
 	end
 
   -- debug
- if show_debuginfo then
-  pset(obj.x, obj.y+stage_top, 8)
- end
+ -- if show_debuginfo then
+ --  pset(obj.x, obj.y+stage_top, 8)
+ -- end
 
 	--reset palette
 	pal() 
@@ -2040,10 +2027,10 @@ function actor_draw(actor)
 	end
 
  -- debug
- if show_debuginfo then
-  pset(actor.x, actor.y + stage_top, 8)
-  pset(actor.offset_x, actor.offset_y+stage_top, 11)
- end
+ -- if show_debuginfo then
+ --  pset(actor.x, actor.y + stage_top, 8)
+ --  pset(actor.offset_x, actor.offset_y+stage_top, 11)
+ -- end
 
 	--reset palette
 	pal()
