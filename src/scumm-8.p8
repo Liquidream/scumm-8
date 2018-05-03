@@ -1331,6 +1331,10 @@ end
 
 function _update60()  -- _update()
 	game_update()
+
+  -- debug
+ -- talking_actor = selected_actor
+ -- selected_actor.talking = true
 end
 
 function _draw()
@@ -2014,7 +2018,7 @@ function actor_draw(actor)
 				sprnum = actor.talk[dirnum]
 
     -- works (when scaling from top-left)
-    sprdraw(sprnum, actor.offset_x + flr(scaleoffset_x/2), actor.offset_y + stage_top+(8*(actor.scale or auto_scale)) + scaleoffset_y, 
+    sprdraw(sprnum, actor.offset_x + flr(scaleoffset_x/2), actor.offset_y + stage_top+flr(8*(actor.scale or auto_scale)) + scaleoffset_y, 
      1, 1, actor.trans_col, 
      actor.flip, false, actor.scale or auto_scale)
  
