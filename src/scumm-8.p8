@@ -157,6 +157,7 @@ reset_ui()
 		rm_hall = {
 			data = [[
 				map = {32,24,55,31}
+    max_depth=0.5
 			]],
 			objects = {
 				obj_front_door_inside,
@@ -1334,8 +1335,8 @@ function _update60()  -- _update()
 	game_update()
 
   -- debug
- talking_actor = selected_actor
- selected_actor.talking = true
+ -- talking_actor = selected_actor
+ -- selected_actor.talking = true
 end
 
 function _draw()
@@ -1996,7 +1997,8 @@ function actor_draw(actor)
 	replace_colors(actor)
 
  -- auto-scaling for depth?
- local auto_scale = mid(0.15, (y+2+stage_top*3)/58, 1) -- nice and gradual
+ #do same max depth apply to walk speed!
+ local auto_scale = mid(room_curr.max_depth or 0.15, (y+2+stage_top*3)/58, 1) -- nice and gradual (starting further back)
  --local auto_scale = max(0.15, (y+stage_top*3)/58) -- nice and gradual
  --local auto_scale = mid(0.15, (y+stage_top)/16, 1) -- too sudden
 
