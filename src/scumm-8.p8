@@ -13,7 +13,7 @@ show_collision = false
 show_pathfinding = true
 show_perfinfo = true
 enable_mouse = true
-enable_diag_squeeze = false	-- allow squeeze through diag gap?
+enable_diag_squeeze = true	-- allow squeeze through diag gap?
 d = printh
 
 
@@ -1996,11 +1996,19 @@ function actor_draw(actor)
 	replace_colors(actor)
 
  -- auto-scaling for depth?
- local auto_scale = max(0.15, (y+stage_top*3)/58)
- --local auto_scale = mid(0.15, (y+stage_top)/16, 1)
-	sprdraw(sprnum, actor.offset_x, actor.offset_y + stage_top, 
+ local auto_scale = max(0.15, (y+stage_top*3)/58) -- nice and gradual
+ --local auto_scale = mid(0.15, (y+stage_top)/16, 1) -- too sudden
+
+ -- calc scaling offset (to align to bottom-centered)
+ local scale = actor.scale or auto_scale
+ local scale_height = (8 * actor.h) 
+ local scale_width = (8 * actor.w) 
+ local scaleoffset_y = scale_height - (scale_height * scale)
+ local scaleoffset_x = scale_width - (scale_width * scale)
+
+	sprdraw(sprnum, actor.offset_x+ (scaleoffset_x/2), actor.offset_y + stage_top + scaleoffset_y, 
 		actor.w , actor.h, actor.trans_col, 
-		actor.flip, false, actor.scale or auto_scale)
+		actor.flip, false, scale)
 	
 	-- talking overlay
 	if talking_actor 
@@ -2009,12 +2017,12 @@ function actor_draw(actor)
 	then
 			if actor.talk_tmr < 7 then
 				sprnum = actor.talk[dirnum]
-    sprdraw(sprnum, actor.offset_x, actor.offset_y + stage_top+(8*(actor.scale or auto_scale)), 1, 1, 
-					actor.trans_col, actor.flip, false, actor.scale or auto_scale)
-    
-				-- sprdraw(sprnum, actor.offset_x, actor.offset_y + stage_top+8-(actor.scale or auto_scale), 1, 1, 
-				-- 	actor.trans_col, actor.flip, false, actor.scale or auto_scale)
 
+    -- works (when scaling from top-left)
+    sprdraw(sprnum, actor.offset_x + (scaleoffset_x/2), actor.offset_y + stage_top+(8*(actor.scale or auto_scale)) + scaleoffset_y, 
+     1, 1, actor.trans_col, 
+     actor.flip, false, actor.scale or auto_scale)
+ 
     -- sprdraw(sprnum, actor.offset_x, actor.offset_y + stage_top+8, 1, 1, 
 				-- 	actor.trans_col, actor.flip, false, actor.scale or auto_scale)
 			end
