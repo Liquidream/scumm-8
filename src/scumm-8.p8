@@ -10,7 +10,7 @@ __lua__
 -- debugging
 show_debuginfo = true
 show_collision = false
-show_pathfinding = true
+show_pathfinding = false
 show_perfinfo = true
 enable_mouse = true
 enable_diag_squeeze = true	-- allow squeeze through diag gap?
@@ -1159,6 +1159,7 @@ function walk_to(actor, x, y)
 		for p in all(path) do
 
   -- auto-adjust walk-speed for depth?
+  #somehow flr()/make multiple of .5? to get smooth pixel scrolling?
   local auto_scale = mid(0.15, actor.y/40, 1) -- nice and gradual
   printh("auto_scale:"..auto_scale)
   local scaled_speed = actor.walk_speed * (actor.scale or auto_scale)
