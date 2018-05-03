@@ -1159,7 +1159,7 @@ function walk_to(actor, x, y)
 		for p in all(path) do
 
   -- auto-adjust walk-speed for depth?
-  #somehow flr()/make multiple of .5? to get smooth pixel scrolling?
+  --#somehow flr()/make multiple of .5? to get smooth pixel scrolling?
   local auto_scale = mid(0.15, actor.y/40, 1) -- nice and gradual
   printh("auto_scale:"..auto_scale)
   local scaled_speed = actor.walk_speed * (actor.scale or auto_scale)
@@ -2012,7 +2012,7 @@ function actor_draw(actor)
  local scaleoffset_y = scale_height - (scale_height * scale)
  local scaleoffset_x = scale_width - (scale_width * scale)
 
-	sprdraw(sprnum, actor.offset_x+ (scaleoffset_x/2), actor.offset_y + stage_top + scaleoffset_y, 
+	sprdraw(sprnum, actor.offset_x + flr(scaleoffset_x/2), actor.offset_y + stage_top + scaleoffset_y, 
 		actor.w , actor.h, actor.trans_col, 
 		actor.flip, false, scale)
 	
@@ -2025,7 +2025,7 @@ function actor_draw(actor)
 				sprnum = actor.talk[dirnum]
 
     -- works (when scaling from top-left)
-    sprdraw(sprnum, actor.offset_x + (scaleoffset_x/2), actor.offset_y + stage_top+(8*(actor.scale or auto_scale)) + scaleoffset_y, 
+    sprdraw(sprnum, actor.offset_x + flr(scaleoffset_x/2), actor.offset_y + stage_top+(8*(actor.scale or auto_scale)) + scaleoffset_y, 
      1, 1, actor.trans_col, 
      actor.flip, false, actor.scale or auto_scale)
  
