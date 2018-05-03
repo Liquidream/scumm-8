@@ -387,6 +387,7 @@ rooms = {
 			frame_delay = 5
 			classes = {class_actor}
 			face_dir = face_front   
+   scale = 1
 		]],
 		-- sprites for directions (front, left, back, right) - note: right=left-flipped
 		inventory = {
@@ -1326,6 +1327,15 @@ end
 
 function _update60()  -- _update()
 	game_update()
+
+ -- debug
+ if btnp(2) then
+  selected_actor.scale += 0.05
+ elseif btnp(3) then
+  selected_actor.scale -= 0.05
+ end
+ talking_actor = selected_actor
+ selected_actor.talking = true
 end
 
 function _draw()
@@ -1999,8 +2009,14 @@ function actor_draw(actor)
 	then
 			if actor.talk_tmr < 7 then
 				sprnum = actor.talk[dirnum]
-				sprdraw(sprnum, actor.offset_x, actor.offset_y + stage_top +(8* (actor.scale or auto_scale)), 1, 1, 
+    sprdraw(sprnum, actor.offset_x, actor.offset_y + stage_top+(8*(actor.scale or auto_scale)), 1, 1, 
 					actor.trans_col, actor.flip, false, actor.scale or auto_scale)
+    
+				-- sprdraw(sprnum, actor.offset_x, actor.offset_y + stage_top+8-(actor.scale or auto_scale), 1, 1, 
+				-- 	actor.trans_col, actor.flip, false, actor.scale or auto_scale)
+
+    -- sprdraw(sprnum, actor.offset_x, actor.offset_y + stage_top+8, 1, 1, 
+				-- 	actor.trans_col, actor.flip, false, actor.scale or auto_scale)
 			end
 			actor.talk_tmr += 1	
 			if actor.talk_tmr > 14 then actor.talk_tmr = 1 end
@@ -2226,7 +2242,10 @@ function sprdraw(n, x, y, w, h, transcol, flip_x, flip_y, scale)
  local dz = scale or 1
  local dw = sw * dz
  local dh = sh * dz
- sspr(sx, sy, sw, sh, x, stage_top + y +(sh-dh), dw, dh, flip_x, flip_y)
+  sspr(sx, sy, sw, sh, x, stage_top + y, dw, dh, flip_x, flip_y)
+
+  -- first scale, bottom-anchored
+ --sspr(sx, sy, sw, sh, x, stage_top + y +(sh-dh), dw, dh, flip_x, flip_y)
 
 	--spr(n, x, stage_top + y, w, h, flip_x, flip_y) -- orig method (pre-scale)
 
