@@ -1161,8 +1161,7 @@ function walk_to(actor, x, y)
 		for p in all(path) do
 
   -- auto-adjust walk-speed for depth?
-  --#somehow flr()/make multiple of .5? to get smooth pixel scrolling?
-  local auto_scale = mid(0.15, actor.y/40, 1) -- nice and gradual  
+  local auto_scale = mid(room_curr.max_depth or 0.15, actor.y/40, 1) -- nice and gradual  
   local scaled_speed = actor.walk_speed * (actor.scale or auto_scale)
   
   --local y_speed = actor.walk_speed/2
@@ -1997,7 +1996,6 @@ function actor_draw(actor)
 	replace_colors(actor)
 
  -- auto-scaling for depth?
- #do same max depth apply to walk speed!
  local auto_scale = mid(room_curr.max_depth or 0.15, (y+2+stage_top*3)/58, 1) -- nice and gradual (starting further back)
  --local auto_scale = max(0.15, (y+stage_top*3)/58) -- nice and gradual
  --local auto_scale = mid(0.15, (y+stage_top)/16, 1) -- too sudden
@@ -2009,7 +2007,7 @@ function actor_draw(actor)
  local scaleoffset_y = scale_height - (scale_height * scale)
  local scaleoffset_x = scale_width - (scale_width * scale)
 
-	sprdraw(sprnum, actor.offset_x + flr(scaleoffset_x/2), actor.offset_y + stage_top + scaleoffset_y, 
+	sprdraw(sprnum, actor.offset_x + flr(scaleoffset_x/2), actor.offset_y  + scaleoffset_y, 
 		actor.w , actor.h, actor.trans_col, 
 		actor.flip, false, scale)
 	
@@ -2022,7 +2020,7 @@ function actor_draw(actor)
 				sprnum = actor.talk[dirnum]
 
     -- works (when scaling from top-left)
-    sprdraw(sprnum, actor.offset_x + flr(scaleoffset_x/2), actor.offset_y + stage_top + flr(8*(actor.scale or auto_scale)) + scaleoffset_y, 
+    sprdraw(sprnum, actor.offset_x + flr(scaleoffset_x/2), actor.offset_y + flr(8*(actor.scale or auto_scale)) + scaleoffset_y, 
      1, 1, actor.trans_col, 
      actor.flip, false, scale)
  
@@ -2443,7 +2441,7 @@ function recalc_bounds(obj, w, h, cam_off_x, cam_off_y)
 	-- offset for actors?
 	if has_flag(obj.classes, "class_actor") then
   obj.offset_x = x - (obj.w *8) /2
-		obj.offset_y = y - (obj.h *8) +1 - stage_top		
+		obj.offset_y = y - (obj.h *8) +1
   x = obj.offset_x
 		y = obj.offset_y
 	end
