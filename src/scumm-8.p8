@@ -157,7 +157,6 @@ reset_ui()
 		rm_hall = {
 			data = [[
 				map = {32,24,55,31}
-    max_depth=0.5
 			]],
 			objects = {
 				obj_front_door_inside,
@@ -1996,10 +1995,17 @@ function actor_draw(actor)
 	replace_colors(actor)
 
  -- auto-scaling for depth?
- local auto_scale = mid(room_curr.max_depth or 0.15, (y+2+stage_top*3)/58, 1) -- nice and gradual (starting further back)
+ local mid_ = (actor.y+12)/64
+ local auto_scale = mid(room_curr.max_depth or 0.15, mid_, 1) -- nice and gradual (starting further back)
  --local auto_scale = max(0.15, (y+stage_top*3)/58) -- nice and gradual
  --local auto_scale = mid(0.15, (y+stage_top)/16, 1) -- too sudden
+ printh("name:"..actor.name)
+ printh("mid:"..mid_)
+ printh("actor.y:"..actor.y)
+ printh("stage_top:"..stage_top)
+ printh("auto_scale:"..auto_scale)
 
+ 
  -- calc scaling offset (to align to bottom-centered)
  local scale = actor.scale or auto_scale
  local scale_height = (8 * actor.h) 
@@ -2020,7 +2026,7 @@ function actor_draw(actor)
 				sprnum = actor.talk[dirnum]
 
     -- works (when scaling from top-left)
-    sprdraw(sprnum, actor.offset_x + flr(scaleoffset_x/2), actor.offset_y + flr(8*(actor.scale or auto_scale)) + scaleoffset_y, 
+    sprdraw(sprnum, actor.offset_x + flr(scaleoffset_x/2), actor.offset_y + flr(8*scale) + scaleoffset_y, 
      1, 1, actor.trans_col, 
      actor.flip, false, scale)
  
