@@ -1995,15 +1995,15 @@ function actor_draw(actor)
 	replace_colors(actor)
 
  -- auto-scaling for depth?
- local mid_ = (actor.y+12)/64
- local auto_scale = mid(room_curr.max_depth or 0.15, mid_, 1) -- nice and gradual (starting further back)
+ --local mid_ = (actor.y+12)/64
+ local auto_scale = mid(room_curr.max_depth or 0.15, (actor.y+12)/64, 1) -- nice and gradual (starting further back)
  --local auto_scale = max(0.15, (y+stage_top*3)/58) -- nice and gradual
  --local auto_scale = mid(0.15, (y+stage_top)/16, 1) -- too sudden
- printh("name:"..actor.name)
- printh("mid:"..mid_)
- printh("actor.y:"..actor.y)
- printh("stage_top:"..stage_top)
- printh("auto_scale:"..auto_scale)
+ -- printh("name:"..actor.name)
+ -- printh("mid:"..mid_)
+ -- printh("actor.y:"..actor.y)
+ -- printh("stage_top:"..stage_top)
+ -- printh("auto_scale:"..auto_scale)
 
  
  -- calc scaling offset (to align to bottom-centered)

@@ -206,6 +206,7 @@ reset_ui()
 		rm_outside = {
 			data = [[
 				map = {0,24,31,31}
+    max_depth = 0.75
 			]],
 			objects = {
 				obj_outside_stairs,
@@ -406,6 +407,7 @@ reset_ui()
 			data = [[
 				map = {32,24,55,31}
 				col_replace = {5,2}
+    max_depth = 0.75
 			]],
 			objects = {
 				--obj_spinning_top,
