@@ -1160,7 +1160,7 @@ function walk_to(actor, x, y)
 		for p in all(path) do
 
   -- auto-adjust walk-speed for depth?
-  local auto_scale = mid(room_curr.max_depth or 0.15, actor.y/40, 1) -- nice and gradual  
+  local auto_scale = mid(room_curr.min_autoscale or 0.15, actor.y/40, room_curr.max_autoscale or 1) -- nice and gradual  
   local scaled_speed = actor.walk_speed * (actor.scale or auto_scale)
   
   --local y_speed = actor.walk_speed/2
@@ -1996,7 +1996,7 @@ function actor_draw(actor)
 
  -- auto-scaling for depth?
  --local mid_ = (actor.y+12)/64
- local auto_scale = mid(room_curr.max_depth or 0.15, (actor.y+12)/64, 1) -- nice and gradual (starting further back)
+ local auto_scale = mid(room_curr.min_autoscale or 0.15, (actor.y+12)/64, room_curr.max_autoscale or 1) -- nice and gradual (starting further back)
  --local auto_scale = max(0.15, (y+stage_top*3)/58) -- nice and gradual
  --local auto_scale = mid(0.15, (y+stage_top)/16, 1) -- too sudden
  -- printh("name:"..actor.name)

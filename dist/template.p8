@@ -363,7 +363,7 @@ ey-=((cy*4)/2) end ey=max(2,ey) eq=max(18,y) ey=min(ey,127-(cy*4)-1) en={ez=cw,x
 fb=er wait_for_message() er=fb print_line(ev,x,y,col,es,eo) end wait_for_message() end function put_at(bu,x,y,fc) if fc then
 if not has_flag(bu.classes,"class_actor") then
 if bu.in_room then del(bu.in_room.objects,bu) end
-add(fc.objects,bu) bu.owner=nil end bu.in_room=fc end bu.x,bu.y=x,y end function stop_actor(ch) ch.fd=0 ec() end function walk_to(ch,x,y) local fe=ff(ch) local fg=flr(x/8)+room_curr.map[1] local fh=flr(y/8)+room_curr.map[2] local fi={fg,fh} local fj=fk(fe,fi) ch.fd=1 for fl in all(fj) do local fm=mid(room_curr.max_depth or 0.15,ch.y/40,1) local fn=ch.walk_speed*(ch.fo or fm) local fp=(fl[1]-room_curr.map[1])*8+4 local fq=(fl[2]-room_curr.map[2])*8+4 local fr=sqrt((fp-ch.x)^2+(fq-ch.y)^2) local fs=fn*(fp-ch.x)/fr local ft=fn*(fq-ch.y)/fr if ch.fd==0 then
+add(fc.objects,bu) bu.owner=nil end bu.in_room=fc end bu.x,bu.y=x,y end function stop_actor(ch) ch.fd=0 ec() end function walk_to(ch,x,y) local fe=ff(ch) local fg=flr(x/8)+room_curr.map[1] local fh=flr(y/8)+room_curr.map[2] local fi={fg,fh} local fj=fk(fe,fi) ch.fd=1 for fl in all(fj) do local fm=mid(room_curr.min_autoscale or 0.15,ch.y/40,room_curr.max_autoscale or 1) local fn=ch.walk_speed*(ch.fo or fm) local fp=(fl[1]-room_curr.map[1])*8+4 local fq=(fl[2]-room_curr.map[2])*8+4 local fr=sqrt((fp-ch.x)^2+(fq-ch.y)^2) local fs=fn*(fp-ch.x)/fr local ft=fn*(fq-ch.y)/fr if ch.fd==0 then
 return end if fr>5 then
 ch.flip=(fs<0) if abs(fs)<fn/2 then
 if ft>0 then
@@ -448,7 +448,7 @@ for h=0,ih-1 do local ii=0 if bu.states then
 ii=bu.states[bu.state] else ii=bu[bu.state] end ij(ii,bu.x+(h*(bu.w*8)),bu.y,bu.w,bu.h,bu.trans_col,bu.flip_x,bu.fo) end end pal() end function ic(ch) ik=dl[ch.face_dir] if ch.fd==1
 and ch.fu then ch.il+=1 if ch.il>ch.frame_delay then
 ch.il=1 ch.im+=1 if ch.im>#ch.fu then ch.im=1 end
-end io=ch.fu[ch.im] else io=ch.idle[ik] end hy(ch) local fm=mid(room_curr.max_depth or 0.15,(ch.y+12)/64,1) local fo=ch.fo or fm local ip=(8*ch.h) local iq=(8*ch.w) local ir=ip-(ip*fo) local is=iq-(iq*fo) ij(io,ch.de+flr(is/2),ch.hv+ir,ch.w,ch.h,ch.trans_col,ch.flip,false,fo) if er
+end io=ch.fu[ch.im] else io=ch.idle[ik] end hy(ch) local fm=mid(room_curr.min_autoscale or 0.15,(ch.y+12)/64,room_curr.max_autoscale or 1) local fo=ch.fo or fm local ip=(8*ch.h) local iq=(8*ch.w) local ir=ip-(ip*fo) local is=iq-(iq*fo) ij(io,ch.de+flr(is/2),ch.hv+ir,ch.w,ch.h,ch.trans_col,ch.flip,false,fo) if er
 and er==ch and er.talk then if ch.it<7 then
 io=ch.talk[ik] ij(io,ch.de+flr(is/2),ch.hv+flr(8*fo)+ir,1,1,ch.trans_col,ch.flip,false,fo) end ch.it+=1 if ch.it>14 then ch.it=1 end
 end pal() end function gw() iu=""iv=verb_maincol iw=gd[2] if gd then
