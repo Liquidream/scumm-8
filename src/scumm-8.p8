@@ -1166,7 +1166,7 @@ function walk_to(actor, x, y)
   --local auto_scale = mid(room_curr.max_depth or 0.15, actor.y/40, 1) -- nice and gradual  
 
   -- apply "zoom" to autoscale (e.g. camera further away)
-  auto_scale *= room_curr.autoscale_zoom or 1 
+  auto_scale *= (room_curr.autoscale_zoom or 1)
  
   local scaled_speed = actor.walk_speed * (actor.scale or auto_scale)
   --local y_speed = actor.walk_speed/2
@@ -2009,7 +2009,7 @@ function actor_draw(actor)
  --local auto_scale = mid(0.15, (y+stage_top)/16, 1) -- too sudden
 
  -- apply "zoom" to autoscale (e.g. camera further away)
- auto_scale *= room_curr.autoscale_zoom or 1
+ auto_scale *= (room_curr.autoscale_zoom or 1)
 
  -- printh("name:"..actor.name)
  -- printh("mid:"..mid_)
