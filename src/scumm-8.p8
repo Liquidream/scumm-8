@@ -2016,7 +2016,7 @@ function actor_draw(actor)
  -- printh("actor.y:"..actor.y)
  -- printh("stage_top:"..stage_top)
   --printh("min_autoscale:"..room_curr.min_autoscale)
-  printh("auto_scale:"..auto_scale)
+  --printh("auto_scale:"..auto_scale)
 
  
  -- calc scaling offset (to align to bottom-centered)
