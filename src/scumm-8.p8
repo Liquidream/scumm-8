@@ -10,7 +10,7 @@ __lua__
 -- debugging
 show_debuginfo = true
 show_collision = false
---show_pathfinding = false
+show_pathfinding = false
 show_perfinfo = true
 enable_mouse = true
 enable_diag_squeeze = true	-- allow squeeze through diag gap?
