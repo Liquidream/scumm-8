@@ -1114,6 +1114,10 @@ function print_line(msg, x, y, col, align, use_caps, duration)
 		char_width = longest_line,
 		use_caps = use_caps
 	}
+ -- ref point for skip #####################??????
+ --talking_curr.time_orig=talking_curr.time_left
+
+
 	-- if message was split...
 	if #msg_left > 0 then
 	  talking = talking_actor
@@ -1507,16 +1511,24 @@ function playercontrol()
 	-- (or that we have an actor to control!)
 	if cutscene_curr then
 		if (btnp(5) or stat(34)>0)
+
+  -- check for talking message "skip/override"
+	-- if talking_curr then then 
+	-- 		-- skip current talking message
+ --   talking_curr.time_left=0
+	-- 		return
+	-- end
 		 and cutscene_curr.override then 
 			-- skip cutscene!
 			cutscene_curr.thread = cocreate(cutscene_curr.override)
 			cutscene_curr.override = nil
-			--if (enable_mouse) then ismouseclicked = true end
 			return
 		end
 		-- either way - don't allow other user actions!
 		return
 	end
+
+ 
 
 	-- 
 	if btn(0) then cursor_x -= 1 end
