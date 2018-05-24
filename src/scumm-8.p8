@@ -143,6 +143,26 @@ reset_ui()
      use_dir = face_front
 				]],
 				verbs = {
+     lookat = function(me)
+      -- do cutscene
+      cutscene(
+       1, -- no verbs
+       -- cutscene code (hides ui, etc.)
+       function()        
+        break_time(200)
+        say_line("one one one one one on eon eon eon eon...")
+        break_time(200)
+        say_line("two two two two two two two tw otw ot wo owtt...")
+        break_time(200)
+        say_line("three three thrreethree three three threet hree...")
+       end,
+       -- override for cutscene
+       function()       
+        printh("override!")       
+        stop_talking()
+       end
+      )
+     end,
 					use = function(me)
 						if script_running(room_curr.scripts.spin_top) then
 							stop_script(room_curr.scripts.spin_top)
@@ -1507,28 +1527,30 @@ end
 -- handle button inputs
 function playercontrol()	
 
-	-- check for cutscene "skip/override"
+	-- check for skip/override's
 	-- (or that we have an actor to control!)
-	if cutscene_curr then
-		if (btnp(5) or stat(34)>0)
-
-  -- check for talking message "skip/override"
-	-- if talking_curr then then 
-	-- 		-- skip current talking message
- --   talking_curr.time_left=0
-	-- 		return
-	-- end
-		 and cutscene_curr.override then 
+	if cutscene_curr and not ismouseclicked then
+  -- talking skip?
+  if talking_curr 
+   and (btnp(4) or stat(34)==1) then
+			-- skip current talking message
+   talking_curr.time_left=0
+   ismouseclicked = true
+			return
+		
+  -- cutscene skip?
+  elseif cutscene_curr.override 
+   and (btnp(5) or stat(34)==2) then 
 			-- skip cutscene!
 			cutscene_curr.thread = cocreate(cutscene_curr.override)
 			cutscene_curr.override = nil
 			return
 		end
+
 		-- either way - don't allow other user actions!
 		return
 	end
 
- 
 
 	-- 
 	if btn(0) then cursor_x -= 1 end
