@@ -1576,18 +1576,16 @@ function playercontrol()
 		mouse_x,mouse_y = stat(32)-1, stat(33)-1
 		if mouse_x != last_mouse_x then cursor_x = mouse_x end	-- mouse xpos
 		if mouse_y!= last_mouse_y then cursor_y = mouse_y end  -- mouse ypos
+
 		-- don't repeat action if same press/click
-		if stat(34) > 0 then
-			if not ismouseclicked then
-				input_button_pressed(stat(34))
-				ismouseclicked = true
-			end
-		else
-			ismouseclicked = false
-		end
+		if stat(34)>0 and not ismouseclicked then
+   input_button_pressed(stat(34))
+  end
 		-- store for comparison next cycle
 		last_mouse_x = mouse_x
 		last_mouse_y = mouse_y
+
+  update_mouse_click_state()
 	end
 
 	-- keep cursor within screen
