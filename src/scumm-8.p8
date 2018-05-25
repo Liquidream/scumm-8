@@ -1523,34 +1523,44 @@ function game_draw()
 	end
 end
 
+function update_mouse_click_state()
+	if stat(34) > 0 then
+			if not ismouseclicked then
+				ismouseclicked = true
+			end
+		else
+			ismouseclicked = false
+		end
+end
 
 -- handle button inputs
 function playercontrol()	
 
 	-- check for skip/override's
-	-- (or that we have an actor to control!)
-	if cutscene_curr and not ismouseclicked then
+	if talking_curr and not ismouseclicked then  --ismouseclicked
   -- talking skip?
-  if talking_curr 
-   and (btnp(4) or stat(34)==1) then
+  if (btnp(4) or stat(34)==1) then
 			-- skip current talking message
    talking_curr.time_left=0
    ismouseclicked = true
 			return
-		
-  -- cutscene skip?
-  elseif cutscene_curr.override 
-   and (btnp(5) or stat(34)==2) then 
-			-- skip cutscene!
-			cutscene_curr.thread = cocreate(cutscene_curr.override)
-			cutscene_curr.override = nil
-			return
 		end
+ end
 
-		-- either way - don't allow other user actions!
-		return
-	end
+ -- cutscene? (or skip?)
+ if cutscene_curr then
+  if (btnp(5) or stat(34)==2)
+   and cutscene_curr.override then
+    cutscene_curr.thread = cocreate(cutscene_curr.override)
+	 		cutscene_curr.override = nil 
+    return 
+  end
 
+  -- either way - don't allow other user actions!
+  update_mouse_click_state()
+  return
+ end 
+	
 
 	-- 
 	if btn(0) then cursor_x -= 1 end
