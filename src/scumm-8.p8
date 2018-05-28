@@ -1187,13 +1187,19 @@ function walk_to(actor, x, y)
 		for p in all(path) do
 
   -- auto-adjust walk-speed for depth?
-  local auto_scale = mid(room_curr.min_autoscale or 0.15, actor.y/40, 1) -- nice and gradual  
-  --local auto_scale = mid(room_curr.max_depth or 0.15, actor.y/40, 1) -- nice and gradual  
+  --local factor = (actor.y-room_curr.autodepth_pos[1]) / (room_curr.autodepth_pos[2]-room_curr.autodepth_pos[1])
+  --printh("walk-factor:"..factor)
+  --local auto_scale = actor.auto_scale
+  --local auto_scale = mid(0, factor, 1) -- nice and gradual   
+  --local auto_scale = mid(room_curr.autodepth_scale[1], factor, room_curr.autodepth_scale[2]) -- nice and gradual   
+  --local auto_scale = mid(room_curr.min_autoscale or 0.15, actor.y/40, 1) -- nice and gradual  
+  printh("walk_auto_scale:"..actor.auto_scale)
+  --printh("walk_auto_scale:"..auto_scale*actor.walk_speed)
 
   -- apply "zoom" to autoscale (e.g. camera further away)
-  auto_scale *= (room_curr.autoscale_zoom or 1)
+  --auto_scale *= (room_curr.autoscale_zoom or 1)
  
-  local scaled_speed = actor.walk_speed * (actor.scale or auto_scale)
+  local scaled_speed = actor.walk_speed * (actor.scale or  actor.auto_scale)
   --local y_speed = actor.walk_speed/2
 
 			local px = (p[1]-room_curr.map[1])*8 + 4
@@ -2053,10 +2059,10 @@ function actor_draw(actor)
 
  -- auto-scaling for depth?
  local factor = (actor.y-room_curr.autodepth_pos[1]) / (room_curr.autodepth_pos[2]-room_curr.autodepth_pos[1])
- printh("ypos-factor:"..factor)
+ --printh("ypos-factor:"..factor)
  factor = room_curr.autodepth_scale[1]+(room_curr.autodepth_scale[2]-room_curr.autodepth_scale[1])*factor
- printh("scale-factor:"..factor)
- local auto_scale = mid(room_curr.autodepth_scale[1], factor, room_curr.autodepth_scale[2])
+ --printh("scale-factor:"..factor)
+ actor.auto_scale = mid(room_curr.autodepth_scale[1], factor, room_curr.autodepth_scale[2])
  
  --local auto_scale = mid(room_curr.min_autoscale or 0, (actor.y+12)/64, 1) -- nice and gradual   
  --local auto_scale = mid(room_curr.min_autoscale or 0.15, (actor.y+12)/64, 1) -- nice and gradual (starting further back)
@@ -2064,23 +2070,23 @@ function actor_draw(actor)
  --local auto_scale = max(0.15, (y+stage_top*3)/58) -- nice and gradual
  --local auto_scale = mid(0.15, (y+stage_top)/16, 1) -- too sudden
 
-printh("autodepth_scale[1]:"..room_curr.autodepth_scale[1])
-printh("autodepth_scale[2]:"..room_curr.autodepth_scale[2])
-printh("auto_scale:"..auto_scale)
+-- printh("autodepth_scale[1]:"..room_curr.autodepth_scale[1])
+-- printh("autodepth_scale[2]:"..room_curr.autodepth_scale[2])
+-- printh("auto_scale:"..auto_scale)
 
  -- apply "zoom" to autoscale (e.g. camera further away)
- auto_scale *= (room_curr.autoscale_zoom or 1)
+ --auto_scale *= (room_curr.autoscale_zoom or 1)
 
  -- printh("name:"..actor.name)
  -- printh("mid:"..mid_)
- printh("actor.y:"..actor.y)
+ --printh("actor.y:"..actor.y)
  -- printh("stage_top:"..stage_top)
   --printh("min_autoscale:"..room_curr.min_autoscale)
   --printh("auto_scale:"..auto_scale)
 
  
  -- calc scaling offset (to align to bottom-centered)
- local scale = actor.scale or auto_scale
+ local scale = actor.scale or actor.auto_scale
  local scale_height = (8 * actor.h) 
  local scale_width = (8 * actor.w) 
  local scaleoffset_y = scale_height - (scale_height * scale)
@@ -2367,7 +2373,7 @@ function game_init()
 		end
   -- auto-depth (or defaults)
   room.autodepth_pos = room.autodepth_pos or {9,50}
-  room.autodepth_scale = room.autodepth_scale or {0.5,1}--{0.25,0.5} --{0,1}
+  room.autodepth_scale = room.autodepth_scale or {0,1}
 
 		-- init objects (in room)
 		for obj in all(room.objects) do
