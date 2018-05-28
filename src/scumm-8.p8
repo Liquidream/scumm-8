@@ -2052,19 +2052,26 @@ function actor_draw(actor)
 	replace_colors(actor)
 
  -- auto-scaling for depth?
- --local mid_ = (actor.y+12)/64
- local auto_scale = mid(room_curr.min_autoscale or 0, (actor.y+12)/64, 1) -- nice and gradual   
+ local factor = (actor.y-room_curr.autodepth_pos[1]) / (room_curr.autodepth_pos[2]-room_curr.autodepth_pos[1])
+ printh("factor:"..factor)
+ local auto_scale = mid(room_curr.autodepth_scale[1], factor, room_curr.autodepth_scale[2])
+ 
+ --local auto_scale = mid(room_curr.min_autoscale or 0, (actor.y+12)/64, 1) -- nice and gradual   
  --local auto_scale = mid(room_curr.min_autoscale or 0.15, (actor.y+12)/64, 1) -- nice and gradual (starting further back)
  --local auto_scale = mid(room_curr.max_depth or 0.15, actor.y/40, 1) -- nice and gradual  
  --local auto_scale = max(0.15, (y+stage_top*3)/58) -- nice and gradual
  --local auto_scale = mid(0.15, (y+stage_top)/16, 1) -- too sudden
+
+printh("autodepth_scale[1]:"..room_curr.autodepth_scale[1])
+printh("autodepth_scale[2]:"..room_curr.autodepth_scale[2])
+printh("auto_scale:"..auto_scale)
 
  -- apply "zoom" to autoscale (e.g. camera further away)
  auto_scale *= (room_curr.autoscale_zoom or 1)
 
  -- printh("name:"..actor.name)
  -- printh("mid:"..mid_)
- -- printh("actor.y:"..actor.y)
+ printh("actor.y:"..actor.y)
  -- printh("stage_top:"..stage_top)
   --printh("min_autoscale:"..room_curr.min_autoscale)
   --printh("auto_scale:"..auto_scale)
@@ -2358,7 +2365,7 @@ function game_init()
 		end
   -- auto-depth (or defaults)
   room.autodepth_pos = room.autodepth_pos or {9,50}
-  room.autodepth_scale = room.autodepth_scale or {0,1}
+  room.autodepth_scale = room.autodepth_scale or {0,0.5} --{0,1}
 
 		-- init objects (in room)
 		for obj in all(room.objects) do
@@ -3082,7 +3089,7 @@ ccc0ccc01c10ccc0000000000a00a0a0aaa0a0a000000a00aa1000001cc0cc10ccc0000000000011
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 
 __gff__
-0001010100010100000000010000000000010101010101000000000100000000000101010101010101000000000000000001010101010100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0001010100010100010000010000000000010101010101000000000100000000000101010101010101000000000000000001010101010100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000100000000000000
 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 __map__
 0707070808080808080808080807070707070717171717171717171717070707171717080808080808080808081717170707071717171717171717171707070717171708080808080808080808171717070707171717171717171717170707071717170808080808080808080817171707070717171717171717171717070707
