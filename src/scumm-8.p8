@@ -8,15 +8,15 @@ __lua__
 --	"\65\66\67\68\69\70\71\72\73\74\75\76\77\78\79\80\81\82\83\84\85\86\87\88\89\90\91\92"
 
 -- debugging
-show_debuginfo = true
-show_collision = false
-show_pathfinding = false
-show_perfinfo = true
-show_depth = true
+ show_debuginfo = true
+-- show_collision = false
+-- show_pathfinding = false
+-- show_perfinfo = true
+-- show_depth = true
+
+-- game functionality flags
 enable_mouse = true
 enable_diag_squeeze = true	-- allow squeeze through diag gap?
-d = printh
-
 
 
 -- game verbs (used in room definitions and ui)
@@ -159,7 +159,7 @@ reset_ui()
        end,
        -- override for cutscene
        function()       
-        printh("override!")       
+        --printh("override!")       
         stop_talking()
        end
       )
@@ -1193,7 +1193,7 @@ function walk_to(actor, x, y)
   --local auto_scale = mid(0, factor, 1) -- nice and gradual   
   --local auto_scale = mid(room_curr.autodepth_scale[1], factor, room_curr.autodepth_scale[2]) -- nice and gradual   
   --local auto_scale = mid(room_curr.min_autoscale or 0.15, actor.y/40, 1) -- nice and gradual  
-  printh("walk_auto_scale:"..actor.auto_scale)
+  --printh("walk_auto_scale:"..actor.auto_scale)
   --printh("walk_auto_scale:"..auto_scale*actor.walk_speed)
 
   -- apply "zoom" to autoscale (e.g. camera further away)
@@ -1224,8 +1224,8 @@ function walk_to(actor, x, y)
      local step_x = scaled_speed * (px - actor.x) / distance
 			  local step_y = scaled_speed * (py - actor.y) / distance  
 
-     printh("stepx:"..step_x)
-     printh("stepy:"..step_y)
+     -- printh("stepx:"..step_x)
+     -- printh("stepy:"..step_y)
 
      actor.flip = (step_x<0)
 
@@ -1313,9 +1313,6 @@ end
 function get_verb(obj)
 	local verb = {}
 	local keys = get_keys(obj[1])
---[[	d("1:"..keys[1])
-			d("2:"..obj[1][ keys[1] ])
-			d("3:"..obj.text ) ]]
 	add(verb, keys[1])						-- verb func
 	add(verb, obj[1][ keys[1] ])  -- verb ref name
 	add(verb, obj.text)						-- verb disp name
@@ -1343,29 +1340,11 @@ fade_iris, fade_iris = 0, 0
 
 cutscene_cooloff = 0
 
+
+
 -- game loop
 
 function _init()
-	--cstore(0,0,0x800,"test.scm") -- sfx (just b4 last 1/2)
-
-	-- reload(0,0,0x800,"mi_temp.p8") -- gfx pg1
-	-- cstore(0x3b00,0,0x800) -- sfx (last 1/2)
-	-- reload(0x3000,0x3000,0x64,"mi_temp.p8") -- gfx flags pg1
-	-- cstore(0x3a00,0x3000,0x100) -- sfx (just b4 last 1/2)
-
-		-- load embedded gfx (from sfx area)
-	--	reload(0,0x3b00,0x800)
-		-- load embedded gfx flags (from sfx area)
-	--	reload(0x3000,0x3a00,0x100)
-
-
-	
-	--reload(0,0x3200,0x1000) -- gfx pg1&2 (from sfx)
-	--reload(0,0,0x1000,"mario014.p8") -- gfx pg1&2
-	--reload(0,0,0x800,"mario014.p8") -- gfx pg1
-	--cstore(0x3200,0,0x1000) -- sfx (start)
-	--cstore(0,0,0x800,"out.p8")
-
 
 	-- use mouse input?
 	if enable_mouse then poke(0x5f2d, 1) end
@@ -1478,21 +1457,21 @@ function game_draw()
 	camera(0,0)
 	clip()
 
-	if show_perfinfo then 
-		print("cpu: "..flr(100*stat(1)).."%", 0, stage_top - 16, 8) 
-		print("mem: "..flr(stat(0)/1024*100).."%", 0, stage_top - 8, 8)
-	end
+	-- if show_perfinfo then 
+	-- 	print("cpu: "..flr(100*stat(1)).."%", 0, stage_top - 16, 8) 
+	-- 	print("mem: "..flr(stat(0)/1024*100).."%", 0, stage_top - 8, 8)
+	-- end
 	if show_debuginfo then 
 		print("x: "..flr(cursor_x+cam_x).." y:"..cursor_y-stage_top, 80, stage_top - 8, 8) 
 	end
- if show_depth then
-  fillp(0b0011001111001100.1)
-  line(0,room_curr.autodepth_pos[1]+stage_top,128,room_curr.autodepth_pos[1]+stage_top,1)
-  print(room_curr.autodepth_scale[1], 0,room_curr.autodepth_pos[1]+stage_top+2)
-  line(0,room_curr.autodepth_pos[2]+stage_top,128,room_curr.autodepth_pos[2]+stage_top,12)
-  print(room_curr.autodepth_scale[2], 0,room_curr.autodepth_pos[2]+stage_top+2)
-  fillp()
- end
+ -- if show_depth then
+ --  fillp(0b0011001111001100.1)
+ --  line(0,room_curr.autodepth_pos[1]+stage_top,128,room_curr.autodepth_pos[1]+stage_top,1)
+ --  print(room_curr.autodepth_scale[1], 0,room_curr.autodepth_pos[1]+stage_top+2)
+ --  line(0,room_curr.autodepth_pos[2]+stage_top,128,room_curr.autodepth_pos[2]+stage_top,12)
+ --  print(room_curr.autodepth_scale[2], 0,room_curr.autodepth_pos[2]+stage_top+2)
+ --  fillp()
+ -- end
 
 	-- draw active/speech text
 	talking_draw()
@@ -1516,14 +1495,6 @@ function game_draw()
  		cutscene_cooloff -= 1 
 	 	return
  	end
-	-- if cutscene_curr_lastval == cutscene_curr then
-	-- 	--d("cut_same")
-	-- else
-	-- 	d("cut_diff")
-	-- 	cutscene_curr_lastval = cutscene_curr
-	-- 	return
-	-- end
-	
 
 	-- draw current command (verb/object)
 	if not cutscene_curr then
@@ -1535,14 +1506,8 @@ function game_draw()
 		or cutscene_curr.flags == 2) -- quick-cut
 		-- and not just left a cutscene
 		and cutscene_cooloff == 0 then
-		--and (cutscene_curr_lastval == cutscene_curr) then
 		ui_draw()
-	else
-		--d("ui skipped")
 	end
-
-	-- hack: fix for display issue (see above hack info)
-	--cutscene_curr_lastval = cutscene_curr
 
 	if not cutscene_curr then
 		cursor_draw()
@@ -1641,7 +1606,6 @@ function input_button_pressed(button_index)
 
 	if hover_curr_verb then
 		verb_curr = get_verb(hover_curr_verb)
-		--d("verb = "..verb_curr[2])
 
 	elseif hover_curr_object then
 		-- if valid obj, complete command
@@ -1649,11 +1613,9 @@ function input_button_pressed(button_index)
 		if button_index == 1 then
 			if (verb_curr[2] == "use" or verb_curr[2] == "give") 
 			 and noun1_curr then
-				noun2_curr = hover_curr_object
-				--d("noun2_curr = "..noun2_curr.name)					
+				noun2_curr = hover_curr_object			
 			else
-				noun1_curr = hover_curr_object						
-				--d("noun1_curr = "..noun1_curr.name)
+				noun1_curr = hover_curr_object
 			end
 
 		elseif hover_curr_default_verb then
@@ -1748,18 +1710,17 @@ function input_button_pressed(button_index)
 			-- clear current command
 			clear_curr_cmd()
 		end)
-		coresume(selected_actor.thread)--, selected_actor, noun1_curr, verb_curr, noun2_curr)
+		coresume(selected_actor.thread)
 	elseif cursor_y > stage_top and cursor_y < stage_top+64 then
 		-- in map area
 		executing_cmd = true
 		-- attempt to walk to target
-		selected_actor.thread = cocreate(function() --(x,y)
+		selected_actor.thread = cocreate(function()
 			walk_to(selected_actor, cursor_x+cam_x, cursor_y - stage_top)
-			--walk_to(selected_actor, x, y)
 			-- clear current command
 			clear_curr_cmd()
 		end)
-		coresume(selected_actor.thread) --, cursor_x, cursor_y - stage_top)
+		coresume(selected_actor.thread)
 	end
 end
 
@@ -1949,7 +1910,7 @@ function room_draw()
 					-- 	end
 
 					-- 	for p in all(path) do
-					-- 		--d("  > "..p[1]..","..p[2])
+					-- 		--printh("  > "..p[1]..","..p[2])
 					-- 		rect(
 					-- 			(p[1]-room_curr.map[1])*8, 
 					-- 			stage_top+(p[2]-room_curr.map[2])*8, 
@@ -2529,7 +2490,6 @@ function has_flag(obj, value)
 	 	return true 
 	 end
 	end
-  --if band(obj, value) != 0 then return true end
   return false
 end
 
@@ -2704,13 +2664,13 @@ end
 function explode_data(obj)
 	local lines=split(obj.data, "\n")
 	for l in all(lines) do
-		--d("curr line = ["..l.."]")
+		--printh("curr line = ["..l.."]")
 		local pairs=split(l, "=")
 		-- todo: check to see if value is an array?
 		-- now set actual values
-		--d(" > curr pair = ["..pairs[1].."]")
+		--printh(" > curr pair = ["..pairs[1].."]")
 		if #pairs==2 then
-			--d("pair1=["..pairs[1].."]  pair2=["..pairs[2].."]")
+			--printh("pair1=["..pairs[1].."]  pair2=["..pairs[2].."]")
 			obj[pairs[1]] = autotype(pairs[2])
 		else
 			printh(" > invalid data: ["..pairs[1].."]") -- = ["..pairs[2].."]")
