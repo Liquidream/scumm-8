@@ -1206,8 +1206,8 @@ function walk_to(actor, x, y)
 			local py = (p[2]-room_curr.map[2])*8 + 4
 
 			local distance = sqrt((px - actor.x) ^ 2 + (py - actor.y) ^ 2)
-			local step_x = scaled_speed * (px - actor.x) / distance
-			local step_y = scaled_speed * (py - actor.y) / distance  
+			-- local step_x = scaled_speed * (px - actor.x) / distance
+			-- local step_y = scaled_speed * (py - actor.y) / distance  
 			-- abort if actor stopped
 			if actor.moving == 0 then
 				return
@@ -1215,36 +1215,42 @@ function walk_to(actor, x, y)
 
 			-- only walk if we're not already there!
 			if distance > 5 then 
-				--walking
+     --walking
 				--actor.moving = 1 
-				actor.flip = (step_x<0)
-
-				-- choose walk anim based on dir
-				if abs(step_x) < scaled_speed/2 then
-					-- vertical walk, which way?
-					if step_y > 0 then
-						-- towards us
-						actor.walk_anim = actor.walk_anim_front
-						actor.face_dir = "face_front"
-					else
-						-- away
-						actor.walk_anim = actor.walk_anim_back
-						actor.face_dir = "face_back"
-					end
-				else
-					-- horizontal walk
-					actor.walk_anim = actor.walk_anim_side
-					-- face dir (at end of walk)
-					actor.face_dir = "face_right"
-					if actor.flip then actor.face_dir = "face_left" end
-				end
-
+				
 				for i = 0, distance/scaled_speed do
      -- need recalc here, else walk too fast/slow in depth planes
      local scaled_speed = actor.walk_speed * (actor.scale or  actor.auto_scale)
      local step_x = scaled_speed * (px - actor.x) / distance
 			  local step_y = scaled_speed * (py - actor.y) / distance  
 
+     printh("stepx:"..step_x)
+     printh("stepy:"..step_y)
+
+     actor.flip = (step_x<0)
+
+     -- choose walk anim based on dir
+     if abs(step_x) < abs(step_y) then
+     --if abs(step_x) < scaled_speed/2 then
+      -- vertical walk, which way?
+      if step_y > 0 then
+       -- towards us
+       actor.walk_anim = actor.walk_anim_front
+       actor.face_dir = "face_front"
+      else
+       -- away
+       actor.walk_anim = actor.walk_anim_back
+       actor.face_dir = "face_back"
+      end
+     else
+      -- horizontal walk
+      actor.walk_anim = actor.walk_anim_side
+      -- face dir (at end of walk)
+      actor.face_dir = "face_right"
+      if actor.flip then actor.face_dir = "face_left" end
+     end
+
+     -- actually move actor
 					actor.x += step_x
 					actor.y += step_y
 					yield()
