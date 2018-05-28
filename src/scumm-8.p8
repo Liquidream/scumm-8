@@ -4,14 +4,13 @@ __lua__
 -- scumm-8
 -- paul nicholas
 
--- ### luamin fixes ###
---	"\65\66\67\68\69\70\71\72\73\74\75\76\77\78\79\80\81\82\83\84\85\86\87\88\89\90\91\92"
-
--- debugging
+--
+-- debug flags
+--
  show_debuginfo = true
 -- show_collision = false
 -- show_pathfinding = false
--- show_perfinfo = true
+--show_perfinfo = true
 -- show_depth = true
 
 -- game functionality flags
@@ -190,7 +189,6 @@ reset_ui()
 			enter = function(me)
 				selected_actor = main_actor
     put_at(selected_actor, 30, 55, rm_hall)
-				--put_at(selected_actor,60,60,rm_hall)
 				camera_follow(selected_actor)
 			end,
 			exit = function(me)
@@ -1193,25 +1191,30 @@ function walk_to(actor, x, y)
   --local auto_scale = mid(0, factor, 1) -- nice and gradual   
   --local auto_scale = mid(room_curr.autodepth_scale[1], factor, room_curr.autodepth_scale[2]) -- nice and gradual   
   --local auto_scale = mid(room_curr.min_autoscale or 0.15, actor.y/40, 1) -- nice and gradual  
-  --printh("walk_auto_scale:"..actor.auto_scale)
+  printh("walk_auto_scale:"..actor.auto_scale)
   --printh("walk_auto_scale:"..auto_scale*actor.walk_speed)
 
   -- apply "zoom" to autoscale (e.g. camera further away)
   --auto_scale *= (room_curr.autoscale_zoom or 1)
  
-  local scaled_speed = actor.walk_speed * (actor.scale or  actor.auto_scale)
+  local scaled_speed = actor.walk_speed * (actor.scale or actor.auto_scale)
   --local y_speed = actor.walk_speed/2
 
 			local px = (p[1]-room_curr.map[1])*8 + 4
 			local py = (p[2]-room_curr.map[2])*8 + 4
 
 			local distance = sqrt((px - actor.x) ^ 2 + (py - actor.y) ^ 2)
-			-- local step_x = scaled_speed * (px - actor.x) / distance
-			-- local step_y = scaled_speed * (py - actor.y) / distance  
+			local step_x = scaled_speed * (px - actor.x) / distance
+			local step_y = scaled_speed * (py - actor.y) / distance  
 			-- abort if actor stopped
 			if actor.moving == 0 then
 				return
 			end
+
+     printh("distance:"..distance)
+     printh("scaled_speed:"..scaled_speed)
+     printh("stepx:"..step_x)
+     printh("stepy:"..step_y)
 
 			-- only walk if we're not already there!
 			if distance > 5 then 
@@ -1220,18 +1223,12 @@ function walk_to(actor, x, y)
 				
 				for i = 0, distance/scaled_speed do
      -- need recalc here, else walk too fast/slow in depth planes
-     local scaled_speed = actor.walk_speed * (actor.scale or  actor.auto_scale)
-     local step_x = scaled_speed * (px - actor.x) / distance
-			  local step_y = scaled_speed * (py - actor.y) / distance  
-
-     -- printh("stepx:"..step_x)
-     -- printh("stepy:"..step_y)
 
      actor.flip = (step_x<0)
 
      -- choose walk anim based on dir
-     if abs(step_x) < abs(step_y) then
-     --if abs(step_x) < scaled_speed/2 then
+     --if abs(step_x) < abs(step_y) then
+     if abs(step_x) < scaled_speed/2 then
       -- vertical walk, which way?
       if step_y > 0 then
        -- towards us
