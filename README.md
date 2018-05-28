@@ -8,7 +8,7 @@ Another example game "H A L L O W EƎ N" can be [found here](https://liquidream.
 
 ![SCUMM-8](http://i.imgur.com/FcE49f5.gif)  ![SCUMM-8](http://i.imgur.com/LO57HFN.gif)  ![SCUMM-8](http://i.imgur.com/3HiP7Jf.gif)
 
-While it is heavily "inspired" by the SCUMM engine, it isn't a true replica (for that you'll want good ol' [SCUMM-VM](https://en.wikipedia.org/wiki/ScummVM)).  However, SCUMM-8 attempts to stay as true as possible to the [original SCUMM command reference](http://www.wilmunder.com/Arics_World/Games.html).
+While it is heavily "inspired" by the SCUMM engine, it isn't a true replica (for that you'll want good ol' [SCUMM-VM](https://en.wikipedia.org/wiki/ScummVM)).  However, SCUMM-8 attempts to stay as true as possible to the [original SCUMM command reference](https://web.archive.org/web/20180226005830/http://wilmunder.com/Arics_World/Games.html).
 > *"Cool, so does that mean I can play those old LucasArts games in PICO-8?!"*
 
 Er... no. SCUMM-8 cannot play those original games, just that it is intended to provide similar functionality within the (very limited) world of PICO-8.
@@ -51,8 +51,8 @@ python3 build.py
 This will output scumm-8.min.lua, containing the minified engine code which you can copy to your own cart. It will also output new copies of game.p8 and template.p8, which should be committed to the repository.
 
 ## Thanks & Useful Resources
-A big thanks to [Aric Wilmunder](http://www.wilmunder.com/Arics_World/Games.html) (ex-LucasArts developer) for sharing valuable SCUMM documentation. 
-Particularly the **SCUMM Tutorial** (1991), the example room from which was the first room I actually created in SCUMM-8 (minus the cool Sam & Max gfx, of course)
+A big thanks to [Aric Wilmunder](https://web.archive.org/web/20180226005830/http://wilmunder.com/Arics_World/Games.html) (ex-LucasArts developer) for sharing valuable SCUMM documentation. 
+Particularly the **[SCUMM Tutorial](https://web.archive.org/web/20160721004826/http://www.wilmunder.com/Arics_World/Games_files/SCUMM%20Tutorial%200.1.pdf)** (1991), the example room from which was the first room I actually created in SCUMM-8 (minus the cool Sam & Max gfx, of course)
 
 Thanks also to Dan Sanderson for his [picotool](https://github.com/dansanderson/picotool) - specifically his minifying tool (luamin), which enabled me to squeeze MUCH more code under PICO-8's limits.
 
