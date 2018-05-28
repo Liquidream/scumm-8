@@ -1240,6 +1240,7 @@ function walk_to(actor, x, y)
 				end
 
 				for i = 0, distance/scaled_speed do
+     -- need recalc here, else walk too fast/slow in depth planes
      local scaled_speed = actor.walk_speed * (actor.scale or  actor.auto_scale)
      local step_x = scaled_speed * (px - actor.x) / distance
 			  local step_y = scaled_speed * (py - actor.y) / distance  
