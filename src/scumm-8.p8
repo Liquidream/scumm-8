@@ -178,8 +178,8 @@ reset_ui()
 		rm_hall = {
 			data = [[
 				map = {32,24,55,31}
-    min_autoscale = 0.75
-    autoscale_zoom = 1
+    autodepth_pos = {30, 50}
+    autodepth_scale = {0.25, 1}
 			]],
 			objects = {
 				obj_front_door_inside,
@@ -1240,6 +1240,10 @@ function walk_to(actor, x, y)
 				end
 
 				for i = 0, distance/scaled_speed do
+     local scaled_speed = actor.walk_speed * (actor.scale or  actor.auto_scale)
+     local step_x = scaled_speed * (px - actor.x) / distance
+			  local step_y = scaled_speed * (py - actor.y) / distance  
+
 					actor.x += step_x
 					actor.y += step_y
 					yield()
@@ -2373,7 +2377,7 @@ function game_init()
 		end
   -- auto-depth (or defaults)
   room.autodepth_pos = room.autodepth_pos or {9,50}
-  room.autodepth_scale = room.autodepth_scale or {0,1}
+  room.autodepth_scale = room.autodepth_scale or {0.25,1}
 
 		-- init objects (in room)
 		for obj in all(room.objects) do
