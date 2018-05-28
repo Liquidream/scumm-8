@@ -2053,7 +2053,9 @@ function actor_draw(actor)
 
  -- auto-scaling for depth?
  local factor = (actor.y-room_curr.autodepth_pos[1]) / (room_curr.autodepth_pos[2]-room_curr.autodepth_pos[1])
- printh("factor:"..factor)
+ printh("ypos-factor:"..factor)
+ factor = room_curr.autodepth_scale[1]+(room_curr.autodepth_scale[2]-room_curr.autodepth_scale[1])*factor
+ printh("scale-factor:"..factor)
  local auto_scale = mid(room_curr.autodepth_scale[1], factor, room_curr.autodepth_scale[2])
  
  --local auto_scale = mid(room_curr.min_autoscale or 0, (actor.y+12)/64, 1) -- nice and gradual   
@@ -2365,7 +2367,7 @@ function game_init()
 		end
   -- auto-depth (or defaults)
   room.autodepth_pos = room.autodepth_pos or {9,50}
-  room.autodepth_scale = room.autodepth_scale or {0,0.5} --{0,1}
+  room.autodepth_scale = room.autodepth_scale or {0.5,1}--{0.25,0.5} --{0,1}
 
 		-- init objects (in room)
 		for obj in all(room.objects) do
