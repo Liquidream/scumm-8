@@ -12,6 +12,7 @@ show_debuginfo = true
 show_collision = false
 show_pathfinding = false
 show_perfinfo = true
+show_depth = true
 enable_mouse = true
 enable_diag_squeeze = true	-- allow squeeze through diag gap?
 d = printh
@@ -1467,6 +1468,14 @@ function game_draw()
 	if show_debuginfo then 
 		print("x: "..flr(cursor_x+cam_x).." y:"..cursor_y-stage_top, 80, stage_top - 8, 8) 
 	end
+ if show_depth then
+  fillp(0b0011001111001100.1)
+  line(0,room_curr.autodepth_pos[1]+stage_top,128,room_curr.autodepth_pos[1]+stage_top,1)
+  print(room_curr.autodepth_scale[1], 0,room_curr.autodepth_pos[1]+stage_top+2)
+  line(0,room_curr.autodepth_pos[2]+stage_top,128,room_curr.autodepth_pos[2]+stage_top,12)
+  print(room_curr.autodepth_scale[2], 0,room_curr.autodepth_pos[2]+stage_top+2)
+  fillp()
+ end
 
 	-- draw active/speech text
 	talking_draw()
@@ -2347,6 +2356,9 @@ function game_init()
 			room.map_w = 16
 			room.map_h = 8
 		end
+  -- auto-depth (or defaults)
+  room.autodepth_pos = room.autodepth_pos or {9,50}
+  room.autodepth_scale = room.autodepth_scale or {0,1}
 
 		-- init objects (in room)
 		for obj in all(room.objects) do
