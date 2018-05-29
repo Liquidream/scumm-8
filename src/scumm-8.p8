@@ -150,15 +150,14 @@ reset_ui()
        -- cutscene code (hides ui, etc.)
        function()        
         break_time(200)
-        say_line("one one one one one on eon eon eon eon...")
+        say_line("this is some example dialog")
         break_time(200)
-        say_line("two two two two two two two tw otw ot wo owtt...")
+        say_line("with some pauses...")
         break_time(200)
-        say_line("three three thrreethree three three threet hree...")
+        say_line("you can try skipping next time!")
        end,
        -- override for cutscene
-       function()       
-        --printh("override!")       
+       function()  
         stop_talking()
        end
       )
@@ -177,8 +176,6 @@ reset_ui()
 		rm_hall = {
 			data = [[
 				map = {32,24,55,31}
-    autodepth_pos = {30, 50}
-    autodepth_scale = {0.25, 1}
 			]],
 			objects = {
 				obj_front_door_inside,
@@ -1177,28 +1174,15 @@ function walk_to(actor, x, y)
 		local target_cell_pos = { celx, cely }
 
 		-- use pathfinding!
-	  local path = find_path(actor_cell_pos, target_cell_pos)
+	 local path = find_path(actor_cell_pos, target_cell_pos)
 
 		actor.moving = 1
 
-
 		for p in all(path) do
 
-  -- auto-adjust walk-speed for depth?
-  --local factor = (actor.y-room_curr.autodepth_pos[1]) / (room_curr.autodepth_pos[2]-room_curr.autodepth_pos[1])
-  --printh("walk-factor:"..factor)
-  --local auto_scale = actor.auto_scale
-  --local auto_scale = mid(0, factor, 1) -- nice and gradual   
-  --local auto_scale = mid(room_curr.autodepth_scale[1], factor, room_curr.autodepth_scale[2]) -- nice and gradual   
-  --local auto_scale = mid(room_curr.min_autoscale or 0.15, actor.y/40, 1) -- nice and gradual  
-  printh("walk_auto_scale:"..actor.auto_scale)
-  --printh("walk_auto_scale:"..auto_scale*actor.walk_speed)
-
-  -- apply "zoom" to autoscale (e.g. camera further away)
-  --auto_scale *= (room_curr.autoscale_zoom or 1)
- 
-  local scaled_speed = actor.walk_speed * (actor.scale or actor.auto_scale)
-  --local y_speed = actor.walk_speed/2
+   -- auto-adjust walk-speed for depth
+   local scaled_speed = actor.walk_speed * (actor.scale or actor.auto_scale)
+   --local y_speed = actor.walk_speed/2 -- removed, messes up the a* pathfinding
 
 			local px = (p[1]-room_curr.map[1])*8 + 4
 			local py = (p[2]-room_curr.map[2])*8 + 4
@@ -1211,18 +1195,14 @@ function walk_to(actor, x, y)
 				return
 			end
 
-     printh("distance:"..distance)
-     printh("scaled_speed:"..scaled_speed)
-     printh("stepx:"..step_x)
-     printh("stepy:"..step_y)
-
 			-- only walk if we're not already there!
 			if distance > 5 then 
-     --walking
-				--actor.moving = 1 
+    
+    --walking
 				
 				for i = 0, distance/scaled_speed do
-     -- need recalc here, else walk too fast/slow in depth planes
+     
+     -- todo: need to somehow recalc here, else walk too fast/slow in depth planes
 
      actor.flip = (step_x<0)
 
@@ -2028,32 +2008,12 @@ function actor_draw(actor)
 
  -- auto-scaling for depth?
  local factor = (actor.y-room_curr.autodepth_pos[1]) / (room_curr.autodepth_pos[2]-room_curr.autodepth_pos[1])
- --printh("ypos-factor:"..factor)
  factor = room_curr.autodepth_scale[1]+(room_curr.autodepth_scale[2]-room_curr.autodepth_scale[1])*factor
- --printh("scale-factor:"..factor)
  actor.auto_scale = mid(room_curr.autodepth_scale[1], factor, room_curr.autodepth_scale[2])
- 
- --local auto_scale = mid(room_curr.min_autoscale or 0, (actor.y+12)/64, 1) -- nice and gradual   
- --local auto_scale = mid(room_curr.min_autoscale or 0.15, (actor.y+12)/64, 1) -- nice and gradual (starting further back)
- --local auto_scale = mid(room_curr.max_depth or 0.15, actor.y/40, 1) -- nice and gradual  
- --local auto_scale = max(0.15, (y+stage_top*3)/58) -- nice and gradual
- --local auto_scale = mid(0.15, (y+stage_top)/16, 1) -- too sudden
-
--- printh("autodepth_scale[1]:"..room_curr.autodepth_scale[1])
--- printh("autodepth_scale[2]:"..room_curr.autodepth_scale[2])
--- printh("auto_scale:"..auto_scale)
 
  -- apply "zoom" to autoscale (e.g. camera further away)
  --auto_scale *= (room_curr.autoscale_zoom or 1)
 
- -- printh("name:"..actor.name)
- -- printh("mid:"..mid_)
- --printh("actor.y:"..actor.y)
- -- printh("stage_top:"..stage_top)
-  --printh("min_autoscale:"..room_curr.min_autoscale)
-  --printh("auto_scale:"..auto_scale)
-
- 
  -- calc scaling offset (to align to bottom-centered)
  local scale = actor.scale or actor.auto_scale
  local scale_height = (8 * actor.h) 
@@ -2077,9 +2037,6 @@ function actor_draw(actor)
     sprdraw(sprnum, actor.offset_x + flr(scaleoffset_x/2), actor.offset_y + flr(8*scale) + scaleoffset_y, 
      1, 1, actor.trans_col, 
      actor.flip, false, scale)
- 
-    -- sprdraw(sprnum, actor.offset_x, actor.offset_y + stage_top+8, 1, 1, 
-				-- 	actor.trans_col, actor.flip, false, actor.scale or auto_scale)
 			end
 			actor.talk_tmr += 1	
 			if actor.talk_tmr > 14 then actor.talk_tmr = 1 end
@@ -2661,16 +2618,11 @@ end
 function explode_data(obj)
 	local lines=split(obj.data, "\n")
 	for l in all(lines) do
-		--printh("curr line = ["..l.."]")
 		local pairs=split(l, "=")
-		-- todo: check to see if value is an array?
-		-- now set actual values
-		--printh(" > curr pair = ["..pairs[1].."]")
 		if #pairs==2 then
-			--printh("pair1=["..pairs[1].."]  pair2=["..pairs[2].."]")
 			obj[pairs[1]] = autotype(pairs[2])
 		else
-			printh(" > invalid data: ["..pairs[1].."]") -- = ["..pairs[2].."]")
+			printh(" > invalid data: ["..pairs[1].."]")
 		end
 	end
 end
@@ -3065,7 +3017,7 @@ ccc0ccc01c10ccc0000000000a00a0a0aaa0a0a000000a00aa1000001cc0cc10ccc0000000000011
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 
 __gff__
-0001010100010100010000010000000000010101010101000000000100000000000101010101010101000000000000000001010101010100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000100000000000000
+0001010100010100000000010000000000010101010101000000000100000000000101010101010101000000000000000001010101010100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 __map__
 0707070808080808080808080807070707070717171717171717171717070707171717080808080808080808081717170707071717171717171717171707070717171708080808080808080808171717070707171717171717171717170707071717170808080808080808080817171707070717171717171717171717070707
