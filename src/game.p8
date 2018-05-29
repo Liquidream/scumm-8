@@ -20,7 +20,7 @@ __lua__
 -- now 8052 tokens (after intro, lightswitch and final game elements)
 
 -- debugging
-show_debuginfo = false
+show_debuginfo = true
 --show_collision = false
 --show_pathfinding = true
 --show_perfinfo = false
@@ -206,7 +206,7 @@ reset_ui()
 		rm_outside = {
 			data = [[
 				map = {0,24,31,31}
-    max_depth = 0.75
+    autodepth_scale = {0.75,1}
 			]],
 			objects = {
 				obj_outside_stairs,
@@ -407,7 +407,8 @@ reset_ui()
 			data = [[
 				map = {32,24,55,31}
 				col_replace = {5,2}
-    max_depth = 0.75
+    autodepth_pos = {40,50}
+    autodepth_scale = {0.82,1}
 			]],
 			objects = {
 				--obj_spinning_top,
