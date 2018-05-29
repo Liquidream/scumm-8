@@ -10,7 +10,7 @@ __lua__
  show_debuginfo = true
 -- show_collision = false
 -- show_pathfinding = false
---show_perfinfo = true
+-- show_perfinfo = true
 -- show_depth = true
 
 -- game functionality flags
