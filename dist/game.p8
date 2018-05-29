@@ -21,9 +21,9 @@ __lua__
 
 -- debugging
 show_debuginfo = false
-show_collision = false
+--show_collision = false
 --show_pathfinding = true
-show_perfinfo = false
+--show_perfinfo = false
 enable_mouse = true
 d = printh
 

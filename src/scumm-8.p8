@@ -201,7 +201,6 @@ reset_ui()
 								break_time(4)
 							end
 							-- move top
-							--top = find_object("spinning top")
 							obj_spinning_top.x -= dir					
 						end	
 						dir *= -1
