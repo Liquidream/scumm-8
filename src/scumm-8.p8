@@ -2012,7 +2012,7 @@ function actor_draw(actor)
  actor.auto_scale = mid(room_curr.autodepth_scale[1], factor, room_curr.autodepth_scale[2])
 
  -- apply "zoom" to autoscale (e.g. camera further away)
- --auto_scale *= (room_curr.autoscale_zoom or 1)
+ --auto_scale *= (room_curr.scale or 1)
 
  -- calc scaling offset (to align to bottom-centered)
  local scale = actor.scale or actor.auto_scale
