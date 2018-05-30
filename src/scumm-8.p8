@@ -2013,8 +2013,9 @@ function actor_draw(actor)
  -- apply "zoom" to autoscale (e.g. camera further away)
  --auto_scale *= (room_curr.scale or 1)
 
-
-    actor.scale=1
+--6616
+--6612
+--6609
 
  -- calc scaling offset (to align to bottom-centered)
  local scale = actor.scale or actor.auto_scale
@@ -2022,10 +2023,12 @@ function actor_draw(actor)
  local scale_width = (8 * actor.w) 
  local scaleoffset_y = scale_height - (scale_height * scale)
  local scaleoffset_x = scale_width - (scale_width * scale)
+ local draw_x = actor.offset_x + flr(scaleoffset_x/2)
+ local draw_y = actor.offset_y + scaleoffset_y
 
 	sprdraw(sprnum, 
-  actor.offset_x + flr(scaleoffset_x/2), 
-  actor.offset_y  + scaleoffset_y, 
+  draw_x, 
+  draw_y, 
 		actor.w , 
   actor.h, 
   actor.trans_col, 
@@ -2040,29 +2043,16 @@ function actor_draw(actor)
 	 and talking_actor.talk
 	then
 			if actor.talk_tmr < 7 then
-				sprnum = actor.talk[dirnum]
-
-
     -- note: scaling from top-left
-    sprdraw(sprnum, 
-     actor.offset_x + flr(scaleoffset_x/2) + (actor.talk[5] or 0), 
-     actor.offset_y + flr((actor.talk[6] or 8)*scale) + scaleoffset_y, 
+    sprdraw(actor.talk[dirnum], 
+     draw_x + (actor.talk[5] or 0), 
+     draw_y + flr((actor.talk[6] or 8)*scale), 
      (actor.talk[7] or 1), 
      (actor.talk[8] or 1), 
      actor.trans_col, 
      actor.flip, 
      false, 
      scale)
-
-    -- sprdraw(sprnum, 
-    --  actor.offset_x + flr(scaleoffset_x/2), 
-    --  actor.offset_y + flr(8*scale) + scaleoffset_y, 
-    --  1, 
-    --  1, 
-    --  actor.trans_col, 
-    --  actor.flip, 
-    --  false, 
-    --  scale)
 			end
 			actor.talk_tmr += 1	
 			if actor.talk_tmr > 14 then actor.talk_tmr = 1 end
