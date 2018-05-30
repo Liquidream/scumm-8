@@ -9,7 +9,7 @@ __lua__
 --
  show_debuginfo = true
 -- show_collision = false
- show_pathfinding = true
+-- show_pathfinding = true
 -- show_perfinfo = true
 -- show_depth = true
 
@@ -1173,11 +1173,11 @@ function walk_to(actor, x, y)
 		local target_cell_pos = { celx, cely }
 
 		-- use pathfinding!
-	 local path = find_path(actor_cell_pos, target_cell_pos)
+	 local path = find_path(actor_cell_pos, target_cell_pos, {x,y})
 
 		actor.moving = 1
 
-  for c=1,#path+1 do
+  for c=1,#path do
    p=path[c]
 		--for p in all(path) do
 
@@ -1187,12 +1187,22 @@ function walk_to(actor, x, y)
 
    local px,py
 
-   if p!=nil then
-    px = (p[1]-room_curr.map[1])*8 + 4
-    py = (p[2]-room_curr.map[2])*8 + 4
-   else
-    px=x
-    py=y
+   px = (p[1]-room_curr.map[1])*8 + 4
+   py = (p[2]-room_curr.map[2])*8 + 4
+
+   if c==#path then
+    -- printh("last cell!")
+    -- printh("x:"..x)
+    -- printh("px:"..px)
+    -- printh("y:"..y)
+    -- printh("py:"..py)
+    -- last cell (go accurate, if clicked in it)
+    if x >= px-4 and x <= px+4 
+    and y>= py-4 and y <= py+4 then
+     --printh("precise walk!")
+     px=x
+     py=y
+    end
    end
 
 			local distance = sqrt((px - actor.x) ^ 2 + (py - actor.y) ^ 2)
@@ -1877,34 +1887,34 @@ function room_draw()
 					-- ===============================================================
 					-- debug walkable areas
 					
-					if show_pathfinding then
-						actor_cell_pos = getcellpos(selected_actor)
+					-- if show_pathfinding then
+					-- 	actor_cell_pos = getcellpos(selected_actor)
 
-     --## need to correct this offset (in code above)
-     --actor_cell_pos[2] -= 2
+     -- --## need to correct this offset (in code above)
+     -- --actor_cell_pos[2] -= 2
 
-						celx = flr((cursor_x + cam_x + 0) /8) + room_curr.map[1]
-						cely = flr((cursor_y - stage_top + 0) /8 ) + room_curr.map[2]
-						target_cell_pos = { celx, cely }
+					-- 	celx = flr((cursor_x + cam_x + 0) /8) + room_curr.map[1]
+					-- 	cely = flr((cursor_y - stage_top + 0) /8 ) + room_curr.map[2]
+					-- 	target_cell_pos = { celx, cely }
 
-						path = find_path(actor_cell_pos, target_cell_pos)
+					-- 	path = find_path(actor_cell_pos, target_cell_pos)
 
-						-- finally, add our destination to list
-						click_cell = getcellpos({x=(cursor_x + cam_x), y=(cursor_y - stage_top)})
-						if is_cell_walkable(click_cell[1], click_cell[2]) then
-						--if (#path>0) then
-							add(path, click_cell)
-						end
+					-- 	-- finally, add our destination to list
+					-- 	click_cell = getcellpos({x=(cursor_x + cam_x), y=(cursor_y - stage_top)})
+					-- 	if is_cell_walkable(click_cell[1], click_cell[2]) then
+					-- 	--if (#path>0) then
+					-- 		add(path, click_cell)
+					-- 	end
 
-						for p in all(path) do
-							--printh("  > "..p[1]..","..p[2])
-							rect(
-								(p[1]-room_curr.map[1])*8, 
-								stage_top+(p[2]-room_curr.map[2])*8, 
-								(p[1]-room_curr.map[1])*8+7, 
-								stage_top+(p[2]-room_curr.map[2])*8+7, 11)
-						end
-					end
+					-- 	for p in all(path) do
+					-- 		--printh("  > "..p[1]..","..p[2])
+					-- 		rect(
+					-- 			(p[1]-room_curr.map[1])*8, 
+					-- 			stage_top+(p[2]-room_curr.map[2])*8, 
+					-- 			(p[1]-room_curr.map[1])*8+7, 
+					-- 			stage_top+(p[2]-room_curr.map[2])*8+7, 11)
+					-- 	end
+					-- end
 
      -- ===============================================================
 
@@ -2029,6 +2039,7 @@ function actor_draw(actor)
 --6616
 --6612
 --6609
+--6656 (added precise walk!)
 
  -- calc scaling offset (to align to bottom-centered)
  local scale = actor.scale or actor.auto_scale
@@ -2073,8 +2084,8 @@ function actor_draw(actor)
 
  -- debug
  -- if show_debuginfo then
-  pset(actor.x, actor.y + stage_top, 8)
-  pset(actor.offset_x, actor.offset_y+stage_top, 11)
+  -- pset(actor.x, actor.y + stage_top, 8)
+  -- pset(actor.offset_x, actor.offset_y+stage_top, 11)
  -- end
 
 	--reset palette
@@ -2578,7 +2589,7 @@ function find_path(start, goal)
  
  if current then
  	-- add "goal" to path
-	 --add(path, goal)
+	 add(path, goal)
  -- check for "no goal found"
  elseif lowest_dist_node then
    -- start from closest to goal instead
