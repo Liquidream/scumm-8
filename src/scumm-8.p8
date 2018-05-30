@@ -4,6 +4,12 @@ __lua__
 -- scumm-8
 -- paul nicholas
 
+--6616
+--6612
+--6609
+--6656 (added precise walk!)
+--
+
 --
 -- debug flags
 --
@@ -149,7 +155,6 @@ reset_ui()
        1, -- no verbs
        -- cutscene code (hides ui, etc.)
        function()        
-        break_time(200)
         say_line("this is some example dialog")
         break_time(200)
         say_line("with some pauses...")
@@ -163,6 +168,10 @@ reset_ui()
       )
      end,
 					use = function(me)
+      
+      -- test play animations
+      selected_actor.curr_anim = main_actor.walk_anim_back
+
 						if script_running(room_curr.scripts.spin_top) then
 							stop_script(room_curr.scripts.spin_top)
 							me.state = 1
@@ -1230,16 +1239,16 @@ function walk_to(actor, x, y)
       -- vertical walk, which way?
       if step_y > 0 then
        -- towards us
-       actor.walk_anim = actor.walk_anim_front
+       actor.curr_anim = actor.walk_anim_front
        actor.face_dir = "face_front"
       else
        -- away
-       actor.walk_anim = actor.walk_anim_back
+       actor.curr_anim = actor.walk_anim_back
        actor.face_dir = "face_back"
       end
      else
       -- horizontal walk
-      actor.walk_anim = actor.walk_anim_side
+      actor.curr_anim = actor.walk_anim_side
       -- face dir (at end of walk)
       actor.face_dir = "face_right"
       if actor.flip then actor.face_dir = "face_left" end
@@ -1255,6 +1264,7 @@ function walk_to(actor, x, y)
 			end
 		end
 		actor.moving = 2 --arrived
+  actor.curr_anim = nil
 end
 
 function wait_for_actor(actor)
@@ -2009,16 +2019,18 @@ function actor_draw(actor)
 	dirnum = face_dir_vals[actor.face_dir]
 
 	if actor.moving == 1
-	 and actor.walk_anim 
+	 or actor.curr_anim --actor.walk_anim 
 	then
-		actor.tmr += 1
-		if actor.tmr > actor.frame_delay then
-			actor.tmr = 1
-			actor.anim_pos += 1
-			if actor.anim_pos > #actor.walk_anim then actor.anim_pos=1 end
-		end
+  -- update animation state
+  animate(actor)
+		-- actor.tmr += 1
+		-- if actor.tmr > actor.frame_delay then
+		-- 	actor.tmr = 1
+		-- 	actor.anim_pos += 1
+		-- 	if actor.anim_pos > #actor.walk_anim then actor.anim_pos=1 end
+		-- end
 		-- choose walk anim frame
-		sprnum = actor.walk_anim[actor.anim_pos]	
+		sprnum = actor.curr_anim[actor.anim_pos]	
 	else
 
 		-- idle
@@ -2036,10 +2048,6 @@ function actor_draw(actor)
  -- apply "zoom" to autoscale (e.g. camera further away)
  --auto_scale *= (room_curr.scale or 1)
 
---6616
---6612
---6609
---6656 (added precise walk!)
 
  -- calc scaling offset (to align to bottom-centered)
  local scale = actor.scale or actor.auto_scale
@@ -2650,6 +2658,18 @@ end
 --
 -- helper functions 
 -- 
+
+function animate(obj)
+ -- animate the object
+ -- (update frames, looping as req)
+ obj.tmr += 1
+		if obj.tmr > obj.frame_delay then
+			obj.tmr = 1
+			obj.anim_pos += 1
+			if obj.anim_pos > #obj.curr_anim then obj.anim_pos=1 end
+		end
+end
+
 
 function show_error(msg)
 	print_line("-error-;"..msg,5+cam_x,5,8,0)
