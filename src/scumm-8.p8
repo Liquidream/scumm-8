@@ -170,7 +170,8 @@ reset_ui()
 					use = function(me)
       
       -- test play animations
-      selected_actor.curr_anim = main_actor.walk_anim_back
+      do_anim(selected_actor, main_actor.walk_anim_side)
+      --selected_actor.curr_anim = main_actor.walk_anim_back
 
 						if script_running(room_curr.scripts.spin_top) then
 							stop_script(room_curr.scripts.spin_top)
@@ -254,13 +255,13 @@ reset_ui()
 					lookat = function()
 						say_line("it's a nice, warm fire...")
 						break_time(10)
-						do_anim(selected_actor, "anim_face", "face_front")
+						do_anim(selected_actor, "face_towards", "face_front")
 						say_line("ouch! it's hot!:*stupid fire*")
 					end,
 					talkto = function()
 						say_line("'hi fire...'")
 						break_time(10)
-						do_anim(selected_actor, "anim_face", "face_front")
+						do_anim(selected_actor, "face_towards", "face_front")
 						say_line("the fire didn't say hello back:burn!!")
 					end,
 					pickup = function(me)
@@ -773,7 +774,21 @@ function get_use_pos(obj)
 end
 
 
-function do_anim(actor, cmd_type, cmd_value)
+function do_anim(actor, param1, param2)
+ 
+ -- SCUMM examples:
+ --   do-animation selected-actor stand
+ --   do-animation selected-actor get-up
+
+ --   do-animation bernard ring-bell
+ --   break-here 4
+ --   do-animation bernard reach-low
+
+ --   do-animation hermit face-towards guybrush
+ --   do-animation max face-towards sam
+
+--stop_actor;
+--This automatically triggers do-animation stand and clears the walking flag.
 
 	dir_nums = {
 		"face_front",
@@ -782,13 +797,14 @@ function do_anim(actor, cmd_type, cmd_value)
 		"face_right" 
 	}
 
+ -- face-towards?
 	-- animate turn to face (object/actor or explicit direction)
-	if cmd_type == "anim_face" then
+	if param1 == "face_towards" then
 		
-		-- check if cmd_value is an actor/object, rather than explicit face_dir
-		if type(cmd_value) == "table" then
+		-- check if param2 is an actor/object, rather than explicit face_dir
+		if type(param2) == "table" then
 			-- need to calculate face_dir from positions
-			angle_rad = atan2(actor.x  - cmd_value.x , cmd_value.y - actor.y)
+			angle_rad = atan2(actor.x  - param2.x , param2.y - actor.y)
 			-- calc player's angle offset in this
 			plr_angle = 93 * (3.1415/180)
 			-- adjust for player's angle
@@ -804,18 +820,18 @@ function do_anim(actor, cmd_type, cmd_value)
 			if degrees < 0 then degrees += 360 end
 
 			-- set final target face direction to obj/actor
-			cmd_value = 4 - flr(degrees/90)
+			param2 = 4 - flr(degrees/90)
 
 			-- convert final value
-			cmd_value = dir_nums[cmd_value]
+			param2 = dir_nums[param2]
 		end
 
 		face_dir = face_dir_vals[actor.face_dir]
-		cmd_value = face_dir_vals[cmd_value]
+		param2 = face_dir_vals[param2]
 		
-		while face_dir != cmd_value do
+		while face_dir != param2 do
 			-- turn to target face_dir
-			if face_dir < cmd_value then
+			if face_dir < param2 then
 				face_dir += 1
 			else 
 				face_dir -= 1
@@ -827,8 +843,15 @@ function do_anim(actor, cmd_type, cmd_value)
 			break_time(10)
 		end
 
+ else
+  -- must be an explicit animation (e.g. "idle")
+  -- so start it now
+  actor.curr_anim = param1
+  actor.anim_pos = 1
+  actor.tmr = 1
 
-	end
+	end --  if param1 == "face_towards"
+
 end
 
 -- open one (or more) doors
@@ -1690,7 +1713,7 @@ function input_button_pressed(button_index)
 				-- unless a diff dir specified
 				if walk_obj.use_dir then use_dir = walk_obj.use_dir end
 				-- turn to use dir				
-				do_anim(selected_actor, "anim_face", use_dir)
+				do_anim(selected_actor, "face_towards", use_dir)
 			end
 			-- does current object support active verb?
 			if valid_verb(verb_curr,noun1_curr) then
