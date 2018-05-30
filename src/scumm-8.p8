@@ -395,7 +395,7 @@ rooms = {
 			w = 1
 			h = 4
 			idle = { 193, 197, 199, 197 }
-			talk = { 218, 219, 220, 219 }
+			talk = { 218, 219, 220, 219, 0,8, 1,1 }
 			walk_anim_side = { 196, 197, 198, 197 }
 			walk_anim_front = { 194, 193, 195, 193 }
 			walk_anim_back = { 200, 199, 201, 199 }
@@ -2013,6 +2013,9 @@ function actor_draw(actor)
  -- apply "zoom" to autoscale (e.g. camera further away)
  --auto_scale *= (room_curr.scale or 1)
 
+
+    actor.scale=1
+
  -- calc scaling offset (to align to bottom-centered)
  local scale = actor.scale or actor.auto_scale
  local scale_height = (8 * actor.h) 
@@ -2020,10 +2023,17 @@ function actor_draw(actor)
  local scaleoffset_y = scale_height - (scale_height * scale)
  local scaleoffset_x = scale_width - (scale_width * scale)
 
-	sprdraw(sprnum, actor.offset_x + flr(scaleoffset_x/2), actor.offset_y  + scaleoffset_y, 
-		actor.w , actor.h, actor.trans_col, 
-		actor.flip, false, scale)
+	sprdraw(sprnum, 
+  actor.offset_x + flr(scaleoffset_x/2), 
+  actor.offset_y  + scaleoffset_y, 
+		actor.w , 
+  actor.h, 
+  actor.trans_col, 
+		actor.flip, 
+  false, 
+  scale)
 	
+
 	-- talking overlay
 	if talking_actor 
 	 and talking_actor == actor 
@@ -2032,10 +2042,27 @@ function actor_draw(actor)
 			if actor.talk_tmr < 7 then
 				sprnum = actor.talk[dirnum]
 
-    -- works (when scaling from top-left)
-    sprdraw(sprnum, actor.offset_x + flr(scaleoffset_x/2), actor.offset_y + flr(8*scale) + scaleoffset_y, 
-     1, 1, actor.trans_col, 
-     actor.flip, false, scale)
+
+    -- note: scaling from top-left
+    sprdraw(sprnum, 
+     actor.offset_x + flr(scaleoffset_x/2) + (actor.talk[5] or 0), 
+     actor.offset_y + flr((actor.talk[6] or 8)*scale) + scaleoffset_y, 
+     (actor.talk[7] or 1), 
+     (actor.talk[8] or 1), 
+     actor.trans_col, 
+     actor.flip, 
+     false, 
+     scale)
+
+    -- sprdraw(sprnum, 
+    --  actor.offset_x + flr(scaleoffset_x/2), 
+    --  actor.offset_y + flr(8*scale) + scaleoffset_y, 
+    --  1, 
+    --  1, 
+    --  actor.trans_col, 
+    --  actor.flip, 
+    --  false, 
+    --  scale)
 			end
 			actor.talk_tmr += 1	
 			if actor.talk_tmr > 14 then actor.talk_tmr = 1 end
