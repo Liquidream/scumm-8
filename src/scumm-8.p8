@@ -775,32 +775,28 @@ end
 
 
 function do_anim(actor, param1, param2)
- 
+ --
  -- SCUMM examples:
- --   do-animation selected-actor stand
- --   do-animation selected-actor get-up
+ --  do-animation selected-actor stand
+ --  do-animation selected-actor get-up
 
- --   do-animation bernard ring-bell
- --   break-here 4
- --   do-animation bernard reach-low
+ --  do-animation bernard ring-bell
+ --  break-here 4
+ --  do-animation bernard reach-low
 
- --   do-animation hermit face-towards guybrush
- --   do-animation max face-towards sam
-
---stop_actor;
---This automatically triggers do-animation stand and clears the walking flag.
-
-	dir_nums = {
-		"face_front",
-		"face_left",
-		"face_back",
-		"face_right" 
-	}
+ --  do-animation hermit face-towards guybrush
+ --  do-animation max face-towards sam
 
  -- face-towards?
-	-- animate turn to face (object/actor or explicit direction)
+	--   animate turn to face (object/actor or explicit direction)
 	if param1 == "face_towards" then
-		
+  
+  dir_nums = {
+   "face_front",
+   "face_left",
+   "face_back",
+   "face_right" 
+  }
 		-- check if param2 is an actor/object, rather than explicit face_dir
 		if type(param2) == "table" then
 			-- need to calculate face_dir from positions
@@ -1194,6 +1190,8 @@ end
 
 function stop_actor(actor)
 	actor.moving = 0
+ actor.curr_anim = nil
+ --do_anim(actor, actor.idle)
 	clear_curr_cmd()
 end
 
