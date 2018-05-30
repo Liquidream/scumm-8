@@ -9,7 +9,7 @@ __lua__
 --
  show_debuginfo = true
 -- show_collision = false
--- show_pathfinding = false
+ show_pathfinding = true
 -- show_perfinfo = true
 -- show_depth = true
 
@@ -1177,14 +1177,23 @@ function walk_to(actor, x, y)
 
 		actor.moving = 1
 
-		for p in all(path) do
+  for c=1,#path+1 do
+   p=path[c]
+		--for p in all(path) do
 
    -- auto-adjust walk-speed for depth
    local scaled_speed = actor.walk_speed * (actor.scale or actor.auto_scale)
    --local y_speed = actor.walk_speed/2 -- removed, messes up the a* pathfinding
 
-			local px = (p[1]-room_curr.map[1])*8 + 4
-			local py = (p[2]-room_curr.map[2])*8 + 4
+   local px,py
+
+   if p!=nil then
+    px = (p[1]-room_curr.map[1])*8 + 4
+    py = (p[2]-room_curr.map[2])*8 + 4
+   else
+    px=x
+    py=y
+   end
 
 			local distance = sqrt((px - actor.x) ^ 2 + (py - actor.y) ^ 2)
 			local step_x = scaled_speed * (px - actor.x) / distance
@@ -1195,7 +1204,7 @@ function walk_to(actor, x, y)
 			end
 
 			-- only walk if we're not already there!
-			if distance > 5 then 
+			if distance > 0 then 
     
     --walking
 				
@@ -1230,7 +1239,9 @@ function walk_to(actor, x, y)
 					actor.x += step_x
 					actor.y += step_y
 					yield()
+
 				end
+
 			end
 		end
 		actor.moving = 2 --arrived
@@ -1866,34 +1877,36 @@ function room_draw()
 					-- ===============================================================
 					-- debug walkable areas
 					
-					-- if show_pathfinding then
-					-- 	actor_cell_pos = getcellpos(selected_actor)
+					if show_pathfinding then
+						actor_cell_pos = getcellpos(selected_actor)
 
-     -- --## need to correct this offset (in code above)
-     -- --actor_cell_pos[2] -= 2
+     --## need to correct this offset (in code above)
+     --actor_cell_pos[2] -= 2
 
-					-- 	celx = flr((cursor_x + cam_x + 0) /8) + room_curr.map[1]
-					-- 	cely = flr((cursor_y - stage_top + 0) /8 ) + room_curr.map[2]
-					-- 	target_cell_pos = { celx, cely }
+						celx = flr((cursor_x + cam_x + 0) /8) + room_curr.map[1]
+						cely = flr((cursor_y - stage_top + 0) /8 ) + room_curr.map[2]
+						target_cell_pos = { celx, cely }
 
-					-- 	path = find_path(actor_cell_pos, target_cell_pos)
+						path = find_path(actor_cell_pos, target_cell_pos)
 
-					-- 	-- finally, add our destination to list
-					-- 	click_cell = getcellpos({x=(cursor_x + cam_x), y=(cursor_y - stage_top)})
-					-- 	if is_cell_walkable(click_cell[1], click_cell[2]) then
-					-- 	--if (#path>0) then
-					-- 		add(path, click_cell)
-					-- 	end
+						-- finally, add our destination to list
+						click_cell = getcellpos({x=(cursor_x + cam_x), y=(cursor_y - stage_top)})
+						if is_cell_walkable(click_cell[1], click_cell[2]) then
+						--if (#path>0) then
+							add(path, click_cell)
+						end
 
-					-- 	for p in all(path) do
-					-- 		--printh("  > "..p[1]..","..p[2])
-					-- 		rect(
-					-- 			(p[1]-room_curr.map[1])*8, 
-					-- 			stage_top+(p[2]-room_curr.map[2])*8, 
-					-- 			(p[1]-room_curr.map[1])*8+7, 
-					-- 			stage_top+(p[2]-room_curr.map[2])*8+7, 11)
-					-- 	end
-					-- end
+						for p in all(path) do
+							--printh("  > "..p[1]..","..p[2])
+							rect(
+								(p[1]-room_curr.map[1])*8, 
+								stage_top+(p[2]-room_curr.map[2])*8, 
+								(p[1]-room_curr.map[1])*8+7, 
+								stage_top+(p[2]-room_curr.map[2])*8+7, 11)
+						end
+					end
+
+     -- ===============================================================
 
 		else
 			-- draw other layers
@@ -2060,8 +2073,8 @@ function actor_draw(actor)
 
  -- debug
  -- if show_debuginfo then
- --  pset(actor.x, actor.y + stage_top, 8)
- --  pset(actor.offset_x, actor.offset_y+stage_top, 11)
+  pset(actor.x, actor.y + stage_top, 8)
+  pset(actor.offset_x, actor.offset_y+stage_top, 11)
  -- end
 
 	--reset palette
@@ -2565,7 +2578,7 @@ function find_path(start, goal)
  
  if current then
  	-- add "goal" to path
-	 add(path, goal)
+	 --add(path, goal)
  -- check for "no goal found"
  elseif lowest_dist_node then
    -- start from closest to goal instead
