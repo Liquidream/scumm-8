@@ -20,13 +20,11 @@ __lua__
 -- now 8052 tokens (after intro, lightswitch and final game elements)
 
 -- debugging
-show_debuginfo = true
+show_debuginfo = false
 --show_collision = false
 --show_pathfinding = true
 --show_perfinfo = false
 enable_mouse = true
-d = printh
-
 
 
 -- game verbs (used in room definitions and ui)
@@ -1153,7 +1151,6 @@ reset_ui()
 						-- 		-- override for cutscene
 						-- 		function()
 						-- 			--if cutscene_curr.skipped then
-						-- 			--d("override!")
 						-- 			change_room(rm_hall)
 						-- 			put_at(purp_tentacle, 105, 44, rm_hall)
 						-- 			stop_talking()
