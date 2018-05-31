@@ -142,8 +142,9 @@ reset_ui()
 					y=37
 					w=1
 					h=1
-					state=1
-					states={158,174,190}
+					state=158
+					anim_spin={158,174,190}
+     frame_delay=4
 					col_replace={12,7}
 					trans_col=15
      use_dir = face_front
@@ -173,12 +174,20 @@ reset_ui()
       do_anim(selected_actor, main_actor.walk_anim_side)
       --selected_actor.curr_anim = main_actor.walk_anim_back
 
-						if script_running(room_curr.scripts.spin_top) then
-							stop_script(room_curr.scripts.spin_top)
-							me.state = 1
+      if me.curr_anim then
+							--stop_script(room_curr.scripts.spin_top)
+       me.curr_anim=nil
+							me.state = 158
 						else
-							start_script(room_curr.scripts.spin_top)
+       do_anim(obj_spinning_top, obj_spinning_top.anim_spin)
+							--start_script(room_curr.scripts.spin_top)
 						end
+						-- if script_running(room_curr.scripts.spin_top) then
+						-- 	stop_script(room_curr.scripts.spin_top)
+						-- 	me.state = 1
+						-- else
+						-- 	start_script(room_curr.scripts.spin_top)
+						-- end
 					end
 				}
 			}
@@ -201,22 +210,22 @@ reset_ui()
 			exit = function(me)
 				-- todo: anything here?
 			end,
-			scripts = {	  -- scripts that are at room-level
-				spin_top = function()
-					dir=-1				
-					while true do	
-						for x=1,3 do					
-							for f=1,3 do
-								obj_spinning_top.state = f
-								break_time(4)
-							end
-							-- move top
-							obj_spinning_top.x -= dir					
-						end	
-						dir *= -1
-					end				
-				end,
-			},
+			-- scripts = {	  -- scripts that are at room-level
+			-- 	spin_top = function()
+			-- 		dir=-1				
+			-- 		while true do	
+			-- 			for x=1,3 do					
+			-- 				for f=1,3 do
+			-- 					obj_spinning_top.state = f
+			-- 					break_time(4)
+			-- 				end
+			-- 				-- move top
+			-- 				obj_spinning_top.x -= dir					
+			-- 			end	
+			-- 			dir *= -1
+			-- 		end				
+			-- 	end,
+			-- },
 		}
 
 -- library
@@ -781,7 +790,7 @@ function get_use_pos(obj)
 end
 
 
-function do_anim(actor, param1, param2)
+function do_anim(thing, param1, param2)
  --
  -- scumm examples:
  --  do-animation selected-actor stand
@@ -807,7 +816,7 @@ function do_anim(actor, param1, param2)
 		-- check if param2 is an actor/object, rather than explicit face_dir
 		if type(param2) == "table" then
 			-- need to calculate face_dir from positions
-			angle_rad = atan2(actor.x  - param2.x , param2.y - actor.y)
+			angle_rad = atan2(thing.x  - param2.x , param2.y - thing.y)
 			-- calc player's angle offset in this
 			plr_angle = 93 * (3.1415/180)
 			-- adjust for player's angle
@@ -829,7 +838,7 @@ function do_anim(actor, param1, param2)
 			param2 = dir_nums[param2]
 		end
 
-		face_dir = face_dir_vals[actor.face_dir]
+		face_dir = face_dir_vals[thing.face_dir]
 		param2 = face_dir_vals[param2]
 		
 		while face_dir != param2 do
@@ -840,21 +849,18 @@ function do_anim(actor, param1, param2)
 				face_dir -= 1
 			end
 			-- set face dir
-			actor.face_dir = dir_nums[face_dir]
+			thing.face_dir = dir_nums[face_dir]
 			-- is target dir left? flip?
-			actor.flip = (actor.face_dir == "face_left")
+			thing.flip = (thing.face_dir == "face_left")
 			break_time(10)
 		end
 
  else
-  printh(".....1")
   -- must be an explicit animation (e.g. "idle")
   -- so start it now
-  actor.curr_anim = param1
-  actor.anim_pos = 1
-  actor.tmr = 1
- printh(".....2")
- printh("type: "..type(obj_fire.curr_anim))
+  thing.curr_anim = param1
+  thing.anim_pos = 1
+  thing.tmr = 1
 	end --  if param1 == "face_towards"
 
 end
@@ -2013,14 +2019,11 @@ function object_draw(obj)
  
  else
   if obj.curr_anim then
-   printh("has anim!")
    -- update animation state
    animate(obj)
    -- choose walk anim frame
-   sprnum = obj.curr_anim[obj.anim_pos]	
-   printh("animate! - "..sprnum)
+   sprnum = obj.curr_anim[obj.anim_pos]
   end
-  printh("after has anim")
   -- allow for repeating
   rx=1
   if obj.repeat_x then rx = obj.repeat_x end
@@ -2031,7 +2034,6 @@ function object_draw(obj)
    elseif sprnum == 0 then
     sprnum = obj[obj.state]
    end
-   printh("sprnum: "..sprnum)
    sprdraw(sprnum, obj.x+(h*(obj.w*8)), obj.y, obj.w, obj.h, obj.trans_col, obj.flip_x, obj.scale)
   end
 	end
