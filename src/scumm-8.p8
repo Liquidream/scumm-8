@@ -2073,8 +2073,8 @@ function actor_draw(actor)
 	dirnum = face_dir_vals[actor.face_dir]
 
 	if actor.moving == 1
-	 or actor.curr_anim --actor.walk_anim 
-	then
+	 or type(actor.curr_anim) == "table"
+	then  
   -- update animation state
   animate(actor)
 		-- actor.tmr += 1

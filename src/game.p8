@@ -527,13 +527,13 @@ reset_ui()
 					lookat = function()
 						say_line("it's a nice, warm fire...")
 						break_time(10)
-						do_anim(selected_actor, "anim_face", "face_front")
+						do_anim(selected_actor, "face_towards", "face_front")
 						say_line("ouch! it's hot!:*stupid fire*")
 					end,
 					talkto = function()
 						say_line("'hi fire...'")
 						break_time(10)
-						do_anim(selected_actor, "anim_face", "face_front")
+						do_anim(selected_actor, "face_towards", "face_front")
 						say_line("the fire didn't say hello back:burn!!")
 					end,
 					pickup = function(me)
@@ -797,7 +797,7 @@ reset_ui()
 									stop_actor(selected_actor)
 									say_line(purp_tentacle, "stop!:come back here!", true)
 									walk_to(selected_actor, purp_tentacle.x-8, purp_tentacle.y)
-									do_anim(selected_actor, "anim_face", purp_tentacle)
+									do_anim(selected_actor, "face_towards", purp_tentacle)
 									purp_tentacle.alerting = false
 								end
 							)
@@ -1146,7 +1146,7 @@ reset_ui()
 						-- 				selected_actor.x-10, 
 						-- 				selected_actor.y)
 						-- 			say_line("intruder!!!")
-						-- 			do_anim(main_actor, "anim_face", purp_tentacle)
+						-- 			do_anim(main_actor, "face_towards", purp_tentacle)
 						-- 		end,
 						-- 		-- override for cutscene
 						-- 		function()
@@ -1154,7 +1154,7 @@ reset_ui()
 						-- 			change_room(rm_hall)
 						-- 			put_at(purp_tentacle, 105, 44, rm_hall)
 						-- 			stop_talking()
-						-- 			do_anim(main_actor, "anim_face", purp_tentacle)
+						-- 			do_anim(main_actor, "face_towards", purp_tentacle)
 						-- 		end
 						-- 	)
 						-- end --if
@@ -1231,7 +1231,7 @@ reset_ui()
 							reset_ui()
 							selected_actor = main_actor
 							camera_follow(selected_actor)
-							do_anim(selected_actor, "anim_face", "face_front")
+							do_anim(selected_actor, "face_towards", "face_front")
 							say_line("well, that was short!:developers are so lazy...")
 							--say_line("test")
 						end
@@ -1557,7 +1557,7 @@ rooms = {
 					cutscene(
 						1, -- no verbs
 						function()
-							--do_anim(purp_tentacle, anim_face, selected_actor)
+							--do_anim(purp_tentacle, face_towards, selected_actor)
 							say_line(me,"what do you want?")
 						end)
 
