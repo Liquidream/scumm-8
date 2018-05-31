@@ -142,7 +142,8 @@ reset_ui()
 					y=37
 					w=1
 					h=1
-					state=158
+					state=state_idle
+     state_idle=158
 					anim_spin={158,174,190}
      frame_delay=4
 					col_replace={12,7}
@@ -174,20 +175,20 @@ reset_ui()
       do_anim(selected_actor, main_actor.walk_anim_side)
       --selected_actor.curr_anim = main_actor.walk_anim_back
 
-      if me.curr_anim then
-							--stop_script(room_curr.scripts.spin_top)
-       me.curr_anim=nil
-							me.state = 158
-						else
-       do_anim(obj_spinning_top, obj_spinning_top.anim_spin)
-							--start_script(room_curr.scripts.spin_top)
-						end
-						-- if script_running(room_curr.scripts.spin_top) then
-						-- 	stop_script(room_curr.scripts.spin_top)
-						-- 	me.state = 1
+      -- if me.curr_anim then
+						-- 	--stop_script(room_curr.scripts.spin_top)
+      --  me.curr_anim=nil
+						-- 	me.state = 158
 						-- else
+      --  --do_anim(obj_spinning_top, obj_spinning_top.anim_spin)
 						-- 	start_script(room_curr.scripts.spin_top)
 						-- end
+						if script_running(room_curr.scripts.spin_top) then
+							stop_script(room_curr.scripts.spin_top)
+							me.state = "state_idle"
+						else
+							start_script(room_curr.scripts.spin_top, true) -- bg script
+						end
 					end
 				}
 			}
@@ -210,6 +211,21 @@ reset_ui()
 			exit = function(me)
 				-- todo: anything here?
 			end,
+   
+   scripts = {	  -- scripts that are at room-level
+				spin_top = function()
+					dir=-1
+     do_anim(obj_spinning_top, obj_spinning_top.anim_spin)
+					while true do	
+						for x=1,3 do							
+							-- move top
+							obj_spinning_top.x -= dir
+       break_time(12)
+						end	
+						dir *= -1
+					end				
+				end,
+			},
 			-- scripts = {	  -- scripts that are at room-level
 			-- 	spin_top = function()
 			-- 		dir=-1				
@@ -458,12 +474,12 @@ function startup_script()
 
 	-- set which room to start the game in 
 	-- (e.g. could be a "pseudo" room for title screen!)
-	--change_room(rm_hall, 1) -- iris fade
+	change_room(rm_hall, 1) -- iris fade
  
- selected_actor = main_actor
- put_at(selected_actor, 51, 41, rm_library)
- camera_follow(selected_actor)
- --change_room(rm_library, 1) -- iris fade
+ -- selected_actor = main_actor
+ -- put_at(selected_actor, 51, 41, rm_library)
+ -- camera_follow(selected_actor) 
+ -- change_room(rm_library, 1) -- iris fade
 end
 
 
@@ -1964,6 +1980,7 @@ function room_draw()
 				-- object or actor?
 				if not has_flag(obj.classes, "class_actor") then
 					-- object
+     --printh("obj.state="..obj.state)
 					if obj.states	  -- object has a state?
 				    or (obj.state
 					   and obj[obj.state]
@@ -2009,6 +2026,8 @@ end
 
 
 function object_draw(obj)
+ --printh(">>> in obj draw ("..obj.name..")...")
+
 	local sprnum = 0
  -- replace colors?
 	replace_colors(obj)
@@ -2034,6 +2053,7 @@ function object_draw(obj)
    elseif sprnum == 0 then
     sprnum = obj[obj.state]
    end
+   --printh(">>> "..sprnum)
    sprdraw(sprnum, obj.x+(h*(obj.w*8)), obj.y, obj.w, obj.h, obj.trans_col, obj.flip_x, obj.scale)
   end
 	end
