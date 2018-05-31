@@ -246,7 +246,8 @@ reset_ui()
 					w=1
 					h=1
 					state=1
-					states={81,82,83}
+     anim_fire={81,82,83}
+     frame_delay=8
 					lighting = 1
 				]],
 				--dependent_on = obj_front_door_inside,
@@ -345,22 +346,23 @@ reset_ui()
 			},
 			enter = function(me)
 				-- animate fireplace
-				start_script(me.scripts.anim_fire, true) -- bg script
+    do_anim(obj_fire, obj_fire.anim_fire)
+				--start_script(me.scripts.anim_fire, true) -- bg script
 			end,
 			exit = function(me)
 				-- pause fireplace while not in room
-				stop_script(me.scripts.anim_fire)
+				--stop_script(me.scripts.anim_fire)
 			end,
-			scripts = {
-				anim_fire = function()
-					while true do
-						for f=1,3 do
-							obj_fire.state = f
-							break_time(8)
-						end
-					end
-				end
-			}
+			-- scripts = {
+			-- 	anim_fire = function()
+			-- 		while true do
+			-- 			for f=1,3 do
+			-- 				obj_fire.state = f
+			-- 				break_time(8)
+			-- 			end
+			-- 		end
+			-- 	end
+			-- }
 		}
 		
 
@@ -447,7 +449,12 @@ function startup_script()
 
 	-- set which room to start the game in 
 	-- (e.g. could be a "pseudo" room for title screen!)
-	change_room(rm_hall, 1) -- iris fade
+	--change_room(rm_hall, 1) -- iris fade
+ 
+ selected_actor = main_actor
+ put_at(selected_actor, 51, 41, rm_library)
+ camera_follow(selected_actor)
+ --change_room(rm_library, 1) -- iris fade
 end
 
 
@@ -776,7 +783,7 @@ end
 
 function do_anim(actor, param1, param2)
  --
- -- SCUMM examples:
+ -- scumm examples:
  --  do-animation selected-actor stand
  --  do-animation selected-actor get-up
 
@@ -840,12 +847,14 @@ function do_anim(actor, param1, param2)
 		end
 
  else
+  printh(".....1")
   -- must be an explicit animation (e.g. "idle")
   -- so start it now
   actor.curr_anim = param1
   actor.anim_pos = 1
   actor.tmr = 1
-
+ printh(".....2")
+ printh("type: "..type(obj_fire.curr_anim))
 	end --  if param1 == "face_towards"
 
 end
@@ -1209,27 +1218,18 @@ function walk_to(actor, x, y)
 
   for c=1,#path do
    p=path[c]
-		--for p in all(path) do
-
    -- auto-adjust walk-speed for depth
    local scaled_speed = actor.walk_speed * (actor.scale or actor.auto_scale)
    --local y_speed = actor.walk_speed/2 -- removed, messes up the a* pathfinding
 
    local px,py
-
    px = (p[1]-room_curr.map[1])*8 + 4
    py = (p[2]-room_curr.map[2])*8 + 4
 
-   if c==#path then
-    -- printh("last cell!")
-    -- printh("x:"..x)
-    -- printh("px:"..px)
-    -- printh("y:"..y)
-    -- printh("py:"..py)
-    -- last cell (go accurate, if clicked in it)
+   if c == #path then
+    -- last cell (walk to precise location, if clicked in it)
     if x >= px-4 and x <= px+4 
     and y>= py-4 and y <= py+4 then
-     --printh("precise walk!")
      px=x
      py=y
     end
@@ -1966,6 +1966,7 @@ function room_draw()
 						or obj.dependent_on.state == obj.dependent_on_state)
 					 and not obj.owner   						-- object is not "owned"
 					 or obj.draw
+      or obj.curr_anim
 					then
 						-- something to draw
 						object_draw(obj)
@@ -2002,27 +2003,37 @@ end
 
 
 function object_draw(obj)
-	-- replace colors?
+	local sprnum = 0
+ -- replace colors?
 	replace_colors(obj)
 
 	-- check for custom draw
 	if obj.draw then
 		obj.draw(obj)
-		--return
-	else
-		-- allow for repeating
-		rx=1
-		if obj.repeat_x then rx = obj.repeat_x end
-		for h = 0, rx-1 do
-			-- draw object (in its state!)
-			local obj_spr = 0
-			if obj.states then
-				obj_spr = obj.states[obj.state]
-			else
-				obj_spr = obj[obj.state]
-			end
-			sprdraw(obj_spr, obj.x+(h*(obj.w*8)), obj.y, obj.w, obj.h, obj.trans_col, obj.flip_x, obj.scale)
-		end
+ 
+ else
+  if obj.curr_anim then
+   printh("has anim!")
+   -- update animation state
+   animate(obj)
+   -- choose walk anim frame
+   sprnum = obj.curr_anim[obj.anim_pos]	
+   printh("animate! - "..sprnum)
+  end
+  printh("after has anim")
+  -- allow for repeating
+  rx=1
+  if obj.repeat_x then rx = obj.repeat_x end
+  for h = 0, rx-1 do
+   -- draw object (in its state!)
+   if obj.states then
+    sprnum = obj.states[obj.state]
+   elseif sprnum == 0 then
+    sprnum = obj[obj.state]
+   end
+   printh("sprnum: "..sprnum)
+   sprdraw(sprnum, obj.x+(h*(obj.w*8)), obj.y, obj.w, obj.h, obj.trans_col, obj.flip_x, obj.scale)
+  end
 	end
 
   -- debug
