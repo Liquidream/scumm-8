@@ -93,7 +93,20 @@ reset_ui()
 							break_time(10) 
 						end
 					end
-				end) -- end cutscene
+				end,
+     -- override for cutscene
+     function()
+      --printh("1")
+      if not rm_title.gameover then
+       --printh("2")
+       rm_outside.done_intro = true
+       selected_actor = main_actor
+       put_at(selected_actor, 30, 55, rm_outside)
+       camera_follow(selected_actor)
+       --stop_talking()
+      end
+     end
+    ) -- end cutscene
 		end,
 		exit = function()
 			-- todo: anything here?
@@ -185,7 +198,7 @@ reset_ui()
 						pickup_obj(me)
 					end,
 					use = function(me, noun2)
-						if noun2 == obj_fire then
+						if noun2 == obj_fire and me.state == "state_closed" then
 							put_at(obj_fire, 0, 0, rm_void)
 							put_at(obj_key, 88, 32, rm_library)
 							obj_bucket.state = "state_open"
@@ -232,7 +245,7 @@ reset_ui()
 						1, -- no verbs
 						-- cutscene code (hides ui, etc.)
 						function()
-							camera_at(144)
+							camera_at"144"
 							camera_pan_to(selected_actor)
 							wait_for_camera()
 							say_line("wow! look at that old house:i wonder if anyone's home...")
@@ -257,21 +270,13 @@ reset_ui()
 					w=1
 					h=4
 					state_closed=79
-					classes = {class_openable}
+					classes = {class_door}
 					use_pos = pos_right
 					use_dir = face_left
 				]],
-				verbs = {
-					walkto = function(me)
-						come_out_door(me, obj_front_door)
-					end,
-					open = function(me)
-						open_door(me, obj_front_door)
-					end,
-					close = function(me)
-						close_door(me, obj_front_door)
-					end
-				}
+				init = function(me)  
+					me.target_door = obj_front_door
+				end
 			}
 
 			obj_clock = {		
@@ -444,11 +449,11 @@ reset_ui()
 						
 						if angle <= 0.4850
 						 and not played then
-							sfx(0)
+							sfx"0"
 							played = true
 						elseif angle >= 0.5140
 						 and not played then
-							sfx(1)
+							sfx"1"
 							played = true
 						elseif angle > 0.49 and angle < 0.50 then
 							played = false

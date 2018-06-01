@@ -105,7 +105,7 @@ hd(stat(34)) end hg=he hh=hf hb() end fz=mid(0,fz,127) ga=mid(0,ga,127) end func
 return end if ct and ct.cv then
 if hk then
 selected_sentence=hk end return end if hl then
-gg=get_verb(hl) elseif hm then if hi==1 then
+gg=get_verb(hl) gh=nil gi=nil elseif hm then if hi==1 then
 if(gg[2]=="use"or gg[2]=="give")
 and gh then gi=hm else gh=hm end elseif hn then gg=get_verb(hn) gh=hm ge(gh) gz() end elseif ho then if ho==gd[1] then
 if selected_actor.hp>0 then
@@ -150,12 +150,12 @@ bt.draw(bt) else if bt.dn then
 il(bt) ik=bt.dn[bt.dp] end im=1 if bt.repeat_x then im=bt.repeat_x end
 for h=0,im-1 do if bt.states then
 ik=bt.states[bt.state] elseif ik==0 then ik=bt[bt.state] end io(ik,bt.x+(h*(bt.w*8)),bt.y,bt.w,bt.h,bt.trans_col,bt.flip_x,bt.scale) end end pal() end function ih(ch) ip=dm[ch.face_dir] if ch.fh==1
-or type(ch.dn)=="table"then il(ch) ik=ch.dn[ch.dp] else ik=ch.idle[ip] end ic(ch) local iq=(ch.y-room_curr.autodepth_pos[1])/(room_curr.autodepth_pos[2]-room_curr.autodepth_pos[1]) iq=room_curr.autodepth_scale[1]+(room_curr.autodepth_scale[2]-room_curr.autodepth_scale[1])*iq ch.fs=mid(room_curr.autodepth_scale[1],iq,room_curr.autodepth_scale[2]) local scale=ch.scale or ch.fs local ir=(8*ch.h) local is=(8*ch.w) local it=ir-(ir*scale) local iu=is-(is*scale) local iv=ch.de+flr(iu/2) local iw=ch.hz+it io(ik,iv,iw,ch.w,ch.h,ch.trans_col,ch.flip,false,scale) if ev
+and type(ch.dn)=="table"then il(ch) ik=ch.dn[ch.dp] else ik=ch.idle[ip] end ic(ch) local iq=(ch.y-room_curr.autodepth_pos[1])/(room_curr.autodepth_pos[2]-room_curr.autodepth_pos[1]) iq=room_curr.autodepth_scale[1]+(room_curr.autodepth_scale[2]-room_curr.autodepth_scale[1])*iq ch.fs=mid(room_curr.autodepth_scale[1],iq,room_curr.autodepth_scale[2]) local scale=ch.scale or ch.fs local ir=(8*ch.h) local is=(8*ch.w) local it=ir-(ir*scale) local iu=is-(is*scale) local iv=ch.de+flr(iu/2) local iw=ch.hz+it io(ik,iv,iw,ch.w,ch.h,ch.trans_col,ch.flip,false,scale) if ev
 and ev==ch and ev.talk then if ch.ix<7 then
 io(ch.talk[ip],iv+(ch.talk[5] or 0),iw+flr((ch.talk[6] or 8)*scale),(ch.talk[7] or 1),(ch.talk[8] or 1),ch.trans_col,ch.flip,false,scale) end ch.ix+=1 if ch.ix>14 then ch.ix=1 end
 end pal() end function gz() iy=""iz=verb_maincol ja=gg[2] if gg then
 iy=gg[3] end if gh then
-iy=iy.." "..gh.name if ja=="use"then
+iy=iy.." "..gh.name if ja=="use"and(not gj or gi) then
 iy=iy.." with"elseif ja=="give"then iy=iy.." to"end end if gi then
 iy=iy.." "..gi.name elseif hm and hm.name!=""and(not gh or(gh!=hm)) and(not hm.owner or ja!=get_verb(verb_default)[2]) then iy=iy.." "..hm.name end gk=iy if gj then
 iy=gk iz=verb_hovcol end print(jb(iy),jc(iy),fy+66,iz) end function gw() if er then

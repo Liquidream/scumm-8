@@ -2076,7 +2076,7 @@ function actor_draw(actor)
 	dirnum = face_dir_vals[actor.face_dir]
 
 	if actor.moving == 1
-	 or type(actor.curr_anim) == "table"
+	 and type(actor.curr_anim) == "table"
 	then  
   -- update animation state
   animate(actor)
@@ -2168,7 +2168,7 @@ function command_draw()
 	end
 	if noun1_curr then
 		command = command.." "..noun1_curr.name
-		if verb_curr_ref == "use" then
+		if verb_curr_ref == "use" and (not executing_cmd or noun2_curr) then
 			command = command.." with"
 		elseif verb_curr_ref == "give" then
 			command = command.." to"
