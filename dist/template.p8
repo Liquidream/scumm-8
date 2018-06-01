@@ -466,7 +466,7 @@ end pal() end function gz() iy=""iz=verb_maincol ja=gg[2] if gg then
 iy=gg[3] end if gh then
 iy=iy.." "..gh.name if ja=="use"and(not gj or gi) then
 iy=iy.." with"elseif ja=="give"then iy=iy.." to"end end if gi then
-iy=iy.." "..gi.name elseif hm and hm.name!=""and(not gh or(gh!=hm)) and(not hm.owner or ja!=get_verb(verb_default)[2]) then iy=iy.." "..hm.name end gk=iy if gj then
+iy=iy.." "..gi.name elseif hm and hm.name!=""and(not gh or(gh!=hm)) and(not hm.owner or ja!=get_verb(verb_default)[2]) and not gj then iy=iy.." "..hm.name end gk=iy if gj then
 iy=gk iz=verb_hovcol end print(jb(iy),jc(iy),fy+66,iz) end function gw() if er then
 jd=0 for je in all(er.fd) do jf=0 if er.ew==1 then
 jf=((er.db*4)-(#je*4))/2 end outline_text(je,er.x+jf,er.y+jd,er.col,0,er.es) jd+=6 end er.fe-=1 if er.fe<=0 then

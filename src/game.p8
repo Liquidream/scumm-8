@@ -93,19 +93,16 @@ reset_ui()
 							break_time(10) 
 						end
 					end
-				end,
+				end
      -- override for cutscene
-     function()
-      --printh("1")
-      if not rm_title.gameover then
-       --printh("2")
-       rm_outside.done_intro = true
-       selected_actor = main_actor
-       put_at(selected_actor, 30, 55, rm_outside)
-       camera_follow(selected_actor)
-       --stop_talking()
-      end
-     end
+     -- ,function()
+     --  if not rm_title.gameover then
+     --   rm_outside.done_intro = true
+     --   selected_actor = main_actor
+     --   put_at(selected_actor, 30, 55, rm_outside)
+     --   camera_follow(selected_actor)
+     --  end
+     -- end
     ) -- end cutscene
 		end,
 		exit = function()

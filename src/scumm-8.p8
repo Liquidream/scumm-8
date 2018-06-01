@@ -2183,6 +2183,8 @@ function command_draw()
 		-- or walk-to objs in inventory!
 		and ( not hover_curr_object.owner 
 						or verb_curr_ref != get_verb(verb_default)[2] )
+  -- or when already executing!
+  and not executing_cmd
 	then
 		command = command.." "..hover_curr_object.name
 	end
