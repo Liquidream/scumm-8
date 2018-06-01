@@ -1656,6 +1656,9 @@ function input_button_pressed(button_index)
 
 	if hover_curr_verb then
 		verb_curr = get_verb(hover_curr_verb)
+  -- now reset any active objects (as verb changed)
+  noun1_curr = nil
+  noun2_curr = nil
 
 	elseif hover_curr_object then
 		-- if valid obj, complete command
