@@ -1270,8 +1270,8 @@ function walk_to(actor, x, y)
     
     --walking
 				
-				for i = 0, distance/scaled_speed do
-     
+				for i = 0, distance/scaled_speed-1 do
+
      -- todo: need to somehow recalc here, else walk too fast/slow in depth planes
 
      actor.flip = (step_x<0)
