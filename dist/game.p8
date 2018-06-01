@@ -533,7 +533,7 @@ reset_ui()
 					talkto = function()
 						say_line("'hi fire...'")
 						break_time(10)
-						do_anim(selected_actor, "anim_face", "face_front")
+						do_anim(selected_actor, "face_towards", "face_front")
 						say_line("the fire didn't say hello back:burn!!")
 					end,
 					pickup = function(me)
@@ -797,7 +797,7 @@ reset_ui()
 									stop_actor(selected_actor)
 									say_line(purp_tentacle, "stop!:come back here!", true)
 									walk_to(selected_actor, purp_tentacle.x-8, purp_tentacle.y)
-									do_anim(selected_actor, "anim_face", purp_tentacle)
+									do_anim(selected_actor, "face_towards", purp_tentacle)
 									purp_tentacle.alerting = false
 								end
 							)
@@ -1146,7 +1146,7 @@ reset_ui()
 						-- 				selected_actor.x-10, 
 						-- 				selected_actor.y)
 						-- 			say_line("intruder!!!")
-						-- 			do_anim(main_actor, "anim_face", purp_tentacle)
+						-- 			do_anim(main_actor, "face_towards", purp_tentacle)
 						-- 		end,
 						-- 		-- override for cutscene
 						-- 		function()
@@ -1154,7 +1154,7 @@ reset_ui()
 						-- 			change_room(rm_hall)
 						-- 			put_at(purp_tentacle, 105, 44, rm_hall)
 						-- 			stop_talking()
-						-- 			do_anim(main_actor, "anim_face", purp_tentacle)
+						-- 			do_anim(main_actor, "face_towards", purp_tentacle)
 						-- 		end
 						-- 	)
 						-- end --if
@@ -1231,7 +1231,7 @@ reset_ui()
 							reset_ui()
 							selected_actor = main_actor
 							camera_follow(selected_actor)
-							do_anim(selected_actor, "anim_face", "face_front")
+							do_anim(selected_actor, "face_towards", "face_front")
 							say_line("well, that was short!:developers are so lazy...")
 							--say_line("test")
 						end
@@ -1557,7 +1557,7 @@ rooms = {
 					cutscene(
 						1, -- no verbs
 						function()
-							--do_anim(purp_tentacle, anim_face, selected_actor)
+							--do_anim(purp_tentacle, face_towards, selected_actor)
 							say_line(me,"what do you want?")
 						end)
 
@@ -1795,7 +1795,7 @@ add(fg.objects,bt) bt.owner=nil end bt.in_room=fg end bt.x,bt.y=x,y end function
 if x>=ft-4 and x<=ft+4
 and y>=fu-4 and y<=fu+4 then ft=x fu=y end end local fv=sqrt((ft-ch.x)^2+(fu-ch.y)^2) local fw=fr*(ft-ch.x)/fv local fx=fr*(fu-ch.y)/fv if ch.fh==0 then
 return end if fv>0 then
-for fa=0,fv/fr do ch.flip=(fw<0) if abs(fw)<fr/2 then
+for fa=0,fv/fr-1 do ch.flip=(fw<0) if abs(fw)<fr/2 then
 if fx>0 then
 ch.dn=ch.walk_anim_front ch.face_dir="face_front"else ch.dn=ch.walk_anim_back ch.face_dir="face_back"end else ch.dn=ch.walk_anim_side ch.face_dir="face_right"if ch.flip then ch.face_dir="face_left"end
 end ch.x+=fw ch.y+=fx yield() end end end ch.fh=2 ch.dn=nil end function wait_for_actor(ch) ch=ch or selected_actor while ch.fh!=2 do yield() end end function proximity(bz,ca) if bz.in_room==ca.in_room then
