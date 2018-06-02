@@ -270,7 +270,8 @@ reset_ui()
 					y=32
 					w=1
 					h=1
-					state=1
+					state=state_here
+     state_here=
      anim_fire={81,82,83}
      frame_delay=8
 					lighting = 1
@@ -472,6 +473,7 @@ function startup_script()
 	-- pickup_obj(obj_switch_tent, main_actor)
 	-- pickup_obj(obj_switch_player, purp_tentacle)
 
+
 	-- set which room to start the game in 
 	-- (e.g. could be a "pseudo" room for title screen!)
 	change_room(rm_hall, 1) -- iris fade
@@ -480,6 +482,11 @@ function startup_script()
  -- put_at(selected_actor, 51, 41, rm_library)
  -- camera_follow(selected_actor) 
  -- change_room(rm_library, 1) -- iris fade
+
+
+
+ pickup_obj(obj_fire, main_actor)
+
 end
 
 
@@ -2360,6 +2367,7 @@ function sprdraw(n, x, y, w, h, transcol, flip_x, flip_y, scale)
 	-- switch transparency
 	set_trans_col(transcol, true)
 
+ n = n or 0
 	-- draw zoomed sprite
  --https://www.lexaloffle.com/bbs/?tid=2429
  local sx = 8 * (n % 16)
