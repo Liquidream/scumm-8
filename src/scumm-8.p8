@@ -1680,9 +1680,14 @@ function input_button_pressed(button_index)
 		if button_index == 1 then
 			if (verb_curr[2] == "use" or verb_curr[2] == "give") 
 			 and noun1_curr then
-				noun2_curr = hover_curr_object			
-			else
+				noun2_curr = hover_curr_object
+
+   else
 				noun1_curr = hover_curr_object
+    if hover_curr_object.owner then
+     -- inventory item, perform look-at
+     verb_curr = get_verb(verbs[verb_default_inventory_index])
+    end
 			end
 
 		elseif hover_curr_default_verb then
@@ -2203,11 +2208,8 @@ function command_draw()
   -- default to look-at for inventory items
   if hover_curr_object.owner 
    and verb_curr_ref == get_verb(verb_default)[2] then
-   verb_curr = get_verb(verbs[verb_default_inventory_index])
    printh(">>>>")
-   printh(type(verb_curr))
-   --command = verb_curr[3]
-   printh("--:"..verb_curr[1])
+   command = "look-at"
   end
 		command = command.." "..hover_curr_object.name
 	end
