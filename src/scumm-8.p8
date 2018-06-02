@@ -41,7 +41,8 @@ verbs = {
 verb_default = {
 	{ walkto = "walkto" }, text = "walk to"
 } 
-
+-- index of the verb to use when clicking items in inventory (e.g. look-at)
+verb_default_inventory_index = 5
 
 function reset_ui()
 	verb_maincol = 12  -- main color (lt blue)
@@ -271,7 +272,7 @@ reset_ui()
 					w=1
 					h=1
 					state=state_here
-     state_here=
+     state_here=81
      anim_fire={81,82,83}
      frame_delay=8
 					lighting = 1
@@ -345,6 +346,7 @@ reset_ui()
 					h=1
 					use_pos={140,40}
 					classes = {class_pickupable}
+     use_with=true
 				]],
 				verbs = {
 					lookat = function(me)
@@ -352,6 +354,10 @@ reset_ui()
 					end,
 					pull = function(me)
 					end,
+     -- debug printh
+     pickup = function(me)
+						pickup_obj(me)
+					end
 				}
 			}
 
@@ -486,6 +492,7 @@ function startup_script()
 
 
  pickup_obj(obj_fire, main_actor)
+ pickup_obj(obj_book, main_actor)
 
 end
 
@@ -2188,11 +2195,20 @@ function command_draw()
 		-- don't show use object with itself!
 		and ( not noun1_curr or (noun1_curr != hover_curr_object) )
 		-- or walk-to objs in inventory!
-		and ( not hover_curr_object.owner 
-						or verb_curr_ref != get_verb(verb_default)[2] )
+		-- and ( not hover_curr_object.owner or
+		-- 				or verb_curr_ref != get_verb(verb_default)[2] )
   -- or when already executing!
   and not executing_cmd
 	then
+  -- default to look-at for inventory items
+  if hover_curr_object.owner 
+   and verb_curr_ref == get_verb(verb_default)[2] then
+   verb_curr = get_verb(verbs[verb_default_inventory_index])
+   printh(">>>>")
+   printh(type(verb_curr))
+   --command = verb_curr[3]
+   printh("--:"..verb_curr[1])
+  end
 		command = command.." "..hover_curr_object.name
 	end
 	cmd_curr = command
