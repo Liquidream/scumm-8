@@ -20,11 +20,9 @@ __lua__
 -- now 8052 tokens (after intro, lightswitch and final game elements)
 
 -- debugging
-show_debuginfo = false
---show_collision = false
---show_pathfinding = true
+--show_debuginfo = false
 --show_perfinfo = false
-enable_mouse = true
+enable_diag_squeeze = true	-- allow squeeze through diag gap?
 
 
 -- game verbs (used in room definitions and ui)
@@ -44,7 +42,8 @@ verbs = {
 verb_default = {
 	{ walkto = "walkto" }, text = "walk to"
 } 
-
+-- index of the verb to use when clicking items in inventory (e.g. look-at)
+verb_default_inventory_index = 5
 
 function reset_ui()
 	verb_maincol = 12  -- main color (lt blue)

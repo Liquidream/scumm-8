@@ -14,13 +14,11 @@ __lua__
 -- debug flags
 --
  show_debuginfo = true
--- show_collision = false
+ --show_collision = true
 -- show_pathfinding = true
--- show_perfinfo = true
 -- show_depth = true
 
 -- game functionality flags
-enable_mouse = true
 enable_diag_squeeze = true	-- allow squeeze through diag gap?
 
 
@@ -1410,8 +1408,8 @@ cutscene_cooloff = 0
 
 function _init()
 
-	-- use mouse input?
-	if enable_mouse then poke(0x5f2d, 1) end
+	-- use mouse input
+ poke(0x5f2d, 1)
 
 	-- init all the rooms/objects/actors
 	game_init()
@@ -1521,11 +1519,10 @@ function game_draw()
 	camera(0,0)
 	clip()
 
-	-- if show_perfinfo then 
-	-- 	print("cpu: "..flr(100*stat(1)).."%", 0, stage_top - 16, 8) 
-	-- 	print("mem: "..flr(stat(0)/1024*100).."%", 0, stage_top - 8, 8)
-	-- end
-	if show_debuginfo then 
+	if show_debuginfo then
+		print("cpu: "..flr(100*stat(1)).."%", 0, stage_top - 16, 8) 
+		print("mem: "..flr(stat(0)/1024*100).."%", 0, stage_top - 8, 8)
+
 		print("x: "..flr(cursor_x+cam_x).." y:"..cursor_y-stage_top, 80, stage_top - 8, 8) 
 	end
  -- if show_depth then
@@ -1627,26 +1624,24 @@ function playercontrol()
 	if btnp(5) then input_button_pressed(2) end
 
 	-- only update position if mouse moved
-	if enable_mouse then	
-		mouse_x,mouse_y = stat(32)-1, stat(33)-1
-		if mouse_x != last_mouse_x then cursor_x = mouse_x end	-- mouse xpos
-		if mouse_y!= last_mouse_y then cursor_y = mouse_y end  -- mouse ypos
+ mouse_x,mouse_y = stat(32)-1, stat(33)-1
+ if mouse_x != last_mouse_x then cursor_x = mouse_x end	-- mouse xpos
+ if mouse_y!= last_mouse_y then cursor_y = mouse_y end  -- mouse ypos
 
-		-- don't repeat action if same press/click
-		if stat(34)>0 and not ismouseclicked then
-   input_button_pressed(stat(34))
-  end
-		-- store for comparison next cycle
-		last_mouse_x = mouse_x
-		last_mouse_y = mouse_y
+ -- don't repeat action if same press/click
+ if stat(34)>0 and not ismouseclicked then
+  input_button_pressed(stat(34))
+ end
+ -- store for comparison next cycle
+ last_mouse_x = mouse_x
+ last_mouse_y = mouse_y
 
-  update_mouse_click_state()
-	end
-
-	-- keep cursor within screen
-	cursor_x = mid(0, cursor_x, 127)
-	cursor_y = mid(0, cursor_y, 127)
+ update_mouse_click_state()
 end
+
+-- keep cursor within screen
+cursor_x = mid(0, cursor_x, 127)
+cursor_y = mid(0, cursor_y, 127)
 
 -- 1 = z/lmb, 2 = x/rmb, (4=middle)
 function input_button_pressed(button_index)	
@@ -2022,7 +2017,7 @@ function room_draw()
 						actor_draw(obj)
 					end
 				end
-				show_collision_box(obj)
+				--show_collision_box(obj)
 			end
 		end		
 	end
@@ -2075,15 +2070,12 @@ function object_draw(obj)
    elseif sprnum == 0 then
     sprnum = obj[obj.state]
    end
-   --printh(">>> "..sprnum)
    sprdraw(sprnum, obj.x+(h*(obj.w*8)), obj.y, obj.w, obj.h, obj.trans_col, obj.flip_x, obj.scale)
   end
 	end
 
-  -- debug
- -- if show_debuginfo then
- --  pset(obj.x, obj.y+stage_top, 8)
- -- end
+ -- debug
+ --pset(obj.x, obj.y+stage_top, 8)
 
 	--reset palette
 	pal() 
@@ -2278,7 +2270,7 @@ function ui_draw()
 		v.x = xpos
 		v.y = ypos
 		recalc_bounds(v, #vi[3]*4, 5, 0, 0)
-		show_collision_box(v)
+		--show_collision_box(v)
 
 		-- auto-size column
 		if #vi[3] > col_len then col_len = #vi[3] end
@@ -2311,7 +2303,7 @@ function ui_draw()
 				object_draw(obj)
 				-- re-calculate bounds (as pos may have changed)
 				recalc_bounds(obj, obj.w*8, obj.h*8, 0, 0)
-				show_collision_box(obj)
+				--show_collision_box(obj)
 			end
 			xpos += 11
 
@@ -2334,7 +2326,7 @@ function ui_draw()
 			sprdraw(arrow.spr, arrow.x, arrow.y, 1, 1, 0)
 			-- capture bounds
 			recalc_bounds(arrow, 8, 7, 0, 0)
-			show_collision_box(arrow)
+			--show_collision_box(arrow)
 			pal() --reset palette
 		end
 	end
@@ -2357,7 +2349,7 @@ function dialog_draw()
 				ypos += 5
 			end
 
-			show_collision_box(s)
+			--show_collision_box(s)
 			ypos += 2
 		end
 	end
@@ -2459,14 +2451,14 @@ function game_init()
 	end
 end
 
-function show_collision_box(obj)
-	local obj_bounds = obj.bounds
-	if show_collision 
-	 and obj_bounds 
-	then 
-		rect(obj_bounds.x, obj_bounds.y, obj_bounds.x1, obj_bounds.y1, 8) 
-	end	
-end
+-- function show_collision_box(obj)
+-- 	local obj_bounds = obj.bounds
+-- 	if show_collision 
+-- 	 and obj_bounds 
+-- 	then 
+-- 		rect(obj_bounds.x, obj_bounds.y, obj_bounds.x1, obj_bounds.y1, 8) 
+-- 	end	
+-- end
 
 function update_scripts(scripts)
 	for scr_obj in all(scripts) do
