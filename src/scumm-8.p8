@@ -4,11 +4,20 @@ __lua__
 -- scumm-8
 -- paul nicholas
 
---6616
---6612
---6609
---6656 (added precise walk!)
---6725 (added default inv verb/look, animations, USE bug, etc.)
+-- [token count history]
+-- 6439 (b4 pathfinding)
+-- 6500 (after pathfinding & token hunting)
+-- 6673 (after adding transitions, camera pan/follow, turn-to-face, etc)
+-- 7027 (after fixing z-order hover, adding shake, lighting)
+-- 6873 (after token hunting and adding room bg color)
+-- 6790 (after more token hunting) 
+-- 6832 (after adding "use" object/actor & fix shake crop)
+-- 6904 (before door "targets")
+-- 6616
+-- 6612
+-- 6609
+-- 6656 (added precise walk!)
+-- 6725 (added default inv verb/look, animations, USE bug, etc.)
 
 --
 -- debug flags

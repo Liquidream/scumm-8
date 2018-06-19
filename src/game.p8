@@ -4,25 +4,28 @@ __lua__
 -- scumm-8 (return of the scumm)
 -- paul nicholas
 
--- 7004 tokens (5206 is engine!) - leaving 1188 tokens spare
--- now 6979 tokens (1213 spare)
--- now 6758 tokens (after "packing" - 1434 spare)
--- now 6723 tokens (after packing actors)
--- now 6860 tokens (after adding library)
--- now 6906 tokens (after adding "use" object/actor & fix shake crop)
--- now 6805 tokens (after also converting flags/enums to strings)
--- now 6845 tokens (after adding switch chars via inventory)
--- now 6944 tokens (after adding in landing & error reporting)
--- now 6977 tokens (after adding new use_pos & error check for nil doors)
--- now 7489 tokens (after adding mini-game & door classes)
--- now 7595 tokens (after stairs, door teleports, b4 tweak to pathfinding)
--- now 7646 tokens (after b4 tweak to pathfinding)
--- now 8052 tokens (after intro, lightswitch and final game elements)
+-- [token count history]
+-- 7004 (5206 is engine!) - leaving 1188 tokens spare
+-- 6979 (1213 spare)
+-- 6758 (after "packing" - 1434 spare)
+-- 6723 (after packing actors)
+-- 6860 (after adding library)
+-- 6906 (after adding "use" object/actor & fix shake crop)
+-- 6805 (after also converting flags/enums to strings)
+-- 6845 (after adding switch chars via inventory)
+-- 6944 (after adding in landing & error reporting)
+-- 6977 (after adding new use_pos & error check for nil doors)
+-- 7489 (after adding mini-game & door classes)
+-- 7595 (after stairs, door teleports, b4 tweak to pathfinding)
+-- 7646 (after b4 tweak to pathfinding)
+-- 8052 (after intro, lightswitch and final game elements)
 
--- debugging
+--
+-- [debug flags]
+--
 --show_debuginfo = false
 --show_perfinfo = false
-enable_diag_squeeze = true	-- allow squeeze through diag gap?
+enable_diag_squeeze = false	-- allow squeeze through diag gap?
 
 
 -- game verbs (used in room definitions and ui)
