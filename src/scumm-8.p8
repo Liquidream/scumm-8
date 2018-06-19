@@ -8,7 +8,7 @@ __lua__
 --6612
 --6609
 --6656 (added precise walk!)
---
+--6725 (added default inv verb/look, animations, USE bug, etc.)
 
 --
 -- debug flags
