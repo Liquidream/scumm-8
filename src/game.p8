@@ -23,8 +23,7 @@ __lua__
 --
 -- [debug flags]
 --
-show_debuginfo = true
---show_perfinfo = false
+--show_debuginfo = true
 enable_diag_squeeze = false	-- allow squeeze through diag gap?
 
 

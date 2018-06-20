@@ -23,8 +23,7 @@ __lua__
 --
 -- [debug flags]
 --
-show_debuginfo = true
---show_perfinfo = false
+--show_debuginfo = true
 enable_diag_squeeze = false	-- allow squeeze through diag gap?
 
 
@@ -1067,7 +1066,7 @@ reset_ui()
 					z=1
 					w=2
 					h=2
-					use_pos={63,43}
+					use_pos={63,44}
 					use_dir = face_back
 				]],
 				draw = function(me)
@@ -1082,7 +1081,7 @@ reset_ui()
 					end,
 					use = function(me)
 						me.played = true
-						change_room(rm_mi_title, 1)					
+						--change_room(rm_mi_title, 1)					
 					end
 				}
 			}

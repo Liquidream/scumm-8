@@ -22,8 +22,8 @@ __lua__
 --
 -- [debug flags]
 --
- show_debuginfo = true
- --show_collision = true
+show_debuginfo = true
+-- show_collision = true
 -- show_pathfinding = true
 -- show_depth = true
 
@@ -364,7 +364,13 @@ reset_ui()
      -- debug printh
      pickup = function(me)
 						pickup_obj(me)
-					end
+					end,
+     give = function(me, noun2)
+      say_line("give it away, give it away, give it away now!")
+     end,
+     use = function(me, noun2)
+      say_line("use case test")
+     end
 				}
 			}
 
@@ -1682,16 +1688,20 @@ function input_button_pressed(button_index)
 		-- if valid obj, complete command
 		-- else, abort command (clear verb, etc.)
 		if button_index == 1 then
-			if (verb_curr[2] == "use" or verb_curr[2] == "give") 
-			 and noun1_curr then
-				noun2_curr = hover_curr_object
 
+   -- if already have obj #1
+   if noun1_curr then
+    -- complete with obj #2
+    noun2_curr = hover_curr_object
    else
-				noun1_curr = hover_curr_object
-    if hover_curr_object.owner then
+    noun1_curr = hover_curr_object
+   end
+
+			if (verb_curr[2] != "use" 
+    and verb_curr[2] != "give"
+    and hover_curr_object.owner) then
      -- inventory item, perform look-at
      verb_curr = get_verb(verbs[verb_default_inventory_index])
-    end
 			end
 
 		elseif hover_curr_default_verb then
