@@ -18,6 +18,7 @@ __lua__
 -- 6609
 -- 6656 (added precise walk!)
 -- 6725 (added default inv verb/look, animations, USE bug, etc.)
+-- 6723 (fixed default inv verb/look, USE/GIVE, etc.)
 
 --
 -- [debug flags]
@@ -365,12 +366,12 @@ reset_ui()
      pickup = function(me)
 						pickup_obj(me)
 					end,
-     give = function(me, noun2)
-      say_line("give it away, give it away, give it away now!")
-     end,
-     use = function(me, noun2)
-      say_line("use case test")
-     end
+     -- give = function(me, noun2)
+     --  say_line("give it away, give it away, give it away now!")
+     -- end,
+     -- use = function(me, noun2)
+     --  say_line("use case test")
+     -- end
 				}
 			}
 
