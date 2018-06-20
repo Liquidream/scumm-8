@@ -20,7 +20,7 @@ __lua__
 -- 6725 (added default inv verb/look, animations, USE bug, etc.)
 
 --
--- debug flags
+-- [debug flags]
 --
  show_debuginfo = true
  --show_collision = true
