@@ -1697,8 +1697,7 @@ function input_button_pressed(button_index)
     noun1_curr = hover_curr_object
    end
 
-			if (verb_curr[2] != "use" 
-    and verb_curr[2] != "give"
+			if (verb_curr[2] == get_verb(verb_default)[2]
     and hover_curr_object.owner) then
      -- inventory item, perform look-at
      verb_curr = get_verb(verbs[verb_default_inventory_index])
