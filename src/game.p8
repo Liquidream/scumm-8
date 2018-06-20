@@ -853,6 +853,7 @@ reset_ui()
 		rm_garden = {
 			data = [[
 				map = {104,24,127,31}
+    autodepth_scale = {0.75,1}
 			]],
 			objects = {
 				obj_garden_door_kitchen,

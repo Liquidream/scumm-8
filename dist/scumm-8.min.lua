@@ -104,9 +104,9 @@ return end if ct and ct.cv then
 if hk then
 selected_sentence=hk end return end if hl then
 gg=get_verb(hl) gh=nil gi=nil elseif hm then if hi==1 then
-if(gg[2]=="use"or gg[2]=="give")
-and gh then gi=hm else gh=hm if hm.owner then
-gg=get_verb(verbs[verb_default_inventory_index]) end end elseif hn then gg=get_verb(hn) gh=hm ge(gh) gz() end elseif ho then if ho==gd[1] then
+if gh then
+gi=hm else gh=hm end if(gg[2]==get_verb(verb_default)[2]
+and hm.owner) then gg=get_verb(verbs[verb_default_inventory_index]) end elseif hn then gg=get_verb(hn) gh=hm ge(gh) gz() end elseif ho then if ho==gd[1] then
 if selected_actor.hp>0 then
 selected_actor.hp-=1 end else if selected_actor.hp+2<flr(#selected_actor.bn/4) then
 selected_actor.hp+=1 end end return end if gh!=nil
