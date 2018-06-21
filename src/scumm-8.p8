@@ -362,7 +362,6 @@ reset_ui()
 					end,
 					pull = function(me)
 					end,
-     -- debug printh
      pickup = function(me)
 						pickup_obj(me)
 					end,
@@ -850,7 +849,6 @@ function do_anim(thing, param1, param2)
  -- face-towards?
 	--   animate turn to face (object/actor or explicit direction)
 	if param1 == "face_towards" then
-  
   dir_nums = {
    "face_front",
    "face_left",
@@ -2016,7 +2014,6 @@ function room_draw()
 				-- object or actor?
 				if not has_flag(obj.classes, "class_actor") then
 					-- object
-     --printh("obj.state="..obj.state)
 					if obj.states	  -- object has a state?
 				    or (obj.state
 					   and obj[obj.state]
@@ -2062,8 +2059,6 @@ end
 
 
 function object_draw(obj)
- --printh(">>> in obj draw ("..obj.name..")...")
-
 	local sprnum = 0
  -- replace colors?
 	replace_colors(obj)
@@ -2106,7 +2101,7 @@ function actor_draw(actor)
 	dirnum = face_dir_vals[actor.face_dir]
 
 	if actor.moving == 1
-	 and type(actor.curr_anim) == "table"
+	 or type(actor.curr_anim) == "table"
 	then  
   -- update animation state
   animate(actor)
@@ -2219,7 +2214,6 @@ function command_draw()
   -- default to look-at for inventory items
   if hover_curr_object.owner 
    and verb_curr_ref == get_verb(verb_default)[2] then
-   printh(">>>>")
    command = "look-at"
   end
 		command = command.." "..hover_curr_object.name
