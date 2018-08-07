@@ -1,32 +1,33 @@
 pico-8 cartridge // http://www.pico-8.com
-version 14
+version 16
 __lua__
 -- scumm-8 (return of the scumm)
 -- paul nicholas
 
--- 7004 tokens (5206 is engine!) - leaving 1188 tokens spare
--- now 6979 tokens (1213 spare)
--- now 6758 tokens (after "packing" - 1434 spare)
--- now 6723 tokens (after packing actors)
--- now 6860 tokens (after adding library)
--- now 6906 tokens (after adding "use" object/actor & fix shake crop)
--- now 6805 tokens (after also converting flags/enums to strings)
--- now 6845 tokens (after adding switch chars via inventory)
--- now 6944 tokens (after adding in landing & error reporting)
--- now 6977 tokens (after adding new use_pos & error check for nil doors)
--- now 7489 tokens (after adding mini-game & door classes)
--- now 7595 tokens (after stairs, door teleports, b4 tweak to pathfinding)
--- now 7646 tokens (after b4 tweak to pathfinding)
--- now 8052 tokens (after intro, lightswitch and final game elements)
+-- [token count history]
+-- 7004 (5206 is engine!) - leaving 1188 tokens spare
+-- 6979 (1213 spare)
+-- 6758 (after "packing" - 1434 spare)
+-- 6723 (after packing actors)
+-- 6860 (after adding library)
+-- 6906 (after adding "use" object/actor & fix shake crop)
+-- 6805 (after also converting flags/enums to strings)
+-- 6845 (after adding switch chars via inventory)
+-- 6944 (after adding in landing & error reporting)
+-- 6977 (after adding new use_pos & error check for nil doors)
+-- 7489 (after adding mini-game & door classes)
+-- 7595 (after stairs, door teleports, b4 tweak to pathfinding)
+-- 7646 (after b4 tweak to pathfinding)
+-- 8052 (after intro, lightswitch and final game elements)
 
--- debugging
-show_debuginfo = false
-show_collision = false
---show_pathfinding = true
-show_perfinfo = false
-enable_mouse = true
-d = printh
+-- [debug flags]
+-- show_debuginfo = true
+-- show_collision = true
+-- show_pathfinding = true
+-- show_depth = true
 
+-- [game flags]
+enable_diag_squeeze = false	-- allow squeeze through diag gap?
 
 
 -- game verbs (used in room definitions and ui)
@@ -46,14 +47,22 @@ verbs = {
 verb_default = {
 	{ walkto = "walkto" }, text = "walk to"
 } 
-
+-- index of the verb to use when clicking items in inventory (e.g. look-at)
+verb_default_inventory_index = 5
 
 function reset_ui()
 	verb_maincol = 12  -- main color (lt blue)
 	verb_hovcol = 7    -- hover color (white)
 	verb_shadcol = 1   -- shadow (dk blue)
 	verb_defcol = 10   -- default action (yellow)
+ ui_cursorspr = 224 -- default cursor sprite
+ ui_uparrowspr = 208-- default up arrow sprite
+ ui_dnarrowspr = 240-- default up arrow sprite
+ -- default cols to use when animating cursor
+ ui_cursor_cols = {7,12,13,13,12,7}
 end
+-- initial ui setup
+reset_ui()
 
 
 
@@ -88,7 +97,17 @@ end
 							break_time(10) 
 						end
 					end
-				end) -- end cutscene
+				end
+     -- override for cutscene
+     -- ,function()
+     --  if not rm_title.gameover then
+     --   rm_outside.done_intro = true
+     --   selected_actor = main_actor
+     --   put_at(selected_actor, 30, 55, rm_outside)
+     --   camera_follow(selected_actor)
+     --  end
+     -- end
+    ) -- end cutscene
 		end,
 		exit = function()
 			-- todo: anything here?
@@ -180,7 +199,7 @@ end
 						pickup_obj(me)
 					end,
 					use = function(me, noun2)
-						if noun2 == obj_fire then
+						if noun2 == obj_fire and me.state == "state_closed" then
 							put_at(obj_fire, 0, 0, rm_void)
 							put_at(obj_key, 88, 32, rm_library)
 							obj_bucket.state = "state_open"
@@ -199,6 +218,7 @@ end
 		rm_outside = {
 			data = [[
 				map = {0,24,31,31}
+    autodepth_scale = {0.75,1}
 			]],
 			objects = {
 				obj_outside_stairs,
@@ -226,7 +246,7 @@ end
 						1, -- no verbs
 						-- cutscene code (hides ui, etc.)
 						function()
-							camera_at(144)
+							camera_at"144"
 							camera_pan_to(selected_actor)
 							wait_for_camera()
 							say_line("wow! look at that old house:i wonder if anyone's home...")
@@ -251,21 +271,13 @@ end
 					w=1
 					h=4
 					state_closed=79
-					classes = {class_openable}
+					classes = {class_door}
 					use_pos = pos_right
 					use_dir = face_left
 				]],
-				verbs = {
-					walkto = function(me)
-						come_out_door(me, obj_front_door)
-					end,
-					open = function(me)
-						open_door(me, obj_front_door)
-					end,
-					close = function(me)
-						close_door(me, obj_front_door)
-					end
-				}
+				init = function(me)  
+					me.target_door = obj_front_door
+				end
 			}
 
 			obj_clock = {		
@@ -399,6 +411,8 @@ end
 			data = [[
 				map = {32,24,55,31}
 				col_replace = {5,2}
+    autodepth_pos = {40,50}
+    autodepth_scale = {0.82,1}
 			]],
 			objects = {
 				--obj_spinning_top,
@@ -436,11 +450,11 @@ end
 						
 						if angle <= 0.4850
 						 and not played then
-							sfx(0)
+							sfx"0"
 							played = true
 						elseif angle >= 0.5140
 						 and not played then
-							sfx(1)
+							sfx"1"
 							played = true
 						elseif angle > 0.49 and angle < 0.50 then
 							played = false
@@ -519,13 +533,13 @@ end
 					lookat = function()
 						say_line("it's a nice, warm fire...")
 						break_time(10)
-						do_anim(selected_actor, "anim_face", "face_front")
+						do_anim(selected_actor, "face_towards", "face_front")
 						say_line("ouch! it's hot!:*stupid fire*")
 					end,
 					talkto = function()
 						say_line("'hi fire...'")
 						break_time(10)
-						do_anim(selected_actor, "anim_face", "face_front")
+						do_anim(selected_actor, "face_towards", "face_front")
 						say_line("the fire didn't say hello back:burn!!")
 					end,
 					pickup = function(me)
@@ -789,7 +803,7 @@ end
 									stop_actor(selected_actor)
 									say_line(purp_tentacle, "stop!:come back here!", true)
 									walk_to(selected_actor, purp_tentacle.x-8, purp_tentacle.y)
-									do_anim(selected_actor, "anim_face", purp_tentacle)
+									do_anim(selected_actor, "face_towards", purp_tentacle)
 									purp_tentacle.alerting = false
 								end
 							)
@@ -842,6 +856,7 @@ end
 		rm_garden = {
 			data = [[
 				map = {104,24,127,31}
+    autodepth_scale = {0.75,1}
 			]],
 			objects = {
 				obj_garden_door_kitchen,
@@ -1055,7 +1070,7 @@ end
 					z=1
 					w=2
 					h=2
-					use_pos={64,40}
+					use_pos={63,44}
 					use_dir = face_back
 				]],
 				draw = function(me)
@@ -1070,7 +1085,7 @@ end
 					end,
 					use = function(me)
 						me.played = true
-						change_room(rm_mi_title, 1)					
+						--change_room(rm_mi_title, 1)					
 					end
 				}
 			}
@@ -1091,69 +1106,6 @@ end
 			}
 
 
-			obj_window = {		
-				data = [[
-					name=window
-					state=state_closed
-					x=32
-					y=8
-					w=2
-					h=2
-					state_closed=68
-					state_open=70
-					classes = {class_openable}
-				]],
-				verbs = {
-					open = function(me)
-						me.state = "state_open"
-					end,
-					close = function(me)
-						me.state = "state_closed"
-					end,
-
-						-- if not me.done_cutscene then
-						-- 	cutscene(
-						-- 		1, -- no verbs 
-						-- 		function()
-						-- 			me.done_cutscene = true
-						-- 			-- cutscene code
-						--	 			me.state = "state_open"
-						-- 			me.z = -2
-						-- 			print_line("*bang*",40,20,8,1)
-						-- 			change_room(rm_kitchen, 1)
-						-- 			selected_actor = purp_tentacle
-						-- 			walk_to(selected_actor, 
-						-- 				selected_actor.x+10, 
-						-- 				selected_actor.y)
-						-- 			say_line("what was that?!")
-						-- 			say_line("i'd better check...")
-						-- 			walk_to(selected_actor, 
-						-- 				selected_actor.x-10, 
-						-- 				selected_actor.y)
-						-- 			change_room(rm_hall, 1)
-						-- 			-- wait for a bit, then appear in room1
-						-- 			break_time(50)
-						-- 			put_at(selected_actor, 115, 44, rm_hall)
-						-- 			walk_to(selected_actor, 
-						-- 				selected_actor.x-10, 
-						-- 				selected_actor.y)
-						-- 			say_line("intruder!!!")
-						-- 			do_anim(main_actor, "anim_face", purp_tentacle)
-						-- 		end,
-						-- 		-- override for cutscene
-						-- 		function()
-						-- 			--if cutscene_curr.skipped then
-						-- 			--d("override!")
-						-- 			change_room(rm_hall)
-						-- 			put_at(purp_tentacle, 105, 44, rm_hall)
-						-- 			stop_talking()
-						-- 			do_anim(main_actor, "anim_face", purp_tentacle)
-						-- 		end
-						-- 	)
-						-- end --if
-						-- (code here will not run, as room change nuked "local" scripts)
-				}
-			}
 
 			obj_floppy_disk = {	
 				data = [[
@@ -1202,12 +1154,12 @@ end
 		rm_computer = {
 			data = [[
 				map = {64,16}
+    autodepth_scale = {0.75,1}
 			]],
 			objects = {
 				obj_computer_door_landing,
 				obj_computer,
 				obj_cursor,
-				obj_window,
 				obj_floppy_disk,
 			},
 			enter = function(me)
@@ -1224,7 +1176,7 @@ end
 							reset_ui()
 							selected_actor = main_actor
 							camera_follow(selected_actor)
-							do_anim(selected_actor, "anim_face", "face_front")
+							do_anim(selected_actor, "face_towards", "face_front")
 							say_line("well, that was short!:developers are so lazy...")
 							--say_line("test")
 						end
@@ -1253,142 +1205,142 @@ end
 
 
 
--- [ monkey island mini-game ]
-	-- mi title "room"
-		rm_mi_title = {
-			data = [[
-				map = {72,0}
-			]],
-			objects = {
-			},
-			enter = function(me)
+-- -- [ monkey island mini-game ]
+-- 	-- mi title "room"
+-- 		rm_mi_title = {
+-- 			data = [[
+-- 				map = {72,0}
+-- 			]],
+-- 			objects = {
+-- 			},
+-- 			enter = function(me)
 
-				-- load embedded gfx (from sfx area)
-				reload(0,0x3b00,0x800)
-				-- load embedded gfx flags (from sfx area)
-				reload(0x3000,0x3a00,0x100)
+-- 				-- load embedded gfx (from sfx area)
+-- 				reload(0,0x3b00,0x800)
+-- 				-- load embedded gfx flags (from sfx area)
+-- 				reload(0x3000,0x3a00,0x100)
 
-				-- demo intro
-					cutscene(
-						3, -- no verbs & no follow, 
-						function()
+-- 				-- demo intro
+-- 					cutscene(
+-- 						3, -- no verbs & no follow, 
+-- 						function()
 
-							-- intro
-							break_time(50)
-							print_line("deep in the caribbean:on the isle of...; ;thimbleweed!",64,45,8,1,true)
+-- 							-- intro
+-- 							break_time(50)
+-- 							print_line("deep in the caribbean:on the isle of...; ;thimbleweed!",64,45,8,1,true)
 
-							change_room(rm_mi_dock, 1)
+-- 							change_room(rm_mi_dock, 1)
 							
-						end
-					) -- end cutscene
-			end,
-			exit = function()
-				-- todo: anything here?
-			end,
-		}
+-- 						end
+-- 					) -- end cutscene
+-- 			end,
+-- 			exit = function()
+-- 				-- todo: anything here?
+-- 			end,
+-- 		}
 
-	-- mi dock
-		-- objects
-			obj_mi_bg = {		
-				data = [[
-					x=0
-					y=0
-					w=1
-					h=1
-					z=-10
-					classes = {class_untouchable}
-					state=state_here
-					state_here=1
-				]],
-				draw = function(me)
-					map(88,0, 0,16, 40,7)
-				end
-			}
+-- 	-- mi dock
+-- 		-- objects
+-- 			obj_mi_bg = {		
+-- 				data = [[
+-- 					x=0
+-- 					y=0
+-- 					w=1
+-- 					h=1
+-- 					z=-10
+-- 					classes = {class_untouchable}
+-- 					state=state_here
+-- 					state_here=1
+-- 				]],
+-- 				draw = function(me)
+-- 					map(88,0, 0,16, 40,7)
+-- 				end
+-- 			}
 
-			obj_mi_poster = {		
-				data = [[
-					name=poster
-					x=32
-					y=40
-					w=1
-					h=1
-				]],
-				verbs = {
-					lookat = function(me)
-						say_line("\"re-elect governor marly\"")
-					end
-				}
-			}
+-- 			obj_mi_poster = {		
+-- 				data = [[
+-- 					name=poster
+-- 					x=32
+-- 					y=40
+-- 					w=1
+-- 					h=1
+-- 				]],
+-- 				verbs = {
+-- 					lookat = function(me)
+-- 						say_line("\"re-elect governor marly\"")
+-- 					end
+-- 				}
+-- 			}
 
-			obj_mi_scummdoor = {		
-				data = [[
-					name = door
-					state=state_closed
-					x=240
-					y=40
-					w=1
-					h=2
-					state_closed=43
-					state_open=12
-					classes = {class_openable}
-					use_dir = face_back
-				]],
-				verbs = {
-					walkto = function(me)
-						if me.state == "state_open" then
-							-- outro
-							change_room(rm_computer, 1)
-						else
-							say_line("the door is closed")
-						end
-					end,
-					open = function(me)
-						open_door(me, obj_front_door_inside)
-					end,
-					close = function(me)
-						close_door(me, obj_front_door_inside)
-					end
-				}
-			}
+-- 			obj_mi_scummdoor = {		
+-- 				data = [[
+-- 					name = door
+-- 					state=state_closed
+-- 					x=240
+-- 					y=40
+-- 					w=1
+-- 					h=2
+-- 					state_closed=43
+-- 					state_open=12
+-- 					classes = {class_openable}
+-- 					use_dir = face_back
+-- 				]],
+-- 				verbs = {
+-- 					walkto = function(me)
+-- 						if me.state == "state_open" then
+-- 							-- outro
+-- 							change_room(rm_computer, 1)
+-- 						else
+-- 							say_line("the door is closed")
+-- 						end
+-- 					end,
+-- 					open = function(me)
+-- 						open_door(me, obj_front_door_inside)
+-- 					end,
+-- 					close = function(me)
+-- 						close_door(me, obj_front_door_inside)
+-- 					end
+-- 				}
+-- 			}
 
-		rm_mi_dock = {
-			data = [[
-				map = {88,8,127,15}
-				trans_col = 11
-			]],
-			objects = {
-				obj_mi_bg,
-				obj_mi_poster,
-				obj_mi_scummdoor
-			},
-			enter = function(me)
-				-- 
-				-- initialise game in first room entry...
-				-- 
-				verb_maincol = 11
-				verb_hovcol = 10
-				verb_shadcol = 0 
-				verb_defcol = 10 
+-- 		rm_mi_dock = {
+-- 			data = [[
+-- 				map = {88,8,127,15}
+-- 				trans_col = 11
+-- 			]],
+-- 			objects = {
+-- 				obj_mi_bg,
+-- 				obj_mi_poster,
+-- 				obj_mi_scummdoor
+-- 			},
+-- 			enter = function(me)
+-- 				-- 
+-- 				-- initialise game in first room entry...
+-- 				-- 
+-- 				verb_maincol = 11
+-- 				verb_hovcol = 10
+-- 				verb_shadcol = 0 
+-- 				verb_defcol = 10 
 
-				-- set which actor the player controls by default
-				selected_actor = mi_actor
-				-- init actor
-				put_at(selected_actor, 212, 60, rm_mi_dock)
+-- 				-- set which actor the player controls by default
+-- 				selected_actor = mi_actor
+-- 				-- init actor
+-- 				put_at(selected_actor, 212, 60, rm_mi_dock)
 
-				camera_at(0)
-				break_time(30)
-				camera_pan_to(212,60)
-				wait_for_camera()
-				camera_follow(selected_actor)
+-- 				camera_at(0)
+-- 				break_time(30)
+-- 				camera_pan_to(212,60)
+-- 				wait_for_camera()
+-- 				camera_follow(selected_actor)
 				
-				say_line("this all seems very famililar...")
+-- 				say_line("this all seems very famililar...")
 
-				camera_follow(selected_actor)
-			end,
-			exit = function(me)
-				-- todo: anything here?
-			end,
-		}
+-- 				camera_follow(selected_actor)
+-- 			end,
+-- 			exit = function(me)
+-- 				-- todo: anything here?
+-- 			end,
+-- 		}
 
 
 -- "the void" (room)
@@ -1481,8 +1433,8 @@ rooms = {
 	rm_landing,
 	rm_computer,
 
-	rm_mi_title,
-	rm_mi_dock
+	-- rm_mi_title,
+	-- rm_mi_dock
 }
 
 
@@ -1550,7 +1502,7 @@ rooms = {
 					cutscene(
 						1, -- no verbs
 						function()
-							--do_anim(purp_tentacle, anim_face, selected_actor)
+							--do_anim(purp_tentacle, face_towards, selected_actor)
 							say_line(me,"what do you want?")
 						end)
 
@@ -1609,31 +1561,31 @@ rooms = {
 			}
 	}
 
-	mi_actor = { 	
-		data = [[
-			name = guybrush
-			w = 1
-			h = 2
-			idle = { 47, 47, 15, 47 }
-			walk_anim_side = { 44, 45, 44, 46 }
-			col = 7
-			trans_col = 8
-			walk_speed = 0.5
-			frame_delay = 8
-			classes = {class_actor}
-			face_dir = face_front
-		]],
-		-- sprites for directions (front, left, back, right) - note: right=left-flipped
-		inventory = {
-			-- obj_switch_tent
-		},
-		verbs = {
-			-- use = function(me)
-			-- 	selected_actor = me
-			-- 	camera_follow(me)
-			-- end
-		}
-	}
+	-- mi_actor = { 	
+	-- 	data = [[
+	-- 		name = guybrush
+	-- 		w = 1
+	-- 		h = 2
+	-- 		idle = { 47, 47, 15, 47 }
+	-- 		walk_anim_side = { 44, 45, 44, 46 }
+	-- 		col = 7
+	-- 		trans_col = 8
+	-- 		walk_speed = 0.5
+	-- 		frame_delay = 8
+	-- 		classes = {class_actor}
+	-- 		face_dir = face_front
+	-- 	]],
+	-- 	-- sprites for directions (front, left, back, right) - note: right=left-flipped
+	-- 	inventory = {
+	-- 		-- obj_switch_tent
+	-- 	},
+	-- 	verbs = {
+	-- 		-- use = function(me)
+	-- 		-- 	selected_actor = me
+	-- 		-- 	camera_follow(me)
+	-- 		-- end
+	-- 	}
+	-- }
 
 
 -- 
@@ -2010,8 +1962,8 @@ __map__
 0000000000100000002000000000000011313131313131313131313131313121123232323232323232323232323232221131313131313131313131313131312112323232323232323232323232323222000000000000000007070707072a0000000000000000000000000000000000003737270707073b2a270a072a00000000
 2000000000000000000020000000000031313131313131313131313131313131323232323232323232323232323232323131313131313131313131313131313132323232323232323232323232323232000000000000000021222122212221222122212221222122212221222122212221223233323332333233323332333233
 00000000000000000020000000000020070707171717171717171717170707070707071a1a1a1a1a1a1a405040501a1a1a1a1a1a1a070707484900004a4b000007070709090909090909090909070707070707171717171717171717170707071717170808080808080808080817171707070717171717171717171717070707
-00200000000000000000000000100000070707171717171717171717170707070707071a1a1a1a1a1a1a504050401a1a1a1a1a1a1a070707585900005a5b000007070709000009090909444509070707070707171717171717171717170707071717170808080808080808080817171707070717171717171717171717070707
-00000020000000000000000000000000070007171717171717171717170700070700071a1a1a001a1a1a405040501a1a1a001a1a1a070007686966676c6c666707000709000009090909545509070707070007171717171717171717170700071700170808080808080808080817001707000717171717171717171717070007
+00200000000000000000000000100000070707171717171717171717170707070707071a1a1a1a1a1a1a504050401a1a1a1a1a1a1a070707585900005a5b000007070709444509090909444509070707070707171717171717171717170707071717170808080808080808080817171707070717171717171717171717070707
+00000020000000000000000000000000070007171717171717171717170700070700071a1a1a001a1a1a405040501a1a1a001a1a1a070007686966676c6c666707000709545509090909545509070707070007171717171717171717170700071700170808080808080808080817001707000717171717171717171717070007
 000000000000000000000000000000000700071717171717171717171707000707000762626200626262666766676262620062626207000778797c002e1f3e7c07000709090909090909090909070707070007171717171717171717170700071700170808080808080808080817001707000717171717171717171717070007
 00000000000000000000000000000000070007171717171717171717170700070700077474740074747476777677747474007474740700076a6b002e1f3e2a0007000709090909090909090909070707070007171717171717171717170700071700170808080808080808080817001707000717171717171717171717070007
 00000000000000000000000000002000070111313131313131313131312101070701113131313131313131313131313131313131312101077a7b001f3e2a000007011131313131313131313131212807070111313131313131313131312101071702123232323232323232323222021707011131313131313131313131210107
@@ -2090,69 +2042,3 @@ bb4b00003b6540000000000000003be533be530000030e5301400000013853737b403853707a4038
 58850088185200084018520008400880000a400cb640cb6433413334131d4010100010000000001000110001000000000011401114013b65430e5310401114001140111401110511e05101000000010820000a40
 7888008518d200084038d3006a400cb640cb643341333413010000000000000000000140001400000000000011001110013b65430e531040111020114010cb642170121a7201000000010820000a402894000830
 6680608818e3006a400cb640cb643341333413000000000000000000001000110001000000000011401114013b65430e531000101500114011140111401114010100000001082361594008800289400880018940
-__music__
-00 41424344
-00 41424344
-00 41424344
-00 41424344
-00 41424344
-00 41424344
-00 41424344
-00 41424344
-00 41424344
-00 41424344
-00 41424344
-00 41424344
-00 41424344
-00 41424344
-00 41424344
-00 41424344
-00 41424344
-00 41424344
-00 41424344
-00 41424344
-00 41424344
-00 41424344
-00 41424344
-00 41424344
-00 41424344
-00 41424344
-00 41424344
-00 41424344
-00 41424344
-00 41424344
-00 41424344
-00 41424344
-00 41424344
-00 41424344
-00 41424344
-00 41424344
-00 41424344
-00 41424344
-00 41424344
-00 41424344
-00 41424344
-00 41424344
-00 41424344
-00 41424344
-00 41424344
-00 41424344
-00 41424344
-00 41424344
-00 41424344
-00 41424344
-00 41424344
-00 41424344
-00 41424344
-00 41424344
-00 41424344
-00 41424344
-00 41424344
-00 41424344
-00 41424344
-00 41424344
-00 41424344
-00 41424344
-00 41424344
-00 41424344
-
