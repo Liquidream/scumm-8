@@ -2,11 +2,12 @@
 ## What is SCUMM-8?
 SCUMM-8 is a "demake" of the [SCUMM](https://en.wikipedia.org/wiki/SCUMM) engine (which powered most of the classic LucasArts adventure games, such as Monkey Island and Maniac Mansion) for the [PICO-8 Fantasy Console](http://www.lexaloffle.com/pico-8.php).  
 
-A playable sample game "Return of the SCUMM" can be [found here](http://www.lexaloffle.com/bbs/?tid=29176).
+See below for some games powered by SCUMM-8:
 
-Another example game "H A L L O W EƎ N" can be [found here](https://liquidream.itch.io/hallowe3n).
-
-![SCUMM-8](http://i.imgur.com/FcE49f5.gif)  ![SCUMM-8](http://i.imgur.com/LO57HFN.gif)  ![SCUMM-8](http://i.imgur.com/3HiP7Jf.gif)
+| [Return of the SCUMM](http://www.lexaloffle.com/bbs/?tid=29176)     | [H A L L O W EƎ N](https://liquidream.itch.io/hallowe3n)       | [CODE-8](https://gamejolt.com/games/code-8/340837)      |
+|  :---: |  :---:  |  :---:  |
+| ![SCUMM-8](http://i.imgur.com/FcE49f5.gif) |  ![H A L L O W EƎ N](https://i.imgur.com/XpLWuVb.gif)      | ![CODE-8](https://i.imgur.com/CfwaNOn.gif)  |
+| [(Play Online)](http://www.lexaloffle.com/bbs/?tid=29176)     | [(Play Online)](https://liquidream.itch.io/hallowe3n)       | [(Play Online)](https://gamejolt.com/games/code-8/340837)      |
 
 While it is heavily "inspired" by the SCUMM engine, it isn't a true replica (for that you'll want good ol' [SCUMM-VM](https://en.wikipedia.org/wiki/ScummVM)).  However, SCUMM-8 attempts to stay as true as possible to the [original SCUMM command reference](https://web.archive.org/web/20180226005830/http://wilmunder.com/Arics_World/Games.html).
 > *"Cool, so does that mean I can play those old LucasArts games in PICO-8?!"*
@@ -29,7 +30,9 @@ Wow, really? You still here?! OK, once again. Think of SCUMM-8 as an even more r
 - [x] Camera system (pan-to, follow, static)
 - [x] Room transitions ("iris", cut)
 - [x] Customisable Verbs
+- [x] Fake 3D depth "Auto-Scaling" of Actors
 - [x] Z-plane ordering of objects/actors
+- [x] Custom scaling for Actors/Objects
 - [x] Global-level (background) & Room-level scripts
 - [x] Game start-up script
 - [x] Object dependencies
@@ -37,6 +40,7 @@ Wow, really? You still here?! OK, once again. Think of SCUMM-8 as an even more r
 - [x] Adjustable Room Brightness Levels
 - [x] Screen "shake" effect
 - [x] Proximity (between Actors/Objects)
+- [x] Animations for Actors and Objects 
 
 ## Getting Started
 Please see the [SCUMM-8 Wiki](https://github.com/Liquidream/scumm-8/wiki) for details on how to get started creating your own SCUMM-8 game, as well as the the full API reference.
