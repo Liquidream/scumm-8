@@ -4,16 +4,13 @@ __lua__
 -- scumm-8 game template
 -- paul nicholas
 
---
--- debugging
---
-show_debuginfo = false
---show_collision = false
---show_perfinfo = false
---show_depth = false
+-- [debug flags]
+-- show_debuginfo = true
+-- show_collision = true
+-- show_pathfinding = true
+-- show_depth = true
 
--- game functionality flags
-enable_mouse = true
+-- [game flags]
 enable_diag_squeeze = false	-- allow squeeze through diag gap?
 
 
@@ -458,7 +455,7 @@ bt.draw(bt) else if bt.dn then
 ik(bt) ij=bt.dn[bt.dp] end il=1 if bt.repeat_x then il=bt.repeat_x end
 for h=0,il-1 do if bt.states then
 ij=bt.states[bt.state] elseif ij==0 then ij=bt[bt.state] end im(ij,bt.x+(h*(bt.w*8)),bt.y,bt.w,bt.h,bt.trans_col,bt.flip_x,bt.scale) end end pal() end function ih(ch) io=dm[ch.face_dir] if ch.fh==1
-and type(ch.dn)=="table"then ik(ch) ij=ch.dn[ch.dp] else ij=ch.idle[io] end ic(ch) local ip=(ch.y-room_curr.autodepth_pos[1])/(room_curr.autodepth_pos[2]-room_curr.autodepth_pos[1]) ip=room_curr.autodepth_scale[1]+(room_curr.autodepth_scale[2]-room_curr.autodepth_scale[1])*ip ch.fs=mid(room_curr.autodepth_scale[1],ip,room_curr.autodepth_scale[2]) local scale=ch.scale or ch.fs local iq=(8*ch.h) local ir=(8*ch.w) local is=iq-(iq*scale) local it=ir-(ir*scale) local iu=ch.de+flr(it/2) local iv=ch.hz+is im(ij,iu,iv,ch.w,ch.h,ch.trans_col,ch.flip,false,scale) if ev
+or type(ch.dn)=="table"then ik(ch) ij=ch.dn[ch.dp] else ij=ch.idle[io] end ic(ch) local ip=(ch.y-room_curr.autodepth_pos[1])/(room_curr.autodepth_pos[2]-room_curr.autodepth_pos[1]) ip=room_curr.autodepth_scale[1]+(room_curr.autodepth_scale[2]-room_curr.autodepth_scale[1])*ip ch.fs=mid(room_curr.autodepth_scale[1],ip,room_curr.autodepth_scale[2]) local scale=ch.scale or ch.fs local iq=(8*ch.h) local ir=(8*ch.w) local is=iq-(iq*scale) local it=ir-(ir*scale) local iu=ch.de+flr(it/2) local iv=ch.hz+is im(ij,iu,iv,ch.w,ch.h,ch.trans_col,ch.flip,false,scale) if ev
 and ev==ch and ev.talk then if ch.iw<7 then
 im(ch.talk[io],iu+(ch.talk[5] or 0),iv+flr((ch.talk[6] or 8)*scale),(ch.talk[7] or 1),(ch.talk[8] or 1),ch.trans_col,ch.flip,false,scale) end ch.iw+=1 if ch.iw>14 then ch.iw=1 end
 end pal() end function gz() ix=""iy=verb_maincol iz=gg[2] if gg then
@@ -466,7 +463,7 @@ ix=gg[3] end if gh then
 ix=ix.." "..gh.name if iz=="use"and(not gj or gi) then
 ix=ix.." with"elseif iz=="give"then ix=ix.." to"end end if gi then
 ix=ix.." "..gi.name elseif hm and hm.name!=""and(not gh or(gh!=hm)) and not gj then if hm.owner
-and iz==get_verb(verb_default)[2] then printh(">>>>") ix="look-at"end ix=ix.." "..hm.name end gk=ix if gj then
+and iz==get_verb(verb_default)[2] then ix="look-at"end ix=ix.." "..hm.name end gk=ix if gj then
 ix=gk iy=verb_hovcol end print(ja(ix),jb(ix),fy+66,iy) end function gw() if er then
 jc=0 for jd in all(er.fd) do je=0 if er.ew==1 then
 je=((er.db*4)-(#jd*4))/2 end outline_text(jd,er.x+je,er.y+jc,er.col,0,er.es) jc+=6 end er.fe-=1 if er.fe<=0 then
