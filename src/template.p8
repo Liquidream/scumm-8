@@ -4,16 +4,13 @@ __lua__
 -- scumm-8 game template
 -- paul nicholas
 
---
--- debugging
---
-show_debuginfo = false
---show_collision = false
---show_perfinfo = false
---show_depth = false
+-- [debug flags]
+-- show_debuginfo = true
+-- show_collision = true
+-- show_pathfinding = true
+-- show_depth = true
 
--- game functionality flags
-enable_mouse = true
+-- [game flags]
 enable_diag_squeeze = false	-- allow squeeze through diag gap?
 
 

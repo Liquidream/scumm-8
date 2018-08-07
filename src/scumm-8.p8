@@ -20,16 +20,14 @@ __lua__
 -- 6725 (added default inv verb/look, animations, USE bug, etc.)
 -- 6723 (fixed default inv verb/look, USE/GIVE, etc.)
 
---
 -- [debug flags]
---
 show_debuginfo = true
 -- show_collision = true
 -- show_pathfinding = true
 -- show_depth = true
 
--- game functionality flags
-enable_diag_squeeze = true	-- allow squeeze through diag gap?
+-- [game flags]
+enable_diag_squeeze = false	-- allow squeeze through diag gap?
 
 
 -- game verbs (used in room definitions and ui)

@@ -20,10 +20,13 @@ __lua__
 -- 7646 (after b4 tweak to pathfinding)
 -- 8052 (after intro, lightswitch and final game elements)
 
---
 -- [debug flags]
---
---show_debuginfo = true
+-- show_debuginfo = true
+-- show_collision = true
+-- show_pathfinding = true
+-- show_depth = true
+
+-- [game flags]
 enable_diag_squeeze = false	-- allow squeeze through diag gap?
 
 
