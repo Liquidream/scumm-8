@@ -556,7 +556,7 @@ end
 -- logic used to determine a "default" verb to use
 -- (e.g. when you right-click an object)
 function find_default_verb(obj)
-	local default_verb = lookat
+	local default_verb = "lookat"
 
 	if has_flag(obj.classes, "class_talkable") then
 		default_verb = "talkto"
