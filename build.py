@@ -9,6 +9,7 @@ dist_dir = 'dist'
 lib_source_filename = 'scumm-8.p8'
 picotool_build_filename = 'scumm-8_fmt.p8'
 minified_lua_filename = 'scumm-8.min.lua'
+luamin_exclusion_filename = 'scumm-8_luamin-exclude.txt'
 lib_header = \
 """
 -- ==============================
@@ -24,15 +25,18 @@ cart_sources_to_interpolate = ['game.p8', 'template.p8']
 interpolation_token = '__include_scumm_8__\n'
 
 if __name__ == '__main__':
-  # initialize picotool-scumm-8 submodule if not present already
+  #(NOTE: No longer using SCUMM-8 fork of luamin, as it now allows "keep" list)
+  # initialize picotool submodule if not present already
   call(['git', 'submodule', 'init'])
   call(['git', 'submodule', 'update'])
 
   # import tool after loading submodule
-  from picotool_scumm8.pico8 import tool
+  from picotool.pico8 import tool
 
   # minify and extract engine
-  tool.main(['luamin', os.path.join(src_dir, lib_source_filename)])
+  tool.main([ \
+    'luamin', os.path.join(src_dir, lib_source_filename), \
+    '--keep-names-from-file=' + os.path.join(src_dir, luamin_exclusion_filename)])
   contents = open(os.path.join(src_dir, picotool_build_filename)).read()
   lib_only = \
     lib_header + \
@@ -40,14 +44,7 @@ if __name__ == '__main__':
     contents \
       .split(lib_start_pattern)[1] \
       .split(gfx_header)[0] \
-      .replace(
-        'ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\\\',
-        '\\65\\66\\67\\68\\69\\70\\71\\72\\73\\74\\75\\76\\77\\78\\79\\80\\81\\82\\83\\84\\85\\86\\87\\88\\89\\90\\91\\92'
-      ) \
       .replace('"\\\n"', '"\\n"') # line breaks mangled for some reason
-
-  # remove unneeded intermediate file
-  os.remove(os.path.join(src_dir, picotool_build_filename))
 
   # write minified engine to file
   lib_out_filename = os.path.join(dist_dir, minified_lua_filename)
@@ -61,5 +58,8 @@ if __name__ == '__main__':
     out_filename = os.path.join(dist_dir, filename)
     open(out_filename, 'w').write(dist_contents)
     print('Built ' + out_filename + '!')
+
+  # remove unneeded intermediate file (moved to last step to avoid file-access issues with apps like Dropbox)
+  os.remove(os.path.join(src_dir, picotool_build_filename))
 
   sys.exit(0)

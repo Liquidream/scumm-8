@@ -1,5 +1,5 @@
 pico-8 cartridge // http://www.pico-8.com
-version 16
+version 32
 __lua__
 -- scumm-8
 -- paul nicholas
