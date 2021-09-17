@@ -41,6 +41,9 @@ proximity
 dialog_set
 set_trans_col
 stop_actor
+walkto
+open
+close
 
 # settings
 show_debuginfo
