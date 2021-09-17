@@ -60,6 +60,7 @@ if __name__ == '__main__':
     print('Built ' + out_filename + '!')
 
   # remove unneeded intermediate file (moved to last step to avoid file-access issues with apps like Dropbox)
-  os.remove(os.path.join(src_dir, picotool_build_filename))
+  # (DISABLED - as is useful for quick testing of minified engine)
+  #os.remove(os.path.join(src_dir, picotool_build_filename))
 
   sys.exit(0)

@@ -84,7 +84,7 @@ reset_ui()
 					w=1
 					h=4
 					state_closed=79
-					classes = {class_openable, class_door}
+					classes = {class_door,class_openable}
 					use_pos = pos_right
 					use_dir = face_left
 				]],
@@ -105,7 +105,7 @@ reset_ui()
      flip_x = true
      state_closed = 78
 					use_dir = face_back
-					classes = {class_door}
+					classes = {class_door,class_openable}
 				]],
 				init = function(me)
 					me.target_door = obj_library_door_hall
@@ -179,24 +179,14 @@ reset_ui()
       )
      end,
 					use = function(me)
-
-      -- test play animations
-      do_anim(selected_actor, main_actor.walk_anim_side)
-      --selected_actor.curr_anim = main_actor.walk_anim_back
-
-      -- if me.curr_anim then
-						-- 	--stop_script(room_curr.scripts.spin_top)
-      --  me.curr_anim=nil
-						-- 	me.state = 158
-						-- else
-      --  --do_anim(obj_spinning_top, obj_spinning_top.anim_spin)
-						-- 	start_script(room_curr.scripts.spin_top)
-						-- end
+      
 						if script_running(room_curr.scripts.spin_top) then
 							stop_script(room_curr.scripts.spin_top)
-							me.state = "state_idle"
+       me.curr_anim = nil      -- stop cycle anim
+							me.state = "state_idle" -- go to initial state/frame
 						else
-							start_script(room_curr.scripts.spin_top, true) -- bg script
+							start_script(room_curr.scripts.spin_top, 
+                    true) -- bg script, continues executing on room change
 						end
 					end
 				}
@@ -945,7 +935,7 @@ function change_room(new_room, fade)
 end
 
 function valid_verb(verb, object)
-	-- check params
+ -- check params
 	if (not object or not object.verbs) return false
 	-- look for verb
 	if istable(verb) then
@@ -1482,8 +1472,7 @@ cursor_x, cursor_y = mid(0, cursor_x, 127), mid(0, cursor_y, 127)
 -- 1 = z/lmb, 2 = x/rmb, (4=middle)
 function input_button_pressed(button_index)
 
-	local vc2 = verb_curr[2]
-
+ 
 	-- abort if no actor selected at this point
 	if (not selected_actor) return
 
@@ -1511,7 +1500,7 @@ function input_button_pressed(button_index)
     noun1_curr = hover_curr_object
    end
 
-			if (vc2 == get_verb(verb_default)[2]
+   if (verb_curr[2] == get_verb(verb_default)[2]
     and hover_curr_object.owner) then
      -- inventory item, perform look-at
      verb_curr = get_verb(verbs[verb_default_inventory_index])
@@ -1520,7 +1509,7 @@ function input_button_pressed(button_index)
 		elseif hover_curr_default_verb then
 			-- perform default verb action (if present)
 			verb_curr, noun1_curr = get_verb(hover_curr_default_verb), hover_curr_object
-			-- force repaint of command (to reflect default verb)
+   -- force repaint of command (to reflect default verb)
 			command_draw()
 		end
 
@@ -1538,6 +1527,8 @@ function input_button_pressed(button_index)
 	--else
 		-- what else could there be? actors!?
 	end
+
+	local vc2 = verb_curr[2]
 
 	-- attempt to use verb on object (if not already executing verb)
 	if noun1_curr then
