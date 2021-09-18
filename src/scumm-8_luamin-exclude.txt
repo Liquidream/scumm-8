@@ -120,6 +120,7 @@ text
 #useful internal properties
 cam_x
 stage_top
+curr_anim
 
 # constants
 state_closed
@@ -141,13 +142,20 @@ face_front
 face_left
 face_back
 face_right
-pos_infront
-pos_behind
 pos_left
 pos_right
-pos_inside
+pos_above
+pos_center
+pos_infront
 face_towards
 enable_diag_squeeze
 
 # helper routines (non-SCUMM)
 outline_text
+
+# game-specific exclusions (replace with own game reserved words as necc)
+anim_spin
+anim_fire
+
+# pico8 built-in exclusions
+cd

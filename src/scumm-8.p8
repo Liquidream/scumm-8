@@ -712,7 +712,7 @@ function get_use_pos(obj)
 	-- determine use pos
 	else
 		local use_pos_offsets = {
-			pos_left = { obj.w * -8 - 4, 1 },
+			pos_left = { -2, obj.h * 8 - 2 },
 			pos_right = { obj.w * 8, obj.h * 8 - 2 },
 			pos_above = { obj.w * 4 - 4, -2 },
 			pos_center = { obj.w * 4, obj.h * 4 - 4 },
