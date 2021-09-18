@@ -1,5 +1,5 @@
 pico-8 cartridge // http://www.pico-8.com
-version 16
+version 32
 __lua__
 -- scumm-8 (return of the scumm)
 -- paul nicholas
@@ -1085,7 +1085,7 @@ reset_ui()
 					end,
 					use = function(me)
 						me.played = true
-						--change_room(rm_mi_title, 1)					
+						change_room(rm_mi_title, 1)					
 					end
 				}
 			}
@@ -1205,142 +1205,142 @@ reset_ui()
 
 
 
--- -- [ monkey island mini-game ]
--- 	-- mi title "room"
--- 		rm_mi_title = {
--- 			data = [[
--- 				map = {72,0}
--- 			]],
--- 			objects = {
--- 			},
--- 			enter = function(me)
+-- [ monkey island mini-game ]
+	-- mi title "room"
+		rm_mi_title = {
+			data = [[
+				map = {72,0}
+			]],
+			objects = {
+			},
+			enter = function(me)
 
--- 				-- load embedded gfx (from sfx area)
--- 				reload(0,0x3b00,0x800)
--- 				-- load embedded gfx flags (from sfx area)
--- 				reload(0x3000,0x3a00,0x100)
+				-- load embedded gfx (from sfx area)
+				reload(0,0x3b00,0x800)
+				-- load embedded gfx flags (from sfx area)
+				reload(0x3000,0x3a00,0x100)
 
--- 				-- demo intro
--- 					cutscene(
--- 						3, -- no verbs & no follow, 
--- 						function()
+    -- demo intro
+					cutscene(
+						3, -- no verbs & no follow, 
+						function()
 
--- 							-- intro
--- 							break_time(50)
--- 							print_line("deep in the caribbean:on the isle of...; ;thimbleweed!",64,45,8,1,true)
+							-- intro
+							break_time(50)
+							print_line("deep in the caribbean:on the isle of...; ;thimbleweed!",64,45,8,1,true)
 
--- 							change_room(rm_mi_dock, 1)
+							change_room(rm_mi_dock, 1)
 							
--- 						end
--- 					) -- end cutscene
--- 			end,
--- 			exit = function()
--- 				-- todo: anything here?
--- 			end,
--- 		}
+						end
+					) -- end cutscene
+			end,
+			exit = function()
+				-- todo: anything here?
+			end,
+		}
 
--- 	-- mi dock
--- 		-- objects
--- 			obj_mi_bg = {		
--- 				data = [[
--- 					x=0
--- 					y=0
--- 					w=1
--- 					h=1
--- 					z=-10
--- 					classes = {class_untouchable}
--- 					state=state_here
--- 					state_here=1
--- 				]],
--- 				draw = function(me)
--- 					map(88,0, 0,16, 40,7)
--- 				end
--- 			}
+	-- mi dock
+		-- objects
+			obj_mi_bg = {		
+				data = [[
+					x=0
+					y=0
+					w=1
+					h=1
+					z=-10
+					classes = {class_untouchable}
+					state=state_here
+					state_here=1
+				]],
+				draw = function(me)
+					map(88,0, 0,16, 40,7)
+				end
+			}
 
--- 			obj_mi_poster = {		
--- 				data = [[
--- 					name=poster
--- 					x=32
--- 					y=40
--- 					w=1
--- 					h=1
--- 				]],
--- 				verbs = {
--- 					lookat = function(me)
--- 						say_line("\"re-elect governor marly\"")
--- 					end
--- 				}
--- 			}
+			obj_mi_poster = {		
+				data = [[
+					name=poster
+					x=32
+					y=40
+					w=1
+					h=1
+				]],
+				verbs = {
+					lookat = function(me)
+						say_line("\"re-elect governor marly\"")
+					end
+				}
+			}
 
--- 			obj_mi_scummdoor = {		
--- 				data = [[
--- 					name = door
--- 					state=state_closed
--- 					x=240
--- 					y=40
--- 					w=1
--- 					h=2
--- 					state_closed=43
--- 					state_open=12
--- 					classes = {class_openable}
--- 					use_dir = face_back
--- 				]],
--- 				verbs = {
--- 					walkto = function(me)
--- 						if me.state == "state_open" then
--- 							-- outro
--- 							change_room(rm_computer, 1)
--- 						else
--- 							say_line("the door is closed")
--- 						end
--- 					end,
--- 					open = function(me)
--- 						open_door(me, obj_front_door_inside)
--- 					end,
--- 					close = function(me)
--- 						close_door(me, obj_front_door_inside)
--- 					end
--- 				}
--- 			}
+			obj_mi_scummdoor = {		
+				data = [[
+					name = door
+					state=state_closed
+					x=240
+					y=40
+					w=1
+					h=2
+					state_closed=43
+					state_open=12
+					classes = {class_openable}
+					use_dir = face_back
+				]],
+				verbs = {
+					walkto = function(me)
+						if me.state == "state_open" then
+							-- outro
+							change_room(rm_computer, 1)
+						else
+							say_line("the door is closed")
+						end
+					end,
+					open = function(me)
+						open_door(me, obj_front_door_inside)
+					end,
+					close = function(me)
+						close_door(me, obj_front_door_inside)
+					end
+				}
+			}
 
--- 		rm_mi_dock = {
--- 			data = [[
--- 				map = {88,8,127,15}
--- 				trans_col = 11
--- 			]],
--- 			objects = {
--- 				obj_mi_bg,
--- 				obj_mi_poster,
--- 				obj_mi_scummdoor
--- 			},
--- 			enter = function(me)
--- 				-- 
--- 				-- initialise game in first room entry...
--- 				-- 
--- 				verb_maincol = 11
--- 				verb_hovcol = 10
--- 				verb_shadcol = 0 
--- 				verb_defcol = 10 
+		rm_mi_dock = {
+			data = [[
+				map = {88,8,127,15}
+				trans_col = 11
+			]],
+			objects = {
+				obj_mi_bg,
+				obj_mi_poster,
+				obj_mi_scummdoor
+			},
+			enter = function(me)
+				-- 
+				-- initialise game in first room entry...
+				-- 
+				verb_maincol = 11
+				verb_hovcol = 10
+				verb_shadcol = 1 
+				verb_defcol = 10 
 
--- 				-- set which actor the player controls by default
--- 				selected_actor = mi_actor
--- 				-- init actor
--- 				put_at(selected_actor, 212, 60, rm_mi_dock)
+				-- set which actor the player controls by default
+				selected_actor = mi_actor
+				-- init actor
+				put_at(selected_actor, 212, 60, rm_mi_dock)
 
--- 				camera_at(0)
--- 				break_time(30)
--- 				camera_pan_to(212,60)
--- 				wait_for_camera()
--- 				camera_follow(selected_actor)
+				camera_at(0)
+				break_time(30)
+				camera_pan_to(212,60)
+				wait_for_camera()
+				camera_follow(selected_actor)
 				
--- 				say_line("this all seems very famililar...")
+				say_line("this all seems very famililar...")
 
--- 				camera_follow(selected_actor)
--- 			end,
--- 			exit = function(me)
--- 				-- todo: anything here?
--- 			end,
--- 		}
+				camera_follow(selected_actor)
+			end,
+			exit = function(me)
+				-- todo: anything here?
+			end,
+		}
 
 
 -- "the void" (room)
@@ -1433,8 +1433,8 @@ rooms = {
 	rm_landing,
 	rm_computer,
 
-	-- rm_mi_title,
-	-- rm_mi_dock
+	 rm_mi_title,
+	 rm_mi_dock
 }
 
 
@@ -1561,31 +1561,31 @@ rooms = {
 			}
 	}
 
-	-- mi_actor = { 	
-	-- 	data = [[
-	-- 		name = guybrush
-	-- 		w = 1
-	-- 		h = 2
-	-- 		idle = { 47, 47, 15, 47 }
-	-- 		walk_anim_side = { 44, 45, 44, 46 }
-	-- 		col = 7
-	-- 		trans_col = 8
-	-- 		walk_speed = 0.5
-	-- 		frame_delay = 8
-	-- 		classes = {class_actor}
-	-- 		face_dir = face_front
-	-- 	]],
-	-- 	-- sprites for directions (front, left, back, right) - note: right=left-flipped
-	-- 	inventory = {
-	-- 		-- obj_switch_tent
-	-- 	},
-	-- 	verbs = {
-	-- 		-- use = function(me)
-	-- 		-- 	selected_actor = me
-	-- 		-- 	camera_follow(me)
-	-- 		-- end
-	-- 	}
-	-- }
+	mi_actor = { 	
+		data = [[
+			name = guybrush
+			w = 1
+			h = 2
+			idle = { 47, 47, 15, 47 }
+			walk_anim_side = { 44, 45, 44, 46 }
+			col = 7
+			trans_col = 8
+			walk_speed = 0.5
+			frame_delay = 8
+			classes = {class_actor}
+			face_dir = face_front
+		]],
+		-- sprites for directions (front, left, back, right) - note: right=left-flipped
+		inventory = {
+			-- obj_switch_tent
+		},
+		verbs = {
+			-- use = function(me)
+			-- 	selected_actor = me
+			-- 	camera_follow(me)
+			-- end
+		}
+	}
 
 
 -- 
@@ -1610,7 +1610,8 @@ function startup_script()
 	-- set which room to start the game in 
 	-- (e.g. could be a "pseudo" room for title screen!)
 	change_room(rm_title, 1) -- iris fade
-
+ --change_room(rm_mi_title, 1) -- iris fade
+ 
 	-- set initial inventory (if applicable)
 	-- pickup_obj(obj_switch_tent, main_actor)
 	-- pickup_obj(obj_switch_player, purp_tentacle)
