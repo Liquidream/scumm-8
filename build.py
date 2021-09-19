@@ -12,17 +12,20 @@ minified_lua_filename = 'scumm-8.min.lua'
 luamin_exclusion_filename = 'scumm-8_luamin-exclude.txt'
 lib_header = \
 """
--- ==============================
--- scumm-8 public api functions
--- 
--- (you should not need to modify anything below here!)
+-->8
+-- scumm-8 core engine
 
+-- ############################
+--    you should not need to 
+--  modify anything below here
+-- ############################
 
 """
 lib_start_pattern = 'function shake'
 gfx_header = '__gfx__'
 cart_sources_to_interpolate = ['game.p8', 'template.p8']
-interpolation_token = '__include_scumm_8__\n'
+interpolation_token = '#include ../dist/scumm-8.min.lua'
+interpolation_token_dist = '#include ' + minified_lua_filename
 
 if __name__ == '__main__':
   #(NOTE: No longer using SCUMM-8 fork of luamin, as it now allows "keep" list)
@@ -51,16 +54,15 @@ if __name__ == '__main__':
   open(lib_out_filename, 'w').write(lib_only)
   print('Built ' + lib_out_filename + '!')
 
-  # interpolate carts using minified engine
+  # interpolate carts using minified engine (placed into new tab)
   for filename in cart_sources_to_interpolate:
     src_contents = open(os.path.join(src_dir, filename)).read()
     dist_contents = src_contents.replace(interpolation_token, lib_only)
     out_filename = os.path.join(dist_dir, filename)
     open(out_filename, 'w').write(dist_contents)
     print('Built ' + out_filename + '!')
-
+  
   # remove unneeded intermediate file (moved to last step to avoid file-access issues with apps like Dropbox)
-  # (DISABLED - as is useful for quick testing of minified engine)
-  #os.remove(os.path.join(src_dir, picotool_build_filename))
+  os.remove(os.path.join(src_dir, picotool_build_filename))
 
   sys.exit(0)

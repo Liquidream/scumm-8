@@ -2,23 +2,7 @@ pico-8 cartridge // http://www.pico-8.com
 version 33
 __lua__
 -- scumm-8
--- paul nicholas
-
--- [token count history]
--- 6439 (b4 pathfinding)
--- 6500 (after pathfinding & token hunting)
--- 6673 (after adding transitions, camera pan/follow, turn-to-face, etc)
--- 7027 (after fixing z-order hover, adding shake, lighting)
--- 6873 (after token hunting and adding room bg color)
--- 6790 (after more token hunting) 
--- 6832 (after adding "use" object/actor & fix shake crop)
--- 6904 (before door "targets")
--- 6616
--- 6612
--- 6609
--- 6656 (added precise walk!)
--- 6725 (added default inv verb/look, animations, USE bug, etc.)
--- 6723 (fixed default inv verb/look, USE/GIVE, etc.)
+-- paul nicholas (+contributors)
 
 -- [debug flags]
 show_debuginfo = true
@@ -491,39 +475,13 @@ end
 
 
 
+-->8
+-- scumm-8 core engine
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
--- scumm-8 public api functions
---
--- (you should not need to modify anything below here!)
-
-
+-- ############################
+--    you should not need to 
+--  modify anything below here
+-- ############################
 
 
 function shake(enabled)
@@ -1254,25 +1212,10 @@ function _init()
 	game_init()
 
 	-- run any startup script(s)
-  start_script(startup_script, true)
-end
-
--- function _update60()  -- _update()
---  game_update()
-
---  -- debug
---  -- talking_actor = selected_actor
---  -- selected_actor.talking = true
--- end
-
-function _draw()
-	game_draw()
+ start_script(startup_script, true)
 end
 
 
--- update functions
-
--- function game_update()
 function _update60()
 	-- process selected_actor threads/actions
 	if selected_actor and selected_actor.thread
@@ -1333,7 +1276,7 @@ function _update60()
 end
 
 
-function game_draw()
+function _draw()
 	-- clear screen every frame
 	cls()
 

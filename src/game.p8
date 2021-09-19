@@ -1,5 +1,5 @@
 pico-8 cartridge // http://www.pico-8.com
-version 32
+version 33
 __lua__
 -- scumm-8 (return of the scumm)
 -- paul nicholas
@@ -1647,42 +1647,7 @@ end
 -- (end of customisable game content)
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-__include_scumm_8__
-
-
-
-
-
-
-
-
-
+#include ../dist/scumm-8.min.lua
 __gfx__
 0000000000000000000000000000000044444444440000004444444477777777f9e9f9f9ddd5ddd5bbbbbbbb5500000010101010000000000000000000000000
 00000000000000000000000000000000444444404400000044444444777777779eee9f9fdd5ddd5dbbbbbbbb5555000001010101000000000000000000000000
