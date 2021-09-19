@@ -1,8 +1,8 @@
 pico-8 cartridge // http://www.pico-8.com
 version 33
 __lua__
--- scumm-8 core engine
--- paul nicholas
+-- scumm-8
+-- paul nicholas (+contributors)
 
 -- [debug flags]
 show_debuginfo = true
@@ -475,39 +475,13 @@ end
 
 
 
+-->8
+-- scumm-8 core engine
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
--- scumm-8 public api functions
---
--- (you should not need to modify anything below here!)
-
-
+-- ############################
+--    you should not need to 
+--  modify anything below here
+-- ############################
 
 
 function shake(enabled)
