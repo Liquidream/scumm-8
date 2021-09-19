@@ -6,23 +6,23 @@ from subprocess import call
 
 src_dir = 'src'
 dist_dir = 'dist'
+lib_dir = 'lib'
 lib_source_filename = 'scumm-8.p8'
 picotool_build_filename = 'scumm-8_fmt.p8'
 minified_lua_filename = 'scumm-8.min.lua'
 luamin_exclusion_filename = 'scumm-8_luamin-exclude.txt'
 lib_header = \
 """
--- ==============================
--- scumm-8 public api functions
--- 
--- (you should not need to modify anything below here!)
-
+-->8
+-- scumm-8 core engine
+-- (you should not need to modify anything here!)
 
 """
 lib_start_pattern = 'function shake'
 gfx_header = '__gfx__'
 cart_sources_to_interpolate = ['game.p8', 'template.p8']
-interpolation_token = '__include_scumm_8__\n'
+interpolation_token = '#include ../lib/scumm-8.min.lua'
+#interpolation_token = '__include_scumm_8__\n'
 
 if __name__ == '__main__':
   #(NOTE: No longer using SCUMM-8 fork of luamin, as it now allows "keep" list)
@@ -47,7 +47,7 @@ if __name__ == '__main__':
       .replace('"\\\n"', '"\\n"') # line breaks mangled for some reason
 
   # write minified engine to file
-  lib_out_filename = os.path.join(dist_dir, minified_lua_filename)
+  lib_out_filename = os.path.join(lib_dir, minified_lua_filename)
   open(lib_out_filename, 'w').write(lib_only)
   print('Built ' + lib_out_filename + '!')
 

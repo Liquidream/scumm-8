@@ -280,35 +280,7 @@ end
 -- (end of customisable game content)
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-__include_scumm_8__
-
-
+#include ../lib/scumm-8.min.lua
 
 __gfx__
 0000000000000000000000000000000044444444440000004444444477777777f9e9f9f9ddd5ddd5bbbbbbbb5500000010101010000000000000000000000000
