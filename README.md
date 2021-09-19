@@ -6,10 +6,10 @@ SCUMM-8 is a "demake" of the [SCUMM](https://en.wikipedia.org/wiki/SCUMM) engine
 
 See below for some games powered by SCUMM-8:
 
-| [Return of the SCUMM](http://www.lexaloffle.com/bbs/?tid=29176)     | [H A L L O W EƎ N](https://liquidream.itch.io/hallowe3n)       | [CODE-8](https://gamejolt.com/games/code-8/340837)      |
-|  :---: |  :---:  |  :---:  |
-| ![SCUMM-8](http://i.imgur.com/FcE49f5.gif) |  ![H A L L O W EƎ N](https://i.imgur.com/XpLWuVb.gif)      | ![CODE-8](https://i.imgur.com/CfwaNOn.gif)  |
-| [(Play Online)](http://www.lexaloffle.com/bbs/?tid=29176)     | [(Play Online)](https://liquidream.itch.io/hallowe3n)       | [(Play Online)](https://gamejolt.com/games/code-8/340837)      |
+| [Return of the SCUMM](http://www.lexaloffle.com/bbs/?tid=29176)     | [H A L L O W EƎ N](https://liquidream.itch.io/hallowe3n)       | [CODE-8](https://gamejolt.com/games/code-8/340837)      | [Perfectly Normal Apartment](https://nextlevelbanana.itch.io/perfectly-normal-apartment)
+|  :---: |  :---:  |  :---:  | :---:  |
+| ![SCUMM-8](https://i.imgur.com/FcE49f5.gif) |  ![H A L L O W EƎ N](https://i.imgur.com/XpLWuVb.gif)      | ![CODE-8](https://i.imgur.com/CfwaNOn.gif)  | ![Perfectly Normal Apartment](https://i.imgur.com/V8V2uLC.gif) | 
+| [(Play Online)](http://www.lexaloffle.com/bbs/?tid=29176)     | [(Play Online)](https://liquidream.itch.io/hallowe3n)       | [(Play Online)](https://gamejolt.com/games/code-8/340837)      | [(Play Online)](https://nextlevelbanana.itch.io/perfectly-normal-apartment)      |
 
 While it is heavily "inspired" by the SCUMM engine, it isn't a true replica (for that you'll want good ol' [SCUMM-VM](https://en.wikipedia.org/wiki/ScummVM)).  However, SCUMM-8 attempts to stay as true as possible to the [original SCUMM command reference](https://web.archive.org/web/20180226005830/http://wilmunder.com/Arics_World/Games.html).
 > *"Cool, so does that mean I can play those old LucasArts games in PICO-8?!"*
@@ -51,7 +51,7 @@ Please see the [SCUMM-8 Wiki](https://github.com/Liquidream/scumm-8/wiki) for de
 
 Using Python 3:
 ```console
-python3 build.py
+python build.py
 ```
 
 This will output scumm-8.min.lua, containing the minified engine code which you can copy to your own cart. It will also output new copies of game.p8 and template.p8, which should be committed to the repository.
@@ -73,7 +73,7 @@ Some other great SCUMM resources I found along the way include the following:
 - [Ron Gilbert's post about "Puzzle Dependency Charts"](http://grumpygamer.com/puzzle_dependency_charts)
 
 ## Donation
-As you can imagine, this project has taken **MANY HOURS** of my spare time to develop.  
+As you can imagine, this project has taken **MANY HOURS** of spare time to develop.  
 So, if this project helped you out (and you're in a position to do so), feel free to buy me a drink! :coffee: :blush:
 
 [![paypal](https://www.paypalobjects.com/en_US/GB/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=334Y2ZXWUJMBQ)
