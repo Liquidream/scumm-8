@@ -1003,7 +1003,7 @@ function print_line(msg, x, y, col, align, use_caps, duration, big_font)
 
 	-- center-align text block
 	xpos = x -cam_x
-	if (align == 1) xpos -= longest_line*(big_font and 4 or 2)
+	if (align == 1) xpos -= longest_line * (big_font and 4 or 2)
 
 	-- screen bound check
 	local xpos, ypos = max(2, xpos), max(18, y) -- left, top
@@ -1029,7 +1029,7 @@ function print_line(msg, x, y, col, align, use_caps, duration, big_font)
 	  talking = talking_actor
 		wait_for_message()
 		talking_actor = talking
-		print_line(msg_left, x, y, col, align, use_caps, big_font)
+		print_line(msg_left, x, y, col, align, use_caps, nil, big_font)
 	end
 
 	-- and wait for message?
@@ -1415,6 +1415,9 @@ function input_button_pressed(button_index)
 		return
 	end
 
+ -- if already executing, clear current command
+ -- (allow abort of commands by doing other actions, like walking)
+	if (executing_cmd)	clear_curr_cmd()
 
 	if hover_curr_verb then
 		-- change verb and now reset any active objects
@@ -1425,7 +1428,7 @@ function input_button_pressed(button_index)
 		-- else, abort command (clear verb, etc.)
 		if button_index == 1 then
    -- if already have obj #1
-   if noun1_curr then
+   if noun1_curr and not executing_cmd then
     -- complete with obj #2
     noun2_curr = hover_curr_object
    else
@@ -1464,7 +1467,6 @@ function input_button_pressed(button_index)
 
 	-- attempt to use verb on object (if not already executing verb)
 	if noun1_curr then
-	 --and not executing_cmd
 		-- are we starting a 'use' command?
 		if vc2 == "use" or vc2 == "give" then
 			if noun2_curr then
@@ -1919,7 +1921,7 @@ function talking_draw()
 				0,
 				talking_curr.use_caps,
     talking_curr.big_font)
-			line_offset_y += 6
+			line_offset_y += talking_curr.big_font and 12 or 6
 		end
 		-- update message lifespan
 		talking_curr.time_left -= 1

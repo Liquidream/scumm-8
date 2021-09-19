@@ -86,7 +86,7 @@ reset_ui()
 					if not me.gameover then
 						print_line("return of the...",64,40,8,1)
 						for x=1,11 do
-							print_line(sub("  scumm", 1, x),55,50,11,1,true,32,true)
+							print_line(sub("  scumm", 1, x),55,45,11,1,true,32,true)
 						end
 						change_room(rm_outside, 1) -- iris fade
 					else
@@ -1224,13 +1224,10 @@ reset_ui()
 					cutscene(
 						3, -- no verbs & no follow, 
 						function()
-
 							-- intro
 							break_time(50)
-							print_line("deep in the caribbean:on the isle of...; ;thimbleweed!",64,45,8,1,true)
-
-							change_room(rm_mi_dock, 1)
-							
+							print_line("deep in the; caribbean:on the isle of;...thimbleweed!",64,40,8,1,true,nil,true)
+							change_room(rm_mi_dock, 1)							
 						end
 					) -- end cutscene
 			end,
@@ -1648,6 +1645,7 @@ end
 
 
 #include ../dist/scumm-8.min.lua
+
 __gfx__
 0000000000000000000000000000000044444444440000004444444477777777f9e9f9f9ddd5ddd5bbbbbbbb5500000010101010000000000000000000000000
 00000000000000000000000000000000444444404400000044444444777777779eee9f9fdd5ddd5dbbbbbbbb5555000001010101000000000000000000000000
