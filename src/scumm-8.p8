@@ -966,7 +966,7 @@ function stop_talking()
 end
 
 
-function print_line(msg, x, y, col, align, use_caps, duration)
+function print_line(msg, x, y, col, align, use_caps, duration, big_font)
   -- punctuation...
 	--  > ":" new line, shown after text prior expires
 	--  > ";" new line, shown immediately
@@ -1003,7 +1003,7 @@ function print_line(msg, x, y, col, align, use_caps, duration)
 
 	-- center-align text block
 	xpos = x -cam_x
-	if (align == 1) xpos -= longest_line*2
+	if (align == 1) xpos -= longest_line*(big_font and 4 or 2)
 
 	-- screen bound check
 	local xpos, ypos = max(2, xpos), max(18, y) -- left, top
@@ -1017,7 +1017,8 @@ function print_line(msg, x, y, col, align, use_caps, duration)
 		align = align,
 		time_left = duration or #msg * 8,
 		char_width = longest_line,
-		use_caps = use_caps
+		use_caps = use_caps,
+  big_font = big_font
 	}
  -- ref point for skip #####################??????
  --talking_curr.time_orig=talking_curr.time_left
@@ -1028,7 +1029,7 @@ function print_line(msg, x, y, col, align, use_caps, duration)
 	  talking = talking_actor
 		wait_for_message()
 		talking_actor = talking
-		print_line(msg_left, x, y, col, align, use_caps)
+		print_line(msg_left, x, y, col, align, use_caps, big_font)
 	end
 
 	-- and wait for message?
@@ -1895,7 +1896,7 @@ function command_draw()
 		cmd_col = verb_hovcol
 	end
 
-	print( smallcaps(command), hcenter(command), stage_top + 66, cmd_col )
+	print( smallcaps(command), 63.5-flr(#command*2), stage_top + 66, cmd_col )
 end
 
 function talking_draw()
@@ -1916,7 +1917,8 @@ function talking_draw()
 				talking_curr.y + line_offset_y,
 				talking_curr.col,
 				0,
-				talking_curr.use_caps)
+				talking_curr.use_caps,
+    talking_curr.big_font)
 			line_offset_y += 6
 		end
 		-- update message lifespan
@@ -2430,8 +2432,9 @@ function autotype(str_value)
 	end
 end
 
-function outline_text(str,x,y,c0,c1,use_caps)
+function outline_text(str,x,y,c0,c1,use_caps,big_font)
 	if (not use_caps) str = smallcaps(str)
+ if (big_font) str="\^w\^t"..str
  for xx = -1, 1 do
 		for yy = -1, 1, xx == 0 and 2 or 1 do
 			print(str, x+xx, y+yy, c1)
@@ -2439,14 +2442,6 @@ function outline_text(str,x,y,c0,c1,use_caps)
  end
  print(str,x,y,c0)
 end
-
-function hcenter(s)
-	return 63.5-flr(#s*2)
-end
-
--- function vcenter(s)
---  return 61 -- (screenheight /2)-flr(5/2)
--- end
 
 
 --- collision check
@@ -2460,29 +2455,12 @@ function iscursorcolliding(obj)
 end
 
 function smallcaps(s)
-	local d, l, c, t = ""
-	for i=1,#s do
-		local a=sub(s,i,i)
-		if a=="^" then
-			if (c) d = d .. a
-				c=not c
-			elseif a=="~" then
-			if (t) d = d .. a
-				t,l=not t,not l
-			else
-				if c==l and a>="a" and a<="z" then
-				for j=1,26 do
-				if a == sub("etaoinsrhldcumfgpwybvkjxz",j,j) then
-					a = sub("\69\84\65\79\73\78\83\82\72\76\68\67\85\77\70\71\80\87\89\66\86\75\74\88\90\81",j,j)
-					break
-					end
-				end
-			end
-			d=d..a
-			c, t = nil
-		end
-	end
-	return d
+  local t=""
+  for i=1,#s do
+    local c=ord(s,i)
+    t..=chr(c>96 and c<123 and c-32 or c)
+  end
+  return t
 end
 
 

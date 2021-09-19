@@ -157,5 +157,5 @@ outline_text
 anim_spin
 anim_fire
 
-# pico8 built-in exclusions
+# temp luamin exclusions
 cd

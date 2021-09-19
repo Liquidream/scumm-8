@@ -86,11 +86,11 @@ reset_ui()
 					if not me.gameover then
 						print_line("return of the...",64,40,8,1)
 						for x=1,11 do
-							print_line(sub("   scumm", 1, x),55,45,11,1,true)
+							print_line(sub("  scumm", 1, x),55,50,11,1,true,32,true)
 						end
 						change_room(rm_outside, 1) -- iris fade
 					else
-					-- win game
+					 -- win game
 						print_line("congratulations!:you've completed the game!",64,45,8,1)
 						fades(1,1)	-- fade out
 						while true do
@@ -98,15 +98,15 @@ reset_ui()
 						end
 					end
 				end
-     -- override for cutscene
-     -- ,function()
-     --  if not rm_title.gameover then
-     --   rm_outside.done_intro = true
-     --   selected_actor = main_actor
-     --   put_at(selected_actor, 30, 55, rm_outside)
-     --   camera_follow(selected_actor)
-     --  end
-     -- end
+    -- override for cutscene
+    ,function()
+      if not rm_title.gameover then
+       rm_outside.done_intro = true
+       selected_actor = main_actor
+       put_at(selected_actor, 30, 55, rm_outside)
+       camera_follow(selected_actor)
+      end
+     end
     ) -- end cutscene
 		end,
 		exit = function()
