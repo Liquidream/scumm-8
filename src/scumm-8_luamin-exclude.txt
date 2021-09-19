@@ -150,12 +150,12 @@ pos_infront
 face_towards
 enable_diag_squeeze
 
-# helper routines (non-SCUMM)
+# helper (non-SCUMM) functions 
 outline_text
 
-# game-specific exclusions (replace with own game reserved words as necc)
+# game-specific exclusions 
+# (replace with own game reserved words as necessary)
 anim_spin
 anim_fire
 
-# temp luamin exclusions
-cd
+# other luamin exclusions
