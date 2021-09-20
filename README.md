@@ -25,7 +25,7 @@ Wow, really? You still here?! OK, once again. Think of SCUMM-8 as an even more r
 \*sigh\* . . .  "Look behind you! It's a three-headed monkey!" . . . \*runs away\*
 
 ## Current Features
-- [x] Multiple Rooms (32+, technically)
+- [x] Multiple Rooms (Up to 32+ per cart)
 - [x] Pathfinding for walking
 - [x] Dialogs between Actors
 - [x] Cut-scenes
@@ -42,7 +42,8 @@ Wow, really? You still here?! OK, once again. Think of SCUMM-8 as an even more r
 - [x] Adjustable Room Brightness Levels
 - [x] Screen "shake" effect
 - [x] Proximity (between Actors/Objects)
-- [x] Animations for Actors and Objects 
+- [x] Animations for Actors and Objects
+- [x] Multiple font sizes/styles
 
 ## Getting Started
 Please see the [SCUMM-8 Wiki](https://github.com/Liquidream/scumm-8/wiki) for details on how to get started creating your own SCUMM-8 game, as well as the the full API reference.
