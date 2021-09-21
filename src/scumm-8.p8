@@ -720,7 +720,7 @@ function do_anim(thing, param1, param2)
 			degrees = (angle_rad * 360) % 360 --(1130.938/3.1415)
 
 			-- set final target face direction to obj/actor
-			param2 = 4 - flr(degrees/90)
+			param2 = 4 - degrees\90
 
 			-- convert final value
 			param2 = face_dirs[param2]
@@ -978,7 +978,7 @@ function print_line(msg, x, y, col, align, use_caps, duration, big_font)
 	-- calc max line width based on x-pos/available space
 	local screen_space = 127 - (x - cam_x)
 	if (align == 1) screen_space = min(x -cam_x, screen_space)
-	local max_line_length = max(flr(screen_space/2), 16)
+	local max_line_length = max(screen_space\2, 16)
 
 	-- search for ";"'s
 	local msg_left = ""
@@ -1061,7 +1061,7 @@ end
 -- walk actor to position
 function walk_to(actor, x, y)
 		local actor_cell_pos = getcellpos(actor)
-		local celx, cely = flr(x /8) + room_curr.map[1], flr(y /8) + room_curr.map[2]
+		local celx, cely = x\8 + room_curr.map[1], y\8 + room_curr.map[2]
 		local target_cell_pos = { celx, cely }
 
 		-- use pathfinding!
@@ -1272,8 +1272,8 @@ function _update60()
 
 	-- update camera shake (if active)
 	cam_shake_x, cam_shake_y = 1.5-rnd(3), 1.5-rnd(3)
-	cam_shake_x = flr(cam_shake_x * cam_shake_amount)
-  cam_shake_y = flr(cam_shake_y * cam_shake_amount)
+	cam_shake_x = cam_shake_x * cam_shake_amount
+ cam_shake_y = cam_shake_y * cam_shake_amount
 	if (not cam_shake) cam_shake_amount = cam_shake_amount > 0.05 and cam_shake_amount * 0.90 or 0
 end
 
@@ -1455,7 +1455,7 @@ function input_button_pressed(button_index)
 		if hover_curr_arrow == ui_arrows[1] then
 			if (selected_actor.inv_pos > 0) selected_actor.inv_pos -= 1
 		else  -- down arrow
-			if selected_actor.inv_pos + 2 < flr(#selected_actor.inventory/4) then
+			if selected_actor.inv_pos + 2 < #selected_actor.inventory\4 then
 				selected_actor.inv_pos += 1
 			end
 		end
@@ -1816,7 +1816,7 @@ function actor_draw(actor)
 	local scale_height, scale_width = (8 * actor.h), (8 * actor.w)
  local scaleoffset_y = scale_height - (scale_height * scale)
  local scaleoffset_x = scale_width - (scale_width * scale)
- local draw_x = actor.offset_x + flr(scaleoffset_x/2)
+ local draw_x = actor.offset_x + scaleoffset_x\2
  local draw_y = actor.offset_y + scaleoffset_y
 
 	sprdraw(sprnum,
@@ -2051,20 +2051,11 @@ end
 function sprdraw(n, x, y, w, h, transcol, flip_x, flip_y, scale)
 	-- switch transparency
 	set_trans_col(transcol) --, true)
-
  n = n or 0
 	-- draw zoomed sprite
  --https://www.lexaloffle.com/bbs/?tid=2429
-	local sx, sy = 8 * (n % 16), 8 * flr(n / 16)
-	local sw, sh = 8 * w, 8 * h
  local dz = scale or 1
-	local dw, dh = sw * dz, sh * dz
-  sspr(sx, sy, sw, sh, x, stage_top + y, dw, dh, flip_x, flip_y)
-
-  -- first scale, bottom-anchored
- --sspr(sx, sy, sw, sh, x, stage_top + y +(sh-dh), dw, dh, flip_x, flip_y)
-
-	--spr(n, x, stage_top + y, w, h, flip_x, flip_y) -- orig method (pre-scale)
+ sspr(8*(n%16),8*flr(n/16),8*w,8*h,x,stage_top+y,8*w*dz,8*h*dz,flip_x,flip_y)
 
 	--pal() -- don't do, affects lighting!
 end
@@ -2156,7 +2147,7 @@ end
 
 
 function getcellpos(obj)
-	return { flr(obj.x/8) + room_curr.map[1], flr(obj.y/8) + room_curr.map[2] }
+	return { obj.x\8 + room_curr.map[1], obj.y\8 + room_curr.map[2] }
 end
 
 function is_cell_walkable(celx, cely)

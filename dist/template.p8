@@ -477,7 +477,7 @@ end
 
 -->8
 -- scumm-8 core engine
-
+--
 -- ############################
 --    you should not need to 
 --  modify anything below here
@@ -630,7 +630,7 @@ cw=atan2(ct.x-cv.x,cv.y-ct.y)
 cx=93*(3.1415/180)
 cw=cx-cw
 cy=(cw*360)%360
-cv=4-flr(cy/90)
+cv=4-cy\90
 cv=cz[cv]
 end
 face_dir=cz[ct.face_dir]
@@ -780,7 +780,7 @@ col=col or 7
 eh=eh or 0
 local ej=127-(x-cam_x)
 if(eh==1) ej=min(x-cam_x,ej)
-local ek=max(flr(ej/2),16)
+local ek=max(ej\2,16)
 local el=""
 for em=1,#msg do
 local en=sub(msg,em,em)
@@ -832,7 +832,7 @@ ds()
 end
 function walk_to(bt,x,y)
 local ev=ew(bt)
-local ex,ey=flr(x/8)+room_curr.map[1],flr(y/8)+room_curr.map[2]
+local ex,ey=x\8+room_curr.map[1],y\8+room_curr.map[2]
 local ez={ex,ey}
 local fa=fb(ev,ez,{x,y})
 bt.eu=1
@@ -950,8 +950,8 @@ end
 gb()
 gc()
 gd,ge=1.5-rnd(3),1.5-rnd(3)
-gd=flr(gd*be)
-ge=flr(ge*be)
+gd=gd*be
+ge=ge*be
 if(not bd) be=be>0.05 and be*0.90 or 0
 end
 function _draw()
@@ -1047,7 +1047,7 @@ elseif gx then
 if gx==fp[1] then
 if(selected_actor.gy>0) selected_actor.gy-=1
 else
-if selected_actor.gy+2<flr(#selected_actor.du/4) then
+if selected_actor.gy+2<#selected_actor.du\4 then
 selected_actor.gy+=1
 end
 end
@@ -1248,7 +1248,7 @@ local scale=bt.scale or bt.ff
 local hx,hy=(8*bt.h),(8*bt.w)
 local hz=hx-(hx*scale)
 local ia=hy-(hy*scale)
-local ib=bt.cs+flr(ia/2)
+local ib=bt.cs+ia\2
 local ic=bt.hj+hz
 hu(hs,
 ib,
@@ -1408,11 +1408,8 @@ end
 function hu(it,x,y,w,h,iu,flip_x,iv,scale)
 set_trans_col(iu)
 it=it or 0
-local iw,ix=8*(it%16),8*flr(it/16)
-local iy,iz=8*w,8*h
-local ja=scale or 1
-local jb,jc=iy*ja,iz*ja
-sspr(iw,ix,iy,iz,x,stage_top+y,jb,jc,flip_x,iv)
+local iw=scale or 1
+sspr(8*(it%16),8*flr(it/16),8*w,8*h,x,stage_top+y,8*w*iw,8*h*iw,flip_x,iv)
 end
 function set_trans_col(iu)
 palt(0,false)
@@ -1420,19 +1417,19 @@ palt(iu,true)
 end
 function fz()
 for et in all(rooms) do
-jd(et)
+ix(et)
 et.hm=#et.map>2 and et.map[3]-et.map[1]+1 or 16
 et.hn=#et.map>2 and et.map[4]-et.map[2]+1 or 8
 et.autodepth_pos=et.autodepth_pos or{9,50}
 et.autodepth_scale=et.autodepth_scale or{0.25,1}
 for bg in all(et.objects) do
-jd(bg)
+ix(bg)
 bg.in_room,bg.h=et,bg.h or 0
 if(bg.init) bg.init(bg)
 end
 end
-for je,bt in pairs(actors) do
-jd(bt)
+for iy,bt in pairs(actors) do
+ix(bt)
 bt.eu=2
 bt.db=1
 bt.id=1
@@ -1449,18 +1446,18 @@ del(scripts,eb)
 end
 end
 end
-function hr(jf)
-if(jf) jf=1-jf
-local fd=flr(mid(0,jf,1)*100)
-local jg={0,1,1,2,1,13,6,
+function hr(iz)
+if(iz) iz=1-iz
+local fd=flr(mid(0,iz,1)*100)
+local ja={0,1,1,2,1,13,6,
 4,4,9,3,13,1,13,14}
-for jh=1,15 do
-col=jh
-ji=(fd+(jh*1.46))/22
-for ea=1,ji do
-col=jg[col]
+for jb=1,15 do
+col=jb
+jc=(fd+(jb*1.46))/22
+for ea=1,jc do
+col=ja[col]
 end
-pal(jh,col)
+pal(jb,col)
 end
 end
 function cq(t)
@@ -1470,37 +1467,37 @@ function bs(bp)
 return mid(0,(cq(bp) and bp.x or bp)-64,(room_curr.hm*8)-128)
 end
 function ew(bg)
-return{flr(bg.x/8)+room_curr.map[1],flr(bg.y/8)+room_curr.map[2]}
+return{bg.x\8+room_curr.map[1],bg.y\8+room_curr.map[2]}
 end
-function jj(ex,ey)
+function jd(ex,ey)
 return fget(mget(ex,ey),0)
 end
 function ci(msg,ek)
-local ch,jk,jl,en={},"","",""
-local function jm(jn)
-if#jl+#jk>jn then
-add(ch,jk)
-jk=""
+local ch,je,jf,en={},"","",""
+local function jg(jh)
+if#jf+#je>jh then
+add(ch,je)
+je=""
 end
-jk=jk..jl
-jl=""
+je=je..jf
+jf=""
 end
 for em=1,#msg do
 en=sub(msg,em,em)
-jl=jl..en
-if en==" "or#jl>ek-1 then
-jm(ek)
-elseif#jl>ek-1 then
-jl=jl.."-"
-jm(ek)
+jf=jf..en
+if en==" "or#jf>ek-1 then
+jg(ek)
+elseif#jf>ek-1 then
+jf=jf.."-"
+jg(ek)
 elseif en==";"then
-jk=jk..sub(jl,1,#jl-1)
-jl=""
-jm(0)
+je=je..sub(jf,1,#jf-1)
+jf=""
+jg(0)
 end
 end
-jm(ek)
-if(jk!="") add(ch,jk)
+jg(ek)
+if(je!="") add(ch,je)
 return ch
 end
 function ck(ch)
@@ -1510,12 +1507,12 @@ if(#ik>cj) cj=#ik
 end
 return cj
 end
-function has_flag(bg,jo)
-for jp in all(bg) do
-if(jp==jo) return true
+function has_flag(bg,ji)
+for jj in all(bg) do
+if(jj==ji) return true
 end
 end
-function he(bg,w,h,jq,jr)
+function he(bg,w,h,jk,jl)
 local x,y=bg.x,bg.y
 if has_flag(bg.classes,"class_actor") then
 bg.cs=x-(bg.w*8)/2
@@ -1526,44 +1523,44 @@ end
 bg.hg={
 x=x,
 y=y+stage_top,
-js=x+w-1,
-jt=y+h+stage_top-1,
-jq=jq,
-jr=jr
+jm=x+w-1,
+jn=y+h+stage_top-1,
+jk=jk,
+jl=jl
 }
 end
-function fb(ju,jv)
-local jw,jx,jy,jz,ka,kb={},{},{}
-kc(jw,ju,0)
-jy[kd(ju)]=0
-while#jw>0 and#jw<1000 do
-kb=jw[#jw][1]
-del(jw,jw[#jw])
-if(kd(kb)==kd(jv)) break
-local ke={}
+function fb(jo,jp)
+local jq,jr,js,jt,ju,jv={},{},{}
+jw(jq,jo,0)
+js[jx(jo)]=0
+while#jq>0 and#jq<1000 do
+jv=jq[#jq][1]
+del(jq,jq[#jq])
+if(jx(jv)==jx(jp)) break
+local jy={}
 for x=-1,1 do
 for y=-1,1,x==0 and 2 or 1 do
-local kf,kg=kb[1]+x,kb[2]+y
-if kf>=room_curr.map[1] and kf<=room_curr.map[1]+room_curr.hm
-and kg>=room_curr.map[2] and kg<=room_curr.map[2]+room_curr.hn
-and jj(kf,kg)
+local jz,ka=jv[1]+x,jv[2]+y
+if jz>=room_curr.map[1] and jz<=room_curr.map[1]+room_curr.hm
+and ka>=room_curr.map[2] and ka<=room_curr.map[2]+room_curr.hn
+and jd(jz,ka)
 and((abs(x)!=abs(y))
-or jj(kf,kb[2])
-or jj(kf-x,kg)
+or jd(jz,jv[2])
+or jd(jz-x,ka)
 or enable_diag_squeeze)
 then
-local kh={kf,kg}
-local ki=kd(kh)
-local kj=jy[kd(kb)]+(x*y==0 and 1 or 1.414)
-if not jy[ki] or kj<jy[ki] then
-jy[ki]=kj
-local h=max(abs(jv[1]-kf),abs(jv[2]-kg))+min(abs(jv[1]-kf),abs(jv[2]-kg))*.414
-kc(jw,kh,kj+h)
-jx[ki]=kb
-if not jz or h<jz then
-jz=h
-ka=ki
-kk=kh
+local kb={jz,ka}
+local kc=jx(kb)
+local kd=js[jx(jv)]+(x*y==0 and 1 or 1.414)
+if not js[kc] or kd<js[kc] then
+js[kc]=kd
+local h=max(abs(jp[1]-jz),abs(jp[2]-ka))+min(abs(jp[1]-jz),abs(jp[2]-ka))*.414
+jw(jq,kb,kd+h)
+jr[kc]=jv
+if not jt or h<jt then
+jt=h
+ju=kc
+ke=kb
 end
 end
 end
@@ -1571,46 +1568,46 @@ end
 end
 end
 local fa={}
-kb=jx[kd(jv)]
-if kb then
-add(fa,jv)
-elseif ka then
-kb=jx[ka]
-add(fa,kk)
+jv=jr[jx(jp)]
+if jv then
+add(fa,jp)
+elseif ju then
+jv=jr[ju]
+add(fa,ke)
 end
-if kb then
-local kl,km=kd(kb),kd(ju)
-while kl!=km do
-add(fa,kb)
-kb=jx[kl]
-kl=kd(kb)
+if jv then
+local kf,kg=jx(jv),jx(jo)
+while kf!=kg do
+add(fa,jv)
+jv=jr[kf]
+kf=jx(jv)
 end
 for em=1,#fa/2 do
-local kn=fa[em]
-local ko=#fa-(em-1)
-fa[em]=fa[ko]
-fa[ko]=kn
+local kh=fa[em]
+local ki=#fa-(em-1)
+fa[em]=fa[ki]
+fa[ki]=kh
 end
 end
 return fa
 end
-function kc(t,bp,fd)
-local kp={bp,fd}
+function jw(t,bp,fd)
+local kj={bp,fd}
 if#t>=1 then
 for em=#t+1,2,-1 do
-local kh=t[em-1]
-if fd<kh[2] then
-t[em]=kp
+local kb=t[em-1]
+if fd<kb[2] then
+t[em]=kj
 return
 else
-t[em]=kh
+t[em]=kb
 end
 end
 end
-t[1]=kp
+t[1]=kj
 end
-function kd(kq)
-return((kq[1]+1)*16)+kq[2]
+function jx(kk)
+return((kk[1]+1)*16)+kk[2]
 end
 function ht(bg)
 bg.db+=1
@@ -1622,67 +1619,67 @@ end
 function dh(msg)
 print_line("-error-;"..msg,5+cam_x,5,8,0)
 end
-function jd(bg)
+function ix(bg)
 for ik in all(split(bg.data,"\n")) do
 local pairs=split(ik,"=")
 if#pairs==2 then
-bg[pairs[1]]=kr(pairs[2])
+bg[pairs[1]]=kl(pairs[2])
 else
 printh(" > invalid data: ["..pairs[1].."]")
 end
 end
 end
-function split(dz,ks)
-local kt,ip,ku={},0,0
+function split(dz,km)
+local kn,ip,ko={},0,0
 for em=1,#dz do
-local kv=sub(dz,em,em)
-if kv==ks then
-add(kt,sub(dz,ip,ku))
-ip,ku=0,0
-elseif kv!=" "
-and kv!="\t"then
-ku,ip=em,ip==0 and em or ip
+local kp=sub(dz,em,em)
+if kp==km then
+add(kn,sub(dz,ip,ko))
+ip,ko=0,0
+elseif kp!=" "
+and kp!="\t"then
+ko,ip=em,ip==0 and em or ip
 end
 end
-if ip+ku>0 then
-add(kt,sub(dz,ip,ku))
+if ip+ko>0 then
+add(kn,sub(dz,ip,ko))
 end
-return kt
+return kn
 end
-function kr(kw)
-local kx=sub(kw,1,1)
-if kw=="true"then
+function kl(kq)
+local kr=sub(kq,1,1)
+if kq=="true"then
 return true
-elseif kw=="false"then
+elseif kq=="false"then
 return false
-elseif tonum(kw) then
-return tonum(kw)
-elseif kx=="{"then
-local kn=sub(kw,2,#kw-1)
-ky={}
-for bp in all(split(kn,",")) do
-add(ky,kr(bp))
+elseif tonum(kq) then
+return tonum(kq)
+elseif kr=="{"then
+local kh=sub(kq,2,#kq-1)
+ks={}
+for bp in all(split(kh,",")) do
+add(ks,kl(bp))
 end
-return ky
+return ks
 else
-return kw
+return kq
 end
 end
-function outline_text(kz,x,y,la,lb,ee,ei)
-if(not ee) kz=ii(kz)
-if(ei) kz="\^w\^t"..kz
-for lc=-1,1 do
-for ld=-1,1,lc==0 and 2 or 1 do
-print(kz,x+lc,y+ld,lb)
+function outline_text(kt,x,y,ku,kv,ee,ei)
+if(not ee) kt=ii(kt)
+if(ei) kt="\^w\^t"..kt
+for kw=-1,1 do
+for kx=-1,1,kw==0 and 2 or 1 do
+print(kt,x+kw,y+kx,kv)
 end
 end
-print(kz,x,y,la)
+print(kt,x,y,ku)
 end
 function hc(bg)
 if(not bg.hg or cd) return false
 local hg=bg.hg
-return not((fl+hg.jq>hg.js or fl+hg.jq<hg.x)
-or(fm>hg.jt or fm<hg.y))
+return not((fl+hg.jk>hg.jm or fl+hg.jk<hg.x)
+or(fm>hg.jn or fm<hg.y))
 end
 function ii(dz)
 local t=""

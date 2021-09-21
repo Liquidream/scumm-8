@@ -1644,7 +1644,7 @@ end
 -- (end of customisable game content)
 
 
-#include ../dist/scumm-8.min.lua
+#include ../dist/scumm-8.min.p8
 
 __gfx__
 0000000000000000000000000000000044444444440000004444444477777777f9e9f9f9ddd5ddd5bbbbbbbb5500000010101010000000000000000000000000

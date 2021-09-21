@@ -8,13 +8,17 @@ src_dir = 'src'
 dist_dir = 'dist'
 lib_source_filename = 'scumm-8.p8'
 picotool_build_filename = 'scumm-8_fmt.p8'
-minified_lua_filename = 'scumm-8.min.lua'
+minified_lua_filename = 'scumm-8.min.p8'
 luamin_exclusion_filename = 'scumm-8_luamin-exclude.txt'
+pico8_header = \
+"""pico-8 cartridge // http://www.pico-8.com
+version 33
+__lua__"""
 lib_header = \
 """
 -->8
 -- scumm-8 core engine
-
+--
 -- ############################
 --    you should not need to 
 --  modify anything below here
@@ -24,7 +28,7 @@ lib_header = \
 lib_start_pattern = 'function shake'
 gfx_header = '__gfx__'
 cart_sources_to_interpolate = ['game.p8', 'template.p8']
-interpolation_token = '#include ../dist/scumm-8.min.lua'
+interpolation_token = '#include ../dist/scumm-8.min.p8'
 interpolation_token_dist = '#include ' + minified_lua_filename
 
 if __name__ == '__main__':
@@ -51,7 +55,7 @@ if __name__ == '__main__':
 
   # write minified engine to file
   lib_out_filename = os.path.join(dist_dir, minified_lua_filename)
-  open(lib_out_filename, 'w').write(lib_only)
+  open(lib_out_filename, 'w').write(pico8_header + lib_only)
   print('Built ' + lib_out_filename + '!')
 
   # interpolate carts using minified engine (placed into new tab)
