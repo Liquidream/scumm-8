@@ -2369,42 +2369,30 @@ end
 
 function explode_data(obj)
 	for l in all(split(obj.data, "\n")) do
-		local pairs=split(l, "=")
+		local pairs=split(l, "=", false)
 		if #pairs==2 then
-			obj[pairs[1]] = autotype(pairs[2])
-		else
-			printh(" > invalid data: ["..pairs[1].."]")
+			obj[trim_str(pairs[1])] = autotype(trim_str(pairs[2]))
+		--else
+		--	printh(" > invalid data: ["..pairs[1].."]")
 		end
 	end
 end
 
--- split s on delimiter, ignoring leading and trailing space and tab
-
-function split(s, delimiter)
-	local retval, start_pos, last_char_pos = {}, 0, 0
-
-	for i=1,#s do
-		local curr_letter = sub(s,i,i)
-		if curr_letter == delimiter then
-			add(retval, sub(s,start_pos,last_char_pos))
-			start_pos, last_char_pos = 0, 0
-
-		elseif curr_letter != " "
-		 and curr_letter != "\t" then
-			-- curr letter is useful
-			last_char_pos, start_pos = i, start_pos == 0 and i or start_pos
-		end
-	end
-	-- add remaining content?
-	if start_pos + last_char_pos > 0 then
-		add(retval, sub(s,start_pos,last_char_pos))
-	end
-	return retval
+-- trim start/end of string (anything non-printable or space)
+function trim_str(s)
+ local start_pos, last_char_pos = 0, 0
+ for i=1,#s do
+  local c=ord(s,i)
+  if (c>15 and c!=32) last_char_pos, start_pos = i, start_pos == 0 and i or start_pos
+ end
+ -- return content?
+ if (start_pos + last_char_pos > 0) return sub(s,start_pos,last_char_pos)
 end
+
 
 function autotype(str_value)
-	local first_letter = sub(str_value,1,1)
-
+ --stop(str_value)
+	local first_letter = sub(str_value,1,1) 
 	if str_value == "true" then
 		return true
 	elseif str_value == "false" then
@@ -2415,10 +2403,11 @@ function autotype(str_value)
 	elseif first_letter == "{" then
 		-- array - so split it
 		local temp = sub(str_value,2,#str_value-1)
-		retarray = {}
-		for val in all(split(temp, ",")) do
-			add(retarray, autotype(val))
-		end
+		retarray = split(temp, ",")
+  --stop(#retarray)
+		-- for val in all(split(temp, ",")) do
+		-- 	add(retarray, autotype(val))
+		-- end
 		return retarray
 	else --if first_letter == "\"" then
 		-- string - so do nothing
