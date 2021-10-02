@@ -27,7 +27,7 @@ verbs = {
 	{ { pull = "pull" }, text = "pull"},
 	{ { use = "use" }, text = "use"}
 }
--- verb to use when just clicking aroung (e.g. move actor)
+-- verb to use when just clicking around (e.g. move actor)
 verb_default = {
 	{ walkto = "walkto" }, text = "walk to"
 }
