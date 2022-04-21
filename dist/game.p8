@@ -2079,6 +2079,7 @@ function ds()
 fs,ft,fu,fv,fw,j=get_verb(verb_default),false,""
 end
 ds()
+cd=nil
 dy={}
 dr={}
 cc={}

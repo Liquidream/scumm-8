@@ -1,5 +1,5 @@
 pico-8 cartridge // http://www.pico-8.com
-version 33
+version 36
 __lua__
 -- scumm-8
 -- paul nicholas (+contributors)
@@ -1188,7 +1188,8 @@ end
 clear_curr_cmd()
 -- talking_curr = nil  -- currently displayed speech {x,y,col,lines ... }
 -- dialog_curr = nil   -- currently displayed dialog options to pick
--- cutscene_curr = nil -- currently active cutscene
+ cutscene_curr = nil -- currently active cutscene 
+ 					 -- (re-instated until picotool is updated to exclude "cd" + other built-ins)
 -- talking_actor = nil -- currently talking actor
 
 global_scripts = {}	-- table of scripts that are at game-level (background)
