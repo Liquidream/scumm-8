@@ -6,7 +6,7 @@ SCUMM-8 is a "demake" of the [SCUMM](https://en.wikipedia.org/wiki/SCUMM) engine
 
 See below for some games powered by SCUMM-8:
 
-| ![SCUMM-8](https://i.imgur.com/FcE49f5.gif)<br />[Return of the SCUMM](http://www.lexaloffle.com/bbs/?tid=29176) |  ![H A L L O W EƎ N](https://i.imgur.com/XpLWuVb.gif)<br />[H A L L O W EƎ N](https://liquidream.itch.io/hallowe3n)      | ![CODE-8](https://i.imgur.com/CfwaNOn.gif)<br />[CODE-8](https://gamejolt.com/games/code-8/340837)  | ![Perfectly Normal Apartment](https://i.imgur.com/V8V2uLC.gif)<br />[Perfectly Normal Apartment](https://nextlevelbanana.itch.io/perfectly-normal-apartment) | ![Dead Service](https://i.imgur.com/Lba9nf9.gif)<br />[Dead Service](https://redplanetcat.itch.io/dead-service)
+| ![SCUMM-8](https://i.imgur.com/FcE49f5.gif)<br />[Return of the SCUMM](http://www.lexaloffle.com/bbs/?tid=29176) |  ![HALLOWEƎN](https://i.imgur.com/XpLWuVb.gif)<br />[HALLOWEƎN](https://liquidream.itch.io/hallowe3n)      | ![CODE-8](https://i.imgur.com/CfwaNOn.gif)<br />[CODE-8](https://gamejolt.com/games/code-8/340837)  | ![Perfectly Normal Apartment](https://i.imgur.com/V8V2uLC.gif)<br />[Perfectly Normal Apartment](https://nextlevelbanana.itch.io/perfectly-normal-apartment) | ![Dead Service](https://i.imgur.com/Lba9nf9.gif)<br />[Dead Service](https://redplanetcat.itch.io/dead-service)
 |  :---: |  :---:  |  :---:  | :---:  | :---:  |
 
 While it is heavily "inspired" by the SCUMM engine, it isn't a true replica (for that you'll want good ol' [SCUMM-VM](https://en.wikipedia.org/wiki/ScummVM)).  However, SCUMM-8 attempts to stay as true as possible to the [original SCUMM command reference](https://web.archive.org/web/20180226005830/http://wilmunder.com/Arics_World/Games.html).
